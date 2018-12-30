@@ -238,10 +238,27 @@ export class WalletError {
                        "Transaction private keys cannot be found upon rescanning/"
                        "reimporting.";
             }
+            case WalletErrorCode.AMOUNTS_NOT_PRETTY:
+            {
+                return "The created transaction isn't comprised of only 'Pretty' "
+                       "amounts. This will cause the outputs to be unmixable. "
+                       "Almost certainly a programmer error. Cancelling transaction.";
+            }
+            case WalletErrorCode.UNEXPECTED_FEE:
+            {
+                return "The fee of the created transaction is not the same as that "
+                       "which was specified (0 for fusion transactions). Almost "
+                       "certainly a programmer error. Cancelling transaction.";
+            }
             case WalletErrorCode.NEGATIVE_VALUE_GIVEN:
             {
                 return "The input for this operation must be greater than or "
                        "equal to zero, but a negative number was given.";
+            }
+            case WalletErrorCode.INVALID_KEY_FORMAT:
+            {
+                return "The public/private key or hash given is not a 64 char "
+                       "hex string.";
             }
         }
     }
@@ -415,6 +432,15 @@ export enum WalletErrorCode {
     /* Couldn't find the private key for this hash */
     TX_PRIVATE_KEY_NOT_FOUND = 43,
 
+    /* Amounts not a member of PRETTY_AMOUNTS */
+    AMOUNTS_NOT_PRETTY = 44,
+
+    /* Tx fee is not the same as specified fee */
+    UNEXPECTED_FEE = 45,
+
     /* Value given is negative, but must be >= 0 */
-    NEGATIVE_VALUE_GIVEN = 44,
+    NEGATIVE_VALUE_GIVEN = 46,
+
+    /* Key is not 64 char hex */
+    INVALID_KEY_FORMAT = 47,
 }

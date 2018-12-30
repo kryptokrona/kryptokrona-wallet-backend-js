@@ -12,8 +12,12 @@ Provides an interface to the TurtleCoin network, allowing wallet applications to
 
 `cd turtlecoin-wallet-backend`
 
-`npm i`
+`npm install -g yarn` (Skip this if you already have yarn installed)
 
-`npm run build`
+`yarn build`
 
-Generated javascript files will be written to the dist/ folder.
+Generated javascript files will be written to the dist/lib/ folder.
+
+### Running tests
+
+`yarn test`

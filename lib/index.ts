@@ -3,4 +3,5 @@
 // Please see the included LICENSE file for more information.
 
 export { WalletError, WalletErrorCode } from './WalletError';
-export { importWalletFromSeed } from './WalletBackend';
+export { WalletBackend } from './WalletBackend';
+export { ConventionalDaemon } from './ConventionalDaemon';

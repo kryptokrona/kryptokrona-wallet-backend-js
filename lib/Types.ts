@@ -2,6 +2,11 @@
 // 
 // Please see the included LICENSE file for more information.
 
+import { 
+    TransactionJSON, transfersToVector, TransactionInputJSON,
+    UnconfirmedInputJSON 
+} from './JsonSerialization';
+
 export class Block {
     constructor(
         coinbaseTransaction: RawCoinbaseTransaction,
@@ -103,6 +108,50 @@ export class Transaction {
         this.isCoinbaseTransaction = isCoinbaseTransaction;
     }
 
+    static fromJSON(json: TransactionJSON): Transaction {
+        let transaction = Object.create(Transaction.prototype);
+
+        return Object.assign(transaction, json, {
+            transfers: new Map<string, number>(
+                json.transfers.map(x => [x.publicKey, x.amount] as [string, number])
+            ),
+
+            hash: json.hash,
+
+            fee: json.fee,
+
+            blockHeight: json.blockHeight,
+
+            timestamp: json.timestamp,
+
+            paymentID: json.paymentID,
+
+            unlockTime: json.unlockTime,
+
+            isCoinbaseTransactions: json.isCoinbaseTransaction
+        });
+    }
+
+    toJSON() : TransactionJSON {
+        return {
+            transfers: transfersToVector(this.transfers),
+
+            hash: this.hash,
+
+            fee: this.fee,
+
+            blockHeight: this.blockHeight,
+
+            timestamp: this.timestamp,
+
+            paymentID: this.paymentID,
+
+            unlockTime: this.unlockTime,
+
+            isCoinbaseTransaction: this.isCoinbaseTransaction
+        }
+    }
+
     /* A mapping of subwallets to amounts received in this transfer */
     transfers: Map<string, number>;
 
@@ -154,6 +203,57 @@ export class TransactionInput {
         this.parentTransactionHash = parentTransactionHash;
     }
 
+    static fromJSON(json: TransactionInputJSON): TransactionInput {
+        let transactionInput = Object.create(TransactionInput.prototype);
+
+        return Object.assign(transactionInput, json, {
+            keyImage: json.keyImage,
+
+            amount: json.amount,
+
+            blockHeight: json.blockHeight,
+
+            transactionPublicKey: json.transactionPublicKey,
+
+            transactionIndex: json.transactionIndex,
+
+            globalOutputIndex: json.globalOutputIndex,
+
+            key: json.key,
+
+            spendHeight: json.spendHeight,
+
+            unlockTime: json.unlockTime,
+
+            parentTransactionHash: json.parentTransactionHash
+        });
+    }
+
+    toJSON() : TransactionInputJSON {
+        return {
+            keyImage: this.keyImage,
+
+            amount: this.amount,
+
+            blockHeight: this.blockHeight,
+
+            transactionPublicKey: this.transactionPublicKey,
+
+            transactionIndex: this.transactionIndex,
+
+            globalOutputIndex: this.globalOutputIndex,
+
+            key: this.key,
+
+            spendHeight: this.spendHeight,
+
+            unlockTime: this.unlockTime,
+
+            parentTransactionHash: this.parentTransactionHash
+        }
+    }
+
+
     /* The key image of this input */
     readonly keyImage: string;
 
@@ -200,6 +300,28 @@ export class UnconfirmedInput {
         this.amount = amount;
         this.key = key;
         this.parentTransactionHash = parentTransactionHash;
+    }
+
+    static fromJSON(json: UnconfirmedInputJSON): UnconfirmedInput {
+        let unconfirmedInput = Object.create(UnconfirmedInput.prototype);
+
+        return Object.assign(unconfirmedInput, json, {
+            amount: json.amount,
+
+            key: json.key,
+
+            parentTransactionHash: json.parentTransactionHash
+        });
+    }
+
+    toJSON() : UnconfirmedInputJSON {
+        return {
+            amount: this.amount,
+
+            key: this.key,
+
+            parentTransactionHash: this.parentTransactionHash
+        }
     }
 
     /* The amount of the number */

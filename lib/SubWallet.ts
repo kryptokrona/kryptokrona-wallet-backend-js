@@ -3,6 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import { TransactionInput, UnconfirmedInput } from './Types';
+import { SubWalletJSON } from './JsonSerialization';
 
 export class SubWallet {
     constructor(
@@ -18,6 +19,59 @@ export class SubWallet {
         this.publicSpendKey = publicSpendKey;
         this.privateSpendKey = privateSpendKey;
         this.isPrimaryAddress = true;
+    }
+
+    static fromJSON(json: SubWalletJSON): SubWallet {
+        let subWallet = Object.create(SubWallet.prototype);
+
+        return Object.assign(subWallet, json, {
+            unspentInputs: json.unspentInputs.map(x => TransactionInput.fromJSON(x)),
+
+            lockedInputs: json.lockedInputs.map(x => TransactionInput.fromJSON(x)),
+
+            spentInputs: json.spentInputs.map(x => TransactionInput.fromJSON(x)),
+
+            unconfirmedIncomingAmounts: json.unconfirmedIncomingAmounts.map(
+                x => UnconfirmedInput.fromJSON(x)
+            ),
+
+            publicSpendKey: json.publicSpendKey,
+
+            privateSpendKey: json.privateSpendKey === '0'.repeat(64) ? undefined : json.privateSpendKey,
+
+            syncStartTimestamp: json.syncStartTimestamp,
+
+            syncStartHeight: json.syncStartHeight,
+
+            address: json.address,
+
+            isPrimaryAddress: json.isPrimaryAddress
+        });
+    }
+
+    toJSON(): SubWalletJSON {
+        return {
+            unspentInputs: this.unspentInputs.map(x => x.toJSON()),
+
+            lockedInputs: this.lockedInputs.map(x => x.toJSON()),
+
+            spentInputs: this.spentInputs.map(x => x.toJSON()),
+
+            unconfirmedIncomingAmounts: this.unconfirmedIncomingAmounts.map(x => x.toJSON()),
+
+            publicSpendKey: this.publicSpendKey,
+
+            /* Null secret key if view wallet */
+            privateSpendKey: this.privateSpendKey ? this.privateSpendKey : '0'.repeat(64),
+
+            syncStartTimestamp: this.syncStartTimestamp,
+
+            syncStartHeight: this.syncStartHeight,
+
+            address: this.address,
+
+            isPrimaryAddress: this.isPrimaryAddress
+        };
     }
 
     /* A vector of the stored transaction input data, to be used for

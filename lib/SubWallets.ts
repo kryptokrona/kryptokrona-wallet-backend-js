@@ -6,6 +6,7 @@ const CryptoUtils = require('./CnUtils');
 
 import { Transaction } from './Types';
 import { SubWallet } from './SubWallet';
+import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';
 
 export class SubWallets {
     /* Private spend key is optional if it's a view wallet */
@@ -19,7 +20,7 @@ export class SubWallets {
         this.isViewWallet = privateSpendKey === undefined;
         this.privateViewKey = privateViewKey;
 
-        var timestamp = 0;
+        let timestamp = 0;
 
         if (newWallet) {
             /* Unix timestamp */
@@ -38,9 +39,51 @@ export class SubWallets {
         this.subWallets.set(publicKeys.publicSpendKey, subWallet);
     }
 
+    static fromJSON(json: SubWalletsJSON): SubWallets {
+        let subWallets = Object.create(SubWallets.prototype);
+
+        return Object.assign(subWallets, json, {
+            publicSpendKeys: json.publicSpendKeys,
+
+            subWallets: new Map<string, SubWallet>(
+                json.subWallet.map(x => [x.publicSpendKey, SubWallet.fromJSON(x)] as [string, SubWallet])
+            ),
+
+            transactions: json.transactions.map(x => Transaction.fromJSON(x)),
+
+            lockedTransactions: json.lockedTransactions.map(x => Transaction.fromJSON(x)),
+
+            privateViewKey: json.privateViewKey,
+
+            isViewWallet: json.isViewWallet,
+
+            transactionPrivateKeys: new Map<string, string>(
+                json.txPrivateKeys.map(x => [x.transactionHash, x.txPrivateKey] as [string, string])
+            )
+        });
+    }
+
+    toJSON(): SubWalletsJSON {
+        return {
+            publicSpendKeys: this.publicSpendKeys,
+
+            subWallet: [...this.subWallets.values()].map(x => x.toJSON()),
+
+            transactions: this.transactions.map(x => x.toJSON()),
+
+            lockedTransactions: this.lockedTransactions.map(x => x.toJSON()),
+
+            privateViewKey: this.privateViewKey,
+
+            isViewWallet: this.isViewWallet,
+
+            txPrivateKeys: txPrivateKeysToVector(this.transactionPrivateKeys)
+        };
+    }
+
     /* The public spend keys this wallet contains. Used for verifying if a 
        transaction is ours. */
-    public publicSpendKeys: string[] = [];
+    public publicSpendKeys: string[] = new Array();
 
     /* Mapping of public spend key to subwallet */
     private subWallets: Map<string, SubWallet> = new Map();
