@@ -348,6 +348,10 @@ export class KeyOutput {
 
     /* The output amount */
     readonly amount: number;
+
+    /* The index of the amount in the DB. The blockchain cache api returns
+       this, but the regular daemon does not. */
+    readonly globalIndex?: number;
 }
 
 export class KeyInput {

@@ -4,55 +4,118 @@
 
 import { IDaemon } from './IDaemon';
 import { Block } from './Types';
+import { WalletError, WalletErrorCode } from './WalletError';
+import { validateAddresses } from './ValidateParameters';
 
-const request = require('request-promise');
+import config from './Config';
+
+const TurtleCoind = require('turtlecoin-rpc').TurtleCoind;
 
 export class ConventionalDaemon implements IDaemon {
     constructor(daemonHost: string, daemonPort: number) {
         this.daemonHost = daemonHost;
         this.daemonPort = daemonPort;
-        this.daemonURL = 'http://' + daemonHost + ':' + daemonPort;
+
+        this.daemon = new TurtleCoind({
+            host: daemonHost,
+            port: daemonPort,
+            timeout: config.requestTimeout,
+            ssl: false
+        });
     }
 
-    private daemonHost: string;
+    private readonly daemonHost: string;
 
-    private daemonPort: number;
+    private readonly daemonPort: number;
 
-    private daemonURL: string;
+    private readonly daemon: any;
+
+    private feeAddress: string = '';
+
+    private feeAmount: number = 0;
+
+    private shouldStop: boolean = false;
+
+    private localDaemonBlockCount = 0;
+
+    private networkBlockCount = 0;
+
+    private peerCount = 0;
+
+    private lastKnownHashrate = 0;
+
+    private backgroundRefresh() {
+        while (!this.shouldStop) {
+            this.getDaemonInfo();
+        }
+    }
+
+    private async getDaemonInfo() {
+        let info;
+
+        try {
+            info = await this.daemon.info();
+        } catch (err) {
+            return;
+        }
+
+        this.localDaemonBlockCount = info.height;
+        this.networkBlockCount = info.network_height;
+
+        /* Height returned is one more than the current height - but we
+           don't want to overflow is the height returned is zero */
+        if (this.networkBlockCount != 0)
+        {
+            this.networkBlockCount--;
+        }
+
+        this.peerCount = info.incoming_connections_count + info.outgoing_connections.count;
+
+        this.lastKnownHashrate = info.difficulty / config.blockTargetTime;
+    }
+
+    private async getFeeInfo() {
+        let feeInfo;
+
+        try {
+            feeInfo = await this.daemon.fee();
+        } catch (err) {
+            return;
+        }
+
+        if (feeInfo.status != 'OK') {
+            return;
+        }
+
+        const integratedAddressesAllowed: boolean = false;
+
+        const err: WalletErrorCode = validateAddresses(
+            new Array(feeInfo.address), integratedAddressesAllowed
+        ).errorCode;
+
+        if (err !== WalletErrorCode.SUCCESS) {
+            return;
+        }
+
+        if (feeInfo.amount > 0) {
+            this.feeAddress = feeInfo.address;
+            this.feeAmount = feeInfo.amount;
+        }
+    }
+
+    nodeFee(): [string, number] {
+        return [this.feeAddress, this.feeAmount];
+    }
 
     async getWalletSyncData(
         blockHashCheckpoints: string[],
         startHeight: number,
         startTimestamp: number): Promise<Block[]> {
 
-        const data = {
-            blockHashCheckpoints: blockHashCheckpoints,
+        return this.daemon.getWalletSyncData({
             startHeight: startHeight,
-            startTimestamp: startTimestamp
-        };
-
-        const options = {
-            uri: this.daemonURL + '/getwalletsyncdata',
-            timeout: 1000 * 10, // 10 seconds
-            json: true,
-            body: data 
-        };
-
-        try {
-            const response = await request.post(options);
-
-            console.log('Got response from /getwalletsyncdata: ' + response);
-
-            if (!response.status || !response.items || response.status != 'OK') {
-                const msg = 'Failed to get wallet sync data, items missing or status incorrect.';
-                return Promise.reject(msg);
-            }
-
-            return Promise.resolve(response.items);
-
-        } catch (error) {
-            console.log('Error retrieving wallet sync data: ' + error.toString());
-            return Promise.reject(error);
-        }
+            startTimestamp: startTimestamp,
+            blockHashCheckpoints: blockHashCheckpoints
+        });
     }
 }

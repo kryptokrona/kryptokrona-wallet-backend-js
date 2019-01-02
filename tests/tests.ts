@@ -1,6 +1,5 @@
-const assert = require('assert');
-const colors = require('colors/safe');
-
+import * as assert from 'assert';
+import * as colors from 'colors/safe';
 import { WalletBackend, ConventionalDaemon, WalletError } from '../lib/index';
 
 console.log(colors.white('=== Started testing ==='));

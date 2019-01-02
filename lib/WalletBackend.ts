@@ -2,8 +2,7 @@
 // 
 // Please see the included LICENSE file for more information.
 
-const CryptoUtils = require('./CnUtils');
-
+import { CryptoUtils } from './CnUtils';
 import { WalletError, WalletErrorCode } from './WalletError';
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
@@ -12,6 +11,7 @@ import { openWallet } from './OpenWallet';
 import { WALLET_FILE_FORMAT_VERSION } from './Constants';
 import { WalletSynchronizer } from './WalletSynchronizer';
 import { WalletBackendJSON } from './JsonSerialization';
+import { validateAddresses } from './ValidateParameters';
 
 export class WalletBackend {
     constructor(
@@ -161,15 +161,14 @@ export class WalletBackend {
             return new WalletError(WalletErrorCode.INVALID_KEY_FORMAT);
         }
 
-        try {
-            const paymentID = CryptoUtils.decodeAddress(address).paymentID;
+        const integratedAddressesAllowed: boolean = false;
 
-            /* Integrated address given - not allowed */
-            if (paymentID.length !== 0) {
-                return new WalletError(WalletErrorCode.ADDRESS_IS_INTEGRATED);
-            }
-        } catch (err) {
-            return new WalletError(WalletErrorCode.ADDRESS_NOT_VALID, err.toString());
+        const err: WalletError = validateAddresses(
+            new Array(address), integratedAddressesAllowed
+        );
+
+        if (err.errorCode !== WalletErrorCode.SUCCESS) {
+            return err;
         }
 
         if (scanHeight < 0) {

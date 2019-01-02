@@ -2,10 +2,17 @@
 # yarn lockfile v1
 
 
-"@types/node@^10.12.18":
+"@types/node@*", "@types/node@^10.12.18":
   version "10.12.18"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
   integrity sha512-fh+pAqt4xRzPfqA6eh3Z2y6fyZavRIumvjhaCL753+TVkGKGhpPeyrJG2JftD0T9q4GF00KjefsQ+PQNDdWQaQ==
+
+"@types/pbkdf2@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@types/pbkdf2/-/pbkdf2-3.0.0.tgz#5d9ca5f12a78a08cc89ad72883ad4a30af359229"
+  integrity sha512-6J6MHaAlBJC/eVMy9jOwj9oHaprfutukfW/Dyt0NEnpQ/6HN6YQrpvLwzWdWDeWZIdenjGHlbYDzyEODO5Z+2Q==
+  dependencies:
+    "@types/node" "*"
 
 ajv@^6.5.5:
   version "6.6.2"
@@ -496,9 +503,9 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-"turtlecoin-utils@github:zpalmtree/turtlecoin-utils":
+"turtlecoin-utils@https://github.com/zpalmtree/turtlecoin-utils.git#add-types":
   version "0.0.1"
-  resolved "https://codeload.github.com/zpalmtree/turtlecoin-utils/tar.gz/ef29af6523b905af383e0f559cd09a1532ed811c"
+  resolved "https://github.com/zpalmtree/turtlecoin-utils.git#e0e07973675757bb87ac72e791e5103d1c0d8130"
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"

@@ -9,4 +9,6 @@ export interface IDaemon {
         blockHashCheckpoints: string[],
         startHeight: number,
         startTimestamp: number) : Promise<Block[]>;
+
+    nodeFee(): [string, number];
 }

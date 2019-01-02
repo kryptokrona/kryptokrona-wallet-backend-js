@@ -2,11 +2,10 @@
 // 
 // Please see the included LICENSE file for more information.
 
-const config = require('./Config');
+import config from './Config';
+import CryptoNote = require('turtlecoin-utils');
 
-const CryptoUtils = require('turtlecoin-utils');
-
-module.exports = new CryptoUtils({
+export let CryptoUtils = new CryptoNote({
     coinUnitPlaces: config.decimalPlaces,
     addressPrefix: config.addressPrefix,
     keccakIterations: 1

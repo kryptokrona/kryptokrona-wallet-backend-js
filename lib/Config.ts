@@ -9,6 +9,12 @@ class Config {
     /* The address prefix your coin uses - you can find this in CryptoNoteConfig.h.
        In TurtleCoin, this converts to TRTL */
     addressPrefix: number = 3914525;
+
+    /* Request timeout for daemon ops in milliseconds */
+    requestTimeout: number = 5000;
+
+    /* The block time of your coin, in seconds */
+    blockTargetTime: number = 30;
 };
 
-module.exports = new Config();
+export default new Config();

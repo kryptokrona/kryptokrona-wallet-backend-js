@@ -10,7 +10,7 @@ export class WalletError {
         this.customMessage = customMessage;
     }
 
-    private readonly errorCode: WalletErrorCode;
+    readonly errorCode: WalletErrorCode;
 
     private readonly customMessage: string;
 

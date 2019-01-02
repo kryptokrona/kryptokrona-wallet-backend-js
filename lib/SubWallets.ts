@@ -2,8 +2,7 @@
 // 
 // Please see the included LICENSE file for more information.
 
-const CryptoUtils = require('./CnUtils');
-
+import { CryptoUtils } from './CnUtils';
 import { Transaction } from './Types';
 import { SubWallet } from './SubWallet';
 import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';

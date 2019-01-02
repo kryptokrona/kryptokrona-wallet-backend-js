@@ -4,10 +4,9 @@
 
 import { WalletError, WalletErrorCode } from './WalletError';
 import { PBKDF2_ITERATIONS, IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER } from './Constants';
-
-const pbkdf2 = require('pbkdf2');
-const fs = require('fs');
-const crypto = require('crypto');
+import * as pbkdf2 from 'pbkdf2';
+import * as fs from 'fs'; 
+import * as crypto from 'crypto';
 
 /* Open the wallet and return a JSON string */
 export function openWallet(filename: string, password: string): string | WalletError {

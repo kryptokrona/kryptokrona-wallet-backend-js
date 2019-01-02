@@ -7,16 +7,17 @@
   "scripts": {
     "prepublish": "yarn build",
     "build": "tsc",
-    "test": "yarn install && yarn build && node dist/tests/tests.js"
+    "test": "yarn install && node dist/tests/tests.js"
   },
   "keywords": [],
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
+    "@types/pbkdf2": "^3.0.0",
     "pbkdf2": "^3.0.17",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "turtlecoin-utils": "github:zpalmtree/turtlecoin-utils"
+    "turtlecoin-utils": "https://github.com/zpalmtree/turtlecoin-utils.git#add-types"
   },
   "devDependencies": {
     "@types/node": "^10.12.18",
