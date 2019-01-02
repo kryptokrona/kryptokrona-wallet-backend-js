@@ -17,6 +17,7 @@
     "pbkdf2": "^3.0.17",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
+    "turtlecoin-rpc": "^0.8.9",
     "turtlecoin-utils": "https://github.com/zpalmtree/turtlecoin-utils.git#add-types"
   },
   "devDependencies": {

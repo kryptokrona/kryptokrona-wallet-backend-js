@@ -15,6 +15,10 @@ class Config {
 
     /* The block time of your coin, in seconds */
     blockTargetTime: number = 30;
+
+    /* How often to do the 'main loop' - fetch from daemon, process blocks -
+       in milliseconds */
+    mainLoopInterval: number = 1000;
 };
 
 export default new Config();

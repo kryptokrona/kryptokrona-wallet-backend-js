@@ -21,3 +21,65 @@ Generated javascript files will be written to the dist/lib/ folder.
 ### Running tests
 
 `yarn test`
+
+### Example usage
+
+#### Typescript
+
+```typescript
+import { WalletBackend, ConventionalDaemon } from 'turtlecoin-wallet-backend';
+
+(async () => {
+    const daemon: ConventionalDaemon = new ConventionalDaemon('127.0.0.1', 11898);
+    
+    const wallet: WalletBackend = WalletBackend.createWallet(daemon);
+
+    console.log('Created wallet');
+
+    await wallet.init();
+
+    console.log('Initialized wallet');
+
+    wallet.start();
+
+    console.log('Started wallet');
+
+    setTimeout(() => {
+        console.log('Stopping wallet');
+        wallet.stop()
+        console.log('Wallet stopped');
+    }, 5000);
+})().catch(err => {
+    console.log('Caught promise rejection: ' + err);
+});
+```
+
+#### Javascript
+
+```javascript
+const WB = require('turtlecoin-wallet-backend');
+
+(async () => {
+    const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+    
+    const wallet = WB.WalletBackend.createWallet(daemon);
+
+    console.log('Created wallet');
+
+    await wallet.init();
+
+    console.log('Initialized wallet');
+
+    wallet.start();
+
+    console.log('Started wallet');
+
+    setTimeout(() => {
+        console.log('Stopping wallet');
+        wallet.stop()
+        console.log('Wallet stopped');
+    }, 5000);
+})().catch(err => {
+    console.log('Caught promise rejection: ' + err);
+});
+```

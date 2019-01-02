@@ -393,6 +393,15 @@ request-promise-core@1.1.1:
   dependencies:
     lodash "^4.13.1"
 
+request-promise-native@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/request-promise-native/-/request-promise-native-1.0.5.tgz#5281770f68e0c9719e5163fd3fab482215f4fda5"
+  integrity sha1-UoF3D2jgyXGeUWP9P6tIIhX0/aU=
+  dependencies:
+    request-promise-core "1.1.1"
+    stealthy-require "^1.1.0"
+    tough-cookie ">=2.3.3"
+
 request-promise@^4.2.2:
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/request-promise/-/request-promise-4.2.2.tgz#d1ea46d654a6ee4f8ee6a4fea1018c22911904b4"
@@ -502,6 +511,14 @@ tunnel-agent@^0.6.0:
   integrity sha1-J6XeoGs2sEoKmWZ3SykIaPD8QP0=
   dependencies:
     safe-buffer "^5.0.1"
+
+turtlecoin-rpc@^0.8.9:
+  version "0.8.9"
+  resolved "https://registry.yarnpkg.com/turtlecoin-rpc/-/turtlecoin-rpc-0.8.9.tgz#d47f5b80c11d8310cc86ca99a403d272e12c5350"
+  integrity sha512-0orctzgRbFmURSGCY6RN/1EKKDm3V7/BAMgcJ5yYkH0hVKVeTJ6OICmSx0ug456oUtm18OJOBriWIayucUEL/w==
+  dependencies:
+    request "^2.88.0"
+    request-promise-native "^1.0.5"
 
 "turtlecoin-utils@https://github.com/zpalmtree/turtlecoin-utils.git#add-types":
   version "0.0.1"

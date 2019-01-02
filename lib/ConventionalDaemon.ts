@@ -34,8 +34,6 @@ export class ConventionalDaemon implements IDaemon {
 
     private feeAmount: number = 0;
 
-    private shouldStop: boolean = false;
-
     private localDaemonBlockCount = 0;
 
     private networkBlockCount = 0;
@@ -44,13 +42,12 @@ export class ConventionalDaemon implements IDaemon {
 
     private lastKnownHashrate = 0;
 
-    private backgroundRefresh() {
-        while (!this.shouldStop) {
-            this.getDaemonInfo();
-        }
+    async init(): Promise<void> {
+        /* Note - if one promise throws, the other will be cancelled */
+        await Promise.all([this.getDaemonInfo(), this.getFeeInfo()]);
     }
 
-    private async getDaemonInfo() {
+    async getDaemonInfo(): Promise<void> {
         let info;
 
         try {
@@ -69,12 +66,12 @@ export class ConventionalDaemon implements IDaemon {
             this.networkBlockCount--;
         }
 
-        this.peerCount = info.incoming_connections_count + info.outgoing_connections.count;
+        this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
         this.lastKnownHashrate = info.difficulty / config.blockTargetTime;
     }
 
-    private async getFeeInfo() {
+    private async getFeeInfo(): Promise<void> {
         let feeInfo;
 
         try {

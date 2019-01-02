@@ -33,11 +33,11 @@ export const IS_CORRECT_PASSWORD_IDENTIFIER: Buffer = Buffer.from([
 ]);
 
 /* How large should the lastKnownBlockHashes container be */
-export const LAST_KNOWN_BLOCK_HASHES_SIZE = 100;
+export const LAST_KNOWN_BLOCK_HASHES_SIZE: number = 100;
 
 /* Save a block hash checkpoint every BLOCK_HASH_CHECKPOINTS_INTERVAL
    blocks */
-export const BLOCK_HASH_CHECKPOINTS_INTERVAL = 5000;
+export const BLOCK_HASH_CHECKPOINTS_INTERVAL: number = 5000;
 
 /* When we get the global indexes, we pass in a range of blocks, to obscure
    which transactions we are interested in - the ones that belong to us.
@@ -46,9 +46,9 @@ export const BLOCK_HASH_CHECKPOINTS_INTERVAL = 5000;
    17, we get all the indexes from block 10 to block 20.
        
    This value determines how many blocks to take from. */
-export const GLOBAL_INDEXES_OBSCURITY = 10;
+export const GLOBAL_INDEXES_OBSCURITY: number = 10;
 
 /* The maximum amount of blocks we can have waiting to be processed in
    the queue. If we exceed this, we will wait till it drops below this
    amount. */
-export const MAXIMUM_SYNC_QUEUE_SIZE = 1000;
+export const MAXIMUM_SYNC_QUEUE_SIZE: number = 1000;

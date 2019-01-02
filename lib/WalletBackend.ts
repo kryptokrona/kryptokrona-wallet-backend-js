@@ -2,6 +2,8 @@
 // 
 // Please see the included LICENSE file for more information.
 
+import config from './Config';
+
 import { CryptoUtils } from './CnUtils';
 import { WalletError, WalletErrorCode } from './WalletError';
 import { IDaemon } from './IDaemon';
@@ -12,6 +14,7 @@ import { WALLET_FILE_FORMAT_VERSION } from './Constants';
 import { WalletSynchronizer } from './WalletSynchronizer';
 import { WalletBackendJSON } from './JsonSerialization';
 import { validateAddresses } from './ValidateParameters';
+import { Metronome } from './Metronome';
 
 export class WalletBackend {
     constructor(
@@ -37,8 +40,34 @@ export class WalletBackend {
         );
 
         this.daemon = daemon;
+
+        this.mainLoopExecutor = new Metronome(
+            this.mainLoop.bind(this), config.mainLoopInterval
+        );
     }
 
+    /* Fetch initial daemon info and fee. Should we do this in the constructor
+       instead...? Well... not much point wasting time if they just want to
+       make a wallet */
+    async init(): Promise<void> {
+        await this.daemon.init();
+    }
+
+    /* Starts the main loop */
+    start(): void {
+        this.mainLoopExecutor.start();
+    }
+
+    /* Stops the main loop */
+    stop(): void {
+        this.mainLoopExecutor.stop();
+    }
+
+    mainLoop(): void {
+        this.daemon.getDaemonInfo();
+    }
+
+    /* Opens a wallet given a filepath and a password */
     static openWalletFromFile(
         daemon: IDaemon,
         filename: string,
@@ -53,6 +82,7 @@ export class WalletBackend {
         return WalletBackend.loadWalletFromJSON(daemon, walletJSON as string);
     }
 
+    /* Opens a wallet from a valid wallet JSON string (unencrypted) */
     static loadWalletFromJSON(daemon: IDaemon, json: string): WalletBackend | WalletError {
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
@@ -63,6 +93,7 @@ export class WalletBackend {
         }
     }
 
+    /* Loads a wallet from a WalletBackendJSON */
     static fromJSON(json: WalletBackendJSON): WalletBackend {
         let wallet = Object.create(WalletBackend.prototype);
 
@@ -78,10 +109,12 @@ export class WalletBackend {
         });
     }
 
+    /* Utility function for nicer JSON parsing function */
     static reviver(key: string, value: any): any {
         return key === "" ? WalletBackend.fromJSON(value) : value;
     }
 
+    /* Converts recursively from typescript to JSON data. Can be dumped to file */
     toJSON(): WalletBackendJSON {
         return {
             walletFileFormatVersion: WALLET_FILE_FORMAT_VERSION,
@@ -90,6 +123,7 @@ export class WalletBackend {
         };
     }
 
+    /* Imports a wallet from a mnemonic seed */
     static importWalletFromSeed(
         daemon: IDaemon,
         scanHeight: number,
@@ -118,6 +152,7 @@ export class WalletBackend {
         return wallet;
     }
 
+    /* Imports a wallet from a spend and view key */
     static importWalletFromKeys(
         daemon: IDaemon,
         scanHeight: number,
@@ -151,6 +186,7 @@ export class WalletBackend {
         return wallet;
     }
 
+    /* Imports a view only wallet */
     static importViewWallet(
         daemon: IDaemon,
         scanHeight: number,
@@ -186,6 +222,8 @@ export class WalletBackend {
         return wallet;
     }
 
+    /* Creates a wallet with a random key pair (it will be a determinstic/
+       mnemonic wallet, however */
     static createWallet(daemon: IDaemon): WalletBackend {
         const newWallet: boolean = true;
 
@@ -201,8 +239,13 @@ export class WalletBackend {
         return wallet;
     }
 
+    /* Assign the daemon, if you created the object from JSON for example */
     setDaemon(daemon: IDaemon): void {
         this.daemon = daemon;
+    }
+
+    getNodeFee(): [string, number] {
+        return this.daemon.nodeFee();
     }
 
     /* Contains private keys, transactions, inputs, etc */
@@ -211,5 +254,9 @@ export class WalletBackend {
     /* Interface to either a regular daemon or a blockchain cache api */
     private daemon: IDaemon;
 
+    /* Wallet synchronization state */
     private walletSynchronizer: WalletSynchronizer;
+
+    /* Executes the main loop every n seconds for us */
+    private mainLoopExecutor: Metronome;
 }

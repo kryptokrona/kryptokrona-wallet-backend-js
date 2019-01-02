@@ -6,7 +6,7 @@ import { WalletError, WalletErrorCode } from './WalletError';
 import { CryptoUtils } from './CnUtils';
 
 export function validateAddresses(addresses: string[], integratedAddressesAllowed: boolean) {
-    for (var address in addresses) {
+    addresses.forEach((address) => {
         try {
             let parsed = CryptoUtils.decodeAddress(address);
 
@@ -16,7 +16,7 @@ export function validateAddresses(addresses: string[], integratedAddressesAllowe
         } catch (err) {
             return new WalletError(WalletErrorCode.ADDRESS_NOT_VALID, err.toString());
         }
-    }
+    });
 
     return new WalletError(WalletErrorCode.SUCCESS);
 }
