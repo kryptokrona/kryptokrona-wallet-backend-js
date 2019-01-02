@@ -13,12 +13,14 @@
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
+    "@types/deep-equal": "^1.0.1",
     "@types/pbkdf2": "^3.0.0",
+    "deep-equal": "^1.0.1",
     "pbkdf2": "^3.0.17",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "turtlecoin-rpc": "^0.8.9",
-    "turtlecoin-utils": "https://github.com/zpalmtree/turtlecoin-utils.git#add-types"
+    "turtlecoin-utils": "https://github.com/turtlecoin/turtlecoin-utils.git"
   },
   "devDependencies": {
     "@types/node": "^10.12.18",

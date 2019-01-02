@@ -444,3 +444,5 @@ export enum WalletErrorCode {
     /* Key is not 64 char hex */
     INVALID_KEY_FORMAT = 47,
 }
+
+export let SUCCESS: WalletError = new WalletError(WalletErrorCode.SUCCESS);

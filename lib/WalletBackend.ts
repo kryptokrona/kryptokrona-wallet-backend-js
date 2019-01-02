@@ -2,10 +2,12 @@
 // 
 // Please see the included LICENSE file for more information.
 
+import deepEqual = require('deep-equal');
+
 import config from './Config';
 
 import { CryptoUtils } from './CnUtils';
-import { WalletError, WalletErrorCode } from './WalletError';
+import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
 import { isHex64 } from './Utilities';
@@ -15,6 +17,7 @@ import { WalletSynchronizer } from './WalletSynchronizer';
 import { WalletBackendJSON } from './JsonSerialization';
 import { validateAddresses } from './ValidateParameters';
 import { Metronome } from './Metronome';
+import { addressToKeys } from './Utilities';
 
 export class WalletBackend {
     constructor(
@@ -203,7 +206,7 @@ export class WalletBackend {
             new Array(address), integratedAddressesAllowed
         );
 
-        if (err.errorCode !== WalletErrorCode.SUCCESS) {
+        if (!deepEqual(err, SUCCESS)) {
             return err;
         }
 
@@ -246,6 +249,63 @@ export class WalletBackend {
 
     getNodeFee(): [string, number] {
         return this.daemon.nodeFee();
+    }
+
+    /* Gets the shared private view key */
+    getPrivateViewKey(): string {
+        return this.subWallets.getPrivateViewKey();
+    }
+
+    /* Gets the [publicSpendKey, privateSpendKey] for the given address, if
+       possible. Note: secret key will be 00000... if view wallet */
+    getSpendKeys(address: string): WalletError | [string, string] {
+        const integratedAddressesAllowed: boolean = false;
+
+        const err: WalletError = validateAddresses(
+            new Array(address), integratedAddressesAllowed
+        );
+
+        if (!deepEqual(err, SUCCESS)) {
+            return err;
+        }
+
+        const [publicViewKey, publicSpendKey] = addressToKeys(address);
+
+        const [err2, privateSpendKey] = this.subWallets.getPrivateSpendKey(publicSpendKey);
+
+        if (!deepEqual(err2, SUCCESS)) {
+            return err2;
+        }
+
+        return [publicSpendKey, privateSpendKey];
+    }
+
+    /* Get the private spend and private view for the primary address */
+    getPrimaryAddressPrivateKeys(): [string, string] {
+        return [this.subWallets.getPrimaryPrivateSpendKey(), this.getPrivateViewKey()];
+    }
+
+    /* Get the primary address mnemonic seed, if possible */
+    getMnemonicSeed(): WalletError | string {
+        return this.getMnemonicSeedForAddress(this.subWallets.getPrimaryAddress());
+    }
+
+    getMnemonicSeedForAddress(address: string): WalletError | string {
+        const privateViewKey: string = this.getPrivateViewKey();
+
+        const spendKeys = this.getSpendKeys(address);
+
+        if (spendKeys instanceof WalletError) {
+            return spendKeys as WalletError;
+        }
+
+        const parsedAddr = CryptoUtils.createAddressFromKeys(spendKeys[1], privateViewKey);
+
+        if (!parsedAddr.mnemonic) {
+            return new WalletError(WalletErrorCode.KEYS_NOT_DETERMINISTIC);
+        }
+
+        return parsedAddr.mnemonic;
     }
 
     /* Contains private keys, transactions, inputs, etc */

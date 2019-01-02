@@ -6,6 +6,7 @@ import { CryptoUtils } from './CnUtils';
 import { Transaction } from './Types';
 import { SubWallet } from './SubWallet';
 import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';
+import { WalletError, WalletErrorCode, SUCCESS } from './WalletError';
 
 export class SubWallets {
     /* Private spend key is optional if it's a view wallet */
@@ -78,6 +79,39 @@ export class SubWallets {
 
             txPrivateKeys: txPrivateKeysToVector(this.transactionPrivateKeys)
         };
+    }
+
+    getPrivateViewKey(): string {
+        return this.privateViewKey;
+    }
+
+    getPrivateSpendKey(publicSpendKey: string): [WalletError, string] {
+        const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
+
+        if (!subWallet) {
+            return [new WalletError(WalletErrorCode.ADDRESS_NOT_IN_WALLET), ''];
+        }
+
+        return [SUCCESS, subWallet.getPrivateSpendKey()];
+    }
+
+    /* Gets the 'primary' subwallet */
+    getPrimarySubWallet(): SubWallet {
+        for (let [publicKey, subWallet] of this.subWallets) {
+            if (subWallet.isPrimaryAddress()) {
+                return subWallet;
+            }
+        }
+
+        throw new Error('Wallet has no primary address!');
+    }
+
+    getPrimaryAddress(): string {
+        return this.getPrimarySubWallet().getAddress();
+    }
+
+    getPrimaryPrivateSpendKey(): string {
+        return this.getPrimarySubWallet().getPrivateSpendKey();
     }
 
     /* The public spend keys this wallet contains. Used for verifying if a 

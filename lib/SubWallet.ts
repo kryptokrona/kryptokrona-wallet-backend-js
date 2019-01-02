@@ -18,7 +18,7 @@ export class SubWallet {
         this.syncStartTimestamp = timestamp;
         this.publicSpendKey = publicSpendKey;
         this.privateSpendKey = privateSpendKey;
-        this.isPrimaryAddress = true;
+        this.primaryAddress = true;
     }
 
     static fromJSON(json: SubWalletJSON): SubWallet {
@@ -45,7 +45,7 @@ export class SubWallet {
 
             address: json.address,
 
-            isPrimaryAddress: json.isPrimaryAddress
+            primaryAddress: json.isPrimaryAddress
         });
     }
 
@@ -70,8 +70,20 @@ export class SubWallet {
 
             address: this.address,
 
-            isPrimaryAddress: this.isPrimaryAddress
+            isPrimaryAddress: this.primaryAddress
         };
+    }
+
+    getPrivateSpendKey(): string {
+        return this.privateSpendKey || '0'.repeat(64);
+    }
+
+    isPrimaryAddress(): boolean {
+        return this.primaryAddress;
+    }
+
+    getAddress(): string {
+        return this.address;
     }
 
     /* A vector of the stored transaction input data, to be used for
@@ -108,5 +120,5 @@ export class SubWallet {
 
     /* The wallet has one 'main' address which we will use by default
        when treating it as a single user wallet */
-    private readonly isPrimaryAddress: boolean;
+    private readonly primaryAddress: boolean;
 }
