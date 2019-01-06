@@ -1,12 +1,37 @@
-// Copyright (c) 2018, Zpalmtree 
-// 
+// Copyright (c) 2018, Zpalmtree
+//
 // Please see the included LICENSE file for more information.
 
-import { WalletSynchronizerJSON } from './JsonSerialization';
 import { IDaemon } from './IDaemon';
+import { WalletSynchronizerJSON } from './JsonSerialization';
 import { SynchronizationStatus } from './SynchronizationStatus';
+import {
+    Block, RawCoinbaseTransaction, RawTransaction, TransactionData,
+} from './Types';
 
 export class WalletSynchronizer {
+
+    public static fromJSON(json: WalletSynchronizerJSON): WalletSynchronizer {
+        const walletSynchronizer = Object.create(WalletSynchronizer.prototype);
+
+        return Object.assign(walletSynchronizer, json, {
+            privateViewKey: json.privateViewKey,
+            startHeight: json.startHeight,
+            startTimestamp: json.startTimestamp,
+            synchronizationStatus: SynchronizationStatus.fromJSON(json.transactionSynchronizerStatus),
+        });
+    }
+
+    private daemon: IDaemon;
+
+    private startTimestamp: number;
+
+    private startHeight: number;
+
+    private readonly privateViewKey: string;
+
+    private synchronizationStatus: SynchronizationStatus = new SynchronizationStatus();
+
     constructor(
         daemon: IDaemon,
         startTimestamp: number,
@@ -19,36 +44,43 @@ export class WalletSynchronizer {
         this.privateViewKey = privateViewKey;
     }
 
-    static fromJSON(json: WalletSynchronizerJSON): WalletSynchronizer {
-        let walletSynchronizer = Object.create(WalletSynchronizer.prototype);
-
-        return Object.assign(walletSynchronizer, json, {
-            startTimestamp: json.startTimestamp,
-            startHeight: json.startHeight,
-            privateViewKey: json.privateViewKey,
-            transactionSynchronizerStatus: SynchronizationStatus.fromJSON(json.transactionSynchronizerStatus),
-            blockchainSynchronizer: SynchronizationStatus.fromJSON(json.transactionSynchronizerStatus)
-        });
-    }
-
-    toJSON(): WalletSynchronizerJSON {
+    public toJSON(): WalletSynchronizerJSON {
         return {
-            startTimestamp: this.startTimestamp,
-            startHeight: this.startHeight,
             privateViewKey: this.privateViewKey,
-            transactionSynchronizerStatus: this.transactionSynchronizerStatus.toJSON()
+            startHeight: this.startHeight,
+            startTimestamp: this.startTimestamp,
+            transactionSynchronizerStatus: this.synchronizationStatus.toJSON(),
         };
     }
 
-    private daemon: IDaemon;
+    public async getBlocks(): Promise<Block[]> {
+        return [];
+    }
 
-    private startTimestamp: number;
+    public processTransaction(
+        transaction: RawTransaction,
+        txData: TransactionData): TransactionData {
 
-    private startHeight: number;
+        return txData;
+    }
 
-    private readonly privateViewKey: string;
+    public processCoinbaseTransaction(
+        transaction: RawCoinbaseTransaction,
+        txData: TransactionData): TransactionData {
 
-    private transactionSynchronizerStatus: SynchronizationStatus = new SynchronizationStatus();
+        return txData;
+    }
 
-    private blockchainSynchronizer: SynchronizationStatus = new SynchronizationStatus();
+    public getHeight(): number {
+        return this.synchronizationStatus.getHeight();
+    }
+
+    public checkLockedTransactions(transactionHashes: string[]): string[] {
+        /* TODO */
+        return [];
+    }
+
+    public storeBlockHash(blockHeight: number, blockHash: string): void {
+        /* TODO */
+    }
 }

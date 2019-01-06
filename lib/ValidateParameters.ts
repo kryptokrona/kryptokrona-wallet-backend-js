@@ -1,14 +1,14 @@
-// Copyright (c) 2018, Zpalmtree 
-// 
+// Copyright (c) 2018, Zpalmtree
+//
 // Please see the included LICENSE file for more information.
 
-import { WalletError, WalletErrorCode } from './WalletError';
 import { CryptoUtils } from './CnUtils';
+import { WalletError, WalletErrorCode } from './WalletError';
 
 export function validateAddresses(addresses: string[], integratedAddressesAllowed: boolean) {
     addresses.forEach((address) => {
         try {
-            let parsed = CryptoUtils.decodeAddress(address);
+            const parsed = CryptoUtils.decodeAddress(address);
 
             if (parsed.paymentId.length !== 0 && !integratedAddressesAllowed) {
                 return new WalletError(WalletErrorCode.ADDRESS_IS_INTEGRATED);

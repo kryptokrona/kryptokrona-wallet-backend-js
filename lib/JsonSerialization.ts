@@ -2,94 +2,94 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { Transaction, UnconfirmedInput } from './Types';
 import { SubWallet } from './SubWallet';
+import { Transaction, UnconfirmedInput } from './Types';
 
 export interface WalletBackendJSON {
-    walletFileFormatVersion: number,
+    walletFileFormatVersion: number;
 
-    subWallets: SubWalletsJSON,
+    subWallets: SubWalletsJSON;
 
-    walletSynchronizer: WalletSynchronizerJSON
+    walletSynchronizer: WalletSynchronizerJSON;
 }
 
 export interface WalletSynchronizerJSON {
-    startTimestamp: number,
+    startTimestamp: number;
 
-    startHeight: number,
+    startHeight: number;
 
-    privateViewKey: string,
+    privateViewKey: string;
 
-    transactionSynchronizerStatus: SynchronizationStatusJSON
+    transactionSynchronizerStatus: SynchronizationStatusJSON;
 }
 
 export interface SubWalletJSON {
-    unspentInputs: TransactionInputJSON[],
+    unspentInputs: TransactionInputJSON[];
 
-    lockedInputs: TransactionInputJSON[],
+    lockedInputs: TransactionInputJSON[];
 
-    spentInputs: TransactionInputJSON[],
+    spentInputs: TransactionInputJSON[];
 
-    unconfirmedIncomingAmounts: UnconfirmedInputJSON[],
+    unconfirmedIncomingAmounts: UnconfirmedInputJSON[];
 
-    publicSpendKey: string,
+    publicSpendKey: string;
 
     /* NULL_SECRET_KEY if view wallet */
-    privateSpendKey: string,
+    privateSpendKey: string;
 
-    syncStartTimestamp: number,
+    syncStartTimestamp: number;
 
-    syncStartHeight: number,
+    syncStartHeight: number;
 
-    address: string,
+    address: string;
 
-    isPrimaryAddress: boolean
+    isPrimaryAddress: boolean;
 }
 
 export interface TransactionJSON {
-    transfers: TransfersJSON[],
+    transfers: TransfersJSON[];
 
-    hash: string,
+    hash: string;
 
-    fee: number,
-    
-    blockHeight: number,
+    fee: number;
 
-    timestamp: number,
+    blockHeight: number;
 
-    paymentID: string,
+    timestamp: number;
 
-    unlockTime: number,
+    paymentID: string;
 
-    isCoinbaseTransaction: boolean
+    unlockTime: number;
+
+    isCoinbaseTransaction: boolean;
 }
 
 export interface SubWalletsJSON {
-    publicSpendKeys: string[],
+    publicSpendKeys: string[];
 
-    subWallet: SubWalletJSON[],
+    subWallet: SubWalletJSON[];
 
-    transactions: TransactionJSON[],
+    transactions: TransactionJSON[];
 
-    lockedTransactions: TransactionJSON[],
+    lockedTransactions: TransactionJSON[];
 
-    privateViewKey: string,
+    privateViewKey: string;
 
-    isViewWallet: boolean,
+    isViewWallet: boolean;
 
-    txPrivateKeys: TxPrivateKeysJSON[]
+    txPrivateKeys: TxPrivateKeysJSON[];
 }
 
 export interface TxPrivateKeysJSON {
-    transactionHash: string,
+    transactionHash: string;
 
-    txPrivateKey: string
+    txPrivateKey: string;
 }
 
 export function txPrivateKeysToVector(txPrivateKeys: Map<string, string>): TxPrivateKeysJSON[] {
-    let arr: TxPrivateKeysJSON[] = new Array();
+    const arr: TxPrivateKeysJSON[] = new Array();
 
-    for (let [hash, privateKey] of txPrivateKeys) {
+    for (const [hash, privateKey] of txPrivateKeys) {
         arr.push({transactionHash: hash, txPrivateKey: privateKey});
     }
 
@@ -97,55 +97,55 @@ export function txPrivateKeysToVector(txPrivateKeys: Map<string, string>): TxPri
 }
 
 export interface TransfersJSON {
-    amount: number,
+    amount: number;
 
-    publicKey: string
+    publicKey: string;
 }
 
 export function transfersToVector(transfers: Map<string, number>): TransfersJSON[] {
-    let arr: TransfersJSON[] = new Array();
+    const arr: TransfersJSON[] = new Array();
 
-    for (let [publicKey, amount] of transfers) {
-        arr.push({amount: amount, publicKey: publicKey});
+    for (const [publicKey, amount] of transfers) {
+        arr.push({amount, publicKey});
     }
 
     return arr;
 }
 
 export interface TransactionInputJSON {
-    keyImage: string,
+    keyImage: string;
 
-    amount: number,
+    amount: number;
 
-    blockHeight: number,
+    blockHeight: number;
 
-    transactionPublicKey: string,
+    transactionPublicKey: string;
 
-    transactionIndex: number,
+    transactionIndex: number;
 
-    globalOutputIndex: number,
+    globalOutputIndex: number;
 
-    key: string,
+    key: string;
 
-    spendHeight: number,
+    spendHeight: number;
 
-    unlockTime: number,
+    unlockTime: number;
 
-    parentTransactionHash: string
+    parentTransactionHash: string;
 }
 
 export interface UnconfirmedInputJSON {
-    amount: number,
+    amount: number;
 
-    key: string,
+    key: string;
 
-    parentTransactionHash: string
+    parentTransactionHash: string;
 }
 
 export interface SynchronizationStatusJSON {
-    blockHashCheckpoints: string[],
+    blockHashCheckpoints: string[];
 
-    lastKnownBlockHashes: string[],
+    lastKnownBlockHashes: string[];
 
-    lastKnownBlockHeight: number
+    lastKnownBlockHeight: number;
 }

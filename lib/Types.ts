@@ -1,13 +1,29 @@
-// Copyright (c) 2018, Zpalmtree 
-// 
+// Copyright (c) 2018, Zpalmtree
+//
 // Please see the included LICENSE file for more information.
 
-import { 
-    TransactionJSON, transfersToVector, TransactionInputJSON,
-    UnconfirmedInputJSON 
+import {
+    TransactionInputJSON, TransactionJSON, transfersToVector,
+    UnconfirmedInputJSON,
 } from './JsonSerialization';
 
 export class Block {
+
+    /* The coinbase transaction contained in this block */
+    public readonly coinbaseTransaction: RawCoinbaseTransaction;
+
+    /* The standard transactions contain in this block (may be empty) */
+    public readonly transactions: RawTransaction[];
+
+    /* The height of this block in the block chain */
+    public readonly blockHeight: number;
+
+    /* The hash of the block */
+    public readonly blockHash: string;
+
+    /* The timestamp of this block */
+    public readonly blockTimestamp: number;
+
     constructor(
         coinbaseTransaction: RawCoinbaseTransaction,
         transactions: RawTransaction[],
@@ -21,24 +37,23 @@ export class Block {
         this.blockHash = blockHash;
         this.blockTimestamp = blockTimestamp;
     }
-
-    /* The coinbase transaction contained in this block */
-    readonly coinbaseTransaction: RawCoinbaseTransaction;
-
-    /* The standard transactions contain in this block (may be empty) */
-    readonly transactions: RawTransaction[];
-
-    /* The height of this block in the block chain */
-    readonly blockHeight: number;
-
-    /* The hash of the block */
-    readonly blockHash: string;
-
-    /* The timestamp of this block */
-    readonly blockTimestamp: number;
 }
 
 export class RawCoinbaseTransaction {
+
+    /* The outputs of this transaction */
+    public readonly keyOutputs: KeyOutput[];
+
+    /* The hash of this transaction */
+    public readonly hash: string;
+
+    /* The public key of this transaction */
+    public readonly transactionPublicKey: string;
+
+    /* When this transaction is unlocked for spending - can be interpreted as
+       both a block height and a unix timestamp */
+    public readonly unlockTime: number;
+
     constructor(
         keyOutputs: KeyOutput[],
         hash: string,
@@ -50,22 +65,16 @@ export class RawCoinbaseTransaction {
         this.transactionPublicKey = transactionPublicKey;
         this.unlockTime = unlockTime;
     }
-
-    /* The outputs of this transaction */
-    readonly keyOutputs: KeyOutput[];
-
-    /* The hash of this transaction */
-    readonly hash: string;
-
-    /* The public key of this transaction */
-    readonly transactionPublicKey: string;
-
-    /* When this transaction is unlocked for spending - can be interpreted as
-       both a block height and a unix timestamp */
-    readonly unlockTime: number;
 }
 
 export class RawTransaction extends RawCoinbaseTransaction {
+
+    /* The payment ID this transaction has. May be empty string. */
+    public readonly paymentID: string;
+
+    /* The inputs this transaction has */
+    public readonly keyInputs: KeyInput[];
+
     constructor(
         keyOutputs: KeyOutput[],
         hash: string,
@@ -79,15 +88,59 @@ export class RawTransaction extends RawCoinbaseTransaction {
         this.paymentID = paymentID;
         this.keyInputs = keyInputs;
     }
-
-    /* The payment ID this transaction has. May be empty string. */
-    readonly paymentID: string;
-
-    /* The inputs this transaction has */
-    readonly keyInputs: KeyInput[];
 }
 
 export class Transaction {
+
+    public static fromJSON(json: TransactionJSON): Transaction {
+        const transaction = Object.create(Transaction.prototype);
+
+        return Object.assign(transaction, json, {
+            transfers: new Map<string, number>(
+                json.transfers.map((x) => [x.publicKey, x.amount] as [string, number]),
+            ),
+
+            hash: json.hash,
+
+            fee: json.fee,
+
+            blockHeight: json.blockHeight,
+
+            timestamp: json.timestamp,
+
+            paymentID: json.paymentID,
+
+            unlockTime: json.unlockTime,
+
+            isCoinbaseTransactions: json.isCoinbaseTransaction,
+        });
+    }
+
+    /* A mapping of subwallets to amounts received in this transfer */
+    public transfers: Map<string, number>;
+
+    /* The hash of this transaction */
+    public readonly hash: string;
+
+    /* The mining fee paid on this transaction */
+    public readonly fee: number;
+
+    /* The block height this transaction is contained in */
+    public readonly blockHeight: number;
+
+    /* The timestamp of the block this transaction is contained in */
+    public readonly timestamp: number;
+
+    /* The payment ID this transaction has. May be empty string. */
+    public readonly paymentID: string;
+
+    /* When this transaction is unlocked for spending - can be interpreted as
+       both a block height and a unix timestamp */
+    public readonly unlockTime: number;
+
+    /* Was this tranasction a miner reward / coinbase transaction */
+    public readonly isCoinbaseTransaction: boolean;
+
     constructor(
         transfers: Map<string, number>,
         hash: string,
@@ -108,31 +161,7 @@ export class Transaction {
         this.isCoinbaseTransaction = isCoinbaseTransaction;
     }
 
-    static fromJSON(json: TransactionJSON): Transaction {
-        let transaction = Object.create(Transaction.prototype);
-
-        return Object.assign(transaction, json, {
-            transfers: new Map<string, number>(
-                json.transfers.map(x => [x.publicKey, x.amount] as [string, number])
-            ),
-
-            hash: json.hash,
-
-            fee: json.fee,
-
-            blockHeight: json.blockHeight,
-
-            timestamp: json.timestamp,
-
-            paymentID: json.paymentID,
-
-            unlockTime: json.unlockTime,
-
-            isCoinbaseTransactions: json.isCoinbaseTransaction
-        });
-    }
-
-    toJSON() : TransactionJSON {
+    public toJSON(): TransactionJSON {
         return {
             transfers: transfersToVector(this.transfers),
 
@@ -148,37 +177,72 @@ export class Transaction {
 
             unlockTime: this.unlockTime,
 
-            isCoinbaseTransaction: this.isCoinbaseTransaction
-        }
+            isCoinbaseTransaction: this.isCoinbaseTransaction,
+        };
     }
-
-    /* A mapping of subwallets to amounts received in this transfer */
-    transfers: Map<string, number>;
-
-    /* The hash of this transaction */
-    readonly hash: string;
-
-    /* The mining fee paid on this transaction */
-    readonly fee: number;
-
-    /* The block height this transaction is contained in */
-    readonly blockHeight: number;
-
-    /* The timestamp of the block this transaction is contained in */
-    readonly timestamp: number;
-
-    /* The payment ID this transaction has. May be empty string. */
-    readonly paymentID: string;
-
-    /* When this transaction is unlocked for spending - can be interpreted as
-       both a block height and a unix timestamp */
-    readonly unlockTime: number;
-
-    /* Was this tranasction a miner reward / coinbase transaction */
-    readonly isCoinbaseTransaction: boolean;
 }
 
 export class TransactionInput {
+
+    public static fromJSON(json: TransactionInputJSON): TransactionInput {
+        const transactionInput = Object.create(TransactionInput.prototype);
+
+        return Object.assign(transactionInput, json, {
+            keyImage: json.keyImage,
+
+            amount: json.amount,
+
+            blockHeight: json.blockHeight,
+
+            transactionPublicKey: json.transactionPublicKey,
+
+            transactionIndex: json.transactionIndex,
+
+            globalOutputIndex: json.globalOutputIndex,
+
+            key: json.key,
+
+            spendHeight: json.spendHeight,
+
+            unlockTime: json.unlockTime,
+
+            parentTransactionHash: json.parentTransactionHash,
+        });
+    }
+
+    /* The key image of this input */
+    public readonly keyImage: string;
+
+    /* The value of this input */
+    public readonly amount: number;
+
+    /* The height this transaction was included in. Needed for removing forked
+       transactions. */
+    public readonly blockHeight: number;
+
+    /* The public key of this transaction */
+    public readonly transactionPublicKey: string;
+
+    /* The index of this input in the transaction */
+    public readonly transactionIndex: number;
+
+    /* The index of this output in the global 'DB' */
+    public readonly globalOutputIndex: number;
+
+    /* The transaction key we took from the key outputs. NOT the same as the
+       transaction public key. Confusing, I know. */
+    public readonly key: string;
+
+    /* The height this transaction was spent at. Zero if unspent. */
+    public spendHeight: number;
+
+    /* When this transaction is unlocked for spending - can be interpreted as
+       both a block height and a unix timestamp */
+    public readonly unlockTime: number;
+
+    /* The transaction hash of the transaction that contains this input */
+    public readonly parentTransactionHash: string;
+
     constructor(
         keyImage: string,
         amount: number,
@@ -203,33 +267,7 @@ export class TransactionInput {
         this.parentTransactionHash = parentTransactionHash;
     }
 
-    static fromJSON(json: TransactionInputJSON): TransactionInput {
-        let transactionInput = Object.create(TransactionInput.prototype);
-
-        return Object.assign(transactionInput, json, {
-            keyImage: json.keyImage,
-
-            amount: json.amount,
-
-            blockHeight: json.blockHeight,
-
-            transactionPublicKey: json.transactionPublicKey,
-
-            transactionIndex: json.transactionIndex,
-
-            globalOutputIndex: json.globalOutputIndex,
-
-            key: json.key,
-
-            spendHeight: json.spendHeight,
-
-            unlockTime: json.unlockTime,
-
-            parentTransactionHash: json.parentTransactionHash
-        });
-    }
-
-    toJSON() : TransactionInputJSON {
+    public toJSON(): TransactionInputJSON {
         return {
             keyImage: this.keyImage,
 
@@ -249,49 +287,37 @@ export class TransactionInput {
 
             unlockTime: this.unlockTime,
 
-            parentTransactionHash: this.parentTransactionHash
-        }
+            parentTransactionHash: this.parentTransactionHash,
+        };
     }
-
-
-    /* The key image of this input */
-    readonly keyImage: string;
-
-    /* The value of this input */
-    readonly amount: number;
-
-    /* The height this transaction was included in. Needed for removing forked
-       transactions. */
-    readonly blockHeight: number;
-
-    /* The public key of this transaction */
-    readonly transactionPublicKey: string;
-
-    /* The index of this input in the transaction */
-    readonly transactionIndex: number;
-
-    /* The index of this output in the global 'DB' */
-    readonly globalOutputIndex: number;
-
-    /* The transaction key we took from the key outputs. NOT the same as the
-       transaction public key. Confusing, I know. */
-    readonly key: string;
-
-    /* The height this transaction was spent at. Zero if unspent. */
-    spendHeight: number;
-
-    /* When this transaction is unlocked for spending - can be interpreted as
-       both a block height and a unix timestamp */
-    readonly unlockTime: number;
-
-    /* The transaction hash of the transaction that contains this input */
-    readonly parentTransactionHash: string;
 }
 
 /* A structure just used to display locked balance, due to change from
    sent transactions. We just need the amount and a unique identifier
    (hash+key), since we can't spend it, we don't need all the other stuff */
 export class UnconfirmedInput {
+
+    public static fromJSON(json: UnconfirmedInputJSON): UnconfirmedInput {
+        const unconfirmedInput = Object.create(UnconfirmedInput.prototype);
+
+        return Object.assign(unconfirmedInput, json, {
+            amount: json.amount,
+
+            key: json.key,
+
+            parentTransactionHash: json.parentTransactionHash,
+        });
+    }
+
+    /* The amount of the number */
+    public readonly amount: number;
+
+    /* The transaction key we took from the key outputs. */
+    public readonly key: string;
+
+    /* The transaction hash of the transaction that contains this input */
+    public readonly parentTransactionHash: string;
+
     constructor(
         amount: number,
         key: string,
@@ -302,39 +328,29 @@ export class UnconfirmedInput {
         this.parentTransactionHash = parentTransactionHash;
     }
 
-    static fromJSON(json: UnconfirmedInputJSON): UnconfirmedInput {
-        let unconfirmedInput = Object.create(UnconfirmedInput.prototype);
-
-        return Object.assign(unconfirmedInput, json, {
-            amount: json.amount,
-
-            key: json.key,
-
-            parentTransactionHash: json.parentTransactionHash
-        });
-    }
-
-    toJSON() : UnconfirmedInputJSON {
+    public toJSON(): UnconfirmedInputJSON {
         return {
             amount: this.amount,
 
             key: this.key,
 
-            parentTransactionHash: this.parentTransactionHash
-        }
+            parentTransactionHash: this.parentTransactionHash,
+        };
     }
-
-    /* The amount of the number */
-    readonly amount: number;
-
-    /* The transaction key we took from the key outputs. */
-    readonly key: string;
-
-    /* The transaction hash of the transaction that contains this input */
-    readonly parentTransactionHash: string;
 }
 
 export class KeyOutput {
+
+    /* The output key */
+    public readonly key: string;
+
+    /* The output amount */
+    public readonly amount: number;
+
+    /* The index of the amount in the DB. The blockchain cache api returns
+       this, but the regular daemon does not. */
+    public readonly globalIndex?: number;
+
     constructor(
         key: string,
         amount: number) {
@@ -342,19 +358,20 @@ export class KeyOutput {
         this.key = key;
         this.amount = amount;
     }
-
-    /* The output key */
-    readonly key: string;
-
-    /* The output amount */
-    readonly amount: number;
-
-    /* The index of the amount in the DB. The blockchain cache api returns
-       this, but the regular daemon does not. */
-    readonly globalIndex?: number;
 }
 
 export class KeyInput {
+
+    /* The amount of this input */
+    public readonly amount: number;
+
+    /* The key image of this input */
+    public readonly keyImage: string;
+
+    /* The output indexes of the fake and real outputs this input was created
+       from, in the global 'DB' */
+    public readonly outputIndexes: number[];
+
     constructor(
         amount: number,
         keyImage: string,
@@ -364,14 +381,14 @@ export class KeyInput {
         this.keyImage = keyImage;
         this.outputIndexes = outputIndexes;
     }
+}
 
-    /* The amount of this input */
-    readonly amount: number;
+export class TransactionData {
+    public readonly transactionsToAdd: Transaction[] = new Array();
 
-    /* The key image of this input */
-    readonly keyImage: string;
+    /* Mapping of public spend key to inputs */
+    public readonly inputsToAdd: Map<string, TransactionInput> = new Map();
 
-    /* The output indexes of the fake and real outputs this input was created
-       from, in the global 'DB' */
-    readonly outputIndexes: number[];
+    /* Mapping of public spend key to key image */
+    public readonly keyImagesToMarkSpent: Map<string, string> = new Map();
 }

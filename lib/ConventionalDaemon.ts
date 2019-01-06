@@ -1,28 +1,17 @@
-// Copyright (c) 2018, Zpalmtree 
-// 
+// Copyright (c) 2018, Zpalmtree
+//
 // Please see the included LICENSE file for more information.
 
 import { IDaemon } from './IDaemon';
 import { Block } from './Types';
-import { WalletError, WalletErrorCode } from './WalletError';
 import { validateAddresses } from './ValidateParameters';
+import { WalletError, WalletErrorCode } from './WalletError';
 
 import config from './Config';
 
 const TurtleCoind = require('turtlecoin-rpc').TurtleCoind;
 
 export class ConventionalDaemon implements IDaemon {
-    constructor(daemonHost: string, daemonPort: number) {
-        this.daemonHost = daemonHost;
-        this.daemonPort = daemonPort;
-
-        this.daemon = new TurtleCoind({
-            host: daemonHost,
-            port: daemonPort,
-            timeout: config.requestTimeout,
-            ssl: false
-        });
-    }
 
     private readonly daemonHost: string;
 
@@ -42,12 +31,28 @@ export class ConventionalDaemon implements IDaemon {
 
     private lastKnownHashrate = 0;
 
-    async init(): Promise<void> {
+    constructor(daemonHost: string, daemonPort: number) {
+        this.daemonHost = daemonHost;
+        this.daemonPort = daemonPort;
+
+        this.daemon = new TurtleCoind({
+            host: daemonHost,
+            port: daemonPort,
+            ssl: false,
+            timeout: config.requestTimeout,
+        });
+    }
+
+    public getNetworkBlockCount(): number {
+        return this.networkBlockCount;
+    }
+
+    public async init(): Promise<void> {
         /* Note - if one promise throws, the other will be cancelled */
         await Promise.all([this.getDaemonInfo(), this.getFeeInfo()]);
     }
 
-    async getDaemonInfo(): Promise<void> {
+    public async getDaemonInfo(): Promise<void> {
         let info;
 
         try {
@@ -61,14 +66,29 @@ export class ConventionalDaemon implements IDaemon {
 
         /* Height returned is one more than the current height - but we
            don't want to overflow is the height returned is zero */
-        if (this.networkBlockCount != 0)
-        {
+        if (this.networkBlockCount !== 0) {
             this.networkBlockCount--;
         }
 
         this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
         this.lastKnownHashrate = info.difficulty / config.blockTargetTime;
+    }
+
+    public nodeFee(): [string, number] {
+        return [this.feeAddress, this.feeAmount];
+    }
+
+    public async getWalletSyncData(
+        blockHashCheckpoints: string[],
+        startHeight: number,
+        startTimestamp: number): Promise<Block[]> {
+
+        return this.daemon.getWalletSyncData({
+            blockHashCheckpoints,
+            startHeight,
+            startTimestamp,
+        });
     }
 
     private async getFeeInfo(): Promise<void> {
@@ -80,14 +100,14 @@ export class ConventionalDaemon implements IDaemon {
             return;
         }
 
-        if (feeInfo.status != 'OK') {
+        if (feeInfo.status !== 'OK') {
             return;
         }
 
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletErrorCode = validateAddresses(
-            new Array(feeInfo.address), integratedAddressesAllowed
+            new Array(feeInfo.address), integratedAddressesAllowed,
         ).errorCode;
 
         if (err !== WalletErrorCode.SUCCESS) {
@@ -98,21 +118,5 @@ export class ConventionalDaemon implements IDaemon {
             this.feeAddress = feeInfo.address;
             this.feeAmount = feeInfo.amount;
         }
-    }
-
-    nodeFee(): [string, number] {
-        return [this.feeAddress, this.feeAmount];
-    }
-
-    async getWalletSyncData(
-        blockHashCheckpoints: string[],
-        startHeight: number,
-        startTimestamp: number): Promise<Block[]> {
-
-        return this.daemon.getWalletSyncData({
-            startHeight: startHeight,
-            startTimestamp: startTimestamp,
-            blockHashCheckpoints: blockHashCheckpoints
-        });
     }
 }

@@ -1,14 +1,19 @@
 import * as colors from 'colors/safe';
+
 import {
-    WalletBackend, ConventionalDaemon, WalletError, WalletErrorCode
+    ConventionalDaemon, WalletBackend, WalletError, WalletErrorCode,
 } from '../lib/index';
 
 class Tester {
+
+    public totalTests: number = 0;
+    public testsFailed: number = 0;
+    public testsPassed: number = 0;
     constructor() {
         console.log(colors.yellow('=== Started testing ===\n'));
     }
 
-    test(
+    public test(
         testFunc: () => boolean,
         testDescription: string,
         successMsg: string,
@@ -21,26 +26,22 @@ class Tester {
         this.totalTests++;
 
         if (success) {
-            console.log(colors.green(' ✔️ ') + ' ' + successMsg);
+            console.log(colors.green(' ✔️  ') + successMsg);
             this.testsPassed++;
         } else {
-            console.log(colors.red(' ❌') + ' ' + failMsg);
+            console.log(colors.red(' ❌ ') + failMsg);
             this.testsFailed++;
         }
 
         console.log('');
     }
 
-    summary(): void {
+    public summary(): void {
         console.log(colors.yellow('=== Testing complete! ==='));
         console.log(colors.white('Total tests: ') + colors.yellow(this.totalTests.toString()));
         console.log(colors.white('Tests passed: ') + colors.green(this.testsPassed.toString()));
         console.log(colors.white('Tests failed: ') + colors.red(this.testsFailed.toString()));
     }
-
-    totalTests: number = 0;
-    testsFailed: number = 0;
-    testsPassed: number = 0;
 }
 
 /* Setup test class */
@@ -81,8 +82,10 @@ tester.test(() => {
 
 tester.test(() => {
     const seedWallet = WalletBackend.importWalletFromSeed(
-        daemon, 0, 
-        'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon tadpoles hacksaw dormant hence abort listen history atom cadets stylishly snout vegan girth guest history'
+        daemon, 0,
+        'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon ' +
+        'tadpoles hacksaw dormant hence abort listen history atom cadets stylishly ' +
+        'snout vegan girth guest history',
     ) as WalletBackend;
 
     const [privateSpendKey, privateViewKey] = seedWallet.getPrimaryAddressPrivateKeys();
@@ -98,12 +101,14 @@ tester.test(() => {
     const keyWallet = WalletBackend.importWalletFromKeys(
         daemon, 0,
         '688e5229df6463ec4c27f6ee11c3f1d3d4b4d2480c0aabe64fb807182cfdc801',
-        'd61a57a59318d70ff77cc7f8ad7f62887c828da1d5d3f3b0d2f7d3fa596c2904'
+        'd61a57a59318d70ff77cc7f8ad7f62887c828da1d5d3f3b0d2f7d3fa596c2904',
     ) as WalletBackend;
 
     const seed = keyWallet.getMnemonicSeed() as string;
 
-    return seed === 'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon tadpoles hacksaw dormant hence abort listen history atom cadets stylishly snout vegan girth guest history';
+    return seed === 'skulls woozy ouch summon gifts huts waffle ourselves obtains ' +
+                    'hexagon tadpoles hacksaw dormant hence abort listen history ' +
+                    'atom cadets stylishly snout vegan girth guest history';
 
 }, 'Verifying key restore works correctly',
    'Deterministic key wallet has correct seed',
@@ -113,7 +118,7 @@ tester.test(() => {
     const keyWallet = WalletBackend.importWalletFromKeys(
         daemon, 0,
         '1f3f6c220dd9f97619dbf44d967f79f3041b9b1c63da2c895f980f1411d5d704',
-        '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f'
+        '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f',
     ) as WalletBackend;
 
     const err = keyWallet.getMnemonicSeed() as WalletError;
@@ -123,5 +128,20 @@ tester.test(() => {
 }, 'Verifying non deterministic wallet doesn\'t create seed',
    'Non deterministic wallet has no seed',
    'Non deterministic wallet has seed!');
+
+tester.test(() => {
+    const viewWallet = WalletBackend.importViewWallet(
+        daemon, 0,
+        '3c6cfe7a29a371278abd9f5725a3d2af5eb73d88b4ed9b8d6c2ff993bbc4c20a',
+        'TRTLuybJFCU8BjP18bH3VZCNAu1fZ2r3d85SsU2w3VnJAHoRfnzLKgtTK2b58nfwDu59hKxwVuSMhTN31gmUW8nN9aoAN9N8Qyb',
+    ) as WalletBackend;
+
+    const [privateSpendKey, privateViewKey] = viewWallet.getPrimaryAddressPrivateKeys();
+
+    return privateSpendKey === '0'.repeat(64);
+
+}, 'Verifying view wallet has null private spend key',
+   'View wallet has null private spend key',
+   'View wallet has private spend key!');
 
 tester.summary();

@@ -1,14 +1,59 @@
-// Copyright (c) 2018, Zpalmtree 
-// 
+// Copyright (c) 2018, Zpalmtree
+//
 // Please see the included LICENSE file for more information.
 
 import { CryptoUtils } from './CnUtils';
-import { Transaction } from './Types';
-import { SubWallet } from './SubWallet';
 import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';
-import { WalletError, WalletErrorCode, SUCCESS } from './WalletError';
+import { SubWallet } from './SubWallet';
+import { Transaction, TransactionInput } from './Types';
+import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 export class SubWallets {
+
+    public static fromJSON(json: SubWalletsJSON): SubWallets {
+        const subWallets = Object.create(SubWallets.prototype);
+
+        return Object.assign(subWallets, json, {
+            publicSpendKeys: json.publicSpendKeys,
+
+            subWallets: new Map<string, SubWallet>(
+                json.subWallet.map((x) => [x.publicSpendKey, SubWallet.fromJSON(x)] as [string, SubWallet]),
+            ),
+
+            transactions: json.transactions.map((x) => Transaction.fromJSON(x)),
+
+            lockedTransactions: json.lockedTransactions.map((x) => Transaction.fromJSON(x)),
+
+            privateViewKey: json.privateViewKey,
+
+            isViewWallet: json.isViewWallet,
+
+            transactionPrivateKeys: new Map<string, string>(
+                json.txPrivateKeys.map((x) => [x.transactionHash, x.txPrivateKey] as [string, string]),
+            ),
+        });
+    }
+
+    /* The public spend keys this wallet contains. Used for verifying if a
+       transaction is ours. */
+    public publicSpendKeys: string[] = new Array();
+
+    /* Mapping of public spend key to subwallet */
+    private subWallets: Map<string, SubWallet> = new Map();
+
+    /* Our transactions */
+    private transactions: Transaction[] = new Array();
+
+    private lockedTransactions: Transaction[] = new Array();
+
+    /* The shared private view key */
+    private readonly privateViewKey: string;
+
+    /* Whether the wallet is a view only wallet (cannot send transactions, only can view) */
+    private readonly isViewWallet: boolean;
+
+    /* A mapping of transaction hashes, to transaction private keys */
+    private transactionPrivateKeys: Map<string, string> = new Map();
     /* Private spend key is optional if it's a view wallet */
     constructor(
         address: string,
@@ -33,59 +78,35 @@ export class SubWallets {
 
         const subWallet = new SubWallet(
             address, scanHeight, timestamp, publicKeys.publicSpendKey,
-            privateSpendKey
+            privateSpendKey,
         );
 
         this.subWallets.set(publicKeys.publicSpendKey, subWallet);
     }
 
-    static fromJSON(json: SubWalletsJSON): SubWallets {
-        let subWallets = Object.create(SubWallets.prototype);
-
-        return Object.assign(subWallets, json, {
-            publicSpendKeys: json.publicSpendKeys,
-
-            subWallets: new Map<string, SubWallet>(
-                json.subWallet.map(x => [x.publicSpendKey, SubWallet.fromJSON(x)] as [string, SubWallet])
-            ),
-
-            transactions: json.transactions.map(x => Transaction.fromJSON(x)),
-
-            lockedTransactions: json.lockedTransactions.map(x => Transaction.fromJSON(x)),
-
-            privateViewKey: json.privateViewKey,
-
-            isViewWallet: json.isViewWallet,
-
-            transactionPrivateKeys: new Map<string, string>(
-                json.txPrivateKeys.map(x => [x.transactionHash, x.txPrivateKey] as [string, string])
-            )
-        });
-    }
-
-    toJSON(): SubWalletsJSON {
+    public toJSON(): SubWalletsJSON {
         return {
             publicSpendKeys: this.publicSpendKeys,
 
-            subWallet: [...this.subWallets.values()].map(x => x.toJSON()),
+            subWallet: [...this.subWallets.values()].map((x) => x.toJSON()),
 
-            transactions: this.transactions.map(x => x.toJSON()),
+            transactions: this.transactions.map((x) => x.toJSON()),
 
-            lockedTransactions: this.lockedTransactions.map(x => x.toJSON()),
+            lockedTransactions: this.lockedTransactions.map((x) => x.toJSON()),
 
             privateViewKey: this.privateViewKey,
 
             isViewWallet: this.isViewWallet,
 
-            txPrivateKeys: txPrivateKeysToVector(this.transactionPrivateKeys)
+            txPrivateKeys: txPrivateKeysToVector(this.transactionPrivateKeys),
         };
     }
 
-    getPrivateViewKey(): string {
+    public getPrivateViewKey(): string {
         return this.privateViewKey;
     }
 
-    getPrivateSpendKey(publicSpendKey: string): [WalletError, string] {
+    public getPrivateSpendKey(publicSpendKey: string): [WalletError, string] {
         const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
         if (!subWallet) {
@@ -96,8 +117,8 @@ export class SubWallets {
     }
 
     /* Gets the 'primary' subwallet */
-    getPrimarySubWallet(): SubWallet {
-        for (let [publicKey, subWallet] of this.subWallets) {
+    public getPrimarySubWallet(): SubWallet {
+        for (const [publicKey, subWallet] of this.subWallets) {
             if (subWallet.isPrimaryAddress()) {
                 return subWallet;
             }
@@ -106,32 +127,35 @@ export class SubWallets {
         throw new Error('Wallet has no primary address!');
     }
 
-    getPrimaryAddress(): string {
+    public getPrimaryAddress(): string {
         return this.getPrimarySubWallet().getAddress();
     }
 
-    getPrimaryPrivateSpendKey(): string {
+    public getPrimaryPrivateSpendKey(): string {
         return this.getPrimarySubWallet().getPrivateSpendKey();
     }
 
-    /* The public spend keys this wallet contains. Used for verifying if a 
-       transaction is ours. */
-    public publicSpendKeys: string[] = new Array();
+    public getLockedTransactionHashes(): string[] {
+        return this.lockedTransactions.map((x) => x.hash);
+    }
 
-    /* Mapping of public spend key to subwallet */
-    private subWallets: Map<string, SubWallet> = new Map();
+    public addTransaction(transaction: Transaction): void {
+        /* TODO */
+    }
 
-    /* Our transactions */
-    private transactions: Transaction[] = new Array();
+    public storeTransactionInput(publicKey: string, input: TransactionInput): void {
+        /* TODO */
+    }
 
-    private lockedTransactions: Transaction[] = new Array();
+    public markInputAsSpent(publicKey: string, keyImage: string, blockHeight: number): void {
+        /* TODO */
+    }
 
-    /* The shared private view key */
-    private readonly privateViewKey: string;
+    public removeCancelledTransaction(transactionHash: string): void {
+        /* TODO */
+    }
 
-    /* Whether the wallet is a view only wallet (cannot send transactions, only can view) */
-    private readonly isViewWallet: boolean;
-
-    /* A mapping of transaction hashes, to transaction private keys */
-    private transactionPrivateKeys: Map<string, string> = new Map();
+    public removeForkedTransactions(blockHeight: number): void {
+        /* TODO */
+    }
 }

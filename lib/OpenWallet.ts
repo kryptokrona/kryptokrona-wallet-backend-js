@@ -1,12 +1,12 @@
-// Copyright (c) 2018, Zpalmtree 
-// 
+// Copyright (c) 2018, Zpalmtree
+//
 // Please see the included LICENSE file for more information.
 
-import { WalletError, WalletErrorCode } from './WalletError';
-import { PBKDF2_ITERATIONS, IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER } from './Constants';
-import * as pbkdf2 from 'pbkdf2';
-import * as fs from 'fs'; 
 import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as pbkdf2 from 'pbkdf2';
+import { IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER, PBKDF2_ITERATIONS } from './Constants';
+import { WalletError, WalletErrorCode } from './WalletError';
 
 /* Open the wallet and return a JSON string */
 export function openWallet(filename: string, password: string): string | WalletError {
@@ -21,7 +21,7 @@ export function openWallet(filename: string, password: string): string | WalletE
     /* Take a slice containing the wallet identifier magic bytes */
     const magicBytes1: Buffer = data.slice(0, IS_A_WALLET_IDENTIFIER.length);
 
-    if (magicBytes1.compare(IS_A_WALLET_IDENTIFIER) != 0) {
+    if (magicBytes1.compare(IS_A_WALLET_IDENTIFIER) !== 0) {
         return new WalletError(WalletErrorCode.NOT_A_WALLET_FILE);
     }
 
@@ -53,7 +53,7 @@ export function openWallet(filename: string, password: string): string | WalletE
     const magicBytes2: Buffer = decrypted.slice(0, IS_CORRECT_PASSWORD_IDENTIFIER.length);
 
     /* Verify the magic bytes are present */
-    if (magicBytes2.compare(IS_CORRECT_PASSWORD_IDENTIFIER) != 0) {
+    if (magicBytes2.compare(IS_CORRECT_PASSWORD_IDENTIFIER) !== 0) {
         return new WalletError(WalletErrorCode.WRONG_PASSWORD);
     }
 

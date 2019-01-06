@@ -1,5 +1,5 @@
-// Copyright (c) 2018, Zpalmtree 
-// 
+// Copyright (c) 2018, Zpalmtree
+//
 // Please see the included LICENSE file for more information.
 
 import deepEqual = require('deep-equal');
@@ -7,76 +7,27 @@ import deepEqual = require('deep-equal');
 import config from './Config';
 
 import { CryptoUtils } from './CnUtils';
-import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
-import { IDaemon } from './IDaemon';
-import { SubWallets } from './SubWallets';
-import { isHex64 } from './Utilities';
-import { openWallet } from './OpenWallet';
 import { WALLET_FILE_FORMAT_VERSION } from './Constants';
-import { WalletSynchronizer } from './WalletSynchronizer';
+import { IDaemon } from './IDaemon';
 import { WalletBackendJSON } from './JsonSerialization';
-import { validateAddresses } from './ValidateParameters';
 import { Metronome } from './Metronome';
-import { addressToKeys } from './Utilities';
+import { openWallet } from './OpenWallet';
+import { SubWallets } from './SubWallets';
+import { Block, TransactionData } from './Types';
+import { addressToKeys, isHex64 } from './Utilities';
+import { validateAddresses } from './ValidateParameters';
+import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
+import { WalletSynchronizer } from './WalletSynchronizer';
 
 export class WalletBackend {
-    constructor(
-        daemon: IDaemon,
-        address: string,
-        scanHeight: number,
-        newWallet: boolean,
-        privateViewKey: string,
-        privateSpendKey?: string) {
-
-        this.subWallets = new SubWallets(
-            address, scanHeight, newWallet, privateViewKey, privateSpendKey
-        );
-
-        let timestamp = 0;
-
-        if (newWallet) {
-            timestamp = new Date().valueOf();
-        }
-
-        this.walletSynchronizer = new WalletSynchronizer(
-            daemon, timestamp, scanHeight, privateViewKey
-        );
-
-        this.daemon = daemon;
-
-        this.mainLoopExecutor = new Metronome(
-            this.mainLoop.bind(this), config.mainLoopInterval
-        );
-    }
-
-    /* Fetch initial daemon info and fee. Should we do this in the constructor
-       instead...? Well... not much point wasting time if they just want to
-       make a wallet */
-    async init(): Promise<void> {
-        await this.daemon.init();
-    }
-
-    /* Starts the main loop */
-    start(): void {
-        this.mainLoopExecutor.start();
-    }
-
-    /* Stops the main loop */
-    stop(): void {
-        this.mainLoopExecutor.stop();
-    }
-
-    mainLoop(): void {
-        this.daemon.getDaemonInfo();
-    }
 
     /* Opens a wallet given a filepath and a password */
-    static openWalletFromFile(
+    public static openWalletFromFile(
         daemon: IDaemon,
         filename: string,
         password: string): WalletBackend | WalletError {
 
-        const walletJSON = openWallet(filename, password)
+        const walletJSON = openWallet(filename, password);
 
         if (walletJSON instanceof WalletError) {
             return walletJSON as WalletError;
@@ -86,19 +37,20 @@ export class WalletBackend {
     }
 
     /* Opens a wallet from a valid wallet JSON string (unencrypted) */
-    static loadWalletFromJSON(daemon: IDaemon, json: string): WalletBackend | WalletError {
+    public static loadWalletFromJSON(daemon: IDaemon, json: string): WalletBackend | WalletError {
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
             wallet.setDaemon(daemon);
             return wallet;
         } catch (err) {
+            console.log(err);
             return new WalletError(WalletErrorCode.WALLET_FILE_CORRUPTED);
         }
     }
 
     /* Loads a wallet from a WalletBackendJSON */
-    static fromJSON(json: WalletBackendJSON): WalletBackend {
-        let wallet = Object.create(WalletBackend.prototype);
+    public static fromJSON(json: WalletBackendJSON): WalletBackend {
+        const wallet = Object.create(WalletBackend.prototype);
 
         const version = json.walletFileFormatVersion;
 
@@ -108,26 +60,17 @@ export class WalletBackend {
 
         return Object.assign(wallet, json, {
             subWallets: SubWallets.fromJSON(json.subWallets),
-            walletSynchronizer: WalletSynchronizer.fromJSON(json.walletSynchronizer)
+            walletSynchronizer: WalletSynchronizer.fromJSON(json.walletSynchronizer),
         });
     }
 
     /* Utility function for nicer JSON parsing function */
-    static reviver(key: string, value: any): any {
-        return key === "" ? WalletBackend.fromJSON(value) : value;
-    }
-
-    /* Converts recursively from typescript to JSON data. Can be dumped to file */
-    toJSON(): WalletBackendJSON {
-        return {
-            walletFileFormatVersion: WALLET_FILE_FORMAT_VERSION,
-            subWallets: this.subWallets.toJSON(),
-            walletSynchronizer: this.walletSynchronizer.toJSON()
-        };
+    public static reviver(key: string, value: any): any {
+        return key === '' ? WalletBackend.fromJSON(value) : value;
     }
 
     /* Imports a wallet from a mnemonic seed */
-    static importWalletFromSeed(
+    public static importWalletFromSeed(
         daemon: IDaemon,
         scanHeight: number,
         mnemonicSeed: string): WalletBackend | WalletError {
@@ -149,14 +92,14 @@ export class WalletBackend {
 
         const wallet = new WalletBackend(
             daemon, keys.address, scanHeight, newWallet, keys.view.privateKey,
-            keys.spend.privateKey
+            keys.spend.privateKey,
         );
 
         return wallet;
     }
 
     /* Imports a wallet from a spend and view key */
-    static importWalletFromKeys(
+    public static importWalletFromKeys(
         daemon: IDaemon,
         scanHeight: number,
         privateViewKey: string,
@@ -183,14 +126,14 @@ export class WalletBackend {
 
         const wallet = new WalletBackend(
             daemon, keys.address, scanHeight, newWallet, keys.view.privateKey,
-            keys.spend.privateKey
+            keys.spend.privateKey,
         );
 
         return wallet;
     }
 
     /* Imports a view only wallet */
-    static importViewWallet(
+    public static importViewWallet(
         daemon: IDaemon,
         scanHeight: number,
         privateViewKey: string,
@@ -203,7 +146,7 @@ export class WalletBackend {
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletError = validateAddresses(
-            new Array(address), integratedAddressesAllowed
+            new Array(address), integratedAddressesAllowed,
         );
 
         if (!deepEqual(err, SUCCESS)) {
@@ -219,7 +162,7 @@ export class WalletBackend {
 
         const wallet = new WalletBackend(
             daemon, address, scanHeight, newWallet, privateViewKey,
-            undefined /* No private spend key */
+            undefined, /* No private spend key */
         );
 
         return wallet;
@@ -227,7 +170,7 @@ export class WalletBackend {
 
     /* Creates a wallet with a random key pair (it will be a determinstic/
        mnemonic wallet, however */
-    static createWallet(daemon: IDaemon): WalletBackend {
+    public static createWallet(daemon: IDaemon): WalletBackend {
         const newWallet: boolean = true;
 
         const scanHeight: number = 0;
@@ -236,33 +179,154 @@ export class WalletBackend {
 
         const wallet = new WalletBackend(
             daemon, keys.address, scanHeight, newWallet, keys.view.privateKey,
-            keys.spend.privateKey
+            keys.spend.privateKey,
         );
 
         return wallet;
     }
 
+    /* Contains private keys, transactions, inputs, etc */
+    private readonly subWallets: SubWallets;
+
+    /* Interface to either a regular daemon or a blockchain cache api */
+    private daemon: IDaemon;
+
+    /* Wallet synchronization state */
+    private walletSynchronizer: WalletSynchronizer;
+
+    /* Executes the main loop every n seconds for us */
+    private mainLoopExecutor: Metronome;
+
+    constructor(
+        daemon: IDaemon,
+        address: string,
+        scanHeight: number,
+        newWallet: boolean,
+        privateViewKey: string,
+        privateSpendKey?: string) {
+
+        this.subWallets = new SubWallets(
+            address, scanHeight, newWallet, privateViewKey, privateSpendKey,
+        );
+
+        let timestamp = 0;
+
+        if (newWallet) {
+            timestamp = new Date().valueOf();
+        }
+
+        this.walletSynchronizer = new WalletSynchronizer(
+            daemon, timestamp, scanHeight, privateViewKey,
+        );
+
+        this.daemon = daemon;
+
+        this.mainLoopExecutor = new Metronome(
+            this.mainLoop.bind(this), config.mainLoopInterval,
+        );
+    }
+
+    /* Fetch initial daemon info and fee. Should we do this in the constructor
+       instead...? Well... not much point wasting time if they just want to
+       make a wallet */
+    public async init(): Promise<void> {
+        await this.daemon.init();
+    }
+
+    /* Starts the main loop */
+    public start(): void {
+        this.mainLoopExecutor.start();
+    }
+
+    /* Stops the main loop */
+    public stop(): void {
+        this.mainLoopExecutor.stop();
+    }
+
+    public async mainLoop(): Promise<void> {
+        this.daemon.getDaemonInfo();
+
+        const blocks: Block[] = await this.walletSynchronizer.getBlocks();
+
+        for (const block of blocks) {
+            /* Forked chain, remove old data */
+            if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
+                this.subWallets.removeForkedTransactions(block.blockHeight);
+            }
+
+            let txData: TransactionData = new TransactionData();
+
+            /* Process the coinbase tx */
+            txData = this.walletSynchronizer.processCoinbaseTransaction(
+                block.coinbaseTransaction, txData,
+            );
+
+            /* Process the normal txs */
+            for (const tx of block.transactions) {
+                txData = this.walletSynchronizer.processTransaction(tx, txData);
+            }
+
+            /* Store the block hash we just processed */
+            this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
+
+            /* Store any transactions */
+            for (const transaction of txData.transactionsToAdd) {
+                this.subWallets.addTransaction(transaction);
+            }
+
+            /* Store any corresponding inputs */
+            for (const [publicKey, input] of txData.inputsToAdd) {
+                this.subWallets.storeTransactionInput(publicKey, input);
+            }
+
+            /* Mark any spent key images */
+            for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
+                this.subWallets.markInputAsSpent(publicKey, keyImage, block.blockHeight);
+            }
+        }
+
+        if (this.walletSynchronizer.getHeight() >= this.daemon.getNetworkBlockCount()) {
+            const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
+
+            const cancelledTransactions: string[]
+                = await this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
+
+            for (const cancelledTX of cancelledTransactions) {
+                this.subWallets.removeCancelledTransaction(cancelledTX);
+            }
+        }
+    }
+
+    /* Converts recursively from typescript to JSON data. Can be dumped to file */
+    public toJSON(): WalletBackendJSON {
+        return {
+            subWallets: this.subWallets.toJSON(),
+            walletFileFormatVersion: WALLET_FILE_FORMAT_VERSION,
+            walletSynchronizer: this.walletSynchronizer.toJSON(),
+        };
+    }
+
     /* Assign the daemon, if you created the object from JSON for example */
-    setDaemon(daemon: IDaemon): void {
+    public setDaemon(daemon: IDaemon): void {
         this.daemon = daemon;
     }
 
-    getNodeFee(): [string, number] {
+    public getNodeFee(): [string, number] {
         return this.daemon.nodeFee();
     }
 
     /* Gets the shared private view key */
-    getPrivateViewKey(): string {
+    public getPrivateViewKey(): string {
         return this.subWallets.getPrivateViewKey();
     }
 
     /* Gets the [publicSpendKey, privateSpendKey] for the given address, if
        possible. Note: secret key will be 00000... if view wallet */
-    getSpendKeys(address: string): WalletError | [string, string] {
+    public getSpendKeys(address: string): WalletError | [string, string] {
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletError = validateAddresses(
-            new Array(address), integratedAddressesAllowed
+            new Array(address), integratedAddressesAllowed,
         );
 
         if (!deepEqual(err, SUCCESS)) {
@@ -281,16 +345,16 @@ export class WalletBackend {
     }
 
     /* Get the private spend and private view for the primary address */
-    getPrimaryAddressPrivateKeys(): [string, string] {
+    public getPrimaryAddressPrivateKeys(): [string, string] {
         return [this.subWallets.getPrimaryPrivateSpendKey(), this.getPrivateViewKey()];
     }
 
     /* Get the primary address mnemonic seed, if possible */
-    getMnemonicSeed(): WalletError | string {
+    public getMnemonicSeed(): WalletError | string {
         return this.getMnemonicSeedForAddress(this.subWallets.getPrimaryAddress());
     }
 
-    getMnemonicSeedForAddress(address: string): WalletError | string {
+    public getMnemonicSeedForAddress(address: string): WalletError | string {
         const privateViewKey: string = this.getPrivateViewKey();
 
         const spendKeys = this.getSpendKeys(address);
@@ -307,16 +371,4 @@ export class WalletBackend {
 
         return parsedAddr.mnemonic;
     }
-
-    /* Contains private keys, transactions, inputs, etc */
-    private readonly subWallets: SubWallets;
-
-    /* Interface to either a regular daemon or a blockchain cache api */
-    private daemon: IDaemon;
-
-    /* Wallet synchronization state */
-    private walletSynchronizer: WalletSynchronizer;
-
-    /* Executes the main loop every n seconds for us */
-    private mainLoopExecutor: Metronome;
 }

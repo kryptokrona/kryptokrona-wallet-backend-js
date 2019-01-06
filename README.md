@@ -22,6 +22,12 @@ Generated javascript files will be written to the dist/lib/ folder.
 
 `yarn test`
 
+### Contributing
+
+Please run `yarn style` to ensure your changes adhere to the tslint rules before committing.
+
+You can try running `yarn style --fix` to automatically fix issues.
+
 ### Example usage
 
 #### Typescript

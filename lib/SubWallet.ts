@@ -1,38 +1,24 @@
-// Copyright (c) 2018, Zpalmtree 
-// 
+// Copyright (c) 2018, Zpalmtree
+//
 // Please see the included LICENSE file for more information.
 
-import { TransactionInput, UnconfirmedInput } from './Types';
 import { SubWalletJSON } from './JsonSerialization';
+import { TransactionInput, UnconfirmedInput } from './Types';
 
 export class SubWallet {
-    constructor(
-        address: string,
-        scanHeight: number,
-        timestamp: number,
-        publicSpendKey: string,
-        privateSpendKey?: string) {
 
-        this.address = address;
-        this.syncStartHeight = scanHeight;
-        this.syncStartTimestamp = timestamp;
-        this.publicSpendKey = publicSpendKey;
-        this.privateSpendKey = privateSpendKey;
-        this.primaryAddress = true;
-    }
-
-    static fromJSON(json: SubWalletJSON): SubWallet {
-        let subWallet = Object.create(SubWallet.prototype);
+    public static fromJSON(json: SubWalletJSON): SubWallet {
+        const subWallet = Object.create(SubWallet.prototype);
 
         return Object.assign(subWallet, json, {
-            unspentInputs: json.unspentInputs.map(x => TransactionInput.fromJSON(x)),
+            unspentInputs: json.unspentInputs.map((x) => TransactionInput.fromJSON(x)),
 
-            lockedInputs: json.lockedInputs.map(x => TransactionInput.fromJSON(x)),
+            lockedInputs: json.lockedInputs.map((x) => TransactionInput.fromJSON(x)),
 
-            spentInputs: json.spentInputs.map(x => TransactionInput.fromJSON(x)),
+            spentInputs: json.spentInputs.map((x) => TransactionInput.fromJSON(x)),
 
             unconfirmedIncomingAmounts: json.unconfirmedIncomingAmounts.map(
-                x => UnconfirmedInput.fromJSON(x)
+                (x) => UnconfirmedInput.fromJSON(x),
             ),
 
             publicSpendKey: json.publicSpendKey,
@@ -45,45 +31,8 @@ export class SubWallet {
 
             address: json.address,
 
-            primaryAddress: json.isPrimaryAddress
+            primaryAddress: json.isPrimaryAddress,
         });
-    }
-
-    toJSON(): SubWalletJSON {
-        return {
-            unspentInputs: this.unspentInputs.map(x => x.toJSON()),
-
-            lockedInputs: this.lockedInputs.map(x => x.toJSON()),
-
-            spentInputs: this.spentInputs.map(x => x.toJSON()),
-
-            unconfirmedIncomingAmounts: this.unconfirmedIncomingAmounts.map(x => x.toJSON()),
-
-            publicSpendKey: this.publicSpendKey,
-
-            /* Null secret key if view wallet */
-            privateSpendKey: this.privateSpendKey ? this.privateSpendKey : '0'.repeat(64),
-
-            syncStartTimestamp: this.syncStartTimestamp,
-
-            syncStartHeight: this.syncStartHeight,
-
-            address: this.address,
-
-            isPrimaryAddress: this.primaryAddress
-        };
-    }
-
-    getPrivateSpendKey(): string {
-        return this.privateSpendKey || '0'.repeat(64);
-    }
-
-    isPrimaryAddress(): boolean {
-        return this.primaryAddress;
-    }
-
-    getAddress(): string {
-        return this.address;
     }
 
     /* A vector of the stored transaction input data, to be used for
@@ -121,4 +70,55 @@ export class SubWallet {
     /* The wallet has one 'main' address which we will use by default
        when treating it as a single user wallet */
     private readonly primaryAddress: boolean;
+    constructor(
+        address: string,
+        scanHeight: number,
+        timestamp: number,
+        publicSpendKey: string,
+        privateSpendKey?: string) {
+
+        this.address = address;
+        this.syncStartHeight = scanHeight;
+        this.syncStartTimestamp = timestamp;
+        this.publicSpendKey = publicSpendKey;
+        this.privateSpendKey = privateSpendKey;
+        this.primaryAddress = true;
+    }
+
+    public toJSON(): SubWalletJSON {
+        return {
+            unspentInputs: this.unspentInputs.map((x) => x.toJSON()),
+
+            lockedInputs: this.lockedInputs.map((x) => x.toJSON()),
+
+            spentInputs: this.spentInputs.map((x) => x.toJSON()),
+
+            unconfirmedIncomingAmounts: this.unconfirmedIncomingAmounts.map((x) => x.toJSON()),
+
+            publicSpendKey: this.publicSpendKey,
+
+            /* Null secret key if view wallet */
+            privateSpendKey: this.privateSpendKey ? this.privateSpendKey : '0'.repeat(64),
+
+            syncStartTimestamp: this.syncStartTimestamp,
+
+            syncStartHeight: this.syncStartHeight,
+
+            address: this.address,
+
+            isPrimaryAddress: this.primaryAddress,
+        };
+    }
+
+    public getPrivateSpendKey(): string {
+        return this.privateSpendKey || '0'.repeat(64);
+    }
+
+    public isPrimaryAddress(): boolean {
+        return this.primaryAddress;
+    }
+
+    public getAddress(): string {
+        return this.address;
+    }
 }

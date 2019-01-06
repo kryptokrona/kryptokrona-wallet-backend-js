@@ -4,14 +4,14 @@
 
 import { CryptoUtils } from './CnUtils';
 
-export function isHex64 (key: string) {
-    const regex = new RegExp('^[0-9a-fA-F]{64}$')
-    return regex.test(key)
+export function isHex64(key: string) {
+    const regex = new RegExp('^[0-9a-fA-F]{64}$');
+    return regex.test(key);
 }
 
 /* Precondition: address is valid */
 export function addressToKeys(address: string): [string, string] {
-    let parsed = CryptoUtils.decodeAddress(address);
+    const parsed = CryptoUtils.decodeAddress(address);
 
     return [parsed.publicViewKey, parsed.publicSpendKey];
 }

@@ -1,12 +1,12 @@
-// Copyright (c) 2018, Zpalmtree 
-// 
+// Copyright (c) 2018, Zpalmtree
+//
 // Please see the included LICENSE file for more information.
 
-import config from './Config';
 import CryptoNote = require('turtlecoin-utils');
+import config from './Config';
 
 export let CryptoUtils = new CryptoNote({
-    coinUnitPlaces: config.decimalPlaces,
     addressPrefix: config.addressPrefix,
-    keccakIterations: 1
+    coinUnitPlaces: config.decimalPlaces,
+    keccakIterations: 1,
 });
