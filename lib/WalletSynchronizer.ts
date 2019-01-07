@@ -54,6 +54,7 @@ export class WalletSynchronizer {
     }
 
     public async getBlocks(): Promise<Block[]> {
+        /* TODO */
         return [];
     }
 
@@ -61,6 +62,7 @@ export class WalletSynchronizer {
         transaction: RawTransaction,
         txData: TransactionData): TransactionData {
 
+        /* TODO */
         return txData;
     }
 
@@ -68,6 +70,7 @@ export class WalletSynchronizer {
         transaction: RawCoinbaseTransaction,
         txData: TransactionData): TransactionData {
 
+        /* TODO */
         return txData;
     }
 

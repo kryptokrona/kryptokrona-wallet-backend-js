@@ -48,27 +48,6 @@ export class WalletBackend {
         }
     }
 
-    /* Loads a wallet from a WalletBackendJSON */
-    public static fromJSON(json: WalletBackendJSON): WalletBackend {
-        const wallet = Object.create(WalletBackend.prototype);
-
-        const version = json.walletFileFormatVersion;
-
-        if (version !== WALLET_FILE_FORMAT_VERSION) {
-            throw new Error('Unsupported wallet file format version!');
-        }
-
-        return Object.assign(wallet, json, {
-            subWallets: SubWallets.fromJSON(json.subWallets),
-            walletSynchronizer: WalletSynchronizer.fromJSON(json.walletSynchronizer),
-        });
-    }
-
-    /* Utility function for nicer JSON parsing function */
-    public static reviver(key: string, value: any): any {
-        return key === '' ? WalletBackend.fromJSON(value) : value;
-    }
-
     /* Imports a wallet from a mnemonic seed */
     public static importWalletFromSeed(
         daemon: IDaemon,
@@ -183,6 +162,27 @@ export class WalletBackend {
         );
 
         return wallet;
+    }
+
+    /* Utility function for nicer JSON parsing function */
+    private static reviver(key: string, value: any): any {
+        return key === '' ? WalletBackend.fromJSON(value) : value;
+    }
+
+    /* Loads a wallet from a WalletBackendJSON */
+    private static fromJSON(json: WalletBackendJSON): WalletBackend {
+        const wallet = Object.create(WalletBackend.prototype);
+
+        const version = json.walletFileFormatVersion;
+
+        if (version !== WALLET_FILE_FORMAT_VERSION) {
+            throw new Error('Unsupported wallet file format version!');
+        }
+
+        return Object.assign(wallet, json, {
+            subWallets: SubWallets.fromJSON(json.subWallets),
+            walletSynchronizer: WalletSynchronizer.fromJSON(json.walletSynchronizer),
+        });
     }
 
     /* Contains private keys, transactions, inputs, etc */
@@ -370,5 +370,9 @@ export class WalletBackend {
         }
 
         return parsedAddr.mnemonic;
+    }
+
+    public getPrimaryAddress(): string {
+        return this.subWallets.getPrimaryAddress();
     }
 }

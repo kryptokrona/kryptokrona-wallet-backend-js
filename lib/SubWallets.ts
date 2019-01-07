@@ -8,6 +8,8 @@ import { SubWallet } from './SubWallet';
 import { Transaction, TransactionInput } from './Types';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
+import * as _ from 'lodash';
+
 export class SubWallets {
 
     public static fromJSON(json: SubWalletsJSON): SubWallets {
@@ -140,22 +142,58 @@ export class SubWallets {
     }
 
     public addTransaction(transaction: Transaction): void {
-        /* TODO */
+        /* Remove this transaction from the locked data structure, if we had
+           added it previously as an outgoing tx */
+        _.remove(this.lockedTransactions, (tx) => {
+            return tx.hash === transaction.hash;
+        });
+
+        if (this.transactions.some((tx) => tx.hash === transaction.hash)) {
+            throw new Error('Transaction ' + transaction.hash + ' was added to the wallet twice!');
+        }
+
+        this.transactions.push(transaction);
     }
 
-    public storeTransactionInput(publicKey: string, input: TransactionInput): void {
-        /* TODO */
+    public storeTransactionInput(publicSpendKey: string, input: TransactionInput): void {
+        const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
+
+        if (!subWallet) {
+            throw new Error('Subwallet not found!');
+        }
+
+        subWallet.storeTransactionInput(input, this.isViewWallet);
     }
 
-    public markInputAsSpent(publicKey: string, keyImage: string, blockHeight: number): void {
-        /* TODO */
+    public markInputAsSpent(publicSpendKey: string, keyImage: string, spendHeight: number): void {
+        const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
+
+        if (!subWallet) {
+            throw new Error('Subwallet not found!');
+        }
+
+        subWallet.markInputAsSpent(keyImage, spendHeight);
     }
 
     public removeCancelledTransaction(transactionHash: string): void {
-        /* TODO */
+        /* Remove the tx if it was locked */
+        _.remove(this.lockedTransactions, (tx) => {
+            return tx.hash === transactionHash;
+        });
+
+        /* Remove the corresponding inputs */
+        for (const [publicKey, subWallet] of this.subWallets) {
+            subWallet.removeCancelledTransaction(transactionHash);
+        }
     }
 
-    public removeForkedTransactions(blockHeight: number): void {
-        /* TODO */
+    public removeForkedTransactions(forkHeight: number): void {
+        _.remove(this.transactions, (tx) => {
+            return tx.blockHeight >= forkHeight;
+        });
+
+        for (const [publicKey, subWallet] of this.subWallets) {
+            subWallet.removeForkedTransactions(forkHeight);
+        }
     }
 }

@@ -5,6 +5,8 @@
 import { SubWalletJSON } from './JsonSerialization';
 import { TransactionInput, UnconfirmedInput } from './Types';
 
+import * as _ from 'lodash';
+
 export class SubWallet {
 
     public static fromJSON(json: SubWalletJSON): SubWallet {
@@ -120,5 +122,88 @@ export class SubWallet {
 
     public getAddress(): string {
         return this.address;
+    }
+
+    public storeTransactionInput(input: TransactionInput, isViewWallet: boolean): void {
+        if (!isViewWallet) {
+            /* Find the input in the unconfirmed incoming amounts - inputs we
+               sent ourselves, that are now returning as change. Remove from
+               vector if found. */
+            _.remove(this.unconfirmedIncomingAmounts, (storedInput) => {
+                return storedInput.key !== input.key;
+            });
+        }
+
+        this.unspentInputs.push(input);
+    }
+
+    public markInputAsSpent(keyImage: string, spendHeight: number) {
+        /* Remove from unspent if exists */
+        let [removedInput] = _.remove(this.unspentInputs, (input) => {
+            return input.keyImage === keyImage;
+        });
+
+        if (!removedInput) {
+            /* Not in unspent, check locked */
+            [removedInput] = _.remove(this.lockedInputs, (input) => {
+                return input.keyImage === keyImage;
+            });
+        }
+
+        if (!removedInput) {
+            throw new Error('Could not find key image to remove!');
+        }
+
+        removedInput.spendHeight = spendHeight;
+
+        this.spentInputs.push(removedInput);
+    }
+
+    public removeCancelledTransaction(transactionHash: string) {
+        /* Find inputs used in the cancelled transaction, and remove them from
+           the locked inputs */
+        const removed: TransactionInput[] = _.remove(this.lockedInputs, (input) => {
+            return input.parentTransactionHash === transactionHash;
+        });
+
+        /* Add them to the unspent vector */
+        this.unspentInputs = this.unspentInputs.concat(
+            /* Mark them as no longer spent */
+            removed.map((input) => {
+                input.spendHeight = 0;
+                return input;
+            }),
+        );
+
+        /* Remove unconfirmed amounts we used to correctly calculate incoming
+           change */
+        _.remove(this.unconfirmedIncomingAmounts, (input) => {
+            return input.parentTransactionHash === transactionHash;
+        });
+    }
+
+    public removeForkedTransactions(forkHeight: number) {
+        this.lockedInputs = [];
+        this.unconfirmedIncomingAmounts = [];
+
+        _.remove(this.unspentInputs, (input) => {
+            return input.blockHeight >= forkHeight;
+        });
+
+        /* unspent, formerly spent */
+        const unspent = _.remove(this.spentInputs, (input) => {
+            return input.blockHeight >= forkHeight;
+        });
+
+        unspent.map((input) => input.spendHeight = 0);
+
+        /* Add to unspent vector */
+        this.unspentInputs.concat(
+            /* Mark as no longer spent */
+            unspent.map((input) => {
+                input.spendHeight = 0;
+                return input;
+            }),
+        );
     }
 }

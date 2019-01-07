@@ -1,4 +1,4 @@
-import * as colors from 'colors/safe';
+import * as colors from 'colors';
 
 import {
     ConventionalDaemon, WalletBackend, WalletError, WalletErrorCode,
@@ -9,6 +9,7 @@ class Tester {
     public totalTests: number = 0;
     public testsFailed: number = 0;
     public testsPassed: number = 0;
+
     constructor() {
         console.log(colors.yellow('=== Started testing ===\n'));
     }
@@ -41,6 +42,10 @@ class Tester {
         console.log(colors.white('Total tests: ') + colors.yellow(this.totalTests.toString()));
         console.log(colors.white('Tests passed: ') + colors.green(this.testsPassed.toString()));
         console.log(colors.white('Tests failed: ') + colors.red(this.testsFailed.toString()));
+    }
+
+    public setExitCode(): void {
+        process.exitCode = this.testsFailed === 0 ? 0 : 1;
     }
 }
 
@@ -144,4 +149,25 @@ tester.test(() => {
    'View wallet has null private spend key',
    'View wallet has private spend key!');
 
+tester.test(() => {
+    const seedWallet = WalletBackend.importWalletFromSeed(
+        daemon, 0,
+        'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon ' +
+        'tadpoles hacksaw dormant hence abort listen history atom cadets stylishly ' +
+        'snout vegan girth guest history',
+    ) as WalletBackend;
+
+    const address = seedWallet.getPrimaryAddress();
+
+    return address === 'TRTLv1s9JQeHAJFoHvcqVBPyHYom2ynKeK6dpYptbp8gQNzdzE73ZD' +
+                       'kNmNurqfhhcMSUXpS1ZGEJKiKJUcPCyw7vYaCc354DCN1';
+
+}, 'Verifying correct address is created from seed',
+   'Seed wallet has correct address',
+   'Seed wallet has incorrect address!');
+
+/* Print a summary of passed/failed tests */
 tester.summary();
+
+/* Set exit code based on if we failed any tests */
+tester.setExitCode();
