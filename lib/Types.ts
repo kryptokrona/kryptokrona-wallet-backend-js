@@ -384,7 +384,7 @@ export class KeyInput {
 }
 
 export class TransactionData {
-    public readonly transactionsToAdd: Transaction[] = new Array();
+    public readonly transactionsToAdd: Transaction[] = [];
 
     /* Mapping of public spend key to inputs */
     public readonly inputsToAdd: Map<string, TransactionInput> = new Map();

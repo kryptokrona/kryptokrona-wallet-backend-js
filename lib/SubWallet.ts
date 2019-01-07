@@ -39,19 +39,19 @@ export class SubWallet {
 
     /* A vector of the stored transaction input data, to be used for
        sending transactions later */
-    private unspentInputs: TransactionInput[] = new Array();
+    private unspentInputs: TransactionInput[] = [];
 
     /* Inputs which have been used in a transaction, and are waiting to
        either be put into a block, or return to our wallet */
-    private lockedInputs: TransactionInput[] = new Array();
+    private lockedInputs: TransactionInput[] = [];
 
     /* Inputs which have been spent in a transaction */
-    private spentInputs: TransactionInput[] = new Array();
+    private spentInputs: TransactionInput[] = [];
 
     /* Inputs which have come in from a transaction we sent - either from
        change or from sending to ourself - we use this to display unlocked
        balance correctly */
-    private unconfirmedIncomingAmounts: UnconfirmedInput[] = new Array();
+    private unconfirmedIncomingAmounts: UnconfirmedInput[] = [];
 
     /* This subwallet's public spend key */
     private readonly publicSpendKey: string;
@@ -205,5 +205,13 @@ export class SubWallet {
                 return input;
             }),
         );
+    }
+
+    public convertSyncTimestampToHeight(startTimestamp: number, startHeight: number) {
+        /* If we don't have a start timestamp then we don't need to convert */
+        if (this.syncStartTimestamp !== 0) {
+            this.syncStartTimestamp = startTimestamp;
+            this.syncStartHeight = startHeight;
+        }
     }
 }

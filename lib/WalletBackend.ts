@@ -246,7 +246,7 @@ export class WalletBackend {
     public async mainLoop(): Promise<void> {
         this.daemon.getDaemonInfo();
 
-        const blocks: Block[] = await this.walletSynchronizer.getBlocks();
+        const blocks: Block[] = await this.walletSynchronizer.getBlocks(this.subWallets);
 
         for (const block of blocks) {
             /* Forked chain, remove old data */

@@ -38,15 +38,15 @@ export class SubWallets {
 
     /* The public spend keys this wallet contains. Used for verifying if a
        transaction is ours. */
-    public publicSpendKeys: string[] = new Array();
+    public publicSpendKeys: string[] = [];
 
     /* Mapping of public spend key to subwallet */
     private subWallets: Map<string, SubWallet> = new Map();
 
     /* Our transactions */
-    private transactions: Transaction[] = new Array();
+    private transactions: Transaction[] = [];
 
-    private lockedTransactions: Transaction[] = new Array();
+    private lockedTransactions: Transaction[] = [];
 
     /* The shared private view key */
     private readonly privateViewKey: string;
@@ -194,6 +194,12 @@ export class SubWallets {
 
         for (const [publicKey, subWallet] of this.subWallets) {
             subWallet.removeForkedTransactions(forkHeight);
+        }
+    }
+
+    public convertSyncTimestampToHeight(timestamp: number, height: number): void {
+        for (const [publicKey, subWallet] of this.subWallets) {
+            subWallet.convertSyncTimestampToHeight(timestamp, height);
         }
     }
 }

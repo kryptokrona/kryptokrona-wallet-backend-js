@@ -23,4 +23,7 @@ export interface IDaemon {
     /* Returns the height that the network has. Possibly 0 if can't connect
        to daemon */
     getNetworkBlockCount(): number;
+
+    /* Returns the height that the local daemon has. */
+    getLocalDaemonBlockCount(): number;
 }

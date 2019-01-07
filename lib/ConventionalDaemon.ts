@@ -47,6 +47,10 @@ export class ConventionalDaemon implements IDaemon {
         return this.networkBlockCount;
     }
 
+    public getLocalDaemonBlockCount(): number {
+        return this.localDaemonBlockCount;
+    }
+
     public async init(): Promise<void> {
         /* Note - if one promise throws, the other will be cancelled */
         await Promise.all([this.getDaemonInfo(), this.getFeeInfo()]);

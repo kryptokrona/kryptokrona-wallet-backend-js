@@ -87,7 +87,7 @@ export interface TxPrivateKeysJSON {
 }
 
 export function txPrivateKeysToVector(txPrivateKeys: Map<string, string>): TxPrivateKeysJSON[] {
-    const arr: TxPrivateKeysJSON[] = new Array();
+    const arr: TxPrivateKeysJSON[] = [];
 
     for (const [hash, privateKey] of txPrivateKeys) {
         arr.push({transactionHash: hash, txPrivateKey: privateKey});
@@ -103,7 +103,7 @@ export interface TransfersJSON {
 }
 
 export function transfersToVector(transfers: Map<string, number>): TransfersJSON[] {
-    const arr: TransfersJSON[] = new Array();
+    const arr: TransfersJSON[] = [];
 
     for (const [publicKey, amount] of transfers) {
         arr.push({amount, publicKey});
