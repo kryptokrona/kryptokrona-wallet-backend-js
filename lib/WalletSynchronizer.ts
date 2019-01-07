@@ -8,7 +8,8 @@ import { SubWallets } from './SubWallets';
 import { SynchronizationStatus } from './SynchronizationStatus';
 
 import {
-    Block, RawCoinbaseTransaction, RawTransaction, TransactionData,
+    Block, KeyInput, RawCoinbaseTransaction, RawTransaction, Transaction,
+    TransactionData,
 } from './Types';
 
 import * as _ from 'lodash';
@@ -135,19 +136,94 @@ export class WalletSynchronizer {
         return blocks;
     }
 
-    public processTransaction(
-        transaction: RawTransaction,
-        txData: TransactionData): TransactionData {
+    public processTransactionInputs(
+        keyInputs: KeyInput[],
+        transfers: Map<string, number>,
+        blockHeight: number,
+        txData: TransactionData): [number, Map<string, number>, TransactionData] {
 
         /* TODO */
+        return [0, transfers, txData];
+    }
+
+    public processTransactionOutputs(
+        rawTX: RawCoinbaseTransaction,
+        transfers: Map<string, number>,
+        blockHeight: number,
+        txData: TransactionData): [number, Map<string, number>, TransactionData] {
+
+        /* TODO */
+        return [0, transfers, txData];
+    }
+
+    public processTransaction(
+        rawTX: RawTransaction,
+        blockTimestamp: number,
+        blockHeight: number,
+        txData: TransactionData): TransactionData {
+
+        let transfers: Map<string, number> = new Map();
+
+        let sumOfInputs: number;
+        let sumOfOutputs: number;
+
+        /* Finds the sum of inputs, adds the amounts that belong to us to the
+           transfers map */
+        [sumOfInputs, transfers, txData] = this.processTransactionInputs(
+            rawTX.keyInputs, transfers, blockHeight, txData,
+        );
+
+        /* Finds the sum of outputs, adds the amounts that belong to us to the
+           transfers map, and stores any key images that belong to us */
+        [sumOfOutputs, transfers, txData] = this.processTransactionOutputs(
+            rawTX, transfers, blockHeight, txData,
+        );
+
+        if (!_.isEmpty(transfers)) {
+            const fee: number = sumOfInputs - sumOfOutputs;
+
+            const isCoinbaseTransaction: boolean = false;
+
+            const tx: Transaction = new Transaction(
+                transfers, rawTX.hash, fee, blockTimestamp, blockHeight,
+                rawTX.paymentID, rawTX.unlockTime, isCoinbaseTransaction,
+            );
+
+            txData.transactionsToAdd.push(tx);
+        }
+
         return txData;
     }
 
     public processCoinbaseTransaction(
-        transaction: RawCoinbaseTransaction,
+        rawTX: RawCoinbaseTransaction,
+        blockTimestamp: number,
+        blockHeight: number,
         txData: TransactionData): TransactionData {
 
-        /* TODO */
+        let transfers: Map<string, number> = new Map();
+
+        [/*ignore*/, transfers, txData] = this.processTransactionOutputs(
+            rawTX, transfers, blockHeight, txData,
+        );
+
+        if (!_.isEmpty(transfers)) {
+            /* Coinbase transaction have no fee */
+            const fee: number = 0;
+
+            const isCoinbaseTransaction: boolean = true;
+
+            /* Coibnase transactions can't have payment ID's */
+            const paymentID: string = '';
+
+            const tx: Transaction = new Transaction(
+                transfers, rawTX.hash, fee, blockTimestamp, blockHeight,
+                paymentID, rawTX.unlockTime, isCoinbaseTransaction,
+            );
+
+            txData.transactionsToAdd.push(tx);
+        }
+
         return txData;
     }
 

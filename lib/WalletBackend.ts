@@ -258,12 +258,15 @@ export class WalletBackend {
 
             /* Process the coinbase tx */
             txData = this.walletSynchronizer.processCoinbaseTransaction(
-                block.coinbaseTransaction, txData,
+                block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
+                txData,
             );
 
             /* Process the normal txs */
             for (const tx of block.transactions) {
-                txData = this.walletSynchronizer.processTransaction(tx, txData);
+                txData = this.walletSynchronizer.processTransaction(
+                    tx, block.blockTimestamp, block.blockHeight, txData,
+                );
             }
 
             /* Store the block hash we just processed */
