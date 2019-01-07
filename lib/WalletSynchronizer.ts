@@ -37,6 +37,9 @@ export class WalletSynchronizer {
 
     private synchronizationStatus: SynchronizationStatus = new SynchronizationStatus();
 
+    /* Fuck the type system! */
+    private subWallets: SubWallets = Object.create(SubWallets.prototype);
+
     constructor(
         daemon: IDaemon,
         startTimestamp: number,
@@ -49,6 +52,10 @@ export class WalletSynchronizer {
         this.privateViewKey = privateViewKey;
     }
 
+    public initAfterLoad(subWallets: SubWallets): void {
+        this.subWallets = subWallets;
+    }
+
     public toJSON(): WalletSynchronizerJSON {
         return {
             privateViewKey: this.privateViewKey,
@@ -58,7 +65,7 @@ export class WalletSynchronizer {
         };
     }
 
-    public async getBlocks(subWallets: SubWallets): Promise<Block[]> {
+    public async getBlocks(): Promise<Block[]> {
         const localDaemonBlockCount: number = this.daemon.getLocalDaemonBlockCount();
 
         const walletBlockCount: number = this.synchronizationStatus.getHeight();
@@ -114,7 +121,9 @@ export class WalletSynchronizer {
             this.startTimestamp = 0;
             this.startHeight = blocks[0].blockHeight;
 
-            subWallets.convertSyncTimestampToHeight(this.startTimestamp, this.startHeight);
+            this.subWallets.convertSyncTimestampToHeight(
+                this.startTimestamp, this.startHeight,
+            );
         }
 
         /* If checkpoints are empty, this is the first sync request. */
@@ -142,8 +151,26 @@ export class WalletSynchronizer {
         blockHeight: number,
         txData: TransactionData): [number, Map<string, number>, TransactionData] {
 
-        /* TODO */
-        return [0, transfers, txData];
+        let sumOfInputs: number = 0;
+
+        for (const input of keyInputs) {
+            sumOfInputs += input.amount;
+
+            const [found, publicSpendKey] = this.subWallets.getKeyImageOwner(
+                input.keyImage,
+            );
+
+            if (found) {
+                let amount: number = transfers.get(publicSpendKey) || 0;
+                amount += input.amount;
+
+                transfers.set(publicSpendKey, amount);
+
+                txData.keyImagesToMarkSpent.push([publicSpendKey, input.keyImage]);
+            }
+        }
+
+        return [sumOfInputs, transfers, txData];
     }
 
     public processTransactionOutputs(

@@ -40,7 +40,7 @@ export class WalletBackend {
     public static loadWalletFromJSON(daemon: IDaemon, json: string): WalletBackend | WalletError {
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
-            wallet.setDaemon(daemon);
+            wallet.initAfterLoad(daemon);
             return wallet;
         } catch (err) {
             console.log(err);
@@ -246,7 +246,7 @@ export class WalletBackend {
     public async mainLoop(): Promise<void> {
         this.daemon.getDaemonInfo();
 
-        const blocks: Block[] = await this.walletSynchronizer.getBlocks(this.subWallets);
+        const blocks: Block[] = await this.walletSynchronizer.getBlocks();
 
         for (const block of blocks) {
             /* Forked chain, remove old data */
@@ -309,9 +309,10 @@ export class WalletBackend {
         };
     }
 
-    /* Assign the daemon, if you created the object from JSON for example */
-    public setDaemon(daemon: IDaemon): void {
+    /* Initialize stuff not stored in the JSON */
+    public initAfterLoad(daemon: IDaemon): void {
         this.daemon = daemon;
+        this.walletSynchronizer.initAfterLoad(this.subWallets);
     }
 
     public getNodeFee(): [string, number] {

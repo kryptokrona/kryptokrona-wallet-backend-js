@@ -202,4 +202,18 @@ export class SubWallets {
             subWallet.convertSyncTimestampToHeight(timestamp, height);
         }
     }
+
+    public getKeyImageOwner(keyImage: string): [boolean, string] {
+        if (this.isViewWallet) {
+            return [false, ''];
+        }
+
+        for (const [publicKey, subWallet] of this.subWallets) {
+            if (subWallet.hasKeyImage(keyImage)) {
+                return [true, publicKey];
+            }
+        }
+
+        return [false, ''];
+    }
 }

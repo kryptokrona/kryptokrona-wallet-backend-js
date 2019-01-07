@@ -72,6 +72,7 @@ export class SubWallet {
     /* The wallet has one 'main' address which we will use by default
        when treating it as a single user wallet */
     private readonly primaryAddress: boolean;
+
     constructor(
         address: string,
         scanHeight: number,
@@ -137,7 +138,7 @@ export class SubWallet {
         this.unspentInputs.push(input);
     }
 
-    public markInputAsSpent(keyImage: string, spendHeight: number) {
+    public markInputAsSpent(keyImage: string, spendHeight: number): void {
         /* Remove from unspent if exists */
         let [removedInput] = _.remove(this.unspentInputs, (input) => {
             return input.keyImage === keyImage;
@@ -159,7 +160,7 @@ export class SubWallet {
         this.spentInputs.push(removedInput);
     }
 
-    public removeCancelledTransaction(transactionHash: string) {
+    public removeCancelledTransaction(transactionHash: string): void {
         /* Find inputs used in the cancelled transaction, and remove them from
            the locked inputs */
         const removed: TransactionInput[] = _.remove(this.lockedInputs, (input) => {
@@ -182,7 +183,7 @@ export class SubWallet {
         });
     }
 
-    public removeForkedTransactions(forkHeight: number) {
+    public removeForkedTransactions(forkHeight: number): void {
         this.lockedInputs = [];
         this.unconfirmedIncomingAmounts = [];
 
@@ -207,11 +208,23 @@ export class SubWallet {
         );
     }
 
-    public convertSyncTimestampToHeight(startTimestamp: number, startHeight: number) {
+    public convertSyncTimestampToHeight(startTimestamp: number, startHeight: number): void {
         /* If we don't have a start timestamp then we don't need to convert */
         if (this.syncStartTimestamp !== 0) {
             this.syncStartTimestamp = startTimestamp;
             this.syncStartHeight = startHeight;
         }
+    }
+
+    public hasKeyImage(keyImage: string): boolean {
+        if (this.unspentInputs.some((input) => input.keyImage === keyImage)) {
+            return true;
+        }
+
+        if (this.lockedInputs.some((input) => input.keyImage === keyImage)) {
+            return true;
+        }
+
+        return false;
     }
 }
