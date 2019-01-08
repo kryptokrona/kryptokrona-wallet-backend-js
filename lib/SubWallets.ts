@@ -36,9 +36,12 @@ export class SubWallets {
         });
     }
 
+    /* Whether the wallet is a view only wallet (cannot send transactions, only can view) */
+    public readonly isViewWallet: boolean;
+
     /* The public spend keys this wallet contains. Used for verifying if a
        transaction is ours. */
-    public publicSpendKeys: string[] = [];
+    private publicSpendKeys: string[] = [];
 
     /* Mapping of public spend key to subwallet */
     private subWallets: Map<string, SubWallet> = new Map();
@@ -51,11 +54,9 @@ export class SubWallets {
     /* The shared private view key */
     private readonly privateViewKey: string;
 
-    /* Whether the wallet is a view only wallet (cannot send transactions, only can view) */
-    private readonly isViewWallet: boolean;
-
     /* A mapping of transaction hashes, to transaction private keys */
     private transactionPrivateKeys: Map<string, string> = new Map();
+
     /* Private spend key is optional if it's a view wallet */
     constructor(
         address: string,
@@ -215,5 +216,27 @@ export class SubWallets {
         }
 
         return [false, ''];
+    }
+
+    public getPublicSpendKeys(): string[] {
+        return this.publicSpendKeys;
+    }
+
+    public getTxInputKeyImage(
+        publicSpendKey: string,
+        derivation: string,
+        outputIndex: number): string {
+
+        const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
+
+        if (!subWallet) {
+            throw new Error('Subwallet not found!');
+        }
+
+        if (this.isViewWallet) {
+            return '0'.repeat(64);
+        }
+
+        return subWallet.getTxInputKeyImage(derivation, outputIndex);
     }
 }

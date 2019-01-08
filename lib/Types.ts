@@ -387,8 +387,8 @@ export class TransactionData {
     public readonly transactionsToAdd: Transaction[] = [];
 
     /* Mapping of public spend key to inputs */
-    public readonly inputsToAdd: [string, TransactionInput][] = [];
+    public readonly inputsToAdd: Array<[string, TransactionInput]> = [];
 
     /* Mapping of public spend key to key image */
-    public readonly keyImagesToMarkSpent: [string, string][] = [];
+    public readonly keyImagesToMarkSpent: Array<[string, string]> = [];
 }

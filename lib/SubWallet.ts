@@ -2,6 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
+import { CryptoUtils } from './CnUtils';
 import { SubWalletJSON } from './JsonSerialization';
 import { TransactionInput, UnconfirmedInput } from './Types';
 
@@ -226,5 +227,14 @@ export class SubWallet {
         }
 
         return false;
+    }
+
+    public getTxInputKeyImage(
+        derivation: string,
+        outputIndex: number) {
+        return CryptoUtils.generateKeyImagePrimitive(
+            this.publicSpendKey, this.privateSpendKey as string, outputIndex,
+            derivation,
+        );
     }
 }

@@ -2,6 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
+import { CryptoUtils } from './CnUtils';
 import { IDaemon } from './IDaemon';
 import { WalletSynchronizerJSON } from './JsonSerialization';
 import { SubWallets } from './SubWallets';
@@ -9,7 +10,7 @@ import { SynchronizationStatus } from './SynchronizationStatus';
 
 import {
     Block, KeyInput, RawCoinbaseTransaction, RawTransaction, Transaction,
-    TransactionData,
+    TransactionData, TransactionInput,
 } from './Types';
 
 import * as _ from 'lodash';
@@ -145,6 +146,11 @@ export class WalletSynchronizer {
         return blocks;
     }
 
+    public getGlobalIndexes(blockHeight: number, hash: string): number[] {
+        /* TODO */
+        return [];
+    }
+
     public processTransactionInputs(
         keyInputs: KeyInput[],
         transfers: Map<string, number>,
@@ -161,10 +167,10 @@ export class WalletSynchronizer {
             );
 
             if (found) {
-                let amount: number = transfers.get(publicSpendKey) || 0;
-                amount += input.amount;
-
-                transfers.set(publicSpendKey, amount);
+                transfers.set(
+                    publicSpendKey,
+                    input.amount + (transfers.get(publicSpendKey) || 0),
+                );
 
                 txData.keyImagesToMarkSpent.push([publicSpendKey, input.keyImage]);
             }
@@ -179,8 +185,62 @@ export class WalletSynchronizer {
         blockHeight: number,
         txData: TransactionData): [number, Map<string, number>, TransactionData] {
 
-        /* TODO */
-        return [0, transfers, txData];
+        const derivation: string = CryptoUtils.generateKeyDerivation(
+            rawTX.transactionPublicKey, this.privateViewKey,
+        );
+
+        let sumOfOutputs: number = 0;
+
+        let globalIndexes: number[] = [];
+
+        const spendKeys: string[] = this.subWallets.getPublicSpendKeys();
+
+        for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
+            sumOfOutputs += output.amount;
+
+            /* Derive the spend key from the transaction, using the previous
+               derivation */
+            const derivedSpendKey = CryptoUtils.underivePublicKey(
+                derivation, outputIndex, output.key,
+            );
+
+            /* See if the derived spend key matches any of our spend keys */
+            if (!_.includes(spendKeys, derivedSpendKey)) {
+                continue;
+            }
+
+            /* Get the indexes, if we haven't already got them. (Don't need
+               to get them if we're in a view wallet, since we can't spend.) */
+            if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
+                globalIndexes = this.getGlobalIndexes(blockHeight, rawTX.hash);
+            }
+
+            transfers.set(
+                derivedSpendKey,
+                output.amount + (transfers.get(derivedSpendKey) || 0),
+            );
+
+            /* We're not gonna use it in a view wallet, so just set to zero */
+            const globalOutputIndex: number
+                = this.subWallets.isViewWallet ? globalIndexes[outputIndex] : 0;
+
+            /* Not spent yet! */
+            const spendHeight: number = 0;
+
+            const keyImage = this.subWallets.getTxInputKeyImage(
+                derivedSpendKey, derivation, outputIndex,
+            );
+
+            const txInput: TransactionInput = new TransactionInput(
+                keyImage, output.amount, blockHeight,
+                rawTX.transactionPublicKey, outputIndex, globalOutputIndex,
+                output.key, spendHeight, rawTX.unlockTime, rawTX.hash,
+            );
+
+            txData.inputsToAdd.push([derivedSpendKey, txInput]);
+        }
+
+        return [sumOfOutputs, transfers, txData];
     }
 
     public processTransaction(
