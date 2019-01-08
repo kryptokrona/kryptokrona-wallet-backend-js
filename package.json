@@ -10,6 +10,7 @@
     "test": "yarn install && node dist/tests/tests.js",
     "style": "./node_modules/.bin/tslint -c tslint.json 'lib/**/*.ts'"
   },
+  "files": ["dist/lib/*"],
   "keywords": [],
   "author": "",
   "license": "AGPL-3.0",

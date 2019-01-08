@@ -1,0 +1,31 @@
+import { SubWalletsJSON } from './JsonSerialization';
+import { SubWallet } from './SubWallet';
+import { Transaction, TransactionInput } from './Types';
+import { WalletError } from './WalletError';
+export declare class SubWallets {
+    static fromJSON(json: SubWalletsJSON): SubWallets;
+    readonly isViewWallet: boolean;
+    private publicSpendKeys;
+    private subWallets;
+    private transactions;
+    private lockedTransactions;
+    private readonly privateViewKey;
+    private transactionPrivateKeys;
+    constructor(address: string, scanHeight: number, newWallet: boolean, privateViewKey: string, privateSpendKey?: string);
+    toJSON(): SubWalletsJSON;
+    getPrivateViewKey(): string;
+    getPrivateSpendKey(publicSpendKey: string): [WalletError, string];
+    getPrimarySubWallet(): SubWallet;
+    getPrimaryAddress(): string;
+    getPrimaryPrivateSpendKey(): string;
+    getLockedTransactionHashes(): string[];
+    addTransaction(transaction: Transaction): void;
+    storeTransactionInput(publicSpendKey: string, input: TransactionInput): void;
+    markInputAsSpent(publicSpendKey: string, keyImage: string, spendHeight: number): void;
+    removeCancelledTransaction(transactionHash: string): void;
+    removeForkedTransactions(forkHeight: number): void;
+    convertSyncTimestampToHeight(timestamp: number, height: number): void;
+    getKeyImageOwner(keyImage: string): [boolean, string];
+    getPublicSpendKeys(): string[];
+    getTxInputKeyImage(publicSpendKey: string, derivation: string, outputIndex: number): string;
+}
