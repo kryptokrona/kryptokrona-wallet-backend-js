@@ -207,6 +207,12 @@ class WalletError {
                 return 'The public/private key or hash given is not a 64 char ' +
                     'hex string.';
             }
+            case WalletErrorCode.HASH_WRONG_LENGTH: {
+                return 'The hash given is not 64 characters long.';
+            }
+            case WalletErrorCode.HASH_INVALID: {
+                return 'The hash given is not a hex string (A-Za-z0-9)';
+            }
         }
     }
 }
@@ -344,5 +350,9 @@ var WalletErrorCode;
     WalletErrorCode[WalletErrorCode["NEGATIVE_VALUE_GIVEN"] = 46] = "NEGATIVE_VALUE_GIVEN";
     /* Key is not 64 char hex */
     WalletErrorCode[WalletErrorCode["INVALID_KEY_FORMAT"] = 47] = "INVALID_KEY_FORMAT";
+    /* Hash not 64 chars */
+    WalletErrorCode[WalletErrorCode["HASH_WRONG_LENGTH"] = 48] = "HASH_WRONG_LENGTH";
+    /* Hash not hex */
+    WalletErrorCode[WalletErrorCode["HASH_INVALID"] = 49] = "HASH_INVALID";
 })(WalletErrorCode = exports.WalletErrorCode || (exports.WalletErrorCode = {}));
 exports.SUCCESS = new WalletError(WalletErrorCode.SUCCESS);

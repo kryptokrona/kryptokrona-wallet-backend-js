@@ -212,6 +212,12 @@ export class WalletError {
                 return 'The public/private key or hash given is not a 64 char ' +
                        'hex string.';
             }
+            case WalletErrorCode.HASH_WRONG_LENGTH: {
+                return 'The hash given is not 64 characters long.';
+            }
+            case WalletErrorCode.HASH_INVALID: {
+                return 'The hash given is not a hex string (A-Za-z0-9)';
+            }
         }
     }
 }
@@ -395,6 +401,12 @@ export enum WalletErrorCode {
 
     /* Key is not 64 char hex */
     INVALID_KEY_FORMAT = 47,
+
+    /* Hash not 64 chars */
+    HASH_WRONG_LENGTH = 48,
+
+    /* Hash not hex */
+    HASH_INVALID = 49,
 }
 
 export let SUCCESS: WalletError = new WalletError(WalletErrorCode.SUCCESS);

@@ -19,6 +19,9 @@ class Config {
     /* How often to do the 'main loop' - fetch from daemon, process blocks -
        in milliseconds */
     public mainLoopInterval: number = 1000;
+
+    /* Your coins 'ticker', generally used to refer to the coin, i.e. 123 TRTL */
+    public ticker: string = 'TRTL';
 }
 
 export default new Config();

@@ -10,3 +10,5 @@ var WalletBackend_1 = require("./WalletBackend");
 exports.WalletBackend = WalletBackend_1.WalletBackend;
 var ConventionalDaemon_1 = require("./ConventionalDaemon");
 exports.ConventionalDaemon = ConventionalDaemon_1.ConventionalDaemon;
+var Utilities_1 = require("./Utilities");
+exports.prettyPrintAmount = Utilities_1.prettyPrintAmount;

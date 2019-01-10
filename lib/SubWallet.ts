@@ -5,6 +5,7 @@
 import { CryptoUtils } from './CnUtils';
 import { SubWalletJSON } from './JsonSerialization';
 import { TransactionInput, UnconfirmedInput } from './Types';
+import { isInputUnlocked } from './Utilities';
 
 import * as _ from 'lodash';
 
@@ -236,5 +237,22 @@ export class SubWallet {
             this.publicSpendKey, this.privateSpendKey as string, outputIndex,
             derivation,
         );
+    }
+
+    public getBalance(currentHeight: number): [number, number] {
+        let unlockedBalance: number = 0;
+        let lockedBalance: number = 0;
+
+        for (const input of this.unspentInputs) {
+            if (isInputUnlocked(input.unlockTime, currentHeight)) {
+                unlockedBalance += input.amount;
+            } else {
+                lockedBalance += input.amount;
+            }
+        }
+
+        lockedBalance += _.sumBy(this.unconfirmedIncomingAmounts, 'amount');
+
+        return [unlockedBalance, lockedBalance];
     }
 }

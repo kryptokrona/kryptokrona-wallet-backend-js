@@ -46,3 +46,5 @@ exports.GLOBAL_INDEXES_OBSCURITY = 10;
    the queue. If we exceed this, we will wait till it drops below this
    amount. */
 exports.MAXIMUM_SYNC_QUEUE_SIZE = 1000;
+/* Used to determine whether an unlock time is a height, or a timestamp */
+exports.MAX_BLOCK_NUMBER = 500000000;

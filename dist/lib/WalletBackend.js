@@ -12,6 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const deepEqual = require("deep-equal");
+const EventEmitter = require("events");
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const Constants_1 = require("./Constants");
@@ -23,7 +24,20 @@ const Utilities_1 = require("./Utilities");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletError_1 = require("./WalletError");
 const WalletSynchronizer_1 = require("./WalletSynchronizer");
-class WalletBackend {
+class WalletBackend extends EventEmitter {
+    constructor(daemon, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
+        super();
+        /* Whether our wallet is synced */
+        this.synced = false;
+        this.subWallets = new SubWallets_1.SubWallets(address, scanHeight, newWallet, privateViewKey, privateSpendKey);
+        let timestamp = 0;
+        if (newWallet) {
+            timestamp = Utilities_1.getCurrentTimestampAdjusted();
+        }
+        this.walletSynchronizer = new WalletSynchronizer_1.WalletSynchronizer(daemon, this.subWallets, timestamp, scanHeight, privateViewKey);
+        this.daemon = daemon;
+        this.mainLoopExecutor = new Metronome_1.Metronome(this.mainLoop.bind(this), Config_1.default.mainLoopInterval);
+    }
     /* Opens a wallet given a filepath and a password */
     static openWalletFromFile(daemon, filename, password) {
         const walletJSON = OpenWallet_1.openWallet(filename, password);
@@ -124,16 +138,6 @@ class WalletBackend {
             walletSynchronizer: WalletSynchronizer_1.WalletSynchronizer.fromJSON(json.walletSynchronizer),
         });
     }
-    constructor(daemon, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
-        this.subWallets = new SubWallets_1.SubWallets(address, scanHeight, newWallet, privateViewKey, privateSpendKey);
-        let timestamp = 0;
-        if (newWallet) {
-            timestamp = new Date().valueOf();
-        }
-        this.walletSynchronizer = new WalletSynchronizer_1.WalletSynchronizer(daemon, timestamp, scanHeight, privateViewKey);
-        this.daemon = daemon;
-        this.mainLoopExecutor = new Metronome_1.Metronome(this.mainLoop.bind(this), Config_1.default.mainLoopInterval);
-    }
     /* Fetch initial daemon info and fee. Should we do this in the constructor
        instead...? Well... not much point wasting time if they just want to
        make a wallet */
@@ -152,41 +156,69 @@ class WalletBackend {
     }
     mainLoop() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.daemon.getDaemonInfo();
-            const blocks = yield this.walletSynchronizer.getBlocks();
-            for (const block of blocks) {
-                /* Forked chain, remove old data */
-                if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
-                    this.subWallets.removeForkedTransactions(block.blockHeight);
+            /* Lets not await on this right away, rather do so once we've finished
+               working. That wait it will most likely have completed, and we
+               aren't wasting time. */
+            const daemonInfo = this.daemon.getDaemonInfo();
+            try {
+                const blocks = yield this.walletSynchronizer.getBlocks();
+                console.log('Blocks size: ', blocks.length);
+                for (const block of blocks) {
+                    console.log('Processing block ' + block.blockHeight + '\n\n');
+                    /* Forked chain, remove old data */
+                    if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
+                        this.subWallets.removeForkedTransactions(block.blockHeight);
+                    }
+                    let txData = new Types_1.TransactionData();
+                    /* Process the coinbase tx */
+                    txData = yield this.walletSynchronizer.processCoinbaseTransaction(block.coinbaseTransaction, block.blockTimestamp, block.blockHeight, txData);
+                    /* Process the normal txs */
+                    for (const tx of block.transactions) {
+                        txData = yield this.walletSynchronizer.processTransaction(tx, block.blockTimestamp, block.blockHeight, txData);
+                    }
+                    /* Store the block hash we just processed */
+                    this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
+                    /* Store any transactions */
+                    for (const transaction of txData.transactionsToAdd) {
+                        this.subWallets.addTransaction(transaction);
+                        /* Alert listeners we've got a transaction */
+                        this.emit('transaction', transaction);
+                    }
+                    /* Store any corresponding inputs */
+                    for (const [publicKey, input] of txData.inputsToAdd) {
+                        this.subWallets.storeTransactionInput(publicKey, input);
+                    }
+                    /* Mark any spent key images */
+                    for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
+                        this.subWallets.markInputAsSpent(publicKey, keyImage, block.blockHeight);
+                    }
                 }
-                let txData = new Types_1.TransactionData();
-                /* Process the coinbase tx */
-                txData = this.walletSynchronizer.processCoinbaseTransaction(block.coinbaseTransaction, block.blockTimestamp, block.blockHeight, txData);
-                /* Process the normal txs */
-                for (const tx of block.transactions) {
-                    txData = this.walletSynchronizer.processTransaction(tx, block.blockTimestamp, block.blockHeight, txData);
+                const walletHeight = this.walletSynchronizer.getHeight();
+                const networkHeight = this.daemon.getNetworkBlockCount();
+                if (walletHeight >= networkHeight) {
+                    /* Yay, synced with the network */
+                    if (!this.synced) {
+                        this.emit('sync', walletHeight, networkHeight);
+                        this.synced = true;
+                    }
+                    const lockedTransactionHashes = this.subWallets.getLockedTransactionHashes();
+                    const cancelledTransactions = yield this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
+                    for (const cancelledTX of cancelledTransactions) {
+                        this.subWallets.removeCancelledTransaction(cancelledTX);
+                    }
                 }
-                /* Store the block hash we just processed */
-                this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
-                /* Store any transactions */
-                for (const transaction of txData.transactionsToAdd) {
-                    this.subWallets.addTransaction(transaction);
+                else {
+                    /* We are no longer synced :( */
+                    if (this.synced) {
+                        this.emit('desync', walletHeight, networkHeight);
+                        this.synced = false;
+                    }
                 }
-                /* Store any corresponding inputs */
-                for (const [publicKey, input] of txData.inputsToAdd) {
-                    this.subWallets.storeTransactionInput(publicKey, input);
-                }
-                /* Mark any spent key images */
-                for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
-                    this.subWallets.markInputAsSpent(publicKey, keyImage, block.blockHeight);
-                }
+                yield daemonInfo;
             }
-            if (this.walletSynchronizer.getHeight() >= this.daemon.getNetworkBlockCount()) {
-                const lockedTransactionHashes = this.subWallets.getLockedTransactionHashes();
-                const cancelledTransactions = yield this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
-                for (const cancelledTX of cancelledTransactions) {
-                    this.subWallets.removeCancelledTransaction(cancelledTX);
-                }
+            catch (err) {
+                console.log('Caught error: ', err);
+                return;
             }
         });
     }
@@ -201,7 +233,7 @@ class WalletBackend {
     /* Initialize stuff not stored in the JSON */
     initAfterLoad(daemon) {
         this.daemon = daemon;
-        this.walletSynchronizer.initAfterLoad(this.subWallets);
+        this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
     }
     getNodeFee() {
         return this.daemon.nodeFee();

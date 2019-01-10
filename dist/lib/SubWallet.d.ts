@@ -24,4 +24,5 @@ export declare class SubWallet {
     convertSyncTimestampToHeight(startTimestamp: number, startHeight: number): void;
     hasKeyImage(keyImage: string): boolean;
     getTxInputKeyImage(derivation: string, outputIndex: number): string;
+    getBalance(currentHeight: number): [number, number];
 }

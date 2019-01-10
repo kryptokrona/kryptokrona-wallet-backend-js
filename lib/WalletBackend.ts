@@ -3,6 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import deepEqual = require('deep-equal');
+import * as EventEmitter from 'events';
 
 import config from './Config';
 
@@ -14,12 +15,12 @@ import { Metronome } from './Metronome';
 import { openWallet } from './OpenWallet';
 import { SubWallets } from './SubWallets';
 import { Block, TransactionData } from './Types';
-import { addressToKeys, isHex64 } from './Utilities';
+import { addressToKeys, getCurrentTimestampAdjusted, isHex64 } from './Utilities';
 import { validateAddresses } from './ValidateParameters';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 import { WalletSynchronizer } from './WalletSynchronizer';
 
-export class WalletBackend {
+export class WalletBackend extends EventEmitter {
 
     /* Opens a wallet given a filepath and a password */
     public static openWalletFromFile(
@@ -197,6 +198,9 @@ export class WalletBackend {
     /* Executes the main loop every n seconds for us */
     private mainLoopExecutor: Metronome;
 
+    /* Whether our wallet is synced */
+    private synced: boolean = false;
+
     constructor(
         daemon: IDaemon,
         address: string,
@@ -205,6 +209,8 @@ export class WalletBackend {
         privateViewKey: string,
         privateSpendKey?: string) {
 
+        super();
+
         this.subWallets = new SubWallets(
             address, scanHeight, newWallet, privateViewKey, privateSpendKey,
         );
@@ -212,11 +218,11 @@ export class WalletBackend {
         let timestamp = 0;
 
         if (newWallet) {
-            timestamp = new Date().valueOf();
+            timestamp = getCurrentTimestampAdjusted();
         }
 
         this.walletSynchronizer = new WalletSynchronizer(
-            daemon, timestamp, scanHeight, privateViewKey,
+            daemon, this.subWallets, timestamp, scanHeight, privateViewKey,
         );
 
         this.daemon = daemon;
@@ -244,59 +250,94 @@ export class WalletBackend {
     }
 
     public async mainLoop(): Promise<void> {
-        this.daemon.getDaemonInfo();
+        /* Lets not await on this right away, rather do so once we've finished
+           working. That wait it will most likely have completed, and we
+           aren't wasting time. */
+        const daemonInfo: Promise<void> = this.daemon.getDaemonInfo();
 
-        const blocks: Block[] = await this.walletSynchronizer.getBlocks();
+        try {
+            const blocks: Block[] = await this.walletSynchronizer.getBlocks();
 
-        for (const block of blocks) {
-            /* Forked chain, remove old data */
-            if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
-                this.subWallets.removeForkedTransactions(block.blockHeight);
-            }
+            console.log('Blocks size: ', blocks.length);
 
-            let txData: TransactionData = new TransactionData();
+            for (const block of blocks) {
+                console.log('Processing block ' + block.blockHeight + '\n\n');
 
-            /* Process the coinbase tx */
-            txData = this.walletSynchronizer.processCoinbaseTransaction(
-                block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
-                txData,
-            );
+                /* Forked chain, remove old data */
+                if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
+                    this.subWallets.removeForkedTransactions(block.blockHeight);
+                }
 
-            /* Process the normal txs */
-            for (const tx of block.transactions) {
-                txData = this.walletSynchronizer.processTransaction(
-                    tx, block.blockTimestamp, block.blockHeight, txData,
+                let txData: TransactionData = new TransactionData();
+
+                /* Process the coinbase tx */
+                txData = await this.walletSynchronizer.processCoinbaseTransaction(
+                    block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
+                    txData,
                 );
+
+                /* Process the normal txs */
+                for (const tx of block.transactions) {
+                    txData = await this.walletSynchronizer.processTransaction(
+                        tx, block.blockTimestamp, block.blockHeight, txData,
+                    );
+                }
+
+                /* Store the block hash we just processed */
+                this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
+
+                /* Store any transactions */
+                for (const transaction of txData.transactionsToAdd) {
+                    this.subWallets.addTransaction(transaction);
+
+                    /* Alert listeners we've got a transaction */
+                    this.emit('transaction', transaction);
+                }
+
+                /* Store any corresponding inputs */
+                for (const [publicKey, input] of txData.inputsToAdd) {
+                    this.subWallets.storeTransactionInput(publicKey, input);
+                }
+
+                /* Mark any spent key images */
+                for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
+                    this.subWallets.markInputAsSpent(publicKey, keyImage, block.blockHeight);
+                }
             }
 
-            /* Store the block hash we just processed */
-            this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
+            const walletHeight: number = this.walletSynchronizer.getHeight();
+            const networkHeight: number = this.daemon.getNetworkBlockCount();
 
-            /* Store any transactions */
-            for (const transaction of txData.transactionsToAdd) {
-                this.subWallets.addTransaction(transaction);
+            if (walletHeight >= networkHeight) {
+
+                /* Yay, synced with the network */
+                if (!this.synced) {
+                    this.emit('sync', walletHeight, networkHeight);
+                    this.synced = true;
+                }
+
+                const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
+
+                const cancelledTransactions: string[]
+                    = await this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
+
+                for (const cancelledTX of cancelledTransactions) {
+                    this.subWallets.removeCancelledTransaction(cancelledTX);
+                }
+
+            } else {
+
+                /* We are no longer synced :( */
+                if (this.synced) {
+                    this.emit('desync', walletHeight, networkHeight);
+                    this.synced = false;
+                }
             }
 
-            /* Store any corresponding inputs */
-            for (const [publicKey, input] of txData.inputsToAdd) {
-                this.subWallets.storeTransactionInput(publicKey, input);
-            }
-
-            /* Mark any spent key images */
-            for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
-                this.subWallets.markInputAsSpent(publicKey, keyImage, block.blockHeight);
-            }
-        }
-
-        if (this.walletSynchronizer.getHeight() >= this.daemon.getNetworkBlockCount()) {
-            const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
-
-            const cancelledTransactions: string[]
-                = await this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
-
-            for (const cancelledTX of cancelledTransactions) {
-                this.subWallets.removeCancelledTransaction(cancelledTX);
-            }
+            await daemonInfo;
+        } catch (err) {
+            console.log('Caught error: ', err);
+            return;
         }
     }
 
@@ -312,7 +353,7 @@ export class WalletBackend {
     /* Initialize stuff not stored in the JSON */
     public initAfterLoad(daemon: IDaemon): void {
         this.daemon = daemon;
-        this.walletSynchronizer.initAfterLoad(this.subWallets);
+        this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
     }
 
     public getNodeFee(): [string, number] {

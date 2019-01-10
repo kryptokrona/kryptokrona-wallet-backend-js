@@ -15,16 +15,16 @@ export class Metronome {
         this.interval = interval;
     }
 
-    public start(): void {
-        this.tick();
+    public async start(): Promise<void> {
+        await this.tick();
     }
 
     public stop(): void {
         clearTimeout(this.timer);
     }
 
-    private tick(): void {
-        this.func();
+    private async tick(): Promise<void> {
+        await this.func();
         this.timer = setTimeout(this.tick.bind(this), this.interval);
     }
 }

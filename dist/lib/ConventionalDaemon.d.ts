@@ -17,5 +17,6 @@ export declare class ConventionalDaemon implements IDaemon {
     getDaemonInfo(): Promise<void>;
     nodeFee(): [string, number];
     getWalletSyncData(blockHashCheckpoints: string[], startHeight: number, startTimestamp: number): Promise<Block[]>;
+    getGlobalIndexesForRange(startHeight: number, endHeight: number): Promise<Map<string, number[]>>;
     private getFeeInfo;
 }

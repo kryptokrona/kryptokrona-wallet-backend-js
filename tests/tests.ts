@@ -1,7 +1,8 @@
 import * as colors from 'colors';
 
 import {
-    ConventionalDaemon, WalletBackend, WalletError, WalletErrorCode,
+    ConventionalDaemon, prettyPrintAmount, WalletBackend, WalletError,
+    WalletErrorCode,
 } from '../lib/index';
 
 class Tester {
@@ -165,6 +166,17 @@ tester.test(() => {
 }, 'Verifying correct address is created from seed',
    'Seed wallet has correct address',
    'Seed wallet has incorrect address!');
+
+tester.test(() => {
+    const test1: boolean = prettyPrintAmount(12345607) === '123,456.07 TRTL';
+    const test2: boolean = prettyPrintAmount(0) === '0.00 TRTL';
+    const test3: boolean = prettyPrintAmount(-1234) === '-12.34 TRTL';
+
+    return test1 && test2 && test3;
+
+}, 'Testing prettyPrintAmount works as expected...',
+   'prettyPrintAmount works',
+   'prettyPrintAmount gave unexpected output!');
 
 /* Print a summary of passed/failed tests */
 tester.summary();

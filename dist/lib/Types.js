@@ -5,6 +5,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const JsonSerialization_1 = require("./JsonSerialization");
 class Block {
+    static fromJSON(json) {
+        const block = Object.create(Block.prototype);
+        return Object.assign(block, json, {
+            coinbaseTransaction: RawCoinbaseTransaction.fromJSON(json.coinbaseTX),
+            transactions: json.transactions.map(RawTransaction.fromJSON),
+            blockHeight: json.blockHeight,
+            blockHash: json.blockHash,
+            blockTimestamp: json.blockTimestamp,
+        });
+    }
     constructor(coinbaseTransaction, transactions, blockHeight, blockHash, blockTimestamp) {
         this.coinbaseTransaction = coinbaseTransaction;
         this.transactions = transactions;
@@ -15,6 +25,15 @@ class Block {
 }
 exports.Block = Block;
 class RawCoinbaseTransaction {
+    static fromJSON(json) {
+        const coinbaseTX = Object.create(RawCoinbaseTransaction.prototype);
+        return Object.assign(coinbaseTX, json, {
+            keyOutputs: json.outputs.map(KeyOutput.fromJSON),
+            hash: json.hash,
+            transactionPublicKey: json.txPublicKey,
+            unlockTime: json.unlockTime,
+        });
+    }
     constructor(keyOutputs, hash, transactionPublicKey, unlockTime) {
         this.keyOutputs = keyOutputs;
         this.hash = hash;
@@ -24,6 +43,17 @@ class RawCoinbaseTransaction {
 }
 exports.RawCoinbaseTransaction = RawCoinbaseTransaction;
 class RawTransaction extends RawCoinbaseTransaction {
+    static fromJSON(json) {
+        const coinbaseTX = Object.create(RawTransaction.prototype);
+        return Object.assign(coinbaseTX, json, {
+            keyOutputs: json.outputs.map(KeyOutput.fromJSON),
+            hash: json.hash,
+            transactionPublicKey: json.txPublicKey,
+            unlockTime: json.unlockTime,
+            paymentID: json.paymentID,
+            keyInputs: json.inputs.map(KeyInput.fromJSON),
+        });
+    }
     constructor(keyOutputs, hash, transactionPublicKey, unlockTime, paymentID, keyInputs) {
         super(keyOutputs, hash, transactionPublicKey, unlockTime);
         this.paymentID = paymentID;
@@ -54,6 +84,16 @@ class Transaction {
         this.paymentID = paymentID;
         this.unlockTime = unlockTime;
         this.isCoinbaseTransaction = isCoinbaseTransaction;
+    }
+    totalAmount() {
+        let sum = 0;
+        for (const [publicKey, amount] of this.transfers) {
+            sum += amount;
+        }
+        return sum;
+    }
+    isFusionTransaction() {
+        return this.fee === 0 && !this.isCoinbaseTransaction;
     }
     toJSON() {
         return {
@@ -140,6 +180,13 @@ class UnconfirmedInput {
 }
 exports.UnconfirmedInput = UnconfirmedInput;
 class KeyOutput {
+    static fromJSON(json) {
+        const keyOutput = Object.create(KeyOutput.prototype);
+        return Object.assign(keyOutput, json, {
+            amount: json.amount,
+            key: json.key,
+        });
+    }
     constructor(key, amount) {
         this.key = key;
         this.amount = amount;
@@ -147,6 +194,14 @@ class KeyOutput {
 }
 exports.KeyOutput = KeyOutput;
 class KeyInput {
+    static fromJSON(json) {
+        const keyInput = Object.create(KeyInput.prototype);
+        return Object.assign(keyInput, json, {
+            amount: json.amount,
+            keyImage: json.k_image,
+            outputIndexes: json.key_offsets,
+        });
+    }
     constructor(amount, keyImage, outputIndexes) {
         this.amount = amount;
         this.keyImage = keyImage;

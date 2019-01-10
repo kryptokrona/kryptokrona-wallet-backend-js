@@ -8,6 +8,21 @@ import {
 } from './JsonSerialization';
 
 export class Block {
+    public static fromJSON(json: any): Block {
+        const block = Object.create(Block.prototype);
+
+        return Object.assign(block, json, {
+            coinbaseTransaction: RawCoinbaseTransaction.fromJSON(json.coinbaseTX),
+
+            transactions: json.transactions.map(RawTransaction.fromJSON),
+
+            blockHeight: json.blockHeight,
+
+            blockHash: json.blockHash,
+
+            blockTimestamp: json.blockTimestamp,
+        });
+    }
 
     /* The coinbase transaction contained in this block */
     public readonly coinbaseTransaction: RawCoinbaseTransaction;
@@ -40,6 +55,19 @@ export class Block {
 }
 
 export class RawCoinbaseTransaction {
+    public static fromJSON(json: any): RawCoinbaseTransaction {
+        const coinbaseTX = Object.create(RawCoinbaseTransaction.prototype);
+
+        return Object.assign(coinbaseTX, json, {
+            keyOutputs: json.outputs.map(KeyOutput.fromJSON),
+
+            hash: json.hash,
+
+            transactionPublicKey: json.txPublicKey,
+
+            unlockTime: json.unlockTime,
+        });
+    }
 
     /* The outputs of this transaction */
     public readonly keyOutputs: KeyOutput[];
@@ -68,6 +96,23 @@ export class RawCoinbaseTransaction {
 }
 
 export class RawTransaction extends RawCoinbaseTransaction {
+    public static fromJSON(json: any): RawTransaction {
+        const coinbaseTX = Object.create(RawTransaction.prototype);
+
+        return Object.assign(coinbaseTX, json, {
+            keyOutputs: json.outputs.map(KeyOutput.fromJSON),
+
+            hash: json.hash,
+
+            transactionPublicKey: json.txPublicKey,
+
+            unlockTime: json.unlockTime,
+
+            paymentID: json.paymentID,
+
+            keyInputs: json.inputs.map(KeyInput.fromJSON),
+        });
+    }
 
     /* The payment ID this transaction has. May be empty string. */
     public readonly paymentID: string;
@@ -159,6 +204,20 @@ export class Transaction {
         this.paymentID = paymentID;
         this.unlockTime = unlockTime;
         this.isCoinbaseTransaction = isCoinbaseTransaction;
+    }
+
+    public totalAmount(): number {
+        let sum: number = 0;
+
+        for (const [publicKey, amount] of this.transfers) {
+            sum += amount;
+        }
+
+        return sum;
+    }
+
+    public isFusionTransaction(): boolean {
+        return this.fee === 0 && !this.isCoinbaseTransaction;
     }
 
     public toJSON(): TransactionJSON {
@@ -340,6 +399,14 @@ export class UnconfirmedInput {
 }
 
 export class KeyOutput {
+    public static fromJSON(json: any): KeyOutput {
+        const keyOutput = Object.create(KeyOutput.prototype);
+
+        return Object.assign(keyOutput, json, {
+            amount: json.amount,
+            key: json.key,
+        });
+    }
 
     /* The output key */
     public readonly key: string;
@@ -361,6 +428,15 @@ export class KeyOutput {
 }
 
 export class KeyInput {
+    public static fromJSON(json: any): KeyInput {
+        const keyInput = Object.create(KeyInput.prototype);
+
+        return Object.assign(keyInput, json, {
+            amount: json.amount,
+            keyImage: json.k_image,
+            outputIndexes: json.key_offsets,
+        });
+    }
 
     /* The amount of this input */
     public readonly amount: number;

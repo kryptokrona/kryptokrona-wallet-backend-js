@@ -12,19 +12,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const CnUtils_1 = require("./CnUtils");
-const SubWallets_1 = require("./SubWallets");
+const Constants_1 = require("./Constants");
 const SynchronizationStatus_1 = require("./SynchronizationStatus");
 const Types_1 = require("./Types");
+const Utilities_1 = require("./Utilities");
 const _ = require("lodash");
 class WalletSynchronizer {
-    constructor(daemon, startTimestamp, startHeight, privateViewKey) {
+    constructor(daemon, subWallets, startTimestamp, startHeight, privateViewKey) {
         this.synchronizationStatus = new SynchronizationStatus_1.SynchronizationStatus();
-        /* Fuck the type system! */
-        this.subWallets = Object.create(SubWallets_1.SubWallets.prototype);
         this.daemon = daemon;
         this.startTimestamp = startTimestamp;
         this.startHeight = startHeight;
         this.privateViewKey = privateViewKey;
+        this.subWallets = subWallets;
     }
     static fromJSON(json) {
         const walletSynchronizer = Object.create(WalletSynchronizer.prototype);
@@ -35,8 +35,9 @@ class WalletSynchronizer {
             synchronizationStatus: SynchronizationStatus_1.SynchronizationStatus.fromJSON(json.transactionSynchronizerStatus),
         });
     }
-    initAfterLoad(subWallets) {
+    initAfterLoad(subWallets, daemon) {
         this.subWallets = subWallets;
+        this.daemon = daemon;
     }
     toJSON() {
         return {
@@ -85,6 +86,7 @@ class WalletSynchronizer {
                 blocks = yield this.daemon.getWalletSyncData(blockCheckpoints, this.startHeight, this.startTimestamp);
             }
             catch (err) {
+                console.log(err);
                 return [];
             }
             if (blocks.length === 0) {
@@ -111,9 +113,27 @@ class WalletSynchronizer {
             return blocks;
         });
     }
+    /* When we get the global indexes, we pass in a range of blocks, to obscure
+       which transactions we are interested in - the ones that belong to us.
+       To do this, we get the global indexes for all transactions in a range.
+
+       For example, if we want the global indexes for a transaction in block
+       17, we get all the indexes from block 10 to block 20. */
     getGlobalIndexes(blockHeight, hash) {
-        /* TODO */
-        return [];
+        return __awaiter(this, void 0, void 0, function* () {
+            const startHeight = Utilities_1.getLowerBound(blockHeight, Constants_1.GLOBAL_INDEXES_OBSCURITY);
+            const endHeight = Utilities_1.getUpperBound(blockHeight, Constants_1.GLOBAL_INDEXES_OBSCURITY);
+            const indexes = yield this.daemon.getGlobalIndexesForRange(startHeight, endHeight);
+            /* If the indexes returned doesn't include our array, the daemon is
+               faulty. If we can't connect to the daemon, it will throw instead,
+               which we will catch further up */
+            const ourIndexes = indexes.get(hash);
+            if (!ourIndexes) {
+                throw new Error('Could not get global indexes from daemon! ' +
+                    'Possibly faulty/malicious daemon.');
+            }
+            return ourIndexes;
+        });
     }
     processTransactionInputs(keyInputs, transfers, blockHeight, txData) {
         let sumOfInputs = 0;
@@ -128,66 +148,72 @@ class WalletSynchronizer {
         return [sumOfInputs, transfers, txData];
     }
     processTransactionOutputs(rawTX, transfers, blockHeight, txData) {
-        const derivation = CnUtils_1.CryptoUtils.generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
-        let sumOfOutputs = 0;
-        let globalIndexes = [];
-        const spendKeys = this.subWallets.getPublicSpendKeys();
-        for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
-            sumOfOutputs += output.amount;
-            /* Derive the spend key from the transaction, using the previous
-               derivation */
-            const derivedSpendKey = CnUtils_1.CryptoUtils.underivePublicKey(derivation, outputIndex, output.key);
-            /* See if the derived spend key matches any of our spend keys */
-            if (!_.includes(spendKeys, derivedSpendKey)) {
-                continue;
+        return __awaiter(this, void 0, void 0, function* () {
+            const derivation = CnUtils_1.CryptoUtils.generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
+            let sumOfOutputs = 0;
+            let globalIndexes = [];
+            const spendKeys = this.subWallets.getPublicSpendKeys();
+            for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
+                sumOfOutputs += output.amount;
+                /* Derive the spend key from the transaction, using the previous
+                   derivation */
+                const derivedSpendKey = CnUtils_1.CryptoUtils.underivePublicKey(derivation, outputIndex, output.key);
+                /* See if the derived spend key matches any of our spend keys */
+                if (!_.includes(spendKeys, derivedSpendKey)) {
+                    continue;
+                }
+                /* Get the indexes, if we haven't already got them. (Don't need
+                   to get them if we're in a view wallet, since we can't spend.) */
+                if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
+                    globalIndexes = yield this.getGlobalIndexes(blockHeight, rawTX.hash);
+                }
+                transfers.set(derivedSpendKey, output.amount + (transfers.get(derivedSpendKey) || 0));
+                /* We're not gonna use it in a view wallet, so just set to zero */
+                const globalOutputIndex = this.subWallets.isViewWallet ? globalIndexes[outputIndex] : 0;
+                /* Not spent yet! */
+                const spendHeight = 0;
+                const keyImage = this.subWallets.getTxInputKeyImage(derivedSpendKey, derivation, outputIndex);
+                const txInput = new Types_1.TransactionInput(keyImage, output.amount, blockHeight, rawTX.transactionPublicKey, outputIndex, globalOutputIndex, output.key, spendHeight, rawTX.unlockTime, rawTX.hash);
+                txData.inputsToAdd.push([derivedSpendKey, txInput]);
             }
-            /* Get the indexes, if we haven't already got them. (Don't need
-               to get them if we're in a view wallet, since we can't spend.) */
-            if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
-                globalIndexes = this.getGlobalIndexes(blockHeight, rawTX.hash);
-            }
-            transfers.set(derivedSpendKey, output.amount + (transfers.get(derivedSpendKey) || 0));
-            /* We're not gonna use it in a view wallet, so just set to zero */
-            const globalOutputIndex = this.subWallets.isViewWallet ? globalIndexes[outputIndex] : 0;
-            /* Not spent yet! */
-            const spendHeight = 0;
-            const keyImage = this.subWallets.getTxInputKeyImage(derivedSpendKey, derivation, outputIndex);
-            const txInput = new Types_1.TransactionInput(keyImage, output.amount, blockHeight, rawTX.transactionPublicKey, outputIndex, globalOutputIndex, output.key, spendHeight, rawTX.unlockTime, rawTX.hash);
-            txData.inputsToAdd.push([derivedSpendKey, txInput]);
-        }
-        return [sumOfOutputs, transfers, txData];
+            return [sumOfOutputs, transfers, txData];
+        });
     }
     processTransaction(rawTX, blockTimestamp, blockHeight, txData) {
-        let transfers = new Map();
-        let sumOfInputs;
-        let sumOfOutputs;
-        /* Finds the sum of inputs, adds the amounts that belong to us to the
-           transfers map */
-        [sumOfInputs, transfers, txData] = this.processTransactionInputs(rawTX.keyInputs, transfers, blockHeight, txData);
-        /* Finds the sum of outputs, adds the amounts that belong to us to the
-           transfers map, and stores any key images that belong to us */
-        [sumOfOutputs, transfers, txData] = this.processTransactionOutputs(rawTX, transfers, blockHeight, txData);
-        if (!_.isEmpty(transfers)) {
-            const fee = sumOfInputs - sumOfOutputs;
-            const isCoinbaseTransaction = false;
-            const tx = new Types_1.Transaction(transfers, rawTX.hash, fee, blockTimestamp, blockHeight, rawTX.paymentID, rawTX.unlockTime, isCoinbaseTransaction);
-            txData.transactionsToAdd.push(tx);
-        }
-        return txData;
+        return __awaiter(this, void 0, void 0, function* () {
+            let transfers = new Map();
+            let sumOfInputs;
+            let sumOfOutputs;
+            /* Finds the sum of inputs, adds the amounts that belong to us to the
+               transfers map */
+            [sumOfInputs, transfers, txData] = this.processTransactionInputs(rawTX.keyInputs, transfers, blockHeight, txData);
+            /* Finds the sum of outputs, adds the amounts that belong to us to the
+               transfers map, and stores any key images that belong to us */
+            [sumOfOutputs, transfers, txData] = yield this.processTransactionOutputs(rawTX, transfers, blockHeight, txData);
+            if (!_.isEmpty(transfers)) {
+                const fee = sumOfInputs - sumOfOutputs;
+                const isCoinbaseTransaction = false;
+                const tx = new Types_1.Transaction(transfers, rawTX.hash, fee, blockTimestamp, blockHeight, rawTX.paymentID, rawTX.unlockTime, isCoinbaseTransaction);
+                txData.transactionsToAdd.push(tx);
+            }
+            return txData;
+        });
     }
     processCoinbaseTransaction(rawTX, blockTimestamp, blockHeight, txData) {
-        let transfers = new Map();
-        [/*ignore*/ , transfers, txData] = this.processTransactionOutputs(rawTX, transfers, blockHeight, txData);
-        if (!_.isEmpty(transfers)) {
-            /* Coinbase transaction have no fee */
-            const fee = 0;
-            const isCoinbaseTransaction = true;
-            /* Coibnase transactions can't have payment ID's */
-            const paymentID = '';
-            const tx = new Types_1.Transaction(transfers, rawTX.hash, fee, blockTimestamp, blockHeight, paymentID, rawTX.unlockTime, isCoinbaseTransaction);
-            txData.transactionsToAdd.push(tx);
-        }
-        return txData;
+        return __awaiter(this, void 0, void 0, function* () {
+            let transfers = new Map();
+            [/*ignore*/ , transfers, txData] = yield this.processTransactionOutputs(rawTX, transfers, blockHeight, txData);
+            if (!_.isEmpty(transfers)) {
+                /* Coinbase transaction have no fee */
+                const fee = 0;
+                const isCoinbaseTransaction = true;
+                /* Coibnase transactions can't have payment ID's */
+                const paymentID = '';
+                const tx = new Types_1.Transaction(transfers, rawTX.hash, fee, blockTimestamp, blockHeight, paymentID, rawTX.unlockTime, isCoinbaseTransaction);
+                txData.transactionsToAdd.push(tx);
+            }
+            return txData;
+        });
     }
     getHeight() {
         return this.synchronizationStatus.getHeight();

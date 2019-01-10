@@ -5,6 +5,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const CnUtils_1 = require("./CnUtils");
 const Types_1 = require("./Types");
+const Utilities_1 = require("./Utilities");
 const _ = require("lodash");
 class SubWallet {
     constructor(address, scanHeight, timestamp, publicSpendKey, privateSpendKey) {
@@ -155,6 +156,20 @@ class SubWallet {
     }
     getTxInputKeyImage(derivation, outputIndex) {
         return CnUtils_1.CryptoUtils.generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
+    }
+    getBalance(currentHeight) {
+        let unlockedBalance = 0;
+        let lockedBalance = 0;
+        for (const input of this.unspentInputs) {
+            if (Utilities_1.isInputUnlocked(input.unlockTime, currentHeight)) {
+                unlockedBalance += input.amount;
+            }
+            else {
+                lockedBalance += input.amount;
+            }
+        }
+        lockedBalance += _.sumBy(this.unconfirmedIncomingAmounts, 'amount');
+        return [unlockedBalance, lockedBalance];
     }
 }
 exports.SubWallet = SubWallet;

@@ -28,4 +28,5 @@ export declare class SubWallets {
     getKeyImageOwner(keyImage: string): [boolean, string];
     getPublicSpendKeys(): string[];
     getTxInputKeyImage(publicSpendKey: string, derivation: string, outputIndex: number): string;
+    getBalance(subWalletsToTakeFrom: string[], takeFromAll: boolean, currentHeight: number): [number, number];
 }

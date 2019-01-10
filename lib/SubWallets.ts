@@ -6,6 +6,7 @@ import { CryptoUtils } from './CnUtils';
 import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';
 import { SubWallet } from './SubWallet';
 import { Transaction, TransactionInput } from './Types';
+import { getCurrentTimestampAdjusted } from './Utilities';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import * as _ from 'lodash';
@@ -71,8 +72,7 @@ export class SubWallets {
         let timestamp = 0;
 
         if (newWallet) {
-            /* Unix timestamp */
-            timestamp = new Date().valueOf();
+            timestamp = getCurrentTimestampAdjusted();
         }
 
         const publicKeys = CryptoUtils.decodeAddress(address);
@@ -238,5 +238,35 @@ export class SubWallets {
         }
 
         return subWallet.getTxInputKeyImage(derivation, outputIndex);
+    }
+
+    public getBalance(
+        subWalletsToTakeFrom: string[],
+        takeFromAll: boolean,
+        currentHeight: number): [number, number] {
+
+        /* If we're able to take from every subwallet, set the wallets to take from
+           to all our public spend keys */
+        if (takeFromAll) {
+            subWalletsToTakeFrom = this.publicSpendKeys;
+        }
+
+        let unlockedBalance: number = 0;
+        let lockedBalance: number = 0;
+
+        for (const publicSpendKey of subWalletsToTakeFrom) {
+            const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
+
+            if (!subWallet) {
+                throw new Error('Subwallet not found!');
+            }
+
+            const [unlocked, locked] = subWallet.getBalance(currentHeight);
+
+            unlockedBalance += unlocked;
+            lockedBalance += locked;
+        }
+
+        return [unlockedBalance, lockedBalance];
     }
 }

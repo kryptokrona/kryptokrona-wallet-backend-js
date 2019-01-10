@@ -88,11 +88,31 @@ export class ConventionalDaemon implements IDaemon {
         startHeight: number,
         startTimestamp: number): Promise<Block[]> {
 
-        return this.daemon.getWalletSyncData({
+        const data = await this.daemon.getWalletSyncData({
             blockHashCheckpoints,
             startHeight,
             startTimestamp,
         });
+
+        return data.map(Block.fromJSON);
+    }
+
+    public async getGlobalIndexesForRange(
+        startHeight: number,
+        endHeight: number): Promise<Map<string, number[]>> {
+
+        const data = await this.daemon.getGlobalIndexesForRange({
+            endHeight,
+            startHeight,
+        });
+
+        const indexes: Map<string, number[]> = new Map();
+
+        for (const index of data) {
+            indexes.set(index.key, index.value);
+        }
+
+        return indexes;
     }
 
     private async getFeeInfo(): Promise<void> {

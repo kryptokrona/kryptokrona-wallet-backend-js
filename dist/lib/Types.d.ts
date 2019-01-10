@@ -1,5 +1,6 @@
 import { TransactionInputJSON, TransactionJSON, UnconfirmedInputJSON } from './JsonSerialization';
 export declare class Block {
+    static fromJSON(json: any): Block;
     readonly coinbaseTransaction: RawCoinbaseTransaction;
     readonly transactions: RawTransaction[];
     readonly blockHeight: number;
@@ -8,6 +9,7 @@ export declare class Block {
     constructor(coinbaseTransaction: RawCoinbaseTransaction, transactions: RawTransaction[], blockHeight: number, blockHash: string, blockTimestamp: number);
 }
 export declare class RawCoinbaseTransaction {
+    static fromJSON(json: any): RawCoinbaseTransaction;
     readonly keyOutputs: KeyOutput[];
     readonly hash: string;
     readonly transactionPublicKey: string;
@@ -15,6 +17,7 @@ export declare class RawCoinbaseTransaction {
     constructor(keyOutputs: KeyOutput[], hash: string, transactionPublicKey: string, unlockTime: number);
 }
 export declare class RawTransaction extends RawCoinbaseTransaction {
+    static fromJSON(json: any): RawTransaction;
     readonly paymentID: string;
     readonly keyInputs: KeyInput[];
     constructor(keyOutputs: KeyOutput[], hash: string, transactionPublicKey: string, unlockTime: number, paymentID: string, keyInputs: KeyInput[]);
@@ -30,6 +33,8 @@ export declare class Transaction {
     readonly unlockTime: number;
     readonly isCoinbaseTransaction: boolean;
     constructor(transfers: Map<string, number>, hash: string, fee: number, blockHeight: number, timestamp: number, paymentID: string, unlockTime: number, isCoinbaseTransaction: boolean);
+    totalAmount(): number;
+    isFusionTransaction(): boolean;
     toJSON(): TransactionJSON;
 }
 export declare class TransactionInput {
@@ -56,12 +61,14 @@ export declare class UnconfirmedInput {
     toJSON(): UnconfirmedInputJSON;
 }
 export declare class KeyOutput {
+    static fromJSON(json: any): KeyOutput;
     readonly key: string;
     readonly amount: number;
     readonly globalIndex?: number;
     constructor(key: string, amount: number);
 }
 export declare class KeyInput {
+    static fromJSON(json: any): KeyInput;
     readonly amount: number;
     readonly keyImage: string;
     readonly outputIndexes: number[];

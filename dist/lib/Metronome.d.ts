@@ -3,7 +3,7 @@ export declare class Metronome {
     private readonly interval;
     private timer;
     constructor(func: () => any, interval: number);
-    start(): void;
+    start(): Promise<void>;
     stop(): void;
     private tick;
 }

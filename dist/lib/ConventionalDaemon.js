@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const Types_1 = require("./Types");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletError_1 = require("./WalletError");
 const Config_1 = require("./Config");
@@ -69,11 +70,25 @@ class ConventionalDaemon {
     }
     getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.daemon.getWalletSyncData({
+            const data = yield this.daemon.getWalletSyncData({
                 blockHashCheckpoints,
                 startHeight,
                 startTimestamp,
             });
+            return data.map(Types_1.Block.fromJSON);
+        });
+    }
+    getGlobalIndexesForRange(startHeight, endHeight) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield this.daemon.getGlobalIndexesForRange({
+                endHeight,
+                startHeight,
+            });
+            const indexes = new Map();
+            for (const index of data) {
+                indexes.set(index.key, index.value);
+            }
+            return indexes;
         });
     }
     getFeeInfo() {

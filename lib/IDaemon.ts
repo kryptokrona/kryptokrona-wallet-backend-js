@@ -15,10 +15,10 @@ export interface IDaemon {
     nodeFee(): [string, number];
 
     /* Initializes the daemon if necessary, with node fee and internal data */
-    init(): void;
+    init(): Promise<void>;
 
     /* Updates internal daemon info */
-    getDaemonInfo(): void;
+    getDaemonInfo(): Promise<void>;
 
     /* Returns the height that the network has. Possibly 0 if can't connect
        to daemon */
@@ -26,4 +26,9 @@ export interface IDaemon {
 
     /* Returns the height that the local daemon has. */
     getLocalDaemonBlockCount(): number;
+
+    /* Get global indexes for the transactions in the range [startHeight, endHeight] */
+    getGlobalIndexesForRange(
+        startHeight: number,
+        endHeight: number): Promise<Map<string, number[]>>;
 }

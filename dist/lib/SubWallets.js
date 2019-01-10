@@ -7,6 +7,7 @@ const CnUtils_1 = require("./CnUtils");
 const JsonSerialization_1 = require("./JsonSerialization");
 const SubWallet_1 = require("./SubWallet");
 const Types_1 = require("./Types");
+const Utilities_1 = require("./Utilities");
 const WalletError_1 = require("./WalletError");
 const _ = require("lodash");
 class SubWallets {
@@ -26,8 +27,7 @@ class SubWallets {
         this.privateViewKey = privateViewKey;
         let timestamp = 0;
         if (newWallet) {
-            /* Unix timestamp */
-            timestamp = new Date().valueOf();
+            timestamp = Utilities_1.getCurrentTimestampAdjusted();
         }
         const publicKeys = CnUtils_1.CryptoUtils.decodeAddress(address);
         this.publicSpendKeys.push(publicKeys.publicSpendKey);
@@ -156,6 +156,25 @@ class SubWallets {
             return '0'.repeat(64);
         }
         return subWallet.getTxInputKeyImage(derivation, outputIndex);
+    }
+    getBalance(subWalletsToTakeFrom, takeFromAll, currentHeight) {
+        /* If we're able to take from every subwallet, set the wallets to take from
+           to all our public spend keys */
+        if (takeFromAll) {
+            subWalletsToTakeFrom = this.publicSpendKeys;
+        }
+        let unlockedBalance = 0;
+        let lockedBalance = 0;
+        for (const publicSpendKey of subWalletsToTakeFrom) {
+            const subWallet = this.subWallets.get(publicSpendKey);
+            if (!subWallet) {
+                throw new Error('Subwallet not found!');
+            }
+            const [unlocked, locked] = subWallet.getBalance(currentHeight);
+            unlockedBalance += unlocked;
+            lockedBalance += locked;
+        }
+        return [unlockedBalance, lockedBalance];
     }
 }
 exports.SubWallets = SubWallets;

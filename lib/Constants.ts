@@ -52,3 +52,6 @@ export const GLOBAL_INDEXES_OBSCURITY: number = 10;
    the queue. If we exceed this, we will wait till it drops below this
    amount. */
 export const MAXIMUM_SYNC_QUEUE_SIZE: number = 1000;
+
+/* Used to determine whether an unlock time is a height, or a timestamp */
+export const MAX_BLOCK_NUMBER: number = 500000000;

@@ -1,7 +1,9 @@
+/// <reference types="node" />
+import * as EventEmitter from 'events';
 import { IDaemon } from './IDaemon';
 import { WalletBackendJSON } from './JsonSerialization';
 import { WalletError } from './WalletError';
-export declare class WalletBackend {
+export declare class WalletBackend extends EventEmitter {
     static openWalletFromFile(daemon: IDaemon, filename: string, password: string): WalletBackend | WalletError;
     static loadWalletFromJSON(daemon: IDaemon, json: string): WalletBackend | WalletError;
     static importWalletFromSeed(daemon: IDaemon, scanHeight: number, mnemonicSeed: string): WalletBackend | WalletError;
@@ -14,6 +16,7 @@ export declare class WalletBackend {
     private daemon;
     private walletSynchronizer;
     private mainLoopExecutor;
+    private synced;
     constructor(daemon: IDaemon, address: string, scanHeight: number, newWallet: boolean, privateViewKey: string, privateSpendKey?: string);
     init(): Promise<void>;
     start(): void;

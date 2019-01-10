@@ -52,6 +52,8 @@ export declare enum WalletErrorCode {
     AMOUNTS_NOT_PRETTY = 44,
     UNEXPECTED_FEE = 45,
     NEGATIVE_VALUE_GIVEN = 46,
-    INVALID_KEY_FORMAT = 47
+    INVALID_KEY_FORMAT = 47,
+    HASH_WRONG_LENGTH = 48,
+    HASH_INVALID = 49
 }
 export declare let SUCCESS: WalletError;

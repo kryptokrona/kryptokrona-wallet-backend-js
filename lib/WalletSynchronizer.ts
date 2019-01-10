@@ -3,6 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import { CryptoUtils } from './CnUtils';
+import { GLOBAL_INDEXES_OBSCURITY } from './Constants';
 import { IDaemon } from './IDaemon';
 import { WalletSynchronizerJSON } from './JsonSerialization';
 import { SubWallets } from './SubWallets';
@@ -12,6 +13,8 @@ import {
     Block, KeyInput, RawCoinbaseTransaction, RawTransaction, Transaction,
     TransactionData, TransactionInput,
 } from './Types';
+
+import { getLowerBound, getUpperBound } from './Utilities';
 
 import * as _ from 'lodash';
 
@@ -38,11 +41,11 @@ export class WalletSynchronizer {
 
     private synchronizationStatus: SynchronizationStatus = new SynchronizationStatus();
 
-    /* Fuck the type system! */
-    private subWallets: SubWallets = Object.create(SubWallets.prototype);
+    private subWallets: SubWallets;
 
     constructor(
         daemon: IDaemon,
+        subWallets: SubWallets,
         startTimestamp: number,
         startHeight: number,
         privateViewKey: string) {
@@ -51,10 +54,12 @@ export class WalletSynchronizer {
         this.startTimestamp = startTimestamp;
         this.startHeight = startHeight;
         this.privateViewKey = privateViewKey;
+        this.subWallets = subWallets;
     }
 
-    public initAfterLoad(subWallets: SubWallets): void {
+    public initAfterLoad(subWallets: SubWallets, daemon: IDaemon): void {
         this.subWallets = subWallets;
+        this.daemon = daemon;
     }
 
     public toJSON(): WalletSynchronizerJSON {
@@ -110,6 +115,7 @@ export class WalletSynchronizer {
                 blockCheckpoints, this.startHeight, this.startTimestamp,
             );
         } catch (err) {
+            console.log(err);
             return [];
         }
 
@@ -146,9 +152,31 @@ export class WalletSynchronizer {
         return blocks;
     }
 
-    public getGlobalIndexes(blockHeight: number, hash: string): number[] {
-        /* TODO */
-        return [];
+    /* When we get the global indexes, we pass in a range of blocks, to obscure
+       which transactions we are interested in - the ones that belong to us.
+       To do this, we get the global indexes for all transactions in a range.
+
+       For example, if we want the global indexes for a transaction in block
+       17, we get all the indexes from block 10 to block 20. */
+    public async getGlobalIndexes(blockHeight: number, hash: string): Promise<number[]> {
+        const startHeight: number = getLowerBound(blockHeight, GLOBAL_INDEXES_OBSCURITY);
+        const endHeight: number = getUpperBound(blockHeight, GLOBAL_INDEXES_OBSCURITY);
+
+        const indexes: Map<string, number[]> = await this.daemon.getGlobalIndexesForRange(
+            startHeight, endHeight,
+        );
+
+        /* If the indexes returned doesn't include our array, the daemon is
+           faulty. If we can't connect to the daemon, it will throw instead,
+           which we will catch further up */
+        const ourIndexes: number[] | undefined = indexes.get(hash);
+
+        if (!ourIndexes) {
+            throw new Error('Could not get global indexes from daemon! ' +
+                            'Possibly faulty/malicious daemon.');
+        }
+
+        return ourIndexes;
     }
 
     public processTransactionInputs(
@@ -179,11 +207,11 @@ export class WalletSynchronizer {
         return [sumOfInputs, transfers, txData];
     }
 
-    public processTransactionOutputs(
+    public async processTransactionOutputs(
         rawTX: RawCoinbaseTransaction,
         transfers: Map<string, number>,
         blockHeight: number,
-        txData: TransactionData): [number, Map<string, number>, TransactionData] {
+        txData: TransactionData): Promise<[number, Map<string, number>, TransactionData]> {
 
         const derivation: string = CryptoUtils.generateKeyDerivation(
             rawTX.transactionPublicKey, this.privateViewKey,
@@ -212,7 +240,7 @@ export class WalletSynchronizer {
             /* Get the indexes, if we haven't already got them. (Don't need
                to get them if we're in a view wallet, since we can't spend.) */
             if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
-                globalIndexes = this.getGlobalIndexes(blockHeight, rawTX.hash);
+                globalIndexes = await this.getGlobalIndexes(blockHeight, rawTX.hash);
             }
 
             transfers.set(
@@ -243,11 +271,11 @@ export class WalletSynchronizer {
         return [sumOfOutputs, transfers, txData];
     }
 
-    public processTransaction(
+    public async processTransaction(
         rawTX: RawTransaction,
         blockTimestamp: number,
         blockHeight: number,
-        txData: TransactionData): TransactionData {
+        txData: TransactionData): Promise<TransactionData> {
 
         let transfers: Map<string, number> = new Map();
 
@@ -262,7 +290,7 @@ export class WalletSynchronizer {
 
         /* Finds the sum of outputs, adds the amounts that belong to us to the
            transfers map, and stores any key images that belong to us */
-        [sumOfOutputs, transfers, txData] = this.processTransactionOutputs(
+        [sumOfOutputs, transfers, txData] = await this.processTransactionOutputs(
             rawTX, transfers, blockHeight, txData,
         );
 
@@ -282,15 +310,15 @@ export class WalletSynchronizer {
         return txData;
     }
 
-    public processCoinbaseTransaction(
+    public async processCoinbaseTransaction(
         rawTX: RawCoinbaseTransaction,
         blockTimestamp: number,
         blockHeight: number,
-        txData: TransactionData): TransactionData {
+        txData: TransactionData): Promise<TransactionData> {
 
         let transfers: Map<string, number> = new Map();
 
-        [/*ignore*/, transfers, txData] = this.processTransactionOutputs(
+        [/*ignore*/, transfers, txData] = await this.processTransactionOutputs(
             rawTX, transfers, blockHeight, txData,
         );
 
