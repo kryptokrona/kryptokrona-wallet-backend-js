@@ -94,5 +94,5 @@ import { WalletBackend, ConventionalDaemon } from 'turtlecoin-wallet-backend';
 
 ## Documentation
 
-You can view the documentation locally by opening documentation/index.html in your web browser.
+You can view the documentation locally by opening docs/index.html in your web browser.
 At some point we'll probably have a website to host this on.

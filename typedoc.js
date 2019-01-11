@@ -1,5 +1,5 @@
 module.exports = {
-  out: './documentation',
+  out: './docs',
   excludeExternals: true,
   excludeNotExported: true,
   excludePrivate: true,
