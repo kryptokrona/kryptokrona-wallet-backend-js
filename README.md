@@ -94,5 +94,6 @@ import { WalletBackend, ConventionalDaemon } from 'turtlecoin-wallet-backend';
 
 ## Documentation
 
-You can view the documentation locally by opening docs/index.html in your web browser.
-At some point we'll probably have a website to host this on.
+You can view the documentation here: https://turtlecoin.github.io/turtlecoin-wallet-backend-js/
+
+Alternatively, open up docs/index.html in your web browser.
