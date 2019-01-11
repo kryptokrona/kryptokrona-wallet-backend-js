@@ -28,8 +28,7 @@ function getUpperBound(val, nearestMultiple) {
 exports.getUpperBound = getUpperBound;
 function getCurrentTimestampAdjusted() {
     const timestamp = Math.floor(Date.now() / 1000);
-    /* BLOCK_FUTURE_TIME_LIMIT */
-    return timestamp - (60 * 60 * 2);
+    return timestamp - (100 * Config_1.default.blockTargetTime);
 }
 exports.getCurrentTimestampAdjusted = getCurrentTimestampAdjusted;
 function isInputUnlocked(unlockTime, currentHeight) {
@@ -60,3 +59,7 @@ function prettyPrintAmount(amount) {
     return formatted + ' ' + Config_1.default.ticker;
 }
 exports.prettyPrintAmount = prettyPrintAmount;
+function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+exports.delay = delay;

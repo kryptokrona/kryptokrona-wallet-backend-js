@@ -4,6 +4,8 @@ declare class Config {
     requestTimeout: number;
     blockTargetTime: number;
     mainLoopInterval: number;
+    blockFetchInterval: number;
+    blocksPerTick: number;
     ticker: string;
 }
 declare const _default: Config;

@@ -62,7 +62,7 @@ export class SynchronizationStatus {
 
         /* If we're exceeding capacity, remove the last (oldest) hash */
         if (this.lastKnownBlockHashes.length > LAST_KNOWN_BLOCK_HASHES_SIZE) {
-            this.lastKnownBlockHashes.shift();
+            this.lastKnownBlockHashes.pop();
         }
     }
 

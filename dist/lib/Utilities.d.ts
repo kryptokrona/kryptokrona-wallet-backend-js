@@ -5,3 +5,4 @@ export declare function getUpperBound(val: number, nearestMultiple: number): num
 export declare function getCurrentTimestampAdjusted(): number;
 export declare function isInputUnlocked(unlockTime: number, currentHeight: number): boolean;
 export declare function prettyPrintAmount(amount: number): string;
+export declare function delay(ms: number): Promise<void>;

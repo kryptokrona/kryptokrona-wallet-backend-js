@@ -3,7 +3,8 @@
 // Please see the included LICENSE file for more information.
 
 import deepEqual = require('deep-equal');
-import * as EventEmitter from 'events';
+import {EventEmitter} from 'events';
+import * as _ from 'lodash';
 
 import config from './Config';
 
@@ -11,15 +12,117 @@ import { CryptoUtils } from './CnUtils';
 import { WALLET_FILE_FORMAT_VERSION } from './Constants';
 import { IDaemon } from './IDaemon';
 import { WalletBackendJSON } from './JsonSerialization';
+import { LogCategory, logger, LogLevel } from './Logger';
 import { Metronome } from './Metronome';
 import { openWallet } from './OpenWallet';
 import { SubWallets } from './SubWallets';
-import { Block, TransactionData } from './Types';
-import { addressToKeys, getCurrentTimestampAdjusted, isHex64 } from './Utilities';
+import { Block, Transaction, TransactionData } from './Types';
+import { addressToKeys, delay, getCurrentTimestampAdjusted, isHex64 } from './Utilities';
 import { validateAddresses } from './ValidateParameters';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 import { WalletSynchronizer } from './WalletSynchronizer';
 
+export declare interface WalletBackend {
+
+    /**
+     * This is emitted whenever the wallet finds a new transaction.
+     *
+     * See the incomingtx and outgoingtx events if you need more fine grained control.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('transaction', (transaction) => {
+     *     console.log(`Transaction of ${transaction.totalAmount()} received!`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'transaction', callback: (transaction: Transaction) => void): this;
+
+    /**
+     * This is emitted whenever the wallet finds an incoming transaction.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('incomingtx', (transaction) => {
+     *     console.log(`Incoming transaction of ${transaction.totalAmount()} received!`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'incomingtx', callback: (transaction: Transaction) => void): this;
+
+    /**
+     * This is emitted whenever the wallet finds an outgoing transaction.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('outgoingtx', (transaction) => {
+     *     console.log(`Outgoing transaction of ${transaction.totalAmount()} received!`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'outgoingtx', callback: (transaction: Transaction) => void): this;
+
+    /**
+     * This is emitted whenever the wallet finds a fusion transaction.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('fusiontx', (transaction) => {
+     *     console.log('Fusion transaction found!');
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'fusiontx', callback: (transaction: Transaction) => void): this;
+
+    /**
+     * This is emitted whenever the wallet first syncs with the network. It will
+     * also be fired if the wallet unsyncs from the network, then resyncs.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('sync', (walletHeight, networkHeight) => {
+     *     console.log(`Wallet synced! Wallet height: ${walletHeight}, Network height: ${networkHeight}`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'sync', callback: (walletHeight: number, networkHeight: number) => void): this;
+
+    /**
+     * This is emitted whenever the wallet first desyncs with the network. It will
+     * only be fired after the wallet has initially fired the sync event.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('desync', (walletHeight, networkHeight) => {
+     *     console.log(`Wallet is no longer synced! Wallet height: ${walletHeight}, Network height: ${networkHeight}`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'desync', callback: (walletHeight: number, networkHeight: number) => void): this;
+}
+
+/**
+ * Documentation for the WalletBackend class.
+ * @noInheritDoc
+ */
 export class WalletBackend extends EventEmitter {
 
     /* Opens a wallet given a filepath and a password */
@@ -201,7 +304,9 @@ export class WalletBackend extends EventEmitter {
     /* Whether our wallet is synced */
     private synced: boolean = false;
 
-    constructor(
+    private blocksToProcess: Block[] = [];
+
+    private constructor(
         daemon: IDaemon,
         address: string,
         scanHeight: number,
@@ -232,6 +337,19 @@ export class WalletBackend extends EventEmitter {
         );
     }
 
+    public setLogLevel(logLevel: LogLevel) {
+        logger.setLogLevel(logLevel);
+    }
+
+    public setLoggerCallback(
+        callback: (prettyMessage: string,
+                   message: string,
+                   level: LogLevel,
+                   categories: LogCategory[]) => any) {
+
+        logger.setLoggerCallback(callback);
+    }
+
     /* Fetch initial daemon info and fee. Should we do this in the constructor
        instead...? Well... not much point wasting time if they just want to
        make a wallet */
@@ -250,94 +368,20 @@ export class WalletBackend extends EventEmitter {
     }
 
     public async mainLoop(): Promise<void> {
-        /* Lets not await on this right away, rather do so once we've finished
-           working. That wait it will most likely have completed, and we
-           aren't wasting time. */
-        const daemonInfo: Promise<void> = this.daemon.getDaemonInfo();
+        /* No blocks. Get some more from the daemon. */
+        if (_.isEmpty(this.blocksToProcess)) {
+            await this.fetchAndStoreBlocks();
+            return;
+        }
 
         try {
-            const blocks: Block[] = await this.walletSynchronizer.getBlocks();
-
-            console.log('Blocks size: ', blocks.length);
-
-            for (const block of blocks) {
-                console.log('Processing block ' + block.blockHeight + '\n\n');
-
-                /* Forked chain, remove old data */
-                if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
-                    this.subWallets.removeForkedTransactions(block.blockHeight);
-                }
-
-                let txData: TransactionData = new TransactionData();
-
-                /* Process the coinbase tx */
-                txData = await this.walletSynchronizer.processCoinbaseTransaction(
-                    block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
-                    txData,
-                );
-
-                /* Process the normal txs */
-                for (const tx of block.transactions) {
-                    txData = await this.walletSynchronizer.processTransaction(
-                        tx, block.blockTimestamp, block.blockHeight, txData,
-                    );
-                }
-
-                /* Store the block hash we just processed */
-                this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
-
-                /* Store any transactions */
-                for (const transaction of txData.transactionsToAdd) {
-                    this.subWallets.addTransaction(transaction);
-
-                    /* Alert listeners we've got a transaction */
-                    this.emit('transaction', transaction);
-                }
-
-                /* Store any corresponding inputs */
-                for (const [publicKey, input] of txData.inputsToAdd) {
-                    this.subWallets.storeTransactionInput(publicKey, input);
-                }
-
-                /* Mark any spent key images */
-                for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
-                    this.subWallets.markInputAsSpent(publicKey, keyImage, block.blockHeight);
-                }
-            }
-
-            const walletHeight: number = this.walletSynchronizer.getHeight();
-            const networkHeight: number = this.daemon.getNetworkBlockCount();
-
-            if (walletHeight >= networkHeight) {
-
-                /* Yay, synced with the network */
-                if (!this.synced) {
-                    this.emit('sync', walletHeight, networkHeight);
-                    this.synced = true;
-                }
-
-                const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
-
-                const cancelledTransactions: string[]
-                    = await this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
-
-                for (const cancelledTX of cancelledTransactions) {
-                    this.subWallets.removeCancelledTransaction(cancelledTX);
-                }
-
-            } else {
-
-                /* We are no longer synced :( */
-                if (this.synced) {
-                    this.emit('desync', walletHeight, networkHeight);
-                    this.synced = false;
-                }
-            }
-
-            await daemonInfo;
+            await this.processBlocks();
         } catch (err) {
-            console.log('Caught error: ', err);
-            return;
+            logger.log(
+                'Error processing blocks: ' + err.toString(),
+                LogLevel.DEBUG,
+                [LogCategory.SYNC],
+            );
         }
     }
 
@@ -419,5 +463,144 @@ export class WalletBackend extends EventEmitter {
 
     public getPrimaryAddress(): string {
         return this.subWallets.getPrimaryAddress();
+    }
+
+    private async fetchAndStoreBlocks(): Promise<void> {
+        const daemonInfo: Promise<void> = this.daemon.getDaemonInfo();
+
+        this.blocksToProcess = await this.walletSynchronizer.getBlocks();
+
+        const walletHeight: number = this.walletSynchronizer.getHeight();
+        const networkHeight: number = this.daemon.getNetworkBlockCount();
+
+        if (walletHeight >= networkHeight) {
+
+            /* Yay, synced with the network */
+            if (!this.synced) {
+                this.emit('sync', walletHeight, networkHeight);
+                this.synced = true;
+            }
+
+            const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
+
+            const cancelledTransactions: string[]
+                = await this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
+
+            for (const cancelledTX of cancelledTransactions) {
+                this.subWallets.removeCancelledTransaction(cancelledTX);
+            }
+
+        } else {
+
+            /* We are no longer synced :( */
+            if (this.synced) {
+                this.emit('desync', walletHeight, networkHeight);
+                this.synced = false;
+            }
+        }
+
+        await daemonInfo;
+
+        /* Sleep for a second (not blocking the event loop) before
+           continuing processing */
+        await delay(config.blockFetchInterval);
+    }
+
+    private storeTxData(txData: TransactionData, blockHeight: number): void {
+        /* Store any transactions */
+        for (const transaction of txData.transactionsToAdd) {
+
+            logger.log(
+                'Adding transaction ' + transaction.hash,
+                LogLevel.INFO,
+                [LogCategory.SYNC, LogCategory.TRANSACTIONS],
+            );
+
+            this.subWallets.addTransaction(transaction);
+
+            /* Alert listeners we've got a transaction */
+            this.emit('transaction', transaction);
+
+            if (transaction.totalAmount() > 0) {
+                this.emit('incomingtx', transaction);
+            } else if (transaction.totalAmount() < 0) {
+                this.emit('outgoingtx', transaction);
+            } else {
+                this.emit('fusiontx', transaction);
+            }
+        }
+
+        /* Store any corresponding inputs */
+        for (const [publicKey, input] of txData.inputsToAdd) {
+
+            logger.log(
+                'Adding input ' + input.key,
+                LogLevel.DEBUG,
+                [LogCategory.SYNC],
+            );
+
+            this.subWallets.storeTransactionInput(publicKey, input);
+        }
+
+        /* Mark any spent key images */
+        for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
+            this.subWallets.markInputAsSpent(publicKey, keyImage, blockHeight);
+        }
+    }
+
+    private async processBlocks(): Promise<void> {
+        /* Take the blocks to process for this tick */
+        const blocks: Block[] = _.take(this.blocksToProcess, config.blocksPerTick);
+
+        for (const block of blocks) {
+
+            logger.log(
+                'Processing block ' + block.blockHeight,
+                LogLevel.INFO,
+                [LogCategory.SYNC],
+            );
+
+            /* Forked chain, remove old data */
+            if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
+
+                logger.log(
+                    'Removing forked transactions',
+                    LogLevel.INFO,
+                    [LogCategory.SYNC],
+                );
+
+                this.subWallets.removeForkedTransactions(block.blockHeight);
+            }
+
+            let txData: TransactionData = new TransactionData();
+
+            /* Process the coinbase tx */
+            txData = await this.walletSynchronizer.processCoinbaseTransaction(
+                block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
+                txData,
+            );
+
+            /* Process the normal txs */
+            for (const tx of block.transactions) {
+                txData = await this.walletSynchronizer.processTransaction(
+                    tx, block.blockTimestamp, block.blockHeight, txData,
+                );
+            }
+
+            /* Store the data */
+            this.storeTxData(txData, block.blockHeight);
+
+            /* Store the block hash we just processed */
+            this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
+
+            /* Remove the block we just processed */
+            this.blocksToProcess = _.drop(this.blocksToProcess);
+
+            logger.log(
+                'Finished processing block ' + block.blockHeight,
+                LogLevel.DEBUG,
+                [LogCategory.SYNC],
+            );
+        }
     }
 }

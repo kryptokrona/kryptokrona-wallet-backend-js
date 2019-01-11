@@ -12,10 +12,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const deepEqual = require("deep-equal");
-const EventEmitter = require("events");
+const events_1 = require("events");
+const _ = require("lodash");
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const Constants_1 = require("./Constants");
+const Logger_1 = require("./Logger");
 const Metronome_1 = require("./Metronome");
 const OpenWallet_1 = require("./OpenWallet");
 const SubWallets_1 = require("./SubWallets");
@@ -24,11 +26,16 @@ const Utilities_1 = require("./Utilities");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletError_1 = require("./WalletError");
 const WalletSynchronizer_1 = require("./WalletSynchronizer");
-class WalletBackend extends EventEmitter {
+/**
+ * Documentation for the WalletBackend class.
+ * @noInheritDoc
+ */
+class WalletBackend extends events_1.EventEmitter {
     constructor(daemon, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
         super();
         /* Whether our wallet is synced */
         this.synced = false;
+        this.blocksToProcess = [];
         this.subWallets = new SubWallets_1.SubWallets(address, scanHeight, newWallet, privateViewKey, privateSpendKey);
         let timestamp = 0;
         if (newWallet) {
@@ -138,6 +145,12 @@ class WalletBackend extends EventEmitter {
             walletSynchronizer: WalletSynchronizer_1.WalletSynchronizer.fromJSON(json.walletSynchronizer),
         });
     }
+    setLogLevel(logLevel) {
+        Logger_1.logger.setLogLevel(logLevel);
+    }
+    setLoggerCallback(callback) {
+        Logger_1.logger.setLoggerCallback(callback);
+    }
     /* Fetch initial daemon info and fee. Should we do this in the constructor
        instead...? Well... not much point wasting time if they just want to
        make a wallet */
@@ -156,69 +169,16 @@ class WalletBackend extends EventEmitter {
     }
     mainLoop() {
         return __awaiter(this, void 0, void 0, function* () {
-            /* Lets not await on this right away, rather do so once we've finished
-               working. That wait it will most likely have completed, and we
-               aren't wasting time. */
-            const daemonInfo = this.daemon.getDaemonInfo();
+            /* No blocks. Get some more from the daemon. */
+            if (_.isEmpty(this.blocksToProcess)) {
+                yield this.fetchAndStoreBlocks();
+                return;
+            }
             try {
-                const blocks = yield this.walletSynchronizer.getBlocks();
-                console.log('Blocks size: ', blocks.length);
-                for (const block of blocks) {
-                    console.log('Processing block ' + block.blockHeight + '\n\n');
-                    /* Forked chain, remove old data */
-                    if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
-                        this.subWallets.removeForkedTransactions(block.blockHeight);
-                    }
-                    let txData = new Types_1.TransactionData();
-                    /* Process the coinbase tx */
-                    txData = yield this.walletSynchronizer.processCoinbaseTransaction(block.coinbaseTransaction, block.blockTimestamp, block.blockHeight, txData);
-                    /* Process the normal txs */
-                    for (const tx of block.transactions) {
-                        txData = yield this.walletSynchronizer.processTransaction(tx, block.blockTimestamp, block.blockHeight, txData);
-                    }
-                    /* Store the block hash we just processed */
-                    this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
-                    /* Store any transactions */
-                    for (const transaction of txData.transactionsToAdd) {
-                        this.subWallets.addTransaction(transaction);
-                        /* Alert listeners we've got a transaction */
-                        this.emit('transaction', transaction);
-                    }
-                    /* Store any corresponding inputs */
-                    for (const [publicKey, input] of txData.inputsToAdd) {
-                        this.subWallets.storeTransactionInput(publicKey, input);
-                    }
-                    /* Mark any spent key images */
-                    for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
-                        this.subWallets.markInputAsSpent(publicKey, keyImage, block.blockHeight);
-                    }
-                }
-                const walletHeight = this.walletSynchronizer.getHeight();
-                const networkHeight = this.daemon.getNetworkBlockCount();
-                if (walletHeight >= networkHeight) {
-                    /* Yay, synced with the network */
-                    if (!this.synced) {
-                        this.emit('sync', walletHeight, networkHeight);
-                        this.synced = true;
-                    }
-                    const lockedTransactionHashes = this.subWallets.getLockedTransactionHashes();
-                    const cancelledTransactions = yield this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
-                    for (const cancelledTX of cancelledTransactions) {
-                        this.subWallets.removeCancelledTransaction(cancelledTX);
-                    }
-                }
-                else {
-                    /* We are no longer synced :( */
-                    if (this.synced) {
-                        this.emit('desync', walletHeight, networkHeight);
-                        this.synced = false;
-                    }
-                }
-                yield daemonInfo;
+                yield this.processBlocks();
             }
             catch (err) {
-                console.log('Caught error: ', err);
-                return;
+                Logger_1.logger.log('Error processing blocks: ' + err.toString(), Logger_1.LogLevel.DEBUG, [Logger_1.LogCategory.SYNC]);
             }
         });
     }
@@ -279,6 +239,92 @@ class WalletBackend extends EventEmitter {
     }
     getPrimaryAddress() {
         return this.subWallets.getPrimaryAddress();
+    }
+    fetchAndStoreBlocks() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const daemonInfo = this.daemon.getDaemonInfo();
+            this.blocksToProcess = yield this.walletSynchronizer.getBlocks();
+            const walletHeight = this.walletSynchronizer.getHeight();
+            const networkHeight = this.daemon.getNetworkBlockCount();
+            if (walletHeight >= networkHeight) {
+                /* Yay, synced with the network */
+                if (!this.synced) {
+                    this.emit('sync', walletHeight, networkHeight);
+                    this.synced = true;
+                }
+                const lockedTransactionHashes = this.subWallets.getLockedTransactionHashes();
+                const cancelledTransactions = yield this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
+                for (const cancelledTX of cancelledTransactions) {
+                    this.subWallets.removeCancelledTransaction(cancelledTX);
+                }
+            }
+            else {
+                /* We are no longer synced :( */
+                if (this.synced) {
+                    this.emit('desync', walletHeight, networkHeight);
+                    this.synced = false;
+                }
+            }
+            yield daemonInfo;
+            /* Sleep for a second (not blocking the event loop) before
+               continuing processing */
+            yield Utilities_1.delay(Config_1.default.blockFetchInterval);
+        });
+    }
+    storeTxData(txData, blockHeight) {
+        /* Store any transactions */
+        for (const transaction of txData.transactionsToAdd) {
+            Logger_1.logger.log('Adding transaction ' + transaction.hash, Logger_1.LogLevel.INFO, [Logger_1.LogCategory.SYNC, Logger_1.LogCategory.TRANSACTIONS]);
+            this.subWallets.addTransaction(transaction);
+            /* Alert listeners we've got a transaction */
+            this.emit('transaction', transaction);
+            if (transaction.totalAmount() > 0) {
+                this.emit('incomingtx', transaction);
+            }
+            else if (transaction.totalAmount() < 0) {
+                this.emit('outgoingtx', transaction);
+            }
+            else {
+                this.emit('fusiontx', transaction);
+            }
+        }
+        /* Store any corresponding inputs */
+        for (const [publicKey, input] of txData.inputsToAdd) {
+            Logger_1.logger.log('Adding input ' + input.key, Logger_1.LogLevel.DEBUG, [Logger_1.LogCategory.SYNC]);
+            this.subWallets.storeTransactionInput(publicKey, input);
+        }
+        /* Mark any spent key images */
+        for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
+            this.subWallets.markInputAsSpent(publicKey, keyImage, blockHeight);
+        }
+    }
+    processBlocks() {
+        return __awaiter(this, void 0, void 0, function* () {
+            /* Take the blocks to process for this tick */
+            const blocks = _.take(this.blocksToProcess, Config_1.default.blocksPerTick);
+            for (const block of blocks) {
+                Logger_1.logger.log('Processing block ' + block.blockHeight, Logger_1.LogLevel.INFO, [Logger_1.LogCategory.SYNC]);
+                /* Forked chain, remove old data */
+                if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
+                    Logger_1.logger.log('Removing forked transactions', Logger_1.LogLevel.INFO, [Logger_1.LogCategory.SYNC]);
+                    this.subWallets.removeForkedTransactions(block.blockHeight);
+                }
+                let txData = new Types_1.TransactionData();
+                /* Process the coinbase tx */
+                txData = yield this.walletSynchronizer.processCoinbaseTransaction(block.coinbaseTransaction, block.blockTimestamp, block.blockHeight, txData);
+                /* Process the normal txs */
+                for (const tx of block.transactions) {
+                    txData = yield this.walletSynchronizer.processTransaction(tx, block.blockTimestamp, block.blockHeight, txData);
+                }
+                /* Store the data */
+                this.storeTxData(txData, block.blockHeight);
+                /* Store the block hash we just processed */
+                this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
+                /* Remove the block we just processed */
+                this.blocksToProcess = _.drop(this.blocksToProcess);
+                Logger_1.logger.log('Finished processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, [Logger_1.LogCategory.SYNC]);
+            }
+        });
     }
 }
 exports.WalletBackend = WalletBackend;

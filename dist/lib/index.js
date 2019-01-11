@@ -12,3 +12,6 @@ var ConventionalDaemon_1 = require("./ConventionalDaemon");
 exports.ConventionalDaemon = ConventionalDaemon_1.ConventionalDaemon;
 var Utilities_1 = require("./Utilities");
 exports.prettyPrintAmount = Utilities_1.prettyPrintAmount;
+var Logger_1 = require("./Logger");
+exports.LogLevel = Logger_1.LogLevel;
+exports.LogCategory = Logger_1.LogCategory;

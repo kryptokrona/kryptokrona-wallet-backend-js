@@ -31,8 +31,7 @@ export function getUpperBound(val: number, nearestMultiple: number): number {
 export function getCurrentTimestampAdjusted(): number {
     const timestamp = Math.floor(Date.now() / 1000);
 
-    /* BLOCK_FUTURE_TIME_LIMIT */
-    return timestamp - (60 * 60 * 2);
+    return timestamp - (100 * config.blockTargetTime);
 }
 
 export function isInputUnlocked(unlockTime: number, currentHeight: number): boolean {
@@ -64,4 +63,8 @@ export function prettyPrintAmount(amount: number): string {
     const formatted: string = unAtomic.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
     return formatted + ' ' + config.ticker;
+}
+
+export function delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -11,7 +11,8 @@
         "no-console": false,
         "no-implicit-dependencies": [true, "dev"],
         "no-var-requires": false,
-        "prefer-object-spread": false
+        "prefer-object-spread": false,
+        "unified-signatures": false
     },
     "rulesDirectory": []
 }

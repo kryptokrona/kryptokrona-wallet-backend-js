@@ -47,7 +47,7 @@ class SynchronizationStatus {
         this.lastKnownBlockHashes.unshift(blockHash);
         /* If we're exceeding capacity, remove the last (oldest) hash */
         if (this.lastKnownBlockHashes.length > Constants_1.LAST_KNOWN_BLOCK_HASHES_SIZE) {
-            this.lastKnownBlockHashes.shift();
+            this.lastKnownBlockHashes.pop();
         }
     }
     getBlockHashCheckpoints() {

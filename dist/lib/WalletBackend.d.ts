@@ -1,8 +1,104 @@
 /// <reference types="node" />
-import * as EventEmitter from 'events';
+import { EventEmitter } from 'events';
 import { IDaemon } from './IDaemon';
 import { WalletBackendJSON } from './JsonSerialization';
+import { LogCategory, LogLevel } from './Logger';
+import { Transaction } from './Types';
 import { WalletError } from './WalletError';
+export declare interface WalletBackend {
+    /**
+     * This is emitted whenever the wallet finds a new transaction.
+     *
+     * See the incomingtx and outgoingtx events if you need more fine grained control.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('transaction', (transaction) => {
+     *     console.log(`Transaction of ${transaction.totalAmount()} received!`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'transaction', callback: (transaction: Transaction) => void): this;
+    /**
+     * This is emitted whenever the wallet finds an incoming transaction.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('incomingtx', (transaction) => {
+     *     console.log(`Incoming transaction of ${transaction.totalAmount()} received!`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'incomingtx', callback: (transaction: Transaction) => void): this;
+    /**
+     * This is emitted whenever the wallet finds an outgoing transaction.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('outgoingtx', (transaction) => {
+     *     console.log(`Outgoing transaction of ${transaction.totalAmount()} received!`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'outgoingtx', callback: (transaction: Transaction) => void): this;
+    /**
+     * This is emitted whenever the wallet finds a fusion transaction.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('fusiontx', (transaction) => {
+     *     console.log('Fusion transaction found!');
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'fusiontx', callback: (transaction: Transaction) => void): this;
+    /**
+     * This is emitted whenever the wallet first syncs with the network. It will
+     * also be fired if the wallet unsyncs from the network, then resyncs.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('sync', (walletHeight, networkHeight) => {
+     *     console.log(`Wallet synced! Wallet height: ${walletHeight}, Network height: ${networkHeight}`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'sync', callback: (walletHeight: number, networkHeight: number) => void): this;
+    /**
+     * This is emitted whenever the wallet first desyncs with the network. It will
+     * only be fired after the wallet has initially fired the sync event.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('desync', (walletHeight, networkHeight) => {
+     *     console.log(`Wallet is no longer synced! Wallet height: ${walletHeight}, Network height: ${networkHeight}`);
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'desync', callback: (walletHeight: number, networkHeight: number) => void): this;
+}
+/**
+ * Documentation for the WalletBackend class.
+ * @noInheritDoc
+ */
 export declare class WalletBackend extends EventEmitter {
     static openWalletFromFile(daemon: IDaemon, filename: string, password: string): WalletBackend | WalletError;
     static loadWalletFromJSON(daemon: IDaemon, json: string): WalletBackend | WalletError;
@@ -17,7 +113,10 @@ export declare class WalletBackend extends EventEmitter {
     private walletSynchronizer;
     private mainLoopExecutor;
     private synced;
-    constructor(daemon: IDaemon, address: string, scanHeight: number, newWallet: boolean, privateViewKey: string, privateSpendKey?: string);
+    private blocksToProcess;
+    private constructor();
+    setLogLevel(logLevel: LogLevel): void;
+    setLoggerCallback(callback: (prettyMessage: string, message: string, level: LogLevel, categories: LogCategory[]) => any): void;
     init(): Promise<void>;
     start(): void;
     stop(): void;
@@ -31,4 +130,7 @@ export declare class WalletBackend extends EventEmitter {
     getMnemonicSeed(): WalletError | string;
     getMnemonicSeedForAddress(address: string): WalletError | string;
     getPrimaryAddress(): string;
+    private fetchAndStoreBlocks;
+    private storeTxData;
+    private processBlocks;
 }
