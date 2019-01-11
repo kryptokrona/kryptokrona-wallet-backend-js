@@ -80,9 +80,8 @@
 				<h2 id="contributing">Contributing</h2>
 				<p>Please run <code>yarn style</code> to ensure your changes adhere to the tslint rules before committing.</p>
 				<p>You can try running <code>yarn style --fix</code> to automatically fix issues.</p>
-				<h2 id="documentation">Documentation</h2>
-				<h3 id="initialization">Initialization</h3>
-				<h4 id="javascript">Javascript</h4>
+				<h2 id="quick-start">Quick Start</h2>
+				<h3 id="javascript">Javascript</h3>
 				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
 
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
@@ -107,7 +106,7 @@
 })().catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Caught promise rejection: '</span> + err);
 });</code></pre>
-				<h4 id="typescript">Typescript</h4>
+				<h3 id="typescript">Typescript</h3>
 				<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { WalletBackend, ConventionalDaemon } <span class="hljs-keyword">from</span> <span class="hljs-string">'turtlecoin-wallet-backend'</span>;
 
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; {
@@ -132,15 +131,9 @@
 }</span>)<span class="hljs-params">()</span>.<span class="hljs-params">catch</span>(<span class="hljs-params">err =&gt; {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-params">'Caught promise rejection: ' + err</span>);
 }</span>);</span></code></pre>
-				<h5 id="transaction-totalamount-">transaction.totalAmount()</h5>
-				<p>Gets the total amount of a transaction, in atomic units.
-					Note that an outgoing transaction will have a negative amount.
-				A fusion transaction will have an amount of zero.</p>
-				<p>Return type: <code>number</code></p>
-				<h5 id="transaction-isfusiontransaction-">transaction.isFusionTransaction()</h5>
-				<p>Returns whether the transaction is a 0 fee fusion transaction.</p>
-				<p>Return type: <code>boolean</code></p>
-				<h4 id="fields">Fields</h4>
+				<h2 id="documentation">Documentation</h2>
+				<p>You can view the documentation here: <a href="https://turtlecoin.github.io/turtlecoin-wallet-backend-js/">https://turtlecoin.github.io/turtlecoin-wallet-backend-js/</a></p>
+				<p>Alternatively, open up docs/index.html in your web browser.</p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
