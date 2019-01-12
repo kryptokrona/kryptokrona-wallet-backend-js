@@ -6,6 +6,7 @@ import { CryptoUtils } from './CnUtils';
 import { GLOBAL_INDEXES_OBSCURITY } from './Constants';
 import { IDaemon } from './IDaemon';
 import { WalletSynchronizerJSON } from './JsonSerialization';
+import { LogCategory, logger, LogLevel } from './Logger';
 import { SubWallets } from './SubWallets';
 import { SynchronizationStatus } from './SynchronizationStatus';
 
@@ -115,11 +116,22 @@ export class WalletSynchronizer {
                 blockCheckpoints, this.startHeight, this.startTimestamp,
             );
         } catch (err) {
-            console.log(err);
+            logger.log(
+                'Failed to get blocks from daemon',
+                LogLevel.DEBUG,
+                LogCategory.SYNC,
+            );
+
             return [];
         }
 
         if (blocks.length === 0) {
+            logger.log(
+                'Zero blocks received from daemon, possibly fully synced',
+                LogLevel.DEBUG,
+                LogCategory.SYNC,
+            );
+
             return [];
         }
 
@@ -226,15 +238,38 @@ export class WalletSynchronizer {
         for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
             sumOfOutputs += output.amount;
 
-            /* Derive the spend key from the transaction, using the previous
-               derivation */
-            const derivedSpendKey = CryptoUtils.underivePublicKey(
-                derivation, outputIndex, output.key,
-            );
+            /* If we have a single subwallet, use derivePublicKey. It's faster
+               than underivePublicKey */
+            const singleSubWallet: boolean = spendKeys.length === 1;
 
-            /* See if the derived spend key matches any of our spend keys */
-            if (!_.includes(spendKeys, derivedSpendKey)) {
-                continue;
+            /* The public spend key of the subwallet that owns this input */
+            let ownerSpendKey: string;
+
+            if (singleSubWallet) {
+                const derivedOutputKey = CryptoUtils.derivePublicKey(
+                    derivation, outputIndex, spendKeys[0],
+                );
+
+                /* If the derived output key matches the actual output key, it's
+                   our output */
+                if (derivedOutputKey !== output.key) {
+                    continue;
+                }
+
+                ownerSpendKey = spendKeys[0];
+            } else {
+                /* Derive the spend key from the transaction, using the previous
+                   derivation */
+                const derivedSpendKey = CryptoUtils.underivePublicKey(
+                    derivation, outputIndex, output.key,
+                );
+
+                /* See if the derived spend key matches any of our spend keys */
+                if (!_.includes(spendKeys, derivedSpendKey)) {
+                    continue;
+                }
+
+                ownerSpendKey = derivedSpendKey;
             }
 
             /* Get the indexes, if we haven't already got them. (Don't need
@@ -244,8 +279,8 @@ export class WalletSynchronizer {
             }
 
             transfers.set(
-                derivedSpendKey,
-                output.amount + (transfers.get(derivedSpendKey) || 0),
+                ownerSpendKey,
+                output.amount + (transfers.get(ownerSpendKey) || 0),
             );
 
             /* We're not gonna use it in a view wallet, so just set to zero */
@@ -256,7 +291,7 @@ export class WalletSynchronizer {
             const spendHeight: number = 0;
 
             const keyImage = this.subWallets.getTxInputKeyImage(
-                derivedSpendKey, derivation, outputIndex,
+                ownerSpendKey, derivation, outputIndex,
             );
 
             const txInput: TransactionInput = new TransactionInput(
@@ -265,7 +300,7 @@ export class WalletSynchronizer {
                 output.key, spendHeight, rawTX.unlockTime, rawTX.hash,
             );
 
-            txData.inputsToAdd.push([derivedSpendKey, txInput]);
+            txData.inputsToAdd.push([ownerSpendKey, txInput]);
         }
 
         return [sumOfOutputs, transfers, txData];

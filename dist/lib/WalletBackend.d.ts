@@ -260,6 +260,16 @@ export declare class WalletBackend extends EventEmitter {
      */
     private constructor();
     /**
+     * Gets the wallet, local daemon, and network block count
+     *
+     * Usage:
+     * ```
+     * let [walletBlockCount, localDaemonBlockCount, networkBlockCount] =
+     *      wallet.getSyncStatus();
+     * ```
+     */
+    getSyncStatus(): [number, number, number];
+    /**
      * Most people don't mine blocks, so by default we don't scan them. If
      * you want to scan them, flip it on/off here.
      */

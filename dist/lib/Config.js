@@ -49,7 +49,7 @@ class Config {
         /**
          * Request timeout for daemon operations in milliseconds
          */
-        this.requestTimeout = 5000;
+        this.requestTimeout = 10 * 1000;
         /**
          * The block time of your coin, in seconds
          */
@@ -61,7 +61,7 @@ class Config {
         /**
          * How often to fetch blocks from the daemon, in milliseconds
          */
-        this.blockFetchInterval = 1000;
+        this.blockFetchInterval = 1 * 1000;
         /**
          * The amount of blocks to process per 'tick' of the mainloop. Note: too
          * high a value will cause the event loop to be blocked, and your interaction
@@ -76,7 +76,7 @@ class Config {
          * Most people haven't mined any blocks, so lets not waste time scanning
          * them
          */
-        this.scanCoinbaseTransactions = false;
+        this.scanCoinbaseTransactions = true;
     }
 }
 exports.default = new Config();

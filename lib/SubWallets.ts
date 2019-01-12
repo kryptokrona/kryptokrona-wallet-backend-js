@@ -181,7 +181,7 @@ export class SubWallets {
 
     /**
      * Get the hashes of the locked transactions (ones we've sent but not
-     * confirmed) 
+     * confirmed)
      */
     public getLockedTransactionHashes(): string[] {
         return this.lockedTransactions.map((x) => x.hash);
@@ -269,7 +269,7 @@ export class SubWallets {
         }
     }
 
-    /** 
+    /**
      * Convert a timestamp to a block height. Block heights are more dependable
      * than timestamps, which sometimes get treated a little funkily by the
      * daemon

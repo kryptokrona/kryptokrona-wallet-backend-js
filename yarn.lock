@@ -937,7 +937,7 @@ turtlecoin-rpc@^0.8.9:
 
 "turtlecoin-utils@https://github.com/turtlecoin/turtlecoin-utils.git":
   version "0.0.2"
-  resolved "https://github.com/turtlecoin/turtlecoin-utils.git#93333d770971a93c70c84aceb40d28973e827a37"
+  resolved "https://github.com/turtlecoin/turtlecoin-utils.git#79b733c4550a18e60b23f25d25446805cf8560ee"
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"

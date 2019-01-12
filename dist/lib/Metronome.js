@@ -17,6 +17,7 @@ class Metronome {
      * @param interval  How often to run the function
      */
     constructor(func, interval) {
+        this.shouldStop = true;
         this.func = func;
         this.interval = interval;
     }
@@ -25,6 +26,7 @@ class Metronome {
      */
     start() {
         return __awaiter(this, void 0, void 0, function* () {
+            this.shouldStop = false;
             yield this.tick();
         });
     }
@@ -32,6 +34,7 @@ class Metronome {
      * Stop running the function
      */
     stop() {
+        this.shouldStop = true;
         clearTimeout(this.timer);
     }
     /**
@@ -40,7 +43,9 @@ class Metronome {
     tick() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.func();
-            this.timer = setTimeout(this.tick.bind(this), this.interval);
+            if (!this.shouldStop) {
+                this.timer = setTimeout(this.tick.bind(this), this.interval);
+            }
         });
     }
 }

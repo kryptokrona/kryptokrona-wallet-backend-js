@@ -470,6 +470,23 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Gets the wallet, local daemon, and network block count
+     *
+     * Usage:
+     * ```
+     * let [walletBlockCount, localDaemonBlockCount, networkBlockCount] =
+     *      wallet.getSyncStatus();
+     * ```
+     */
+    public getSyncStatus(): [number, number, number] {
+        return [
+            this.walletSynchronizer.getHeight(),
+            this.daemon.getLocalDaemonBlockCount(),
+            this.daemon.getNetworkBlockCount(),
+        ];
+    }
+
+    /**
      * Most people don't mine blocks, so by default we don't scan them. If
      * you want to scan them, flip it on/off here.
      */
@@ -716,7 +733,7 @@ export class WalletBackend extends EventEmitter {
             logger.log(
                 'Adding input ' + input.key,
                 LogLevel.DEBUG,
-                [LogCategory.SYNC],
+                LogCategory.SYNC,
             );
 
             this.subWallets.storeTransactionInput(publicKey, input);
@@ -741,7 +758,7 @@ export class WalletBackend extends EventEmitter {
             logger.log(
                 'Processing block ' + block.blockHeight,
                 LogLevel.INFO,
-                [LogCategory.SYNC],
+                LogCategory.SYNC,
             );
 
             /* Forked chain, remove old data */
@@ -750,7 +767,7 @@ export class WalletBackend extends EventEmitter {
                 logger.log(
                     'Removing forked transactions',
                     LogLevel.INFO,
-                    [LogCategory.SYNC],
+                    LogCategory.SYNC,
                 );
 
                 this.subWallets.removeForkedTransactions(block.blockHeight);
@@ -785,7 +802,7 @@ export class WalletBackend extends EventEmitter {
             logger.log(
                 'Finished processing block ' + block.blockHeight,
                 LogLevel.DEBUG,
-                [LogCategory.SYNC],
+                LogCategory.SYNC,
             );
         }
     }
@@ -806,7 +823,7 @@ export class WalletBackend extends EventEmitter {
             logger.log(
                 'Error processing blocks: ' + err.toString(),
                 LogLevel.DEBUG,
-                [LogCategory.SYNC],
+                LogCategory.SYNC,
             );
         }
     }

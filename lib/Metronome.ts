@@ -19,6 +19,8 @@ export class Metronome {
      */
     private timer: any;
 
+    private shouldStop: boolean = true;
+
     /**
      * @param func      The function to run
      * @param interval  How often to run the function
@@ -32,6 +34,7 @@ export class Metronome {
      * Start running the function
      */
     public async start(): Promise<void> {
+        this.shouldStop = false;
         await this.tick();
     }
 
@@ -39,6 +42,7 @@ export class Metronome {
      * Stop running the function
      */
     public stop(): void {
+        this.shouldStop = true;
         clearTimeout(this.timer);
     }
 
@@ -47,6 +51,9 @@ export class Metronome {
      */
     private async tick(): Promise<void> {
         await this.func();
-        this.timer = setTimeout(this.tick.bind(this), this.interval);
+
+        if (!this.shouldStop) {
+            this.timer = setTimeout(this.tick.bind(this), this.interval);
+        }
     }
 }

@@ -25,17 +25,19 @@ class Logger {
     /**
      * @param message       The message to log
      * @param level         The level to log at
-     * @param categories    The categories this message belongs to, if any
+     * @param categories    The category or categories this message belongs to, if any
      *
      * Logs a message either to console.log, or the callback if defined
      */
-    public log(message: string, level: LogLevel, categories?: LogCategory[]) {
+    public log(message: string, level: LogLevel, categories?: (LogCategory | LogCategory[])) {
         if (level === LogLevel.DISABLED) {
             throw new Error('You cannot log at the "DISABLED" level!');
         }
 
         if (!categories) {
             categories = [];
+        } else if (!Array.isArray(categories)) {
+            categories = [categories];
         }
 
         const date: string = new Date().toUTCString();

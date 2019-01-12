@@ -11,6 +11,7 @@ export declare class Metronome {
      * Can be either number or NodeJS.Timer depending on env
      */
     private timer;
+    private shouldStop;
     /**
      * @param func      The function to run
      * @param interval  How often to run the function

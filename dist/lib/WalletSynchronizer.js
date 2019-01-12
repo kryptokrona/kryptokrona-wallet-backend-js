@@ -13,6 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const CnUtils_1 = require("./CnUtils");
 const Constants_1 = require("./Constants");
+const Logger_1 = require("./Logger");
 const SynchronizationStatus_1 = require("./SynchronizationStatus");
 const Types_1 = require("./Types");
 const Utilities_1 = require("./Utilities");
@@ -86,10 +87,11 @@ class WalletSynchronizer {
                 blocks = yield this.daemon.getWalletSyncData(blockCheckpoints, this.startHeight, this.startTimestamp);
             }
             catch (err) {
-                console.log(err);
+                Logger_1.logger.log('Failed to get blocks from daemon', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 return [];
             }
             if (blocks.length === 0) {
+                Logger_1.logger.log('Zero blocks received from daemon, possibly fully synced', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 return [];
             }
             /* Timestamp is transient and can change - block height is constant. */
@@ -155,26 +157,43 @@ class WalletSynchronizer {
             const spendKeys = this.subWallets.getPublicSpendKeys();
             for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
                 sumOfOutputs += output.amount;
-                /* Derive the spend key from the transaction, using the previous
-                   derivation */
-                const derivedSpendKey = CnUtils_1.CryptoUtils.underivePublicKey(derivation, outputIndex, output.key);
-                /* See if the derived spend key matches any of our spend keys */
-                if (!_.includes(spendKeys, derivedSpendKey)) {
-                    continue;
+                /* If we have a single subwallet, use derivePublicKey. It's faster
+                   than underivePublicKey */
+                const singleSubWallet = spendKeys.length === 1;
+                /* The public spend key of the subwallet that owns this input */
+                let ownerSpendKey;
+                if (singleSubWallet) {
+                    const derivedOutputKey = CnUtils_1.CryptoUtils.derivePublicKey(derivation, outputIndex, spendKeys[0]);
+                    /* If the derived output key matches the actual output key, it's
+                       our output */
+                    if (derivedOutputKey !== output.key) {
+                        continue;
+                    }
+                    ownerSpendKey = spendKeys[0];
+                }
+                else {
+                    /* Derive the spend key from the transaction, using the previous
+                       derivation */
+                    const derivedSpendKey = CnUtils_1.CryptoUtils.underivePublicKey(derivation, outputIndex, output.key);
+                    /* See if the derived spend key matches any of our spend keys */
+                    if (!_.includes(spendKeys, derivedSpendKey)) {
+                        continue;
+                    }
+                    ownerSpendKey = derivedSpendKey;
                 }
                 /* Get the indexes, if we haven't already got them. (Don't need
                    to get them if we're in a view wallet, since we can't spend.) */
                 if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
                     globalIndexes = yield this.getGlobalIndexes(blockHeight, rawTX.hash);
                 }
-                transfers.set(derivedSpendKey, output.amount + (transfers.get(derivedSpendKey) || 0));
+                transfers.set(ownerSpendKey, output.amount + (transfers.get(ownerSpendKey) || 0));
                 /* We're not gonna use it in a view wallet, so just set to zero */
                 const globalOutputIndex = this.subWallets.isViewWallet ? globalIndexes[outputIndex] : 0;
                 /* Not spent yet! */
                 const spendHeight = 0;
-                const keyImage = this.subWallets.getTxInputKeyImage(derivedSpendKey, derivation, outputIndex);
+                const keyImage = this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
                 const txInput = new Types_1.TransactionInput(keyImage, output.amount, blockHeight, rawTX.transactionPublicKey, outputIndex, globalOutputIndex, output.key, spendHeight, rawTX.unlockTime, rawTX.hash);
-                txData.inputsToAdd.push([derivedSpendKey, txInput]);
+                txData.inputsToAdd.push([ownerSpendKey, txInput]);
             }
             return [sumOfOutputs, transfers, txData];
         });

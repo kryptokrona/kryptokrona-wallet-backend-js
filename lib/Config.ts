@@ -50,7 +50,7 @@ class Config {
     /**
      * Request timeout for daemon operations in milliseconds
      */
-    public requestTimeout: number = 5000;
+    public requestTimeout: number = 10 * 1000;
 
     /**
      * The block time of your coin, in seconds
@@ -65,7 +65,7 @@ class Config {
     /**
      * How often to fetch blocks from the daemon, in milliseconds
      */
-    public blockFetchInterval: number = 1000;
+    public blockFetchInterval: number = 1 * 1000;
 
     /**
      * The amount of blocks to process per 'tick' of the mainloop. Note: too
@@ -83,7 +83,7 @@ class Config {
      * Most people haven't mined any blocks, so lets not waste time scanning
      * them
      */
-    public scanCoinbaseTransactions: boolean = false;
+    public scanCoinbaseTransactions: boolean = true;
 }
 
 export default new Config();

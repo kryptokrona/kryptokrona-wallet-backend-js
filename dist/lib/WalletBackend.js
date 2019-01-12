@@ -270,6 +270,22 @@ class WalletBackend extends events_1.EventEmitter {
         });
     }
     /**
+     * Gets the wallet, local daemon, and network block count
+     *
+     * Usage:
+     * ```
+     * let [walletBlockCount, localDaemonBlockCount, networkBlockCount] =
+     *      wallet.getSyncStatus();
+     * ```
+     */
+    getSyncStatus() {
+        return [
+            this.walletSynchronizer.getHeight(),
+            this.daemon.getLocalDaemonBlockCount(),
+            this.daemon.getNetworkBlockCount(),
+        ];
+    }
+    /**
      * Most people don't mine blocks, so by default we don't scan them. If
      * you want to scan them, flip it on/off here.
      */
@@ -465,7 +481,7 @@ class WalletBackend extends events_1.EventEmitter {
         }
         /* Store any corresponding inputs */
         for (const [publicKey, input] of txData.inputsToAdd) {
-            Logger_1.logger.log('Adding input ' + input.key, Logger_1.LogLevel.DEBUG, [Logger_1.LogCategory.SYNC]);
+            Logger_1.logger.log('Adding input ' + input.key, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             this.subWallets.storeTransactionInput(publicKey, input);
         }
         /* Mark any spent key images */
@@ -482,10 +498,10 @@ class WalletBackend extends events_1.EventEmitter {
             /* Take the blocks to process for this tick */
             const blocks = _.take(this.blocksToProcess, Config_1.default.blocksPerTick);
             for (const block of blocks) {
-                Logger_1.logger.log('Processing block ' + block.blockHeight, Logger_1.LogLevel.INFO, [Logger_1.LogCategory.SYNC]);
+                Logger_1.logger.log('Processing block ' + block.blockHeight, Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
                 /* Forked chain, remove old data */
                 if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
-                    Logger_1.logger.log('Removing forked transactions', Logger_1.LogLevel.INFO, [Logger_1.LogCategory.SYNC]);
+                    Logger_1.logger.log('Removing forked transactions', Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
                     this.subWallets.removeForkedTransactions(block.blockHeight);
                 }
                 let txData = new Types_1.TransactionData();
@@ -503,7 +519,7 @@ class WalletBackend extends events_1.EventEmitter {
                 this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
                 /* Remove the block we just processed */
                 this.blocksToProcess = _.drop(this.blocksToProcess);
-                Logger_1.logger.log('Finished processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, [Logger_1.LogCategory.SYNC]);
+                Logger_1.logger.log('Finished processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             }
         });
     }
@@ -521,7 +537,7 @@ class WalletBackend extends events_1.EventEmitter {
                 yield this.processBlocks();
             }
             catch (err) {
-                Logger_1.logger.log('Error processing blocks: ' + err.toString(), Logger_1.LogLevel.DEBUG, [Logger_1.LogCategory.SYNC]);
+                Logger_1.logger.log('Error processing blocks: ' + err.toString(), Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             }
         });
     }

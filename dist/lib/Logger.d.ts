@@ -11,11 +11,11 @@ declare class Logger {
     /**
      * @param message       The message to log
      * @param level         The level to log at
-     * @param categories    The categories this message belongs to, if any
+     * @param categories    The category or categories this message belongs to, if any
      *
      * Logs a message either to console.log, or the callback if defined
      */
-    log(message: string, level: LogLevel, categories?: LogCategory[]): void;
+    log(message: string, level: LogLevel, categories?: (LogCategory | LogCategory[])): void;
     /**
      * Sets the log level. Log messages below this level are not shown.
      */

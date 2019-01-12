@@ -16,7 +16,7 @@ class Logger {
     /**
      * @param message       The message to log
      * @param level         The level to log at
-     * @param categories    The categories this message belongs to, if any
+     * @param categories    The category or categories this message belongs to, if any
      *
      * Logs a message either to console.log, or the callback if defined
      */
@@ -26,6 +26,9 @@ class Logger {
         }
         if (!categories) {
             categories = [];
+        }
+        else if (!Array.isArray(categories)) {
+            categories = [categories];
         }
         const date = new Date().toUTCString();
         let output = `[${date}] [${logLevelToString(level)}]`;
