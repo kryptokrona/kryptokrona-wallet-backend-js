@@ -3,6 +3,9 @@
 //
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Stores a programmatic error code and an error message
+ */
 class WalletError {
     /* User can supply a custom, more informative message, if they like. This
        overrides the default message, if given. */
@@ -10,6 +13,9 @@ class WalletError {
         this.errorCode = errorCode;
         this.customMessage = customMessage;
     }
+    /**
+     * Convert a error code to a human readable string
+     */
     toString() {
         if (this.customMessage !== '') {
             return this.customMessage;
@@ -217,6 +223,9 @@ class WalletError {
     }
 }
 exports.WalletError = WalletError;
+/**
+ * Possible error codes
+ */
 var WalletErrorCode;
 (function (WalletErrorCode) {
     /* No error, operation suceeded. */
@@ -355,4 +364,17 @@ var WalletErrorCode;
     /* Hash not hex */
     WalletErrorCode[WalletErrorCode["HASH_INVALID"] = 49] = "HASH_INVALID";
 })(WalletErrorCode = exports.WalletErrorCode || (exports.WalletErrorCode = {}));
+/**
+ * Lets us easier compare if a operation code was successful.
+ * Unfortunately have to use deepEqual since object comparison is by reference..
+ *
+ * Usage:
+ * ```
+ * if (deepEqual(someOperation, SUCCESS))
+ * ```
+ * vs
+ * ```
+ * if (someOperation === new WalletError(WalletErrorCode.SUCCESS))
+ * ```
+ */
 exports.SUCCESS = new WalletError(WalletErrorCode.SUCCESS);

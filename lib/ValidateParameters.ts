@@ -5,8 +5,15 @@
 import { CryptoUtils } from './CnUtils';
 import { WalletError, WalletErrorCode } from './WalletError';
 
-export function validateAddresses(addresses: string[], integratedAddressesAllowed: boolean) {
-    addresses.forEach((address) => {
+/**
+ * @param addresses The addresses to validate
+ * @param integratedAddressesAllowed Should we allow integrated addresses?
+ *
+ * Verifies that the addresses given are valid.
+ * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ */
+export function validateAddresses(addresses: string[], integratedAddressesAllowed: boolean): WalletError {
+    for (const address of addresses) {
         try {
             const parsed = CryptoUtils.decodeAddress(address);
 
@@ -16,7 +23,7 @@ export function validateAddresses(addresses: string[], integratedAddressesAllowe
         } catch (err) {
             return new WalletError(WalletErrorCode.ADDRESS_NOT_VALID, err.toString());
         }
-    });
+    }
 
     return new WalletError(WalletErrorCode.SUCCESS);
 }

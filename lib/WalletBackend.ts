@@ -623,7 +623,7 @@ export class WalletBackend extends EventEmitter {
 
     /**
      * Get the mnemonic seed for the specified address. If the specified address
-     * is invalid or the address isn't a determinstic wallet, it will return
+     * is invalid or the address isn't a deterministic wallet, it will return
      * a WalletError.
      */
     public getMnemonicSeedForAddress(address: string): WalletError | string {

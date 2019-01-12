@@ -400,7 +400,7 @@ class WalletBackend extends events_1.EventEmitter {
     }
     /**
      * Get the mnemonic seed for the specified address. If the specified address
-     * is invalid or the address isn't a determinstic wallet, it will return
+     * is invalid or the address isn't a deterministic wallet, it will return
      * a WalletError.
      */
     getMnemonicSeedForAddress(address) {

@@ -1,9 +1,24 @@
+/**
+ * Stores a programmatic error code and an error message
+ */
 export declare class WalletError {
+    /**
+     * The error code of this error
+     */
     readonly errorCode: WalletErrorCode;
+    /**
+     * Stores the custom message of this error, if any
+     */
     private readonly customMessage;
     constructor(errorCode: WalletErrorCode, customMessage?: string);
+    /**
+     * Convert a error code to a human readable string
+     */
     toString(): string;
 }
+/**
+ * Possible error codes
+ */
 export declare enum WalletErrorCode {
     SUCCESS = 0,
     FILENAME_NON_EXISTENT = 1,
@@ -56,4 +71,17 @@ export declare enum WalletErrorCode {
     HASH_WRONG_LENGTH = 48,
     HASH_INVALID = 49
 }
+/**
+ * Lets us easier compare if a operation code was successful.
+ * Unfortunately have to use deepEqual since object comparison is by reference..
+ *
+ * Usage:
+ * ```
+ * if (deepEqual(someOperation, SUCCESS))
+ * ```
+ * vs
+ * ```
+ * if (someOperation === new WalletError(WalletErrorCode.SUCCESS))
+ * ```
+ */
 export declare let SUCCESS: WalletError;

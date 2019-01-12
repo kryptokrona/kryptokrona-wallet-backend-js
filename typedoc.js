@@ -15,7 +15,6 @@ module.exports = {
     './lib/SynchronizationStatus.ts',
     './lib/Types.ts',
     './lib/Utilities.ts',
-    './lib/ValidateParamters.ts',
     './lib/WalletSynchronizer.ts',
     './lib/index.ts'
   ],

@@ -1,8 +1,10 @@
 import * as colors from 'colors';
 
+import deepEqual = require('deep-equal');
+
 import {
-    ConventionalDaemon, prettyPrintAmount, WalletBackend, WalletError,
-    WalletErrorCode,
+    ConventionalDaemon, prettyPrintAmount, SUCCESS, validateAddresses, WalletBackend,
+    WalletError, WalletErrorCode,
 } from '../lib/index';
 
 class Tester {
@@ -48,6 +50,10 @@ class Tester {
     public setExitCode(): void {
         process.exitCode = this.testsFailed === 0 ? 0 : 1;
     }
+}
+
+function delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 (async () => {
@@ -175,9 +181,122 @@ class Tester {
 
         return test1 && test2 && test3;
 
-    }, 'Testing prettyPrintAmount works as expected...',
+    }, 'Testing prettyPrintAmount',
        'prettyPrintAmount works',
        'prettyPrintAmount gave unexpected output!');
+
+    await tester.test(async () => {
+        /* Create a new wallet */
+        const wallet = WalletBackend.createWallet(daemon);
+
+        const err1: WalletError = wallet.getMnemonicSeedForAddress('') as WalletError;
+
+        /* Verify invalid address is detected */
+        const test1: boolean = err1.errorCode === WalletErrorCode.ADDRESS_NOT_VALID;
+
+        const err2: WalletError = wallet.getMnemonicSeedForAddress(
+            'TRTLv1s9JQeHAJFoHvcqVBPyHYom2ynKeK6dpYptbp8gQNzdzE73ZD' +
+            'kNmNurqfhhcMSUXpS1ZGEJKiKJUcPCyw7vYaCc354DCN1',
+        ) as WalletError;
+
+        /* Random address shouldn't be present in wallet */
+        const test2: boolean = deepEqual(err2, new WalletError(WalletErrorCode.ADDRESS_NOT_IN_WALLET));
+
+        /* Should get a seed back when we supply our address */
+        const test3: boolean = typeof wallet.getMnemonicSeedForAddress(wallet.getPrimaryAddress()) === 'string';
+
+        /* TODO: Add a test for testing a new subwallet address, when we add
+           subwallet creation */
+
+        return test1 && test2 && test3;
+
+    }, 'Testing getMnemonicSeedForAddress',
+       'getMnemonicSeedForAddress works',
+       'getMnemonicSeedForAddress doesn\'t work!');
+
+    await tester.test(async () => {
+        const wallet = WalletBackend.createWallet(daemon);
+
+        /* Not called wallet.start(), so node fee should be unset here */
+        const [feeAddress, feeAmount] = wallet.getNodeFee();
+
+        return feeAddress === '' && feeAmount === 0;
+
+    }, 'Testing getNodeFee',
+       'getNodeFee works',
+       'getNodeFee doesn\'t work!');
+
+    await tester.test(async () => {
+        const wallet = WalletBackend.createWallet(daemon);
+
+        const address: string = wallet.getPrimaryAddress();
+
+        const err: WalletError = validateAddresses([address], false);
+
+        return deepEqual(err, SUCCESS);
+
+    }, 'Testing getPrimaryAddress',
+       'getPrimaryAddress works',
+       'getPrimaryAddress doesn\'t work!');
+
+    await tester.test(async () => {
+        const privateViewKey: string = '3c6cfe7a29a371278abd9f5725a3d2af5eb73d88b4ed9b8d6c2ff993bbc4c20a';
+
+        const viewWallet = WalletBackend.importViewWallet(
+            daemon, 0,
+            privateViewKey,
+            'TRTLuybJFCU8BjP18bH3VZCNAu1fZ2r3d85SsU2w3VnJAHoRfnzLKgtTK2b58nfwDu59hKxwVuSMhTN31gmUW8nN9aoAN9N8Qyb',
+        ) as WalletBackend;
+
+        return viewWallet.getPrivateViewKey() === privateViewKey;
+
+    }, 'Testing getPrivateViewKey',
+       'getPrivateViewKey works',
+       'getPrivateViewKey doesn\'t work!');
+
+    await tester.test(async () => {
+        const keyWallet = WalletBackend.importWalletFromKeys(
+            daemon, 0,
+            '1f3f6c220dd9f97619dbf44d967f79f3041b9b1c63da2c895f980f1411d5d704',
+            '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f',
+        ) as WalletBackend;
+
+        const [publicSpendKey, privateSpendKey]
+            = keyWallet.getSpendKeys(keyWallet.getPrimaryAddress()) as [string, string];
+
+        return publicSpendKey === 'ff9b6e048297ee435d6219005974c2c8df620a4aca9ca5c4e13f071823482029' &&
+               privateSpendKey === '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f';
+
+    }, 'Testing getSpendKeys',
+       'getSpendKeys works',
+       'getSpendKeys doesn\'t work!');
+
+    /* TODO: Maybe use a remote node? */
+    await tester.test(async () => {
+        const wallet = WalletBackend.createWallet(daemon);
+
+        /* Not started sync, all should be zero */
+        const [a, b, c] = wallet.getSyncStatus();
+
+        const test1: boolean = a === 0 && b === 0 && c === 0;
+
+        await wallet.start();
+
+        /* Wait 5 seconds */
+        await delay(1000 * 5);
+
+        wallet.stop();
+
+        /* Started sync, some should be non zero */
+        const [d, e, f] = wallet.getSyncStatus();
+
+        const test2: boolean = d !== 0 || e !== 0 || f !== 0;
+
+        return test1 && test2;
+
+    }, 'Testing getSyncStatus (5 second test)',
+       'getSyncStatus works',
+       'getSyncStatus doesn\'t work! (Do you have a local daemon running?)');
 
     await tester.test(async () => {
         const wallet = WalletBackend.importWalletFromSeed(
@@ -187,14 +306,12 @@ class Tester {
             'snout vegan girth guest history',
         ) as WalletBackend;
 
-        // wallet.setLogLevel(LogLevel.DEBUG);
-
         const startTime = new Date().getTime();
 
-        wallet.start();
+        await wallet.start();
 
         /* Wait for 60 seconds */
-        await new Promise((resolve) => setTimeout(resolve, 1000 * 60));
+        await delay(1000 * 60);
 
         wallet.stop();
 
@@ -215,6 +332,7 @@ class Tester {
         console.log(colors.green(' ✔️  ') + `Time to process one block: ${timePerBlock} ms`);
 
         return true;
+
     }, 'Testing performance (60 second test)',
        'Performance test complete',
        'Performance test failed!');

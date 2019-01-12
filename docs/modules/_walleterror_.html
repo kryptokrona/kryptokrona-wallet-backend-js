@@ -95,9 +95,18 @@
 					<div class="tsd-signature tsd-kind-icon">SUCCESS<span class="tsd-signature-symbol">:</span> <a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> =&nbsp;new WalletError(WalletErrorCode.SUCCESS)</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/5a4ef7c/lib/WalletError.ts#L412">WalletError.ts:412</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/a0bc3dd/lib/WalletError.ts#L441">WalletError.ts:441</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Lets us easier compare if a operation code was successful.
+							Unfortunately have to use deepEqual since object comparison is by reference..</p>
+						</div>
+						<p>Usage:</p>
+						<pre><code>if (<span class="hljs-name">deepEqual</span>(<span class="hljs-name">someOperation</span>, SUCCESS))</code></pre><p>vs</p>
+						<pre><code>if (<span class="hljs-name">someOperation</span> === new WalletError(<span class="hljs-name">WalletErrorCode</span>.SUCCESS))</code></pre>
+					</div>
 				</section>
 			</section>
 		</div>

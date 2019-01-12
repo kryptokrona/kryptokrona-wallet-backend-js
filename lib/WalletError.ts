@@ -2,11 +2,21 @@
 //
 // Please see the included LICENSE file for more information.
 
+/**
+ * Stores a programmatic error code and an error message
+ */
 export class WalletError {
 
+    /**
+     * The error code of this error
+     */
     public readonly errorCode: WalletErrorCode;
 
+    /**
+     * Stores the custom message of this error, if any
+     */
     private readonly customMessage: string;
+
     /* User can supply a custom, more informative message, if they like. This
        overrides the default message, if given. */
     constructor(errorCode: WalletErrorCode, customMessage: string = '') {
@@ -14,6 +24,9 @@ export class WalletError {
         this.customMessage = customMessage;
     }
 
+    /**
+     * Convert a error code to a human readable string
+     */
     public toString(): string {
         if (this.customMessage !== '') {
             return this.customMessage;
@@ -222,6 +235,9 @@ export class WalletError {
     }
 }
 
+/**
+ * Possible error codes
+ */
 export enum WalletErrorCode {
     /* No error, operation suceeded. */
     SUCCESS = 0,
@@ -409,4 +425,17 @@ export enum WalletErrorCode {
     HASH_INVALID = 49,
 }
 
+/**
+ * Lets us easier compare if a operation code was successful.
+ * Unfortunately have to use deepEqual since object comparison is by reference..
+ *
+ * Usage:
+ * ```
+ * if (deepEqual(someOperation, SUCCESS))
+ * ```
+ * vs
+ * ```
+ * if (someOperation === new WalletError(WalletErrorCode.SUCCESS))
+ * ```
+ */
 export let SUCCESS: WalletError = new WalletError(WalletErrorCode.SUCCESS);
