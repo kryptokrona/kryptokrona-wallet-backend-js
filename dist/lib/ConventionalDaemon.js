@@ -15,14 +15,36 @@ const Types_1 = require("./Types");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletError_1 = require("./WalletError");
 const Config_1 = require("./Config");
+/* REEEEE ADD TYPES */
 const TurtleCoind = require('turtlecoin-rpc').TurtleCoind;
+/**
+ * Implements the daemon interface, talking to a standard TurtleCoind.
+ */
 class ConventionalDaemon {
     constructor(daemonHost, daemonPort) {
+        /**
+         * The address node fees will go to
+         */
         this.feeAddress = '';
+        /**
+         * The amount of the node fee in atomic units
+         */
         this.feeAmount = 0;
+        /**
+         * The amount of blocks the daemon we're connected to has
+         */
         this.localDaemonBlockCount = 0;
+        /**
+         * The amount of blocks the network has
+         */
         this.networkBlockCount = 0;
+        /**
+         * The amount of peers we have, incoming+outgoing
+         */
         this.peerCount = 0;
+        /**
+         * The hashrate of the last known local block
+         */
         this.lastKnownHashrate = 0;
         this.daemonHost = daemonHost;
         this.daemonPort = daemonPort;
@@ -33,19 +55,31 @@ class ConventionalDaemon {
             timeout: Config_1.default.requestTimeout,
         });
     }
+    /**
+     * Get the amount of blocks the network has
+     */
     getNetworkBlockCount() {
         return this.networkBlockCount;
     }
+    /**
+     * Get the amount of blocks the daemon we're connected to has
+     */
     getLocalDaemonBlockCount() {
         return this.localDaemonBlockCount;
     }
+    /**
+     * Initialize the daemon and the fee info
+     */
     init() {
         return __awaiter(this, void 0, void 0, function* () {
             /* Note - if one promise throws, the other will be cancelled */
-            yield Promise.all([this.getDaemonInfo(), this.getFeeInfo()]);
+            yield Promise.all([this.updateDaemonInfo(), this.updateFeeInfo()]);
         });
     }
-    getDaemonInfo() {
+    /**
+     * Update the daemon info
+     */
+    updateDaemonInfo() {
         return __awaiter(this, void 0, void 0, function* () {
             let info;
             try {
@@ -65,9 +99,23 @@ class ConventionalDaemon {
             this.lastKnownHashrate = info.difficulty / Config_1.default.blockTargetTime;
         });
     }
+    /**
+     * Get the node fee and address
+     */
     nodeFee() {
         return [this.feeAddress, this.feeAmount];
     }
+    /**
+     * @param blockHashCheckpoints  Hashes of the last known blocks. Later
+     *                              blocks (higher block height) should be
+     *                              ordered at the front of the array.
+     *
+     * @param startHeight           Height to start taking blocks from
+     * @param startTimestamp        Block timestamp to start taking blocks from
+     *
+     * Gets blocks from the daemon. Blocks are returned starting from the last
+     * known block hash (if higher than the startHeight/startTimestamp)
+     */
     getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.daemon.getWalletSyncData({
@@ -78,6 +126,12 @@ class ConventionalDaemon {
             return data.map(Types_1.Block.fromJSON);
         });
     }
+    /**
+     * @returns Returns a mapping of transaction hashes to global indexes
+     *
+     * Get global indexes for the transactions in the range
+     * [startHeight, endHeight]
+     */
     getGlobalIndexesForRange(startHeight, endHeight) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.daemon.getGlobalIndexesForRange({
@@ -91,7 +145,10 @@ class ConventionalDaemon {
             return indexes;
         });
     }
-    getFeeInfo() {
+    /**
+     * Update the fee address and amount
+     */
+    updateFeeInfo() {
         return __awaiter(this, void 0, void 0, function* () {
             let feeInfo;
             try {

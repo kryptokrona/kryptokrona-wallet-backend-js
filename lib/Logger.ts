@@ -3,8 +3,14 @@
 // Please see the included LICENSE file for more information.
 
 class Logger {
+    /**
+     * Level to log at
+     */
     private logLevel: LogLevel = LogLevel.DISABLED;
 
+    /**
+     * Callback to use instead of console.log
+     */
     private callback?: (prettyMessage: string, message: string, level: LogLevel, categories: LogCategory[]) => any;
 
     constructor(
@@ -16,6 +22,13 @@ class Logger {
         }
     }
 
+    /**
+     * @param message       The message to log
+     * @param level         The level to log at
+     * @param categories    The categories this message belongs to, if any
+     *
+     * Logs a message either to console.log, or the callback if defined
+     */
     public log(message: string, level: LogLevel, categories?: LogCategory[]) {
         if (level === LogLevel.DISABLED) {
             throw new Error('You cannot log at the "DISABLED" level!');
@@ -45,10 +58,33 @@ class Logger {
         }
     }
 
+    /**
+     * Sets the log level. Log messages below this level are not shown.
+     */
     public setLogLevel(logLevel: LogLevel) {
         this.logLevel = logLevel;
     }
 
+    /**
+     * @param callback The callback to use for log messages
+     * @param callback.prettyMessage A nicely formatted log message, with timestamp, levels, and categories
+     * @param callback.message       The raw log message
+     * @param callback.level         The level at which the message was logged at
+     * @param callback.categories    The categories this log message falls into
+     *
+     * Sets a callback to be used instead of console.log for more fined control
+     * of the logging output.
+     *
+     * Usage:
+     * ```
+     * wallet.setLoggerCallback((prettyMessage, message, level, categories) => {
+     *       if (categories.includes(LogCategory.SYNC)) {
+     *           console.log(prettyMessage);
+     *       }
+     *   });
+     * ```
+     *
+     */
     public setLoggerCallback(
         callback: (prettyMessage: string,
                    message: string,
@@ -59,6 +95,9 @@ class Logger {
     }
 }
 
+/**
+ * Levels to log at
+ */
 export enum LogLevel {
     DEBUG = 0,
     INFO = 1,
@@ -67,6 +106,9 @@ export enum LogLevel {
     DISABLED = 4,
 }
 
+/**
+ * Convert a log level to a string
+ */
 function logLevelToString(level: LogLevel) {
     switch (level) {
         case LogLevel.DISABLED: {
@@ -87,11 +129,17 @@ function logLevelToString(level: LogLevel) {
     }
 }
 
+/**
+ * Possible categories log messages can be in
+ */
 export enum LogCategory {
     SYNC,
     TRANSACTIONS,
 }
 
+/**
+ * Convert a log category to a string
+ */
 function logCategoryToString(category: LogCategory) {
     switch (category) {
         case LogCategory.SYNC: {

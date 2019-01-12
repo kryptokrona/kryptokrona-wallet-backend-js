@@ -12,18 +12,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 class Metronome {
+    /**
+     * @param func      The function to run
+     * @param interval  How often to run the function
+     */
     constructor(func, interval) {
         this.func = func;
         this.interval = interval;
     }
+    /**
+     * Start running the function
+     */
     start() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.tick();
         });
     }
+    /**
+     * Stop running the function
+     */
     stop() {
         clearTimeout(this.timer);
     }
+    /**
+     * Run the function, then recurse
+     */
     tick() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.func();

@@ -91,11 +91,7 @@
 
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Created wallet'</span>);
 
-    <span class="hljs-keyword">await</span> wallet.init();
-
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Initialized wallet'</span>);
-
-    wallet.start();
+    <span class="hljs-keyword">await</span> wallet.start();
 
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Started wallet'</span>);
 
@@ -116,11 +112,7 @@
 
     <span class="hljs-built_in">console</span>.log(<span class="hljs-params">'Created wallet'</span>);
 
-    <span class="hljs-keyword">await</span> wallet.init(<span class="hljs-params"></span>);
-
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-params">'Initialized wallet'</span>);
-
-    wallet.start(<span class="hljs-params"></span>);
+    <span class="hljs-keyword">await</span> wallet.start(<span class="hljs-params"></span>);
 
     <span class="hljs-built_in">console</span>.log(<span class="hljs-params">'Started wallet'</span>);
 
@@ -131,6 +123,19 @@
 }</span>)<span class="hljs-params">()</span>.<span class="hljs-params">catch</span>(<span class="hljs-params">err =&gt; {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-params">'Caught promise rejection: ' + err</span>);
 }</span>);</span></code></pre>
+				<h3 id="logging">Logging</h3>
+				<p>By default, the logger is disabled. You can enable it like so:</p>
+				<pre><code class="language-javascript">wallet.setLogLevel(LogLevel.DEBUG);</code></pre>
+				<p>The logger uses console.log, i.e. it outputs to stdout.</p>
+				<p>If you want to change this, or want more control over what messages are logged,
+				you can provide a callback for the logger to call.</p>
+				<pre><code class="language-javascript">wallet.setLoggerCallback(<span class="hljs-function">(<span class="hljs-params">prettyMessage, message, level, categories</span>) =&gt;</span> {
+    <span class="hljs-keyword">if</span> (categories.includes(LogCategory.SYNC)) {
+        <span class="hljs-built_in">console</span>.log(prettyMessage);
+    }
+});</code></pre>
+				<p>In this example, we only print messages that fall into the SYNC category.</p>
+				<p>You can view available categories and log levels in the documentation below.</p>
 				<h2 id="documentation">Documentation</h2>
 				<p>You can view the documentation here: <a href="https://turtlecoin.github.io/turtlecoin-wallet-backend-js/">https://turtlecoin.github.io/turtlecoin-wallet-backend-js/</a></p>
 				<p>Alternatively, open up docs/index.html in your web browser.</p>

@@ -46,11 +46,7 @@ const WB = require('turtlecoin-wallet-backend');
 
     console.log('Created wallet');
 
-    await wallet.init();
-
-    console.log('Initialized wallet');
-
-    wallet.start();
+    await wallet.start();
 
     console.log('Started wallet');
 
@@ -75,11 +71,7 @@ import { WalletBackend, ConventionalDaemon } from 'turtlecoin-wallet-backend';
 
     console.log('Created wallet');
 
-    await wallet.init();
-
-    console.log('Initialized wallet');
-
-    wallet.start();
+    await wallet.start();
 
     console.log('Started wallet');
 
@@ -91,6 +83,31 @@ import { WalletBackend, ConventionalDaemon } from 'turtlecoin-wallet-backend';
     console.log('Caught promise rejection: ' + err);
 });
 ```
+
+### Logging
+
+By default, the logger is disabled. You can enable it like so:
+
+```javascript
+wallet.setLogLevel(LogLevel.DEBUG);
+```
+
+The logger uses console.log, i.e. it outputs to stdout.
+
+If you want to change this, or want more control over what messages are logged,
+you can provide a callback for the logger to call.
+
+```javascript
+wallet.setLoggerCallback((prettyMessage, message, level, categories) => {
+    if (categories.includes(LogCategory.SYNC)) {
+        console.log(prettyMessage);
+    }
+});
+```
+
+In this example, we only print messages that fall into the SYNC category.
+
+You can view available categories and log levels in the documentation below.
 
 ## Documentation
 

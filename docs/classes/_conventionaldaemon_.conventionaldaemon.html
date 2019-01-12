@@ -65,6 +65,13 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Implements the daemon interface, talking to a standard TurtleCoind.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -92,13 +99,13 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_conventionaldaemon_.conventionaldaemon.html#getdaemoninfo" class="tsd-kind-icon">get<wbr>Daemon<wbr>Info</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_conventionaldaemon_.conventionaldaemon.html#getglobalindexesforrange" class="tsd-kind-icon">get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_conventionaldaemon_.conventionaldaemon.html#getlocaldaemonblockcount" class="tsd-kind-icon">get<wbr>Local<wbr>Daemon<wbr>Block<wbr>Count</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_conventionaldaemon_.conventionaldaemon.html#getnetworkblockcount" class="tsd-kind-icon">get<wbr>Network<wbr>Block<wbr>Count</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_conventionaldaemon_.conventionaldaemon.html#getwalletsyncdata" class="tsd-kind-icon">get<wbr>Wallet<wbr>Sync<wbr>Data</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_conventionaldaemon_.conventionaldaemon.html#init" class="tsd-kind-icon">init</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_conventionaldaemon_.conventionaldaemon.html#nodefee" class="tsd-kind-icon">node<wbr>Fee</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_conventionaldaemon_.conventionaldaemon.html#updatedaemoninfo" class="tsd-kind-icon">update<wbr>Daemon<wbr>Info</a></li>
 							</ul>
 						</section>
 					</div>
@@ -116,7 +123,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/df7bac6/lib/ConventionalDaemon.ts#L32">ConventionalDaemon.ts:32</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/9066043/lib/ConventionalDaemon.ts#L64">ConventionalDaemon.ts:64</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -136,24 +143,6 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="getdaemoninfo" class="tsd-anchor"></a>
-					<h3>get<wbr>Daemon<wbr>Info</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Daemon<wbr>Info<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getdaemoninfo">getDaemonInfo</a></p>
-								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/df7bac6/lib/ConventionalDaemon.ts#L59">ConventionalDaemon.ts:59</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getglobalindexesforrange" class="tsd-anchor"></a>
 					<h3>get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -164,9 +153,11 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getglobalindexesforrange">getGlobalIndexesForRange</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/df7bac6/lib/ConventionalDaemon.ts#L100">ConventionalDaemon.ts:100</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/9066043/lib/ConventionalDaemon.ts#L164">ConventionalDaemon.ts:164</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -177,6 +168,9 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>Returns a mapping of transaction hashes to global indexes</p>
+							<p>Get global indexes for the transactions in the range
+							[startHeight, endHeight]</p>
 						</li>
 					</ul>
 				</section>
@@ -191,9 +185,14 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getlocaldaemonblockcount">getLocalDaemonBlockCount</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/df7bac6/lib/ConventionalDaemon.ts#L50">ConventionalDaemon.ts:50</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/9066043/lib/ConventionalDaemon.ts#L88">ConventionalDaemon.ts:88</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get the amount of blocks the daemon we&#39;re connected to has</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 						</li>
 					</ul>
@@ -209,9 +208,14 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getnetworkblockcount">getNetworkBlockCount</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/df7bac6/lib/ConventionalDaemon.ts#L46">ConventionalDaemon.ts:46</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/9066043/lib/ConventionalDaemon.ts#L81">ConventionalDaemon.ts:81</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get the amount of blocks the network has</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 						</li>
 					</ul>
@@ -227,19 +231,34 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getwalletsyncdata">getWalletSyncData</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/df7bac6/lib/ConventionalDaemon.ts#L86">ConventionalDaemon.ts:86</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/9066043/lib/ConventionalDaemon.ts#L144">ConventionalDaemon.ts:144</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>blockHashCheckpoints: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Hashes of the last known blocks. Later
+											blocks (higher block height) should be
+										ordered at the front of the array.</p>
+									</div>
 								</li>
 								<li>
 									<h5>startHeight: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Height to start taking blocks from</p>
+									</div>
 								</li>
 								<li>
 									<h5>startTimestamp: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Block timestamp to start taking blocks from</p>
+										<p>Gets blocks from the daemon. Blocks are returned starting from the last
+										known block hash (if higher than the startHeight/startTimestamp)</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Block</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -257,9 +276,14 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#init">init</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/df7bac6/lib/ConventionalDaemon.ts#L54">ConventionalDaemon.ts:54</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/9066043/lib/ConventionalDaemon.ts#L95">ConventionalDaemon.ts:95</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Initialize the daemon and the fee info</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
@@ -275,10 +299,38 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#nodefee">nodeFee</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/df7bac6/lib/ConventionalDaemon.ts#L82">ConventionalDaemon.ts:82</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/9066043/lib/ConventionalDaemon.ts#L129">ConventionalDaemon.ts:129</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get the node fee and address</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="updatedaemoninfo" class="tsd-anchor"></a>
+					<h3>update<wbr>Daemon<wbr>Info</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">update<wbr>Daemon<wbr>Info<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#updatedaemoninfo">updateDaemonInfo</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/9066043/lib/ConventionalDaemon.ts#L103">ConventionalDaemon.ts:103</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Update the daemon info</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -321,9 +373,6 @@
 								<a href="_conventionaldaemon_.conventionaldaemon.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_conventionaldaemon_.conventionaldaemon.html#getdaemoninfo" class="tsd-kind-icon">get<wbr>Daemon<wbr>Info</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_conventionaldaemon_.conventionaldaemon.html#getglobalindexesforrange" class="tsd-kind-icon">get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
@@ -340,6 +389,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_conventionaldaemon_.conventionaldaemon.html#nodefee" class="tsd-kind-icon">node<wbr>Fee</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_conventionaldaemon_.conventionaldaemon.html#updatedaemoninfo" class="tsd-kind-icon">update<wbr>Daemon<wbr>Info</a>
 							</li>
 						</ul>
 					</li>

@@ -120,12 +120,37 @@ export declare interface WalletBackend {
 }
 
 /**
- * Documentation for the WalletBackend class.
+ * The WalletBackend provides an interface that allows you to synchronize
+ * with a daemon, download blocks, process them, and pick out transactions that
+ * belong to you.
+ * It also allows you to inspect these transactions, view your balance,
+ * send transactions, and more.
  * @noInheritDoc
  */
 export class WalletBackend extends EventEmitter {
 
-    /* Opens a wallet given a filepath and a password */
+    /**
+     * @param filename  The location of the wallet file on disk
+     * @param password  The password to use to decrypt the wallet. May be blank.
+     * @returns         Returns either a WalletBackend, or a WalletError if the
+     *                  password was wrong, the file didn't exist, the JSON was
+     *                  invalid, etc.
+     *
+     * This method opens a password protected wallet from a filepath.
+     * The password protection follows the same format as wallet-api,
+     * zedwallet-beta, and WalletBackend. It does NOT follow the same format
+     * as turtle-service or zedwallet, and will be unable to open wallets
+     * created with this program.
+     *
+     * Usage:
+     * ```
+     * const wallet = WalletBackend.openWalletFromFile('mywallet.wallet', 'hunter2');
+     *
+     * if (wallet instanceof WalletError) {
+     *      console.log('Failed to open wallet: ' + wallet.toString());
+     * }
+     * ```
+     */
     public static openWalletFromFile(
         daemon: IDaemon,
         filename: string,
@@ -140,19 +165,61 @@ export class WalletBackend extends EventEmitter {
         return WalletBackend.loadWalletFromJSON(daemon, walletJSON as string);
     }
 
-    /* Opens a wallet from a valid wallet JSON string (unencrypted) */
+    /**
+     * @returns     Returns a WalletBackend, or a WalletError if the JSON is
+     *              an invalid format
+     *
+     * Loads a wallet from a JSON encoded string. For the correct format for
+     * the JSON to use, see https://github.com/turtlecoin/wallet-file-interaction
+     *
+     * Usage:
+     * ```
+     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     *
+     * const wallet = WalletBackend.loadWalletFromJSON(daemon, json);
+     *
+     * if (wallet instanceof WalletError) {
+     *      console.log('Failed to load wallet: ' + wallet.toString());
+     * }
+     * ```
+     *
+     */
     public static loadWalletFromJSON(daemon: IDaemon, json: string): WalletBackend | WalletError {
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
             wallet.initAfterLoad(daemon);
             return wallet;
         } catch (err) {
-            console.log(err);
             return new WalletError(WalletErrorCode.WALLET_FILE_CORRUPTED);
         }
     }
 
-    /* Imports a wallet from a mnemonic seed */
+    /**
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Defaults to zero.
+     *
+     * @returns             Returns a WalletBackend, or a WalletError if the
+     *                      mnemonic is invalid or the scan height is invalid.
+     *
+     * Imports a wallet from a 25 word mnemonic seed.
+     *
+     * Usage:
+     * ```
+     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     *
+     * const seed = 'necklace went vials phone both haunted either eskimos ' +
+     *              'dialect civilian western dabbing snout rustled balding ' +
+     *              'puddle looking orbit rest agenda jukebox opened sarcasm ' +
+     *              'solved eskimos';
+     *
+     * const wallet = WalletBackend.importWalletFromSeed(daemon, 100000, seed);
+     *
+     * if (wallet instanceof WalletError) {
+     *      console.log('Failed to load wallet: ' + wallet.toString());
+     * }
+     * ```
+     */
     public static importWalletFromSeed(
         daemon: IDaemon,
         scanHeight: number,
@@ -181,7 +248,31 @@ export class WalletBackend extends EventEmitter {
         return wallet;
     }
 
-    /* Imports a wallet from a spend and view key */
+    /**
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Defaults to zero.
+     *
+     * @returns             Returns a WalletBackend, or a WalletError if the
+     *                      keys are invalid or the scan height is invalid.
+     *
+     * Imports a wallet from a pair of private keys.
+     *
+     * Usage:
+     * ```
+     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     *
+     * const privateViewKey = 'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01';
+     * const privateSpendKey = 'f1b1e9a6f56241594ddabb243cdb39355a8b4a1a1c0343dde36f3b57835fe607';
+     *
+     * const wallet = WalletBackend.importWalletFromSeed(daemon, 100000, privateViewKey, privateSpendKey);
+     *
+     * if (wallet instanceof WalletError) {
+     *      console.log('Failed to load wallet: ' + wallet.toString());
+     * }
+     * ```
+     *
+     */
     public static importWalletFromKeys(
         daemon: IDaemon,
         scanHeight: number,
@@ -215,7 +306,19 @@ export class WalletBackend extends EventEmitter {
         return wallet;
     }
 
-    /* Imports a view only wallet */
+    /**
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Defaults to zero.
+     * @param address       The public address of this view wallet
+     *
+     * This method imports a wallet you have previously created, in a 'watch only'
+     * state. This wallet can view incoming transactions, but cannot send
+     * transactions. It also cannot view outgoing transactions, so balances
+     * may appear incorrect.
+     * This is useful for viewing your balance whilst not risking your funds
+     * or private keys being stolen.
+     */
     public static importViewWallet(
         daemon: IDaemon,
         scanHeight: number,
@@ -251,8 +354,12 @@ export class WalletBackend extends EventEmitter {
         return wallet;
     }
 
-    /* Creates a wallet with a random key pair (it will be a determinstic/
-       mnemonic wallet, however */
+    /**
+     * This method creates a new wallet instance with a random key pair.
+     *
+     * The created addresses view key will be derived in terms of the spend key,
+     * i.e. it will have a mnemonic seed.
+     */
     public static createWallet(daemon: IDaemon): WalletBackend {
         const newWallet: boolean = true;
 
@@ -289,23 +396,48 @@ export class WalletBackend extends EventEmitter {
         });
     }
 
-    /* Contains private keys, transactions, inputs, etc */
+    /**
+     *  Contains private keys, transactions, inputs, etc
+     */
     private readonly subWallets: SubWallets;
 
-    /* Interface to either a regular daemon or a blockchain cache api */
+    /**
+     * Interface to either a regular daemon or a blockchain cache api
+     */
     private daemon: IDaemon;
 
-    /* Wallet synchronization state */
+    /**
+     * Wallet synchronization state
+     */
     private walletSynchronizer: WalletSynchronizer;
 
-    /* Executes the main loop every n seconds for us */
+    /**
+     * Executes the main loop every n seconds for us
+     */
     private mainLoopExecutor: Metronome;
 
-    /* Whether our wallet is synced */
+    /**
+     * Whether our wallet is synced. Used for selectively firing the sync/desync
+     * event.
+     */
     private synced: boolean = false;
 
+    /**
+     * Blocks previously downloaded that we need to process
+     */
     private blocksToProcess: Block[] = [];
 
+    /**
+     * @param newWallet Are we creating a new wallet? If so, it will start
+     *                  syncing from the current time.
+     *
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Set to zero if `newWallet` is `true`.
+     *
+     * @param privateSpendKey   Omit this parameter to create a view wallet.
+     *
+     */
     private constructor(
         daemon: IDaemon,
         address: string,
@@ -337,80 +469,103 @@ export class WalletBackend extends EventEmitter {
         );
     }
 
-    public setLogLevel(logLevel: LogLevel) {
+    /**
+     * Most people don't mine blocks, so by default we don't scan them. If
+     * you want to scan them, flip it on/off here.
+     */
+    public skipCoinbaseTransactions(shouldSkip: boolean) {
+        config.skipCoinbaseTransactions = shouldSkip;
+    }
+
+    /**
+     * Converts the wallet into a JSON string. This can be used to later restore
+     * the wallet with `loadWalletFromJSON`.
+     */
+    public toJSONString(): string {
+        return JSON.stringify(this, null, 4);
+    }
+
+    /**
+     * Sets the log level. Log messages below this level are not shown.
+     */
+    public setLogLevel(logLevel: LogLevel): void {
         logger.setLogLevel(logLevel);
     }
 
+    /**
+     * @param callback The callback to use for log messages
+     * @param callback.prettyMessage A nicely formatted log message, with timestamp, levels, and categories
+     * @param callback.message       The raw log message
+     * @param callback.level         The level at which the message was logged at
+     * @param callback.categories    The categories this log message falls into
+     *
+     * Sets a callback to be used instead of console.log for more fined control
+     * of the logging output.
+     *
+     * Usage:
+     * ```
+     * wallet.setLoggerCallback((prettyMessage, message, level, categories) => {
+     *       if (categories.includes(LogCategory.SYNC)) {
+     *           console.log(prettyMessage);
+     *       }
+     *   });
+     * ```
+     *
+     */
     public setLoggerCallback(
         callback: (prettyMessage: string,
                    message: string,
                    level: LogLevel,
-                   categories: LogCategory[]) => any) {
+                   categories: LogCategory[]) => any): void {
 
         logger.setLoggerCallback(callback);
     }
 
-    /* Fetch initial daemon info and fee. Should we do this in the constructor
-       instead...? Well... not much point wasting time if they just want to
-       make a wallet */
-    public async init(): Promise<void> {
+    /**
+     * Initializes and starts the wallet sync process. You should call this
+     * function before enquiring about daemon info or fee info. The wallet will
+     * not process blocks until you call this method.
+     */
+    public async start(): Promise<void> {
         await this.daemon.init();
-    }
-
-    /* Starts the main loop */
-    public start(): void {
         this.mainLoopExecutor.start();
     }
 
-    /* Stops the main loop */
+    /**
+     * The inverse of the start() method, this pauses the blockchain sync
+     * process.
+     */
     public stop(): void {
         this.mainLoopExecutor.stop();
     }
 
-    public async mainLoop(): Promise<void> {
-        /* No blocks. Get some more from the daemon. */
-        if (_.isEmpty(this.blocksToProcess)) {
-            await this.fetchAndStoreBlocks();
-            return;
-        }
-
-        try {
-            await this.processBlocks();
-        } catch (err) {
-            logger.log(
-                'Error processing blocks: ' + err.toString(),
-                LogLevel.DEBUG,
-                [LogCategory.SYNC],
-            );
-        }
-    }
-
-    /* Converts recursively from typescript to JSON data. Can be dumped to file */
-    public toJSON(): WalletBackendJSON {
-        return {
-            subWallets: this.subWallets.toJSON(),
-            walletFileFormatVersion: WALLET_FILE_FORMAT_VERSION,
-            walletSynchronizer: this.walletSynchronizer.toJSON(),
-        };
-    }
-
-    /* Initialize stuff not stored in the JSON */
-    public initAfterLoad(daemon: IDaemon): void {
-        this.daemon = daemon;
-        this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
-    }
-
+    /**
+     * Get the node fee the daemon you are connected to is charging for
+     * transactions. If the daemon charges no fee, this will return `['', 0]`
+     *
+     * @returns Returns the node fee address, and the node fee amount, in
+     *          atomic units
+     */
     public getNodeFee(): [string, number] {
         return this.daemon.nodeFee();
     }
 
-    /* Gets the shared private view key */
+    /**
+     * Gets the shared private view key for this wallet container.
+     */
     public getPrivateViewKey(): string {
         return this.subWallets.getPrivateViewKey();
     }
 
-    /* Gets the [publicSpendKey, privateSpendKey] for the given address, if
-       possible. Note: secret key will be 00000... if view wallet */
+    /**
+     * Gets the publicSpendKey and privateSpendKey for the given address, if
+     * possible.
+     *
+     * Note: secret key will be 00000... (64 zeros) if view wallet.
+     *
+     * @return Returns either the public and private spend key, or a WalletError
+     *         if the address doesn't exist or is invalid
+     */
     public getSpendKeys(address: string): WalletError | [string, string] {
         const integratedAddressesAllowed: boolean = false;
 
@@ -433,16 +588,27 @@ export class WalletBackend extends EventEmitter {
         return [publicSpendKey, privateSpendKey];
     }
 
-    /* Get the private spend and private view for the primary address */
+    /**
+     * Get the private spend and private view for the primary address.
+     * The primary address is the first created wallet in the container.
+     */
     public getPrimaryAddressPrivateKeys(): [string, string] {
         return [this.subWallets.getPrimaryPrivateSpendKey(), this.getPrivateViewKey()];
     }
 
-    /* Get the primary address mnemonic seed, if possible */
+    /**
+     * Get the primary address mnemonic seed. If the primary address isn't
+     * a deterministic wallet, it will return a WalletError.
+     */
     public getMnemonicSeed(): WalletError | string {
         return this.getMnemonicSeedForAddress(this.subWallets.getPrimaryAddress());
     }
 
+    /**
+     * Get the mnemonic seed for the specified address. If the specified address
+     * is invalid or the address isn't a determinstic wallet, it will return
+     * a WalletError.
+     */
     public getMnemonicSeedForAddress(address: string): WalletError | string {
         const privateViewKey: string = this.getPrivateViewKey();
 
@@ -461,14 +627,21 @@ export class WalletBackend extends EventEmitter {
         return parsedAddr.mnemonic;
     }
 
+    /**
+     * Gets the primary address of a wallet container.
+     * The primary address is the address that was created first in the wallet
+     * container.
+     */
     public getPrimaryAddress(): string {
         return this.subWallets.getPrimaryAddress();
     }
 
+    /**
+     * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
+     * for later processing. Checks if we are synced and fires the sync/desync
+     * event.
+     */
     private async fetchAndStoreBlocks(): Promise<void> {
-        const daemonInfo: Promise<void> = this.daemon.getDaemonInfo();
-
-        this.blocksToProcess = await this.walletSynchronizer.getBlocks();
 
         const walletHeight: number = this.walletSynchronizer.getHeight();
         const networkHeight: number = this.daemon.getNetworkBlockCount();
@@ -499,6 +672,10 @@ export class WalletBackend extends EventEmitter {
             }
         }
 
+        const daemonInfo: Promise<void> = this.daemon.updateDaemonInfo();
+
+        this.blocksToProcess = await this.walletSynchronizer.getBlocks();
+
         await daemonInfo;
 
         /* Sleep for a second (not blocking the event loop) before
@@ -506,6 +683,9 @@ export class WalletBackend extends EventEmitter {
         await delay(config.blockFetchInterval);
     }
 
+    /**
+     * Stores any transactions, inputs, and spend keys images
+     */
     private storeTxData(txData: TransactionData, blockHeight: number): void {
         /* Store any transactions */
         for (const transaction of txData.transactionsToAdd) {
@@ -548,6 +728,10 @@ export class WalletBackend extends EventEmitter {
         }
     }
 
+    /**
+     * Process config.blocksPerTick stored blocks, finding transactions and
+     * inputs that belong to us
+     */
     private async processBlocks(): Promise<void> {
         /* Take the blocks to process for this tick */
         const blocks: Block[] = _.take(this.blocksToProcess, config.blocksPerTick);
@@ -574,11 +758,13 @@ export class WalletBackend extends EventEmitter {
 
             let txData: TransactionData = new TransactionData();
 
-            /* Process the coinbase tx */
-            txData = await this.walletSynchronizer.processCoinbaseTransaction(
-                block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
-                txData,
-            );
+            /* Process the coinbase tx if we're not skipping them for speed */
+            if (!config.skipCoinbaseTransactions) {
+                txData = await this.walletSynchronizer.processCoinbaseTransaction(
+                    block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
+                    txData,
+                );
+            }
 
             /* Process the normal txs */
             for (const tx of block.transactions) {
@@ -602,5 +788,50 @@ export class WalletBackend extends EventEmitter {
                 [LogCategory.SYNC],
             );
         }
+    }
+
+    /**
+     * Main loop. Download blocks, process them.
+     */
+    private async mainLoop(): Promise<void> {
+        /* No blocks. Get some more from the daemon. */
+        if (_.isEmpty(this.blocksToProcess)) {
+            await this.fetchAndStoreBlocks();
+            return;
+        }
+
+        try {
+            await this.processBlocks();
+        } catch (err) {
+            logger.log(
+                'Error processing blocks: ' + err.toString(),
+                LogLevel.DEBUG,
+                [LogCategory.SYNC],
+            );
+        }
+    }
+
+    /**
+     * Converts recursively to JSON. Should be used in conjuction with JSON.stringify.
+     * Usage:
+     *
+     * ```
+     * JSON.stringify(wallet, null, 4);
+     * ```
+     */
+    private toJSON(): WalletBackendJSON {
+        return {
+            subWallets: this.subWallets.toJSON(),
+            walletFileFormatVersion: WALLET_FILE_FORMAT_VERSION,
+            walletSynchronizer: this.walletSynchronizer.toJSON(),
+        };
+    }
+
+    /**
+     * Initialize stuff not stored in the JSON.
+     */
+    private initAfterLoad(daemon: IDaemon): void {
+        this.daemon = daemon;
+        this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
     }
 }

@@ -8,7 +8,14 @@ import * as pbkdf2 from 'pbkdf2';
 import { IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER, PBKDF2_ITERATIONS } from './Constants';
 import { WalletError, WalletErrorCode } from './WalletError';
 
-/* Open the wallet and return a JSON string */
+/**
+ * Open the wallet from the given filename with the given password and return
+ * a JSON string. Uses pbkdf2 encryption, not the same as turtle-service
+ *
+ * @returns Returns either the wallet as a JSON string (can then be used with
+ *                  loadWalletFromJSON) or a WalletError if password is wrong
+ *                  or data is corrupted.
+ */
 export function openWallet(filename: string, password: string): string | WalletError {
     let data: Buffer;
 

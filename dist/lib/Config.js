@@ -31,27 +31,52 @@ Object.defineProperty(exports, "__esModule", { value: true });
    For my experiments, it seems like processing one block per tick is optimal.
    Depending on how many transactions are in the block, and how powerful your
    CPU is, 10 blocks can take a number of seconds. */
+/**
+ * Configuration for the wallet backend
+ */
 class Config {
     constructor() {
-        /* The amount of decimal places your coin has, e.g. TurtleCoin has two decimals */
+        /**
+         * The amount of decimal places your coin has, e.g. TurtleCoin has two
+         * decimals
+         */
         this.decimalPlaces = 2;
-        /* The address prefix your coin uses - you can find this in CryptoNoteConfig.h.
-           In TurtleCoin, this converts to TRTL */
+        /**
+         * The address prefix your coin uses - you can find this in CryptoNoteConfig.h.
+         * In TurtleCoin, this converts to TRTL
+         */
         this.addressPrefix = 3914525;
-        /* Request timeout for daemon ops in milliseconds */
+        /**
+         * Request timeout for daemon operations in milliseconds
+         */
         this.requestTimeout = 5000;
-        /* The block time of your coin, in seconds */
+        /**
+         * The block time of your coin, in seconds
+         */
         this.blockTargetTime = 30;
-        /* How often to process blocks, in millseconds */
+        /**
+         * How often to process blocks, in millseconds
+         */
         this.mainLoopInterval = 10;
-        /* How often to fetch blocks from the daemon, in milliseconds */
+        /**
+         * How often to fetch blocks from the daemon, in milliseconds
+         */
         this.blockFetchInterval = 1000;
-        /* The amount of blocks to process per 'tick' of the mainloop. Note: too
-           high a value will cause the event loop to be blocked, and your interaction
-           to be laggy. */
+        /**
+         * The amount of blocks to process per 'tick' of the mainloop. Note: too
+         * high a value will cause the event loop to be blocked, and your interaction
+         * to be laggy.
+         */
         this.blocksPerTick = 1;
-        /* Your coins 'ticker', generally used to refer to the coin, i.e. 123 TRTL */
+        /**
+         * Your coins 'ticker', generally used to refer to the coin, i.e. 123 TRTL
+         */
         this.ticker = 'TRTL';
+        /**
+         * Most people haven't mined any blocks, so lets not waste time scanning
+         * them
+         */
+        this.skipCoinbaseTransactions = true;
     }
 }
 exports.default = new Config();

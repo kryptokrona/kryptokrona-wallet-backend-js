@@ -11,8 +11,14 @@ import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import * as _ from 'lodash';
 
+/**
+ * Stores each subwallet, along with transactions and public spend keys
+ */
 export class SubWallets {
 
+    /**
+     * Loads SubWallets from json
+     */
     public static fromJSON(json: SubWalletsJSON): SubWallets {
         const subWallets = Object.create(SubWallets.prototype);
 
@@ -37,28 +43,46 @@ export class SubWallets {
         });
     }
 
-    /* Whether the wallet is a view only wallet (cannot send transactions, only can view) */
+    /**
+     * Whether the wallet is a view only wallet (cannot send transactions,
+     * only can view)
+     */
     public readonly isViewWallet: boolean;
 
-    /* The public spend keys this wallet contains. Used for verifying if a
-       transaction is ours. */
+    /**
+     * The public spend keys this wallet contains. Used for verifying if a
+     * transaction is ours.
+     */
     private publicSpendKeys: string[] = [];
 
-    /* Mapping of public spend key to subwallet */
+    /**
+     * Mapping of public spend key to subwallet
+     */
     private subWallets: Map<string, SubWallet> = new Map();
 
-    /* Our transactions */
+    /**
+     * Our transactions
+     */
     private transactions: Transaction[] = [];
 
+    /**
+     * Transactions we sent, but haven't been confirmed yet
+     */
     private lockedTransactions: Transaction[] = [];
 
-    /* The shared private view key */
+    /**
+     * The shared private view key
+     */
     private readonly privateViewKey: string;
 
-    /* A mapping of transaction hashes, to transaction private keys */
+    /**
+     * A mapping of transaction hashes, to transaction private keys
+     */
     private transactionPrivateKeys: Map<string, string> = new Map();
 
-    /* Private spend key is optional if it's a view wallet */
+    /**
+     * @param privateSpendKey Private spend key is optional if it's a view wallet
+     */
     constructor(
         address: string,
         scanHeight: number,
@@ -87,6 +111,9 @@ export class SubWallets {
         this.subWallets.set(publicKeys.publicSpendKey, subWallet);
     }
 
+    /**
+     * Convert SubWallets to something we can JSON.stringify
+     */
     public toJSON(): SubWalletsJSON {
         return {
             publicSpendKeys: this.publicSpendKeys,
@@ -105,10 +132,16 @@ export class SubWallets {
         };
     }
 
+    /**
+     * Get the shared private view key
+     */
     public getPrivateViewKey(): string {
         return this.privateViewKey;
     }
 
+    /**
+     * Get the private spend key for the given public spend key, if it exists
+     */
     public getPrivateSpendKey(publicSpendKey: string): [WalletError, string] {
         const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
@@ -119,7 +152,9 @@ export class SubWallets {
         return [SUCCESS, subWallet.getPrivateSpendKey()];
     }
 
-    /* Gets the 'primary' subwallet */
+    /**
+     * Gets the 'primary' subwallet
+     */
     public getPrimarySubWallet(): SubWallet {
         for (const [publicKey, subWallet] of this.subWallets) {
             if (subWallet.isPrimaryAddress()) {
@@ -130,18 +165,32 @@ export class SubWallets {
         throw new Error('Wallet has no primary address!');
     }
 
+    /**
+     * Gets the primary address of the wallet
+     */
     public getPrimaryAddress(): string {
         return this.getPrimarySubWallet().getAddress();
     }
 
+    /**
+     * Gets the private spend key of the primary subwallet
+     */
     public getPrimaryPrivateSpendKey(): string {
         return this.getPrimarySubWallet().getPrivateSpendKey();
     }
 
+    /**
+     * Get the hashes of the locked transactions (ones we've sent but not
+     * confirmed) 
+     */
     public getLockedTransactionHashes(): string[] {
         return this.lockedTransactions.map((x) => x.hash);
     }
 
+    /**
+     * Add this transaction to the container. If the transaction was previously
+     * sent by us, remove it from the locked container
+     */
     public addTransaction(transaction: Transaction): void {
         /* Remove this transaction from the locked data structure, if we had
            added it previously as an outgoing tx */
@@ -156,6 +205,12 @@ export class SubWallets {
         this.transactions.push(transaction);
     }
 
+    /**
+     * @param publicSpendKey    The public spend key of the subwallet to add this
+     *                          input to
+     *
+     * Store the transaction input in the corresponding subwallet
+     */
     public storeTransactionInput(publicSpendKey: string, input: TransactionInput): void {
         const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
@@ -166,6 +221,14 @@ export class SubWallets {
         subWallet.storeTransactionInput(input, this.isViewWallet);
     }
 
+    /**
+     * @param publicSpendKey    The public spend key of the subwallet to mark
+     *                          the corresponding input spent in
+     * @param spendHeight       The height the input was spent at
+     *
+     * Marks an input as spent by us, no longer part of balance or available
+     * for spending. Input is identified by keyImage (unique)
+     */
     public markInputAsSpent(publicSpendKey: string, keyImage: string, spendHeight: number): void {
         const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
@@ -176,6 +239,10 @@ export class SubWallets {
         subWallet.markInputAsSpent(keyImage, spendHeight);
     }
 
+    /**
+     * Remove a transaction that we sent by didn't get included in a block and
+     * returned to us. Removes the correspoding inputs, too.
+     */
     public removeCancelledTransaction(transactionHash: string): void {
         /* Remove the tx if it was locked */
         _.remove(this.lockedTransactions, (tx) => {
@@ -188,6 +255,10 @@ export class SubWallets {
         }
     }
 
+    /**
+     * Remove transactions which occured in a forked block. If they got added
+     * in another block, we'll add them back again then.
+     */
     public removeForkedTransactions(forkHeight: number): void {
         _.remove(this.transactions, (tx) => {
             return tx.blockHeight >= forkHeight;
@@ -198,12 +269,24 @@ export class SubWallets {
         }
     }
 
+    /** 
+     * Convert a timestamp to a block height. Block heights are more dependable
+     * than timestamps, which sometimes get treated a little funkily by the
+     * daemon
+     */
     public convertSyncTimestampToHeight(timestamp: number, height: number): void {
         for (const [publicKey, subWallet] of this.subWallets) {
             subWallet.convertSyncTimestampToHeight(timestamp, height);
         }
     }
 
+    /**
+     * Get the owner (i.e., the public spend key of the subwallet) of this
+     * keyImage
+     *
+     * @return Returns [true, publicSpendKey] if found, [false, ''] if not
+     *         found
+     */
     public getKeyImageOwner(keyImage: string): [boolean, string] {
         if (this.isViewWallet) {
             return [false, ''];
@@ -218,10 +301,16 @@ export class SubWallets {
         return [false, ''];
     }
 
+    /**
+     * Gets all public spend keys in this container
+     */
     public getPublicSpendKeys(): string[] {
         return this.publicSpendKeys;
     }
 
+    /**
+     * Generate the key image for an input
+     */
     public getTxInputKeyImage(
         publicSpendKey: string,
         derivation: string,
@@ -240,14 +329,18 @@ export class SubWallets {
         return subWallet.getTxInputKeyImage(derivation, outputIndex);
     }
 
+    /**
+     * Returns the summed balance of the given subwallets. If none are given,
+     * take from all.
+     *
+     * @return Returns [unlockedBalance, lockedBalance]
+     */
     public getBalance(
-        subWalletsToTakeFrom: string[],
-        takeFromAll: boolean,
-        currentHeight: number): [number, number] {
+        currentHeight: number,
+        subWalletsToTakeFrom?: string[]): [number, number] {
 
-        /* If we're able to take from every subwallet, set the wallets to take from
-           to all our public spend keys */
-        if (takeFromAll) {
+        /* If no subwallets given, take from all */
+        if (!subWalletsToTakeFrom) {
             subWalletsToTakeFrom = this.publicSpendKeys;
         }
 

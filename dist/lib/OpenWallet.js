@@ -8,7 +8,14 @@ const fs = require("fs");
 const pbkdf2 = require("pbkdf2");
 const Constants_1 = require("./Constants");
 const WalletError_1 = require("./WalletError");
-/* Open the wallet and return a JSON string */
+/**
+ * Open the wallet from the given filename with the given password and return
+ * a JSON string. Uses pbkdf2 encryption, not the same as turtle-service
+ *
+ * @returns Returns either the wallet as a JSON string (can then be used with
+ *                  loadWalletFromJSON) or a WalletError if password is wrong
+ *                  or data is corrupted.
+ */
 function openWallet(filename, password) {
     let data;
     try {
