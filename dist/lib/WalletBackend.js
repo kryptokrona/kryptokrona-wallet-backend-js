@@ -273,8 +273,8 @@ class WalletBackend extends events_1.EventEmitter {
      * Most people don't mine blocks, so by default we don't scan them. If
      * you want to scan them, flip it on/off here.
      */
-    skipCoinbaseTransactions(shouldSkip) {
-        Config_1.default.skipCoinbaseTransactions = shouldSkip;
+    scanCoinbaseTransactions(shouldScan) {
+        Config_1.default.scanCoinbaseTransactions = shouldScan;
     }
     /**
      * Converts the wallet into a JSON string. This can be used to later restore
@@ -490,7 +490,7 @@ class WalletBackend extends events_1.EventEmitter {
                 }
                 let txData = new Types_1.TransactionData();
                 /* Process the coinbase tx if we're not skipping them for speed */
-                if (!Config_1.default.skipCoinbaseTransactions) {
+                if (Config_1.default.scanCoinbaseTransactions) {
                     txData = yield this.walletSynchronizer.processCoinbaseTransaction(block.coinbaseTransaction, block.blockTimestamp, block.blockHeight, txData);
                 }
                 /* Process the normal txs */

@@ -42,7 +42,7 @@ declare class Config {
      * Most people haven't mined any blocks, so lets not waste time scanning
      * them
      */
-    skipCoinbaseTransactions: boolean;
+    scanCoinbaseTransactions: boolean;
 }
 declare const _default: Config;
 export default _default;

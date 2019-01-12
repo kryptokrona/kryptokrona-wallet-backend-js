@@ -263,7 +263,7 @@ export declare class WalletBackend extends EventEmitter {
      * Most people don't mine blocks, so by default we don't scan them. If
      * you want to scan them, flip it on/off here.
      */
-    skipCoinbaseTransactions(shouldSkip: boolean): void;
+    scanCoinbaseTransactions(shouldScan: boolean): void;
     /**
      * Converts the wallet into a JSON string. This can be used to later restore
      * the wallet with `loadWalletFromJSON`.

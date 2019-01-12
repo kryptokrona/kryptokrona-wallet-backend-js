@@ -32,6 +32,12 @@ Please run `yarn style` to ensure your changes adhere to the tslint rules before
 
 You can try running `yarn style --fix` to automatically fix issues.
 
+## Documentation
+
+You can view the documentation here: https://turtlecoin.github.io/turtlecoin-wallet-backend-js/
+
+Alternatively, open up docs/index.html in your web browser.
+
 ## Quick Start
 
 ### Javascript
@@ -109,8 +115,14 @@ In this example, we only print messages that fall into the SYNC category.
 
 You can view available categories and log levels in the documentation below.
 
-## Documentation
+### Things To Note
 
-You can view the documentation here: https://turtlecoin.github.io/turtlecoin-wallet-backend-js/
+By default, coinbase transactions are not scanned. This is due to the sync
+process taking quite a long time with the less efficient JavaScript crypto
+code, and the majority of people not having solo mined any blocks.
 
-Alternatively, open up docs/index.html in your web browser.
+If you wish to enable coinbase transaction scanning, run this line of code:
+
+```javascript
+wallet.scanCoinbaseTransactions(true);
+```

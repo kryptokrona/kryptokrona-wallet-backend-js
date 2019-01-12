@@ -473,8 +473,8 @@ export class WalletBackend extends EventEmitter {
      * Most people don't mine blocks, so by default we don't scan them. If
      * you want to scan them, flip it on/off here.
      */
-    public skipCoinbaseTransactions(shouldSkip: boolean) {
-        config.skipCoinbaseTransactions = shouldSkip;
+    public scanCoinbaseTransactions(shouldScan: boolean) {
+        config.scanCoinbaseTransactions = shouldScan;
     }
 
     /**
@@ -759,7 +759,7 @@ export class WalletBackend extends EventEmitter {
             let txData: TransactionData = new TransactionData();
 
             /* Process the coinbase tx if we're not skipping them for speed */
-            if (!config.skipCoinbaseTransactions) {
+            if (config.scanCoinbaseTransactions) {
                 txData = await this.walletSynchronizer.processCoinbaseTransaction(
                     block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
                     txData,

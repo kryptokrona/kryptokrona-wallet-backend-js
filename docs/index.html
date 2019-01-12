@@ -80,6 +80,9 @@
 				<h2 id="contributing">Contributing</h2>
 				<p>Please run <code>yarn style</code> to ensure your changes adhere to the tslint rules before committing.</p>
 				<p>You can try running <code>yarn style --fix</code> to automatically fix issues.</p>
+				<h2 id="documentation">Documentation</h2>
+				<p>You can view the documentation here: <a href="https://turtlecoin.github.io/turtlecoin-wallet-backend-js/">https://turtlecoin.github.io/turtlecoin-wallet-backend-js/</a></p>
+				<p>Alternatively, open up docs/index.html in your web browser.</p>
 				<h2 id="quick-start">Quick Start</h2>
 				<h3 id="javascript">Javascript</h3>
 				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
@@ -136,9 +139,12 @@
 });</code></pre>
 				<p>In this example, we only print messages that fall into the SYNC category.</p>
 				<p>You can view available categories and log levels in the documentation below.</p>
-				<h2 id="documentation">Documentation</h2>
-				<p>You can view the documentation here: <a href="https://turtlecoin.github.io/turtlecoin-wallet-backend-js/">https://turtlecoin.github.io/turtlecoin-wallet-backend-js/</a></p>
-				<p>Alternatively, open up docs/index.html in your web browser.</p>
+				<h3 id="things-to-note">Things To Note</h3>
+				<p>By default, coinbase transactions are not scanned. This is due to the sync
+					process taking quite a long time with the less efficient JavaScript crypto
+				code, and the majority of people not having solo mined any blocks.</p>
+				<p>If you wish to enable coinbase transaction scanning, run this line of code:</p>
+				<pre><code class="language-javascript">wallet.scanCoinbaseTransactions(<span class="hljs-literal">true</span>);</code></pre>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
