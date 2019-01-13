@@ -76,7 +76,7 @@ class Config {
          * Most people haven't mined any blocks, so lets not waste time scanning
          * them
          */
-        this.scanCoinbaseTransactions = true;
+        this.scanCoinbaseTransactions = false;
     }
 }
 exports.default = new Config();

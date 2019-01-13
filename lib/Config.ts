@@ -83,7 +83,7 @@ class Config {
      * Most people haven't mined any blocks, so lets not waste time scanning
      * them
      */
-    public scanCoinbaseTransactions: boolean = true;
+    public scanCoinbaseTransactions: boolean = false;
 }
 
 export default new Config();
