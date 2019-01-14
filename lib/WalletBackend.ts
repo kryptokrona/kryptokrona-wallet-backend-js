@@ -654,6 +654,14 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Save the wallet to the given filename. Password may be empty, but
+     * filename must not be.
+     * This will take some time - it runs 500,000 iterations of pbkdf2.
+     */
+    public saveWalletToFile(filename: string, password: string) {
+    }
+
+    /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
      * for later processing. Checks if we are synced and fires the sync/desync
      * event.
@@ -674,7 +682,7 @@ export class WalletBackend extends EventEmitter {
             const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
 
             const cancelledTransactions: string[]
-                = await this.walletSynchronizer.checkLockedTransactions(lockedTransactionHashes);
+                = await this.walletSynchronizer.findCancelledTransactions(lockedTransactionHashes);
 
             for (const cancelledTX of cancelledTransactions) {
                 this.subWallets.removeCancelledTransaction(cancelledTX);
@@ -813,7 +821,16 @@ export class WalletBackend extends EventEmitter {
     private async mainLoop(): Promise<void> {
         /* No blocks. Get some more from the daemon. */
         if (_.isEmpty(this.blocksToProcess)) {
-            await this.fetchAndStoreBlocks();
+            try {
+                await this.fetchAndStoreBlocks();
+            } catch (err) {
+                logger.log(
+                    'Error fetching blocks: ' + err.toString(),
+                    LogLevel.DEBUG,
+                    LogCategory.SYNC,
+                );
+            }
+
             return;
         }
 

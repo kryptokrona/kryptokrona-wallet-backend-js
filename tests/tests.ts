@@ -7,6 +7,8 @@ import {
     WalletError, WalletErrorCode,
 } from '../lib/index';
 
+import { CryptoUtils } from '../lib/CnUtils';
+
 class Tester {
 
     public totalTests: number = 0;
@@ -42,9 +44,18 @@ class Tester {
 
     public summary(): void {
         console.log(colors.yellow('=== Testing complete! ==='));
-        console.log(colors.white('Total tests: ') + colors.yellow(this.totalTests.toString()));
-        console.log(colors.white('Tests passed: ') + colors.green(this.testsPassed.toString()));
-        console.log(colors.white('Tests failed: ') + colors.red(this.testsFailed.toString()));
+
+        console.log(colors.white(' 📰 ')
+                  + colors.white('Total tests:  ')
+                  + colors.white(this.totalTests.toString()));
+
+        console.log(colors.green(' ✔️  ')
+                  + colors.white('Tests passed: ')
+                  + colors.green(this.testsPassed.toString()));
+
+        console.log(colors.red(' ❌ ')
+                  + colors.white('Tests failed: ')
+                  + colors.red(this.testsFailed.toString()));
     }
 
     public setExitCode(): void {
@@ -299,6 +310,67 @@ function delay(ms: number): Promise<void> {
        'getSyncStatus doesn\'t work! (Do you have a local daemon running?)');
 
     await tester.test(async () => {
+
+        /* Just random public + private keys */
+        const derivation: string = CryptoUtils.generateKeyDerivation(
+            'f235acd76ee38ec4f7d95123436200f9ed74f9eb291b1454fbc30742481be1ab',
+            '89df8c4d34af41a51cfae0267e8254cadd2298f9256439fa1cfa7e25ee606606',
+        );
+
+        const loopIterations: number = 6000;
+
+        const startTime = new Date().getTime();
+
+        for (let i = 0; i < loopIterations; i++) {
+            /* Use i as output index to prevent optimization */
+            const derivedOutputKey = CryptoUtils.underivePublicKey(
+                derivation, i,
+                '4a078e76cd41a3d3b534b83dc6f2ea2de500b653ca82273b7bfad8045d85a400',
+            );
+        }
+
+        const endTime = new Date().getTime();
+
+        const executionTime: number = endTime - startTime;
+
+        const timePerDerivation: string = (executionTime / loopIterations).toFixed(3);
+
+        console.log(colors.green(' ✔️  ') + `Time to perform underivePublicKey: ${timePerDerivation} ms`);
+
+        return true;
+
+    }, 'Testing underivePublicKey performance',
+       'underivePublicKey performance test complete',
+       'underivePublicKey performance test failed!');
+
+    await tester.test(async () => {
+        const loopIterations: number = 6000;
+
+        const startTime = new Date().getTime();
+
+        for (let i = 0; i < loopIterations; i++) {
+            /* Just random public + private keys */
+            const derivation: string = CryptoUtils.generateKeyDerivation(
+                'f235acd76ee38ec4f7d95123436200f9ed74f9eb291b1454fbc30742481be1ab',
+                '89df8c4d34af41a51cfae0267e8254cadd2298f9256439fa1cfa7e25ee606606',
+            );
+        }
+
+        const endTime = new Date().getTime();
+
+        const executionTime: number = endTime - startTime;
+
+        const timePerDerivation: string = (executionTime / loopIterations).toFixed(3);
+
+        console.log(colors.green(' ✔️  ') + `Time to perform generateKeyDerivation: ${timePerDerivation} ms`);
+
+        return true;
+
+    }, 'Testing generateKeyDerivation performance',
+       'generateKeyDerivation performance test complete',
+       'generateKeyDerivation performance test failed!');
+
+    await tester.test(async () => {
         const wallet = WalletBackend.importWalletFromSeed(
             daemon, 0,
             'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon ' +
@@ -333,9 +405,9 @@ function delay(ms: number): Promise<void> {
 
         return true;
 
-    }, 'Testing performance (60 second test)',
-       'Performance test complete',
-       'Performance test failed!');
+    }, 'Testing wallet syncing performance (60 second test)',
+       'Wallet syncing performance test complete',
+       'Wallet syncing performance test failed!');
 
     /* Print a summary of passed/failed tests */
     tester.summary();

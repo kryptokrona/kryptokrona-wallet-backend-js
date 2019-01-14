@@ -18,8 +18,14 @@ const SynchronizationStatus_1 = require("./SynchronizationStatus");
 const Types_1 = require("./Types");
 const Utilities_1 = require("./Utilities");
 const _ = require("lodash");
+/**
+ * Decrypts blocks for our transactions and inputs
+ */
 class WalletSynchronizer {
     constructor(daemon, subWallets, startTimestamp, startHeight, privateViewKey) {
+        /**
+         * Stores the progress of our synchronization
+         */
         this.synchronizationStatus = new SynchronizationStatus_1.SynchronizationStatus();
         this.daemon = daemon;
         this.startTimestamp = startTimestamp;
@@ -36,10 +42,16 @@ class WalletSynchronizer {
             synchronizationStatus: SynchronizationStatus_1.SynchronizationStatus.fromJSON(json.transactionSynchronizerStatus),
         });
     }
+    /**
+     * Initialize things we can't initialize from the JSON
+     */
     initAfterLoad(subWallets, daemon) {
         this.subWallets = subWallets;
         this.daemon = daemon;
     }
+    /**
+     * Convert from class to stringable type
+     */
     toJSON() {
         return {
             privateViewKey: this.privateViewKey,
@@ -48,6 +60,9 @@ class WalletSynchronizer {
             transactionSynchronizerStatus: this.synchronizationStatus.toJSON(),
         };
     }
+    /**
+     * Download the next set of blocks from the daemon
+     */
     getBlocks() {
         return __awaiter(this, void 0, void 0, function* () {
             const localDaemonBlockCount = this.daemon.getLocalDaemonBlockCount();
@@ -115,12 +130,16 @@ class WalletSynchronizer {
             return blocks;
         });
     }
-    /* When we get the global indexes, we pass in a range of blocks, to obscure
-       which transactions we are interested in - the ones that belong to us.
-       To do this, we get the global indexes for all transactions in a range.
-
-       For example, if we want the global indexes for a transaction in block
-       17, we get all the indexes from block 10 to block 20. */
+    /**
+     * Get the global indexes for a range of blocks
+     *
+     * When we get the global indexes, we pass in a range of blocks, to obscure
+     * which transactions we are interested in - the ones that belong to us.
+     * To do this, we get the global indexes for all transactions in a range.
+     *
+     * For example, if we want the global indexes for a transaction in block
+     * 17, we get all the indexes from block 10 to block 20.
+     */
     getGlobalIndexes(blockHeight, hash) {
         return __awaiter(this, void 0, void 0, function* () {
             const startHeight = Utilities_1.getLowerBound(blockHeight, Constants_1.GLOBAL_INDEXES_OBSCURITY);
@@ -137,6 +156,10 @@ class WalletSynchronizer {
             return ourIndexes;
         });
     }
+    /**
+     * Process the transaction inputs of a transaction, and pick out transfers
+     * and transactions that are ours
+     */
     processTransactionInputs(keyInputs, transfers, blockHeight, txData) {
         let sumOfInputs = 0;
         for (const input of keyInputs) {
@@ -149,6 +172,10 @@ class WalletSynchronizer {
         }
         return [sumOfInputs, transfers, txData];
     }
+    /**
+     * Process the outputs of a transaction, and pick out transfers and
+     * transactions that are ours, along with creating new inputs
+     */
     processTransactionOutputs(rawTX, transfers, blockHeight, txData) {
         return __awaiter(this, void 0, void 0, function* () {
             const derivation = CnUtils_1.CryptoUtils.generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
@@ -157,38 +184,28 @@ class WalletSynchronizer {
             const spendKeys = this.subWallets.getPublicSpendKeys();
             for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
                 sumOfOutputs += output.amount;
-                /* If we have a single subwallet, use derivePublicKey. It's faster
-                   than underivePublicKey */
-                const singleSubWallet = spendKeys.length === 1;
+                /* Derive the spend key from the transaction, using the previous
+                   derivation */
+                const derivedSpendKey = CnUtils_1.CryptoUtils.underivePublicKey(derivation, outputIndex, output.key);
+                /* See if the derived spend key matches any of our spend keys */
+                if (!_.includes(spendKeys, derivedSpendKey)) {
+                    continue;
+                }
                 /* The public spend key of the subwallet that owns this input */
-                let ownerSpendKey;
-                if (singleSubWallet) {
-                    const derivedOutputKey = CnUtils_1.CryptoUtils.derivePublicKey(derivation, outputIndex, spendKeys[0]);
-                    /* If the derived output key matches the actual output key, it's
-                       our output */
-                    if (derivedOutputKey !== output.key) {
-                        continue;
+                const ownerSpendKey = derivedSpendKey;
+                /* Blockchain cache api gives us global indexes. Regular daemon
+                   doesn't. It's too slow. */
+                let globalOutputIndex = output.globalIndex;
+                if (!globalOutputIndex) {
+                    /* Get the indexes, if we haven't already got them. (Don't need
+                       to get them if we're in a view wallet, since we can't spend.) */
+                    if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
+                        globalIndexes = yield this.getGlobalIndexes(blockHeight, rawTX.hash);
                     }
-                    ownerSpendKey = spendKeys[0];
-                }
-                else {
-                    /* Derive the spend key from the transaction, using the previous
-                       derivation */
-                    const derivedSpendKey = CnUtils_1.CryptoUtils.underivePublicKey(derivation, outputIndex, output.key);
-                    /* See if the derived spend key matches any of our spend keys */
-                    if (!_.includes(spendKeys, derivedSpendKey)) {
-                        continue;
-                    }
-                    ownerSpendKey = derivedSpendKey;
-                }
-                /* Get the indexes, if we haven't already got them. (Don't need
-                   to get them if we're in a view wallet, since we can't spend.) */
-                if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
-                    globalIndexes = yield this.getGlobalIndexes(blockHeight, rawTX.hash);
+                    /* Will be undefined if a view wallet, so use zero instead */
+                    globalOutputIndex = globalIndexes[outputIndex] || 0;
                 }
                 transfers.set(ownerSpendKey, output.amount + (transfers.get(ownerSpendKey) || 0));
-                /* We're not gonna use it in a view wallet, so just set to zero */
-                const globalOutputIndex = this.subWallets.isViewWallet ? globalIndexes[outputIndex] : 0;
                 /* Not spent yet! */
                 const spendHeight = 0;
                 const keyImage = this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
@@ -234,12 +251,26 @@ class WalletSynchronizer {
             return txData;
         });
     }
+    /**
+     * Get the height of the sync process
+     */
     getHeight() {
         return this.synchronizationStatus.getHeight();
     }
-    checkLockedTransactions(transactionHashes) {
-        /* TODO */
-        return [];
+    /**
+     * Takes in hashes that we have previously sent. Returns transactions which
+     * are no longer in the pool, and not in a block, and therefore have
+     * returned to our wallet
+     */
+    findCancelledTransactions(transactionHashes) {
+        return __awaiter(this, void 0, void 0, function* () {
+            /* This is the common case - don't waste time making a useless request
+               to the daemon */
+            if (_.isEmpty(transactionHashes)) {
+                return [];
+            }
+            return this.daemon.getCancelledTransactions(transactionHashes);
+        });
     }
     storeBlockHash(blockHeight, blockHash) {
         this.synchronizationStatus.storeBlockHash(blockHeight, blockHash);

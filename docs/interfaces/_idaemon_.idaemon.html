@@ -93,6 +93,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getcancelledtransactions" class="tsd-kind-icon">get<wbr>Cancelled<wbr>Transactions</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getglobalindexesforrange" class="tsd-kind-icon">get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getlocaldaemonblockcount" class="tsd-kind-icon">get<wbr>Local<wbr>Daemon<wbr>Block<wbr>Count</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getnetworkblockcount" class="tsd-kind-icon">get<wbr>Network<wbr>Block<wbr>Count</a></li>
@@ -108,6 +109,35 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getcancelledtransactions" class="tsd-anchor"></a>
+					<h3>get<wbr>Cancelled<wbr>Transactions</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Cancelled<wbr>Transactions<span class="tsd-signature-symbol">(</span>transactionHashes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/c7cd3c2/lib/IDaemon.ts#L67">IDaemon.ts:67</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get any transactions which we have sent, but are no longer present in
+									the pool or a block. (They have returned to our wallet)</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>transactionHashes: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="getglobalindexesforrange" class="tsd-anchor"></a>
 					<h3>get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -117,7 +147,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/b1511ab/lib/IDaemon.ts#L59">IDaemon.ts:59</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/c7cd3c2/lib/IDaemon.ts#L59">IDaemon.ts:59</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -148,7 +178,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/b1511ab/lib/IDaemon.ts#L51">IDaemon.ts:51</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/c7cd3c2/lib/IDaemon.ts#L51">IDaemon.ts:51</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -170,7 +200,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/b1511ab/lib/IDaemon.ts#L46">IDaemon.ts:46</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/c7cd3c2/lib/IDaemon.ts#L46">IDaemon.ts:46</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -193,7 +223,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/b1511ab/lib/IDaemon.ts#L22">IDaemon.ts:22</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/c7cd3c2/lib/IDaemon.ts#L22">IDaemon.ts:22</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -237,7 +267,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/b1511ab/lib/IDaemon.ts#L35">IDaemon.ts:35</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/c7cd3c2/lib/IDaemon.ts#L35">IDaemon.ts:35</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -259,7 +289,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/b1511ab/lib/IDaemon.ts#L30">IDaemon.ts:30</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/c7cd3c2/lib/IDaemon.ts#L30">IDaemon.ts:30</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -281,7 +311,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/b1511ab/lib/IDaemon.ts#L40">IDaemon.ts:40</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/c7cd3c2/lib/IDaemon.ts#L40">IDaemon.ts:40</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -328,6 +358,9 @@
 					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="_idaemon_.idaemon.html" class="tsd-kind-icon">IDaemon</a>
 						<ul>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_idaemon_.idaemon.html#getcancelledtransactions" class="tsd-kind-icon">get<wbr>Cancelled<wbr>Transactions</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_idaemon_.idaemon.html#getglobalindexesforrange" class="tsd-kind-icon">get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</a>
 							</li>

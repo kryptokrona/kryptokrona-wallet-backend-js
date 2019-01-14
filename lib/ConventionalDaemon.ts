@@ -179,6 +179,14 @@ export class ConventionalDaemon implements IDaemon {
         return indexes;
     }
 
+    public async getCancelledTransactions(transactionHashes: string[]): Promise<string[]> {
+        const data = await this.daemon.getTransactionsStatus({
+            transactionHashes,
+        });
+
+        return data.transactionsUnknown || [];
+    }
+
     /**
      * Update the fee address and amount
      */

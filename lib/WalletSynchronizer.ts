@@ -19,6 +19,9 @@ import { getLowerBound, getUpperBound } from './Utilities';
 
 import * as _ from 'lodash';
 
+/**
+ * Decrypts blocks for our transactions and inputs
+ */
 export class WalletSynchronizer {
 
     public static fromJSON(json: WalletSynchronizerJSON): WalletSynchronizer {
@@ -32,16 +35,34 @@ export class WalletSynchronizer {
         });
     }
 
+    /**
+     * The daemon instance to retrieve blocks from
+     */
     private daemon: IDaemon;
 
+    /**
+     * The timestamp to start taking blocks from
+     */
     private startTimestamp: number;
 
+    /**
+     * The height to start taking blocks from
+     */
     private startHeight: number;
 
+    /**
+     * The shared private view key of this wallet
+     */
     private readonly privateViewKey: string;
 
+    /**
+     * Stores the progress of our synchronization
+     */
     private synchronizationStatus: SynchronizationStatus = new SynchronizationStatus();
 
+    /**
+     * Used to find spend keys, inspect key images, etc
+     */
     private subWallets: SubWallets;
 
     constructor(
@@ -58,11 +79,17 @@ export class WalletSynchronizer {
         this.subWallets = subWallets;
     }
 
+    /**
+     * Initialize things we can't initialize from the JSON
+     */
     public initAfterLoad(subWallets: SubWallets, daemon: IDaemon): void {
         this.subWallets = subWallets;
         this.daemon = daemon;
     }
 
+    /**
+     * Convert from class to stringable type
+     */
     public toJSON(): WalletSynchronizerJSON {
         return {
             privateViewKey: this.privateViewKey,
@@ -72,6 +99,9 @@ export class WalletSynchronizer {
         };
     }
 
+    /**
+     * Download the next set of blocks from the daemon
+     */
     public async getBlocks(): Promise<Block[]> {
         const localDaemonBlockCount: number = this.daemon.getLocalDaemonBlockCount();
 
@@ -164,12 +194,16 @@ export class WalletSynchronizer {
         return blocks;
     }
 
-    /* When we get the global indexes, we pass in a range of blocks, to obscure
-       which transactions we are interested in - the ones that belong to us.
-       To do this, we get the global indexes for all transactions in a range.
-
-       For example, if we want the global indexes for a transaction in block
-       17, we get all the indexes from block 10 to block 20. */
+    /**
+     * Get the global indexes for a range of blocks
+     *
+     * When we get the global indexes, we pass in a range of blocks, to obscure
+     * which transactions we are interested in - the ones that belong to us.
+     * To do this, we get the global indexes for all transactions in a range.
+     *
+     * For example, if we want the global indexes for a transaction in block
+     * 17, we get all the indexes from block 10 to block 20.
+     */
     public async getGlobalIndexes(blockHeight: number, hash: string): Promise<number[]> {
         const startHeight: number = getLowerBound(blockHeight, GLOBAL_INDEXES_OBSCURITY);
         const endHeight: number = getUpperBound(blockHeight, GLOBAL_INDEXES_OBSCURITY);
@@ -191,6 +225,10 @@ export class WalletSynchronizer {
         return ourIndexes;
     }
 
+    /**
+     * Process the transaction inputs of a transaction, and pick out transfers
+     * and transactions that are ours
+     */
     public processTransactionInputs(
         keyInputs: KeyInput[],
         transfers: Map<string, number>,
@@ -219,6 +257,10 @@ export class WalletSynchronizer {
         return [sumOfInputs, transfers, txData];
     }
 
+    /**
+     * Process the outputs of a transaction, and pick out transfers and
+     * transactions that are ours, along with creating new inputs
+     */
     public async processTransactionOutputs(
         rawTX: RawCoinbaseTransaction,
         transfers: Map<string, number>,
@@ -238,54 +280,39 @@ export class WalletSynchronizer {
         for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
             sumOfOutputs += output.amount;
 
-            /* If we have a single subwallet, use derivePublicKey. It's faster
-               than underivePublicKey */
-            const singleSubWallet: boolean = spendKeys.length === 1;
+            /* Derive the spend key from the transaction, using the previous
+               derivation */
+            const derivedSpendKey = CryptoUtils.underivePublicKey(
+                derivation, outputIndex, output.key,
+            );
 
-            /* The public spend key of the subwallet that owns this input */
-            let ownerSpendKey: string;
-
-            if (singleSubWallet) {
-                const derivedOutputKey = CryptoUtils.derivePublicKey(
-                    derivation, outputIndex, spendKeys[0],
-                );
-
-                /* If the derived output key matches the actual output key, it's
-                   our output */
-                if (derivedOutputKey !== output.key) {
-                    continue;
-                }
-
-                ownerSpendKey = spendKeys[0];
-            } else {
-                /* Derive the spend key from the transaction, using the previous
-                   derivation */
-                const derivedSpendKey = CryptoUtils.underivePublicKey(
-                    derivation, outputIndex, output.key,
-                );
-
-                /* See if the derived spend key matches any of our spend keys */
-                if (!_.includes(spendKeys, derivedSpendKey)) {
-                    continue;
-                }
-
-                ownerSpendKey = derivedSpendKey;
+            /* See if the derived spend key matches any of our spend keys */
+            if (!_.includes(spendKeys, derivedSpendKey)) {
+                continue;
             }
 
-            /* Get the indexes, if we haven't already got them. (Don't need
-               to get them if we're in a view wallet, since we can't spend.) */
-            if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
-                globalIndexes = await this.getGlobalIndexes(blockHeight, rawTX.hash);
+            /* The public spend key of the subwallet that owns this input */
+            const ownerSpendKey = derivedSpendKey;
+
+            /* Blockchain cache api gives us global indexes. Regular daemon
+               doesn't. It's too slow. */
+            let globalOutputIndex = output.globalIndex;
+
+            if (!globalOutputIndex) {
+                /* Get the indexes, if we haven't already got them. (Don't need
+                   to get them if we're in a view wallet, since we can't spend.) */
+                if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
+                    globalIndexes = await this.getGlobalIndexes(blockHeight, rawTX.hash);
+                }
+
+                /* Will be undefined if a view wallet, so use zero instead */
+                globalOutputIndex = globalIndexes[outputIndex] || 0;
             }
 
             transfers.set(
                 ownerSpendKey,
                 output.amount + (transfers.get(ownerSpendKey) || 0),
             );
-
-            /* We're not gonna use it in a view wallet, so just set to zero */
-            const globalOutputIndex: number
-                = this.subWallets.isViewWallet ? globalIndexes[outputIndex] : 0;
 
             /* Not spent yet! */
             const spendHeight: number = 0;
@@ -377,13 +404,26 @@ export class WalletSynchronizer {
         return txData;
     }
 
+    /**
+     * Get the height of the sync process
+     */
     public getHeight(): number {
         return this.synchronizationStatus.getHeight();
     }
 
-    public checkLockedTransactions(transactionHashes: string[]): string[] {
-        /* TODO */
-        return [];
+    /**
+     * Takes in hashes that we have previously sent. Returns transactions which
+     * are no longer in the pool, and not in a block, and therefore have
+     * returned to our wallet
+     */
+    public async findCancelledTransactions(transactionHashes: string[]): Promise<string[]> {
+        /* This is the common case - don't waste time making a useless request
+           to the daemon */
+        if (_.isEmpty(transactionHashes)) {
+            return [];
+        }
+
+        return this.daemon.getCancelledTransactions(transactionHashes);
     }
 
     public storeBlockHash(blockHeight: number, blockHash: string): void {

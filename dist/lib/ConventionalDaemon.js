@@ -145,6 +145,14 @@ class ConventionalDaemon {
             return indexes;
         });
     }
+    getCancelledTransactions(transactionHashes) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield this.daemon.getTransactionsStatus({
+                transactionHashes,
+            });
+            return data.transactionsUnknown || [];
+        });
+    }
     /**
      * Update the fee address and amount
      */

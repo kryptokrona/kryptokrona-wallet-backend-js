@@ -59,4 +59,10 @@ export interface IDaemon {
     getGlobalIndexesForRange(
         startHeight: number,
         endHeight: number): Promise<Map<string, number[]>>;
+
+    /**
+     * Get any transactions which we have sent, but are no longer present in
+     * the pool or a block. (They have returned to our wallet)
+     */
+    getCancelledTransactions(transactionHashes: string[]): Promise<string[]>;
 }

@@ -81,6 +81,7 @@ export declare class ConventionalDaemon implements IDaemon {
      * [startHeight, endHeight]
      */
     getGlobalIndexesForRange(startHeight: number, endHeight: number): Promise<Map<string, number[]>>;
+    getCancelledTransactions(transactionHashes: string[]): Promise<string[]>;
     /**
      * Update the fee address and amount
      */
