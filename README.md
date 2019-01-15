@@ -20,7 +20,10 @@ Generated javascript files will be written to the dist/lib/ folder.
 
 ## Running tests
 
-`yarn test`
+`yarn test` - This will run the basic tests
+
+`yarn test-all` - This will run all tests, including performance tests.
+You need a daemon running on 127.0.0.1:11898 for these to work.
 
 ## Building documentation
 

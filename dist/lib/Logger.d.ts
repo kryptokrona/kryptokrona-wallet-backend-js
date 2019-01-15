@@ -57,7 +57,9 @@ export declare enum LogLevel {
  */
 export declare enum LogCategory {
     SYNC = 0,
-    TRANSACTIONS = 1
+    TRANSACTIONS = 1,
+    FILESYSTEM = 2,
+    SAVE = 3
 }
 export declare let logger: Logger;
 export {};

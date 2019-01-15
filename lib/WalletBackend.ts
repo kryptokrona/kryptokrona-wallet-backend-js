@@ -3,13 +3,21 @@
 // Please see the included LICENSE file for more information.
 
 import deepEqual = require('deep-equal');
-import {EventEmitter} from 'events';
+
+import { EventEmitter } from 'events';
+
+import * as crypto from 'crypto';
+import * as fs from 'fs';
 import * as _ from 'lodash';
+import * as pbkdf2 from 'pbkdf2';
 
 import config from './Config';
 
 import { CryptoUtils } from './CnUtils';
-import { WALLET_FILE_FORMAT_VERSION } from './Constants';
+import {
+    IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER,
+    PBKDF2_ITERATIONS, WALLET_FILE_FORMAT_VERSION,
+} from './Constants';
 import { IDaemon } from './IDaemon';
 import { WalletBackendJSON } from './JsonSerialization';
 import { LogCategory, logger, LogLevel } from './Logger';
@@ -657,8 +665,54 @@ export class WalletBackend extends EventEmitter {
      * Save the wallet to the given filename. Password may be empty, but
      * filename must not be.
      * This will take some time - it runs 500,000 iterations of pbkdf2.
+     *
+     * @return Returns a boolean indicating success.
      */
-    public saveWalletToFile(filename: string, password: string) {
+    public saveWalletToFile(filename: string, password: string): boolean {
+        /* Serialize wallet to JSON */
+        const walletJson: string = JSON.stringify(this);
+
+        /* Append the identifier so we can verify the password is correct */
+        const data: Buffer = Buffer.concat([
+            IS_CORRECT_PASSWORD_IDENTIFIER,
+            Buffer.from(walletJson),
+        ]);
+
+        /* Random salt */
+        const salt: Buffer = crypto.randomBytes(16);
+
+        /* PBKDF2 key for our encryption */
+        const key: Buffer = pbkdf2.pbkdf2Sync(password, salt, PBKDF2_ITERATIONS, 16, 'sha256');
+
+        /* Encrypt with AES */
+        const cipher = crypto.createCipheriv('aes-128-cbc', key, salt);
+
+        /* Perform the encryption */
+        const encryptedData: Buffer = Buffer.concat([
+            cipher.update(data),
+            cipher.final(),
+        ]);
+
+        /* Write the wallet identifier to the file so we know it's a wallet file.
+           Write the salt so it can be decrypted again */
+        const fileData: Buffer = Buffer.concat([
+            IS_A_WALLET_IDENTIFIER,
+            salt,
+            encryptedData,
+        ]);
+
+        try {
+            fs.writeFileSync(filename, fileData);
+            return true;
+        } catch (err) {
+            logger.log(
+                'Failed to write file: ' + err.toString(),
+                LogLevel.ERROR,
+                [LogCategory.FILESYSTEM, LogCategory.SAVE],
+            );
+
+            return false;
+        }
     }
 
     /**

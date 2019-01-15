@@ -363,8 +363,10 @@ export declare class WalletBackend extends EventEmitter {
      * Save the wallet to the given filename. Password may be empty, but
      * filename must not be.
      * This will take some time - it runs 500,000 iterations of pbkdf2.
+     *
+     * @return Returns a boolean indicating success.
      */
-    saveWalletToFile(filename: string, password: string): void;
+    saveWalletToFile(filename: string, password: string): boolean;
     /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
      * for later processing. Checks if we are synced and fires the sync/desync

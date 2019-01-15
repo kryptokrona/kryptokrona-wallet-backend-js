@@ -1,13 +1,16 @@
 import * as colors from 'colors';
+import * as fs from 'fs';
 
 import deepEqual = require('deep-equal');
 
 import {
-    ConventionalDaemon, prettyPrintAmount, SUCCESS, validateAddresses, WalletBackend,
-    WalletError, WalletErrorCode,
+    ConventionalDaemon, IDaemon, prettyPrintAmount, SUCCESS, validateAddresses,
+    WalletBackend, WalletError, WalletErrorCode,
 } from '../lib/index';
 
 import { CryptoUtils } from '../lib/CnUtils';
+
+const doPerformanceTests: boolean = process.argv.includes('--do-performance-tests');
 
 class Tester {
 
@@ -67,6 +70,32 @@ function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function roundTrip(
+    wallet: WalletBackend,
+    daemon: IDaemon,
+    password: string): boolean {
+
+    /* Save wallet to file */
+    if (!wallet.saveWalletToFile('tmp.wallet', password)) {
+        return false;
+    }
+
+    /* Check we can re-open saved file */
+    const loadedWallet = WalletBackend.openWalletFromFile(
+        daemon, 'tmp.wallet', password,
+    );
+
+    /* Remove file */
+    fs.unlinkSync('tmp.wallet');
+
+    if (loadedWallet instanceof WalletError) {
+        return false;
+    }
+
+    /* Loaded file should equal original JSON */
+    return wallet.toJSONString() === (loadedWallet as WalletBackend).toJSONString();
+}
+
 (async () => {
     /* Setup test class */
     const tester: Tester = new Tester();
@@ -96,13 +125,63 @@ function delay(ms: number): Promise<void> {
 
     await tester.test(async () => {
         /* Load a test file to check compatibility with C++ wallet backend */
-        const testWallet = WalletBackend.openWalletFromFile(daemon, './tests/test.wallet', 'password');
+        const testWallet = WalletBackend.openWalletFromFile(
+            daemon, './tests/test.wallet', 'password',
+        );
 
         return testWallet instanceof WalletBackend;
 
     }, 'Loading test wallet file',
        'Wallet loading succeeded',
        'Wallet loading failed');
+
+    await tester.test(async () => {
+        const wallet = WalletBackend.createWallet(daemon);
+
+        return roundTrip(wallet, daemon, 'password');
+
+    }, 'Checking can open saved file',
+       'Can open saved file',
+       'Can\'t open saved file!');
+
+    await tester.test(async () => {
+        const wallet = WalletBackend.createWallet(daemon);
+
+        /* Blank password */
+        const test1: boolean = roundTrip(
+            wallet, daemon, '',
+        );
+
+        /* Nipponese */
+        const test2: boolean = roundTrip(
+            wallet, daemon, 'お前はもう死んでいる',
+        );
+
+        /* A variety of unicode symbols, suggested by VMware */
+        const test3: boolean = roundTrip(
+            wallet, daemon, '表ポあA鷗ŒéＢ逍Üßªąñ丂㐀𠀀',
+        );
+
+        /* Emojis */
+        const test4: boolean = roundTrip(
+            wallet, daemon, '❤️ 💔 💌 💕 💞 💓 💗 💖 💘 💝 💟 💜 💛 💚 💙',
+        );
+
+        /* Right to left test */
+        const test5: boolean = roundTrip(
+            wallet, daemon, 'בְּרֵאשִׁית, בָּרָא אֱלֹהִים, אֵת הַשָּׁמַיִם, וְאֵת הָאָרֶץ',
+        );
+
+        /* Cyrillic */
+        const test6: boolean = roundTrip(
+            wallet, daemon, 'Дайте советов чтоли!',
+        );
+
+        return test1 && test2 && test3 && test4 && test5 && test6;
+
+    }, 'Verifying special passwords work as expected',
+       'Special passwords work as expected',
+       'Special passwords do not work as expected!');
 
     await tester.test(async () => {
         const seedWallet = WalletBackend.importWalletFromSeed(
@@ -282,132 +361,134 @@ function delay(ms: number): Promise<void> {
        'getSpendKeys works',
        'getSpendKeys doesn\'t work!');
 
-    /* TODO: Maybe use a remote node? */
-    await tester.test(async () => {
-        const wallet = WalletBackend.createWallet(daemon);
+    if (doPerformanceTests) {
+        /* TODO: Maybe use a remote node? */
+        await tester.test(async () => {
+            const wallet = WalletBackend.createWallet(daemon);
 
-        /* Not started sync, all should be zero */
-        const [a, b, c] = wallet.getSyncStatus();
+            /* Not started sync, all should be zero */
+            const [a, b, c] = wallet.getSyncStatus();
 
-        const test1: boolean = a === 0 && b === 0 && c === 0;
+            const test1: boolean = a === 0 && b === 0 && c === 0;
 
-        await wallet.start();
+            await wallet.start();
 
-        /* Wait 5 seconds */
-        await delay(1000 * 5);
+            /* Wait 5 seconds */
+            await delay(1000 * 5);
 
-        wallet.stop();
+            wallet.stop();
 
-        /* Started sync, some should be non zero */
-        const [d, e, f] = wallet.getSyncStatus();
+            /* Started sync, some should be non zero */
+            const [d, e, f] = wallet.getSyncStatus();
 
-        const test2: boolean = d !== 0 || e !== 0 || f !== 0;
+            const test2: boolean = d !== 0 || e !== 0 || f !== 0;
 
-        return test1 && test2;
+            return test1 && test2;
 
-    }, 'Testing getSyncStatus (5 second test)',
-       'getSyncStatus works',
-       'getSyncStatus doesn\'t work! (Do you have a local daemon running?)');
+        }, 'Testing getSyncStatus (5 second test)',
+           'getSyncStatus works',
+           'getSyncStatus doesn\'t work! (Do you have a local daemon running?)');
 
-    await tester.test(async () => {
+        await tester.test(async () => {
 
-        /* Just random public + private keys */
-        const derivation: string = CryptoUtils.generateKeyDerivation(
-            'f235acd76ee38ec4f7d95123436200f9ed74f9eb291b1454fbc30742481be1ab',
-            '89df8c4d34af41a51cfae0267e8254cadd2298f9256439fa1cfa7e25ee606606',
-        );
-
-        const loopIterations: number = 6000;
-
-        const startTime = new Date().getTime();
-
-        for (let i = 0; i < loopIterations; i++) {
-            /* Use i as output index to prevent optimization */
-            const derivedOutputKey = CryptoUtils.underivePublicKey(
-                derivation, i,
-                '4a078e76cd41a3d3b534b83dc6f2ea2de500b653ca82273b7bfad8045d85a400',
-            );
-        }
-
-        const endTime = new Date().getTime();
-
-        const executionTime: number = endTime - startTime;
-
-        const timePerDerivation: string = (executionTime / loopIterations).toFixed(3);
-
-        console.log(colors.green(' ✔️  ') + `Time to perform underivePublicKey: ${timePerDerivation} ms`);
-
-        return true;
-
-    }, 'Testing underivePublicKey performance',
-       'underivePublicKey performance test complete',
-       'underivePublicKey performance test failed!');
-
-    await tester.test(async () => {
-        const loopIterations: number = 6000;
-
-        const startTime = new Date().getTime();
-
-        for (let i = 0; i < loopIterations; i++) {
             /* Just random public + private keys */
             const derivation: string = CryptoUtils.generateKeyDerivation(
                 'f235acd76ee38ec4f7d95123436200f9ed74f9eb291b1454fbc30742481be1ab',
                 '89df8c4d34af41a51cfae0267e8254cadd2298f9256439fa1cfa7e25ee606606',
             );
-        }
 
-        const endTime = new Date().getTime();
+            const loopIterations: number = 6000;
 
-        const executionTime: number = endTime - startTime;
+            const startTime = new Date().getTime();
 
-        const timePerDerivation: string = (executionTime / loopIterations).toFixed(3);
+            for (let i = 0; i < loopIterations; i++) {
+                /* Use i as output index to prevent optimization */
+                const derivedOutputKey = CryptoUtils.underivePublicKey(
+                    derivation, i,
+                    '4a078e76cd41a3d3b534b83dc6f2ea2de500b653ca82273b7bfad8045d85a400',
+                );
+            }
 
-        console.log(colors.green(' ✔️  ') + `Time to perform generateKeyDerivation: ${timePerDerivation} ms`);
+            const endTime = new Date().getTime();
 
-        return true;
+            const executionTime: number = endTime - startTime;
 
-    }, 'Testing generateKeyDerivation performance',
-       'generateKeyDerivation performance test complete',
-       'generateKeyDerivation performance test failed!');
+            const timePerDerivation: string = (executionTime / loopIterations).toFixed(3);
 
-    await tester.test(async () => {
-        const wallet = WalletBackend.importWalletFromSeed(
-            daemon, 0,
-            'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon ' +
-            'tadpoles hacksaw dormant hence abort listen history atom cadets stylishly ' +
-            'snout vegan girth guest history',
-        ) as WalletBackend;
+            console.log(colors.green(' ✔️  ') + `Time to perform underivePublicKey: ${timePerDerivation} ms`);
 
-        const startTime = new Date().getTime();
+            return true;
 
-        await wallet.start();
+        }, 'Testing underivePublicKey performance',
+           'underivePublicKey performance test complete',
+           'underivePublicKey performance test failed!');
 
-        /* Wait for 60 seconds */
-        await delay(1000 * 60);
+        await tester.test(async () => {
+            const loopIterations: number = 6000;
 
-        wallet.stop();
+            const startTime = new Date().getTime();
 
-        const endTime = new Date().getTime();
+            for (let i = 0; i < loopIterations; i++) {
+                /* Just random public + private keys */
+                const derivation: string = CryptoUtils.generateKeyDerivation(
+                    'f235acd76ee38ec4f7d95123436200f9ed74f9eb291b1454fbc30742481be1ab',
+                    '89df8c4d34af41a51cfae0267e8254cadd2298f9256439fa1cfa7e25ee606606',
+                );
+            }
 
-        const [walletBlockCount] = wallet.getSyncStatus();
+            const endTime = new Date().getTime();
 
-        if (walletBlockCount === 0) {
-            console.log(colors.red(' ❌ ') +
-                'You must have a daemon running on 127.0.0.1:11898 to run this test...');
-            return false;
-        }
+            const executionTime: number = endTime - startTime;
 
-        const executionTime: number = endTime - startTime;
+            const timePerDerivation: string = (executionTime / loopIterations).toFixed(3);
 
-        const timePerBlock: string = (executionTime / walletBlockCount).toFixed(2);
+            console.log(colors.green(' ✔️  ') + `Time to perform generateKeyDerivation: ${timePerDerivation} ms`);
 
-        console.log(colors.green(' ✔️  ') + `Time to process one block: ${timePerBlock} ms`);
+            return true;
 
-        return true;
+        }, 'Testing generateKeyDerivation performance',
+           'generateKeyDerivation performance test complete',
+           'generateKeyDerivation performance test failed!');
 
-    }, 'Testing wallet syncing performance (60 second test)',
-       'Wallet syncing performance test complete',
-       'Wallet syncing performance test failed!');
+        await tester.test(async () => {
+            const wallet = WalletBackend.importWalletFromSeed(
+                daemon, 0,
+                'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon ' +
+                'tadpoles hacksaw dormant hence abort listen history atom cadets stylishly ' +
+                'snout vegan girth guest history',
+            ) as WalletBackend;
+
+            const startTime = new Date().getTime();
+
+            await wallet.start();
+
+            /* Wait for 60 seconds */
+            await delay(1000 * 60);
+
+            wallet.stop();
+
+            const endTime = new Date().getTime();
+
+            const [walletBlockCount] = wallet.getSyncStatus();
+
+            if (walletBlockCount === 0) {
+                console.log(colors.red(' ❌ ') +
+                    'You must have a daemon running on 127.0.0.1:11898 to run this test...');
+                return false;
+            }
+
+            const executionTime: number = endTime - startTime;
+
+            const timePerBlock: string = (executionTime / walletBlockCount).toFixed(2);
+
+            console.log(colors.green(' ✔️  ') + `Time to process one block: ${timePerBlock} ms`);
+
+            return true;
+
+        }, 'Testing wallet syncing performance (60 second test)',
+           'Wallet syncing performance test complete',
+           'Wallet syncing performance test failed!');
+    }
 
     /* Print a summary of passed/failed tests */
     tester.summary();

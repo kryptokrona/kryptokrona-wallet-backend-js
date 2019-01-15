@@ -116,6 +116,8 @@ var LogCategory;
 (function (LogCategory) {
     LogCategory[LogCategory["SYNC"] = 0] = "SYNC";
     LogCategory[LogCategory["TRANSACTIONS"] = 1] = "TRANSACTIONS";
+    LogCategory[LogCategory["FILESYSTEM"] = 2] = "FILESYSTEM";
+    LogCategory[LogCategory["SAVE"] = 3] = "SAVE";
 })(LogCategory = exports.LogCategory || (exports.LogCategory = {}));
 /**
  * Convert a log category to a string
@@ -127,6 +129,12 @@ function logCategoryToString(category) {
         }
         case LogCategory.TRANSACTIONS: {
             return 'Transactions';
+        }
+        case LogCategory.FILESYSTEM: {
+            return 'Filesystem';
+        }
+        case LogCategory.SAVE: {
+            return 'Save';
         }
     }
 }

@@ -45,7 +45,7 @@ export const IS_CORRECT_PASSWORD_IDENTIFIER: Buffer = Buffer.from([
  */
 export const LAST_KNOWN_BLOCK_HASHES_SIZE: number = 100;
 
-/** 
+/**
  * Save a block hash checkpoint every BLOCK_HASH_CHECKPOINTS_INTERVAL
  * blocks
  */
@@ -62,14 +62,14 @@ export const BLOCK_HASH_CHECKPOINTS_INTERVAL: number = 5000;
  */
 export const GLOBAL_INDEXES_OBSCURITY: number = 10;
 
-/** 
+/**
  * The maximum amount of blocks we can have waiting to be processed in
  * the queue. If we exceed this, we will wait till it drops below this
  * amount.
  */
 export const MAXIMUM_SYNC_QUEUE_SIZE: number = 1000;
 
-/** 
- * Used to determine whether an unlock time is a height, or a timestamp 
+/**
+ * Used to determine whether an unlock time is a height, or a timestamp
  */
 export const MAX_BLOCK_NUMBER: number = 500000000;

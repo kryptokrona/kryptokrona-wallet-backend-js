@@ -137,6 +137,8 @@ function logLevelToString(level: LogLevel) {
 export enum LogCategory {
     SYNC,
     TRANSACTIONS,
+    FILESYSTEM,
+    SAVE,
 }
 
 /**
@@ -149,6 +151,12 @@ function logCategoryToString(category: LogCategory) {
         }
         case LogCategory.TRANSACTIONS: {
             return 'Transactions';
+        }
+        case LogCategory.FILESYSTEM: {
+            return 'Filesystem';
+        }
+        case LogCategory.SAVE: {
+            return 'Save';
         }
     }
 }

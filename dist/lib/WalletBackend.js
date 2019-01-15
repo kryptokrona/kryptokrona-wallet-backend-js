@@ -13,7 +13,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const deepEqual = require("deep-equal");
 const events_1 = require("events");
+const crypto = require("crypto");
+const fs = require("fs");
 const _ = require("lodash");
+const pbkdf2 = require("pbkdf2");
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const Constants_1 = require("./Constants");
@@ -427,8 +430,43 @@ class WalletBackend extends events_1.EventEmitter {
      * Save the wallet to the given filename. Password may be empty, but
      * filename must not be.
      * This will take some time - it runs 500,000 iterations of pbkdf2.
+     *
+     * @return Returns a boolean indicating success.
      */
     saveWalletToFile(filename, password) {
+        /* Serialize wallet to JSON */
+        const walletJson = JSON.stringify(this);
+        /* Append the identifier so we can verify the password is correct */
+        const data = Buffer.concat([
+            Constants_1.IS_CORRECT_PASSWORD_IDENTIFIER,
+            Buffer.from(walletJson),
+        ]);
+        /* Random salt */
+        const salt = crypto.randomBytes(16);
+        /* PBKDF2 key for our encryption */
+        const key = pbkdf2.pbkdf2Sync(password, salt, Constants_1.PBKDF2_ITERATIONS, 16, 'sha256');
+        /* Encrypt with AES */
+        const cipher = crypto.createCipheriv('aes-128-cbc', key, salt);
+        /* Perform the encryption */
+        const encryptedData = Buffer.concat([
+            cipher.update(data),
+            cipher.final(),
+        ]);
+        /* Write the wallet identifier to the file so we know it's a wallet file.
+           Write the salt so it can be decrypted again */
+        const fileData = Buffer.concat([
+            Constants_1.IS_A_WALLET_IDENTIFIER,
+            salt,
+            encryptedData,
+        ]);
+        try {
+            fs.writeFileSync(filename, fileData);
+            return true;
+        }
+        catch (err) {
+            Logger_1.logger.log('Failed to write file: ' + err.toString(), Logger_1.LogLevel.ERROR, [Logger_1.LogCategory.FILESYSTEM, Logger_1.LogCategory.SAVE]);
+            return false;
+        }
     }
     /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
