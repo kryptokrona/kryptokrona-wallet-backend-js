@@ -31,6 +31,8 @@
    Depending on how many transactions are in the block, and how powerful your
    CPU is, 10 blocks can take a number of seconds. */
 
+import { MixinLimit, MixinLimits } from './MixinLimits';
+
 /**
  * Configuration for the wallet backend
  */
@@ -84,6 +86,37 @@ class Config {
      * them
      */
     public scanCoinbaseTransactions: boolean = false;
+
+    /**
+     * The minimum fee allowed for transactions, in ATOMIC units
+     */
+    public minimumFee: number = 10;
+
+    /**
+     * Mapping of height to mixin maximum and mixin minimum
+     */
+    public mixinLimits: MixinLimits = new MixinLimits([
+        /* Height: 440,000, minMixin: 0, maxMixin: 100, defaultMixin: 3 */
+        new MixinLimit(440000, 0, 100, 3),
+
+        /* At height of 620000, static mixin of 7 */
+        new MixinLimit(620000, 7),
+
+        /* At height of 800000, static mixin of 3 */
+        new MixinLimit(800000, 3),
+    ], 3 /* Default mixin of 3 before block 440,000 */);
+
+    /**
+     * The length of a standard address for your coin
+     */
+    public standardAddressLength: number = 99;
+
+    /* The length of an integrated address for your coin - It's the same as
+       a normal address, but there is a paymentID included in there - since
+       payment ID's are 64 chars, and base58 encoding is done by encoding
+       chunks of 8 chars at once into blocks of 11 chars, we can calculate
+       this automatically */
+    public integratedAddressLength: number = this.standardAddressLength + ((64 * 11) / 8);
 }
 
 export default new Config();

@@ -31,6 +31,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
    For my experiments, it seems like processing one block per tick is optimal.
    Depending on how many transactions are in the block, and how powerful your
    CPU is, 10 blocks can take a number of seconds. */
+const MixinLimits_1 = require("./MixinLimits");
 /**
  * Configuration for the wallet backend
  */
@@ -77,6 +78,31 @@ class Config {
          * them
          */
         this.scanCoinbaseTransactions = false;
+        /**
+         * The minimum fee allowed for transactions, in ATOMIC units
+         */
+        this.minimumFee = 10;
+        /**
+         * Mapping of height to mixin maximum and mixin minimum
+         */
+        this.mixinLimits = new MixinLimits_1.MixinLimits([
+            /* Height: 440,000, minMixin: 0, maxMixin: 100, defaultMixin: 3 */
+            new MixinLimits_1.MixinLimit(440000, 0, 100, 3),
+            /* At height of 620000, static mixin of 7 */
+            new MixinLimits_1.MixinLimit(620000, 7),
+            /* At height of 800000, static mixin of 3 */
+            new MixinLimits_1.MixinLimit(800000, 3),
+        ], 3 /* Default mixin of 3 before block 440,000 */);
+        /**
+         * The length of a standard address for your coin
+         */
+        this.standardAddressLength = 99;
+        /* The length of an integrated address for your coin - It's the same as
+           a normal address, but there is a paymentID included in there - since
+           payment ID's are 64 chars, and base58 encoding is done by encoding
+           chunks of 8 chars at once into blocks of 11 chars, we can calculate
+           this automatically */
+        this.integratedAddressLength = this.standardAddressLength + ((64 * 11) / 8);
     }
 }
 exports.default = new Config();

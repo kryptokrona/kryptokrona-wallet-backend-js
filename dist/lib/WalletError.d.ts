@@ -69,7 +69,8 @@ export declare enum WalletErrorCode {
     NEGATIVE_VALUE_GIVEN = 46,
     INVALID_KEY_FORMAT = 47,
     HASH_WRONG_LENGTH = 48,
-    HASH_INVALID = 49
+    HASH_INVALID = 49,
+    NON_INTEGER_GIVEN = 50
 }
 /**
  * Lets us easier compare if a operation code was successful.

@@ -219,6 +219,9 @@ class WalletError {
             case WalletErrorCode.HASH_INVALID: {
                 return 'The hash given is not a hex string (A-Za-z0-9)';
             }
+            case WalletErrorCode.NON_INTEGER_GIVEN: {
+                return 'The number given was a float, not an integer';
+            }
         }
     }
 }
@@ -363,6 +366,8 @@ var WalletErrorCode;
     WalletErrorCode[WalletErrorCode["HASH_WRONG_LENGTH"] = 48] = "HASH_WRONG_LENGTH";
     /* Hash not hex */
     WalletErrorCode[WalletErrorCode["HASH_INVALID"] = 49] = "HASH_INVALID";
+    /* Input is a float not an int */
+    WalletErrorCode[WalletErrorCode["NON_INTEGER_GIVEN"] = 50] = "NON_INTEGER_GIVEN";
 })(WalletErrorCode = exports.WalletErrorCode || (exports.WalletErrorCode = {}));
 /**
  * Lets us easier compare if a operation code was successful.

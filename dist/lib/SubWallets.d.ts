@@ -133,4 +133,5 @@ export declare class SubWallets {
      * @return Returns [unlockedBalance, lockedBalance]
      */
     getBalance(currentHeight: number, subWalletsToTakeFrom?: string[]): [number, number];
+    getAddresses(): string[];
 }

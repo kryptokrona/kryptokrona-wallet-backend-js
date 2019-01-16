@@ -24,6 +24,7 @@ const Logger_1 = require("./Logger");
 const Metronome_1 = require("./Metronome");
 const OpenWallet_1 = require("./OpenWallet");
 const SubWallets_1 = require("./SubWallets");
+const Transfer_1 = require("./Transfer");
 const Types_1 = require("./Types");
 const Utilities_1 = require("./Utilities");
 const ValidateParameters_1 = require("./ValidateParameters");
@@ -467,6 +468,42 @@ class WalletBackend extends events_1.EventEmitter {
             Logger_1.logger.log('Failed to write file: ' + err.toString(), Logger_1.LogLevel.ERROR, [Logger_1.LogCategory.FILESYSTEM, Logger_1.LogCategory.SAVE]);
             return false;
         }
+    }
+    /**
+     * Sends a transaction of amount to the address destination, using the
+     * given payment ID, if specified.
+     *
+     * Network fee is set to default, mixin is set to default, all subwallets
+     * are taken from, primary address is used as change address.
+     *
+     * If you need more control, use `sendTransactionAdvanced()`
+     *
+     * @param destination   The address to send the funds to
+     * @param amount        The amount to send, in ATOMIC units
+     * @param paymentID     The payment ID to include with this transaction. Optional.
+     *
+     * @return Returns either an error, or the transaction hash.
+     */
+    sendTransactionBasic(destination, amount, paymentID) {
+        return Transfer_1.sendTransactionBasic(this.daemon, this.subWallets, destination, amount, paymentID);
+    }
+    /**
+     * Sends a transaction, which permits multiple amounts to different destinations,
+     * specifying the mixin, fee, subwallets to draw funds from, and change address.
+     *
+     * All parameters are optional aside from destinations.
+     *
+     * @param destinations          An array of destinations, and amounts to send to that
+     *                              destination.
+     * @param mixin                 The amount of input keys to hide your input with.
+     *                              Your network may enforce a static mixin.
+     * @param fee                   The network fee to use with this transaction. In ATOMIC units.
+     * @param paymentID             The payment ID to include with this transaction.
+     * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
+     * @param changeAddress         The address to send any returned change to.
+     */
+    sendTransactionAdvanced(destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress) {
+        return Transfer_1.sendTransactionAdvanced(this.daemon, this.subWallets, destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress);
     }
     /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`

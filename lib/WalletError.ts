@@ -231,6 +231,9 @@ export class WalletError {
             case WalletErrorCode.HASH_INVALID: {
                 return 'The hash given is not a hex string (A-Za-z0-9)';
             }
+            case WalletErrorCode.NON_INTEGER_GIVEN: {
+                return 'The number given was a float, not an integer';
+            }
         }
     }
 }
@@ -423,6 +426,9 @@ export enum WalletErrorCode {
 
     /* Hash not hex */
     HASH_INVALID = 49,
+
+    /* Input is a float not an int */
+    NON_INTEGER_GIVEN = 50,
 }
 
 /**

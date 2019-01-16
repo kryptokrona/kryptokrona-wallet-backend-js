@@ -265,5 +265,12 @@ class SubWallets {
         }
         return [unlockedBalance, lockedBalance];
     }
+    getAddresses() {
+        const addresses = [];
+        for (const [publicKey, subWallet] of this.subWallets) {
+            addresses.push(subWallet.getAddress());
+        }
+        return addresses;
+    }
 }
 exports.SubWallets = SubWallets;

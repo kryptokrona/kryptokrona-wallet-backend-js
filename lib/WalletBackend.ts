@@ -14,18 +14,25 @@ import * as pbkdf2 from 'pbkdf2';
 import config from './Config';
 
 import { CryptoUtils } from './CnUtils';
+
 import {
     IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER,
     PBKDF2_ITERATIONS, WALLET_FILE_FORMAT_VERSION,
 } from './Constants';
+
 import { IDaemon } from './IDaemon';
 import { WalletBackendJSON } from './JsonSerialization';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { Metronome } from './Metronome';
 import { openWallet } from './OpenWallet';
 import { SubWallets } from './SubWallets';
+import { sendTransactionAdvanced, sendTransactionBasic } from './Transfer';
 import { Block, Transaction, TransactionData } from './Types';
-import { addressToKeys, delay, getCurrentTimestampAdjusted, isHex64 } from './Utilities';
+
+import {
+    addressToKeys, delay, getCurrentTimestampAdjusted, isHex64,
+} from './Utilities';
+
 import { validateAddresses } from './ValidateParameters';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 import { WalletSynchronizer } from './WalletSynchronizer';
@@ -713,6 +720,60 @@ export class WalletBackend extends EventEmitter {
 
             return false;
         }
+    }
+
+    /**
+     * Sends a transaction of amount to the address destination, using the
+     * given payment ID, if specified.
+     *
+     * Network fee is set to default, mixin is set to default, all subwallets
+     * are taken from, primary address is used as change address.
+     *
+     * If you need more control, use `sendTransactionAdvanced()`
+     *
+     * @param destination   The address to send the funds to
+     * @param amount        The amount to send, in ATOMIC units
+     * @param paymentID     The payment ID to include with this transaction. Optional.
+     *
+     * @return Returns either an error, or the transaction hash.
+     */
+    public sendTransactionBasic(
+        destination: string,
+        amount: number,
+        paymentID?: string): WalletError | string {
+
+        return sendTransactionBasic(
+            this.daemon, this.subWallets, destination, amount, paymentID,
+        );
+    }
+
+    /**
+     * Sends a transaction, which permits multiple amounts to different destinations,
+     * specifying the mixin, fee, subwallets to draw funds from, and change address.
+     *
+     * All parameters are optional aside from destinations.
+     *
+     * @param destinations          An array of destinations, and amounts to send to that
+     *                              destination.
+     * @param mixin                 The amount of input keys to hide your input with.
+     *                              Your network may enforce a static mixin.
+     * @param fee                   The network fee to use with this transaction. In ATOMIC units.
+     * @param paymentID             The payment ID to include with this transaction.
+     * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
+     * @param changeAddress         The address to send any returned change to.
+     */
+    public sendTransactionAdvanced(
+        destinations: Array<[string, number]>,
+        mixin?: number,
+        fee?: number,
+        paymentID?: string,
+        subWalletsToTakeFrom?: string[],
+        changeAddress?: string): WalletError | string {
+
+        return sendTransactionAdvanced(
+            this.daemon, this.subWallets, destinations, mixin, fee, paymentID,
+            subWalletsToTakeFrom, changeAddress,
+        );
     }
 
     /**

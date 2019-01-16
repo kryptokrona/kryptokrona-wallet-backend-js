@@ -1,3 +1,4 @@
+import { MixinLimits } from './MixinLimits';
 /**
  * Configuration for the wallet backend
  */
@@ -43,6 +44,19 @@ declare class Config {
      * them
      */
     scanCoinbaseTransactions: boolean;
+    /**
+     * The minimum fee allowed for transactions, in ATOMIC units
+     */
+    minimumFee: number;
+    /**
+     * Mapping of height to mixin maximum and mixin minimum
+     */
+    mixinLimits: MixinLimits;
+    /**
+     * The length of a standard address for your coin
+     */
+    standardAddressLength: number;
+    integratedAddressLength: number;
 }
 declare const _default: Config;
 export default _default;
