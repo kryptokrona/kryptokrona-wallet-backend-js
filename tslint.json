@@ -12,7 +12,8 @@
         "no-implicit-dependencies": [true, "dev"],
         "no-var-requires": false,
         "prefer-object-spread": false,
-        "unified-signatures": false
+        "unified-signatures": false,
+        "object-literal-shorthand": false
     },
     "rulesDirectory": []
 }

@@ -382,7 +382,7 @@ export declare class WalletBackend extends EventEmitter {
      *
      * @return Returns either an error, or the transaction hash.
      */
-    sendTransactionBasic(destination: string, amount: number, paymentID?: string): WalletError | string;
+    sendTransactionBasic(destination: string, amount: number, paymentID?: string): Promise<WalletError | string>;
     /**
      * Sends a transaction, which permits multiple amounts to different destinations,
      * specifying the mixin, fee, subwallets to draw funds from, and change address.
@@ -398,7 +398,7 @@ export declare class WalletBackend extends EventEmitter {
      * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
      * @param changeAddress         The address to send any returned change to.
      */
-    sendTransactionAdvanced(destinations: Array<[string, number]>, mixin?: number, fee?: number, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string): WalletError | string;
+    sendTransactionAdvanced(destinations: Array<[string, number]>, mixin?: number, fee?: number, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string): Promise<WalletError | string>;
     /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
      * for later processing. Checks if we are synced and fires the sync/desync

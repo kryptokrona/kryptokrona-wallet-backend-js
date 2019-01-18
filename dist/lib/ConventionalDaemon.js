@@ -11,6 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const _ = require("lodash");
+const Logger_1 = require("./Logger");
 const Types_1 = require("./Types");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletError_1 = require("./WalletError");
@@ -86,6 +88,7 @@ class ConventionalDaemon {
                 info = yield this.daemon.info();
             }
             catch (err) {
+                Logger_1.logger.log('Failed to update daemon info: ' + err.toString(), Logger_1.LogLevel.INFO, [Logger_1.LogCategory.DAEMON]);
                 return;
             }
             this.localDaemonBlockCount = info.height;
@@ -154,6 +157,51 @@ class ConventionalDaemon {
         });
     }
     /**
+     * Gets random outputs for the given amounts. requestedOuts per. Usually mixin+1.
+     *
+     * @returns Returns an array of amounts to global indexes and keys. There
+     *          should be requestedOuts indexes if the daemon fully fulfilled
+     *          our request.
+     */
+    getRandomOutputsByAmount(amounts, requestedOuts) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let data;
+            try {
+                data = yield this.daemon.getRandomOutputs({
+                    amounts: amounts,
+                    mixin: requestedOuts,
+                });
+            }
+            catch (err) {
+                Logger_1.logger.log('Failed to get random outs: ' + err.toString(), Logger_1.LogLevel.ERROR, [Logger_1.LogCategory.TRANSACTIONS, Logger_1.LogCategory.DAEMON]);
+                return [];
+            }
+            /* Most likely daemon is busy */
+            if (data.status !== 'OK') {
+                Logger_1.logger.log('Failed to get random outputs, got status ' + data.status + ' from daemon.', Logger_1.LogLevel.ERROR, [Logger_1.LogCategory.TRANSACTIONS, Logger_1.LogCategory.DAEMON]);
+                return [];
+            }
+            const outputs = [];
+            for (const output of data.outs) {
+                const indexes = [];
+                for (const outs of output.outs) {
+                    indexes.push([outs.global_amount_index, outs.out_key]);
+                }
+                /* Sort by output index to make it hard to determine real one */
+                outputs.push([output.amount, _.sortBy(indexes, ([index, key]) => index)]);
+            }
+            return outputs;
+        });
+    }
+    sendTransaction(rawTransaction) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = this.daemon.sendRawTransaction({
+                tx: rawTransaction,
+            });
+            return result.status === 'OK';
+        });
+    }
+    /**
      * Update the fee address and amount
      */
     updateFeeInfo() {
@@ -163,14 +211,21 @@ class ConventionalDaemon {
                 feeInfo = yield this.daemon.fee();
             }
             catch (err) {
+                Logger_1.logger.log('Failed to update fee info: ' + err.toString(), Logger_1.LogLevel.INFO, [Logger_1.LogCategory.DAEMON]);
                 return;
             }
+            /* Most likely daemon is busy */
             if (feeInfo.status !== 'OK') {
+                Logger_1.logger.log('Failed to update fee info, got status ' + feeInfo.status + ' from daemon.', Logger_1.LogLevel.INFO, [Logger_1.LogCategory.DAEMON]);
+                return;
+            }
+            if (feeInfo.address === '') {
                 return;
             }
             const integratedAddressesAllowed = false;
             const err = ValidateParameters_1.validateAddresses(new Array(feeInfo.address), integratedAddressesAllowed).errorCode;
             if (err !== WalletError_1.WalletErrorCode.SUCCESS) {
+                Logger_1.logger.log('Failed to validate address from daemon fee info: ' + err.toString(), Logger_1.LogLevel.WARNING, [Logger_1.LogCategory.DAEMON]);
                 return;
             }
             if (feeInfo.amount > 0) {

@@ -139,6 +139,7 @@ export enum LogCategory {
     TRANSACTIONS,
     FILESYSTEM,
     SAVE,
+    DAEMON,
 }
 
 /**
@@ -157,6 +158,9 @@ function logCategoryToString(category: LogCategory) {
         }
         case LogCategory.SAVE: {
             return 'Save';
+        }
+        case LogCategory.DAEMON: {
+            return 'Daemon';
         }
     }
 }

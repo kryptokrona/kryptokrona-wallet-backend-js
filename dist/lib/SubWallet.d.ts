@@ -1,5 +1,5 @@
 import { SubWalletJSON } from './JsonSerialization';
-import { TransactionInput } from './Types';
+import { TransactionInput, TxInputAndOwner } from './Types';
 export declare class SubWallet {
     static fromJSON(json: SubWalletJSON): SubWallet;
     private unspentInputs;
@@ -25,4 +25,5 @@ export declare class SubWallet {
     hasKeyImage(keyImage: string): boolean;
     getTxInputKeyImage(derivation: string, outputIndex: number): string;
     getBalance(currentHeight: number): [number, number];
+    getSpendableInputs(currentHeight: number): TxInputAndOwner[];
 }

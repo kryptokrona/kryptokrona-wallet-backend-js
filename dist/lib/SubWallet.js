@@ -155,7 +155,8 @@ class SubWallet {
         return false;
     }
     getTxInputKeyImage(derivation, outputIndex) {
-        return CnUtils_1.CryptoUtils.generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
+        const [keyImage, privateEphemeral] = CnUtils_1.CryptoUtils.generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
+        return keyImage;
     }
     getBalance(currentHeight) {
         let unlockedBalance = 0;
@@ -170,6 +171,15 @@ class SubWallet {
         }
         lockedBalance += _.sumBy(this.unconfirmedIncomingAmounts, 'amount');
         return [unlockedBalance, lockedBalance];
+    }
+    getSpendableInputs(currentHeight) {
+        const inputs = [];
+        for (const input of this.unspentInputs) {
+            if (Utilities_1.isInputUnlocked(input.unlockTime, currentHeight)) {
+                inputs.push(new Types_1.TxInputAndOwner(input, this.privateSpendKey, this.publicSpendKey));
+            }
+        }
+        return inputs;
     }
 }
 exports.SubWallet = SubWallet;

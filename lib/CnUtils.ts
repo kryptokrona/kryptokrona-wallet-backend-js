@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import CryptoNote = require('turtlecoin-utils');
+import { CryptoNote } from 'turtlecoin-utils';
 import config from './Config';
 
 export let CryptoUtils = new CryptoNote({

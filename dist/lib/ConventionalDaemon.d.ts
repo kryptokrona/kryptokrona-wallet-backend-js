@@ -83,6 +83,15 @@ export declare class ConventionalDaemon implements IDaemon {
     getGlobalIndexesForRange(startHeight: number, endHeight: number): Promise<Map<string, number[]>>;
     getCancelledTransactions(transactionHashes: string[]): Promise<string[]>;
     /**
+     * Gets random outputs for the given amounts. requestedOuts per. Usually mixin+1.
+     *
+     * @returns Returns an array of amounts to global indexes and keys. There
+     *          should be requestedOuts indexes if the daemon fully fulfilled
+     *          our request.
+     */
+    getRandomOutputsByAmount(amounts: number[], requestedOuts: number): Promise<Array<[number, Array<[number, string]>]>>;
+    sendTransaction(rawTransaction: string): Promise<boolean>;
+    /**
      * Update the fee address and amount
      */
     private updateFeeInfo;

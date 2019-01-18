@@ -265,12 +265,47 @@ class SubWallets {
         }
         return [unlockedBalance, lockedBalance];
     }
+    /**
+     * Gets all addresses contained in this SubWallets container
+     */
     getAddresses() {
         const addresses = [];
         for (const [publicKey, subWallet] of this.subWallets) {
             addresses.push(subWallet.getAddress());
         }
         return addresses;
+    }
+    /**
+     * Get input sufficient to spend the amount passed in, from the given
+     * subwallets, along with the keys for that inputs owner.
+     *
+     * Throws if the subwallets don't exist, or not enough money is found.
+     *
+     * @returns Returns the inputs and their owners, and the sum of their money
+     */
+    getTransactionInputsForAmount(amount, subWalletsToTakeFrom, currentHeight) {
+        let availableInputs = [];
+        /* Loop through each subwallet that we can take from */
+        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(Utilities_1.addressToKeys)) {
+            const subWallet = this.subWallets.get(publicSpendKey);
+            if (!subWallet) {
+                throw new Error('Subwallet not found!');
+            }
+            /* Fetch the spendable inputs */
+            availableInputs.concat(subWallet.getSpendableInputs(currentHeight));
+        }
+        /* Shuffle the inputs */
+        availableInputs = _.shuffle(availableInputs);
+        let foundMoney = 0;
+        const inputsToUse = [];
+        for (const input of availableInputs) {
+            inputsToUse.push(input);
+            foundMoney += input.input.amount;
+            if (foundMoney >= amount) {
+                return [_.sortBy(inputsToUse, (x) => x.input.amount), foundMoney];
+            }
+        }
+        throw new Error('Failed to find enough money!');
     }
 }
 exports.SubWallets = SubWallets;

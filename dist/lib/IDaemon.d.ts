@@ -48,4 +48,21 @@ export interface IDaemon {
      * the pool or a block. (They have returned to our wallet)
      */
     getCancelledTransactions(transactionHashes: string[]): Promise<string[]>;
+    /**
+     * Gets random outputs for the given amounts. requestedOuts per. Usually mixin+1.
+     *
+     * @returns Returns an array of amounts to global indexes and keys. There
+     *          should be requestedOuts indexes if the daemon fully fulfilled
+     *          our request.
+     */
+    getRandomOutputsByAmount(amounts: number[], requestedOuts: number): Promise<Array<[number, Array<[number, string]>]>>;
+    /**
+     * Sends a raw serialized transaction to the daemon. Returns true/false
+     * based on daemon status.
+     *
+     * Will throw on timeout.
+     *
+     * @returns Whether the transaction was accepted
+     */
+    sendTransaction(rawTransaction: string): Promise<boolean>;
 }

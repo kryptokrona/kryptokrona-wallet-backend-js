@@ -2,7 +2,10 @@
 //
 // Please see the included LICENSE file for more information.
 
+import * as _ from 'lodash';
+
 import { IDaemon } from './IDaemon';
+import { LogCategory, logger, LogLevel } from './Logger';
 import { Block } from './Types';
 import { validateAddresses } from './ValidateParameters';
 import { WalletError, WalletErrorCode } from './WalletError';
@@ -106,6 +109,12 @@ export class ConventionalDaemon implements IDaemon {
         try {
             info = await this.daemon.info();
         } catch (err) {
+            logger.log(
+                'Failed to update daemon info: ' + err.toString(),
+                LogLevel.INFO,
+                [LogCategory.DAEMON],
+            );
+
             return;
         }
 
@@ -188,6 +197,69 @@ export class ConventionalDaemon implements IDaemon {
     }
 
     /**
+     * Gets random outputs for the given amounts. requestedOuts per. Usually mixin+1.
+     *
+     * @returns Returns an array of amounts to global indexes and keys. There
+     *          should be requestedOuts indexes if the daemon fully fulfilled
+     *          our request.
+     */
+    public async getRandomOutputsByAmount(
+        amounts: number[],
+        requestedOuts: number): Promise<Array<[number, Array<[number, string]>]>> {
+
+        let data;
+
+        try {
+            data = await this.daemon.getRandomOutputs({
+                amounts: amounts,
+                mixin: requestedOuts,
+            });
+        } catch (err) {
+            logger.log(
+                'Failed to get random outs: ' + err.toString(),
+                LogLevel.ERROR,
+                [LogCategory.TRANSACTIONS, LogCategory.DAEMON],
+            );
+
+            return [];
+        }
+
+        /* Most likely daemon is busy */
+        if (data.status !== 'OK') {
+            logger.log(
+                'Failed to get random outputs, got status ' + data.status + ' from daemon.',
+                LogLevel.ERROR,
+                [LogCategory.TRANSACTIONS, LogCategory.DAEMON],
+            );
+
+            return [];
+        }
+
+        const outputs: Array<[number, Array<[number, string]>]> = [];
+
+        for (const output of data.outs) {
+            const indexes: Array<[number, string]> = [];
+
+            for (const outs of output.outs) {
+                indexes.push([outs.global_amount_index, outs.out_key]);
+            }
+
+            /* Sort by output index to make it hard to determine real one */
+            outputs.push([output.amount, _.sortBy(indexes, ([index, key]) => index)]);
+        }
+
+        return outputs;
+    }
+
+    public async sendTransaction(rawTransaction: string): Promise<boolean> {
+        const result = this.daemon.sendRawTransaction({
+            tx: rawTransaction,
+        });
+
+        return result.status === 'OK';
+    }
+
+    /**
      * Update the fee address and amount
      */
     private async updateFeeInfo(): Promise<void> {
@@ -196,10 +268,26 @@ export class ConventionalDaemon implements IDaemon {
         try {
             feeInfo = await this.daemon.fee();
         } catch (err) {
+            logger.log(
+                'Failed to update fee info: ' + err.toString(),
+                LogLevel.INFO,
+                [LogCategory.DAEMON],
+            );
             return;
         }
 
+        /* Most likely daemon is busy */
         if (feeInfo.status !== 'OK') {
+            logger.log(
+                'Failed to update fee info, got status ' + feeInfo.status + ' from daemon.',
+                LogLevel.INFO,
+                [LogCategory.DAEMON],
+            );
+
+            return;
+        }
+
+        if (feeInfo.address === '') {
             return;
         }
 
@@ -210,6 +298,12 @@ export class ConventionalDaemon implements IDaemon {
         ).errorCode;
 
         if (err !== WalletErrorCode.SUCCESS) {
+            logger.log(
+                'Failed to validate address from daemon fee info: ' + err.toString(),
+                LogLevel.WARNING,
+                [LogCategory.DAEMON],
+            );
+
             return;
         }
 

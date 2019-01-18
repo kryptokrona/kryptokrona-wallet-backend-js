@@ -31,7 +31,9 @@ function validateAddresses(addresses, integratedAddressesAllowed) {
 }
 exports.validateAddresses = validateAddresses;
 /**
- * Validate the amounts being sent are valid, and the addresses are valid
+ * Validate the amounts being sent are valid, and the addresses are valid.
+ *
+ * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
 function validateDestinations(destinations) {
     if (destinations.length === 0) {
@@ -55,8 +57,11 @@ function validateDestinations(destinations) {
 }
 exports.validateDestinations = validateDestinations;
 /**
- * Validate that the payment ID's included in integrated addresses are valid
+ * Validate that the payment ID's included in integrated addresses are valid.
+ *
  * You should have already called validateAddresses() before this function
+ *
+ * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
 function validateIntegratedAddresses(destinations, paymentID) {
     for (const [destination, amount] of destinations) {
@@ -77,6 +82,8 @@ function validateIntegratedAddresses(destinations, paymentID) {
 exports.validateIntegratedAddresses = validateIntegratedAddresses;
 /**
  * Validate the the addresses given are both valid, and exist in the subwallet
+ *
+ * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
 function validateOurAddresses(addresses, subWallets) {
     const error = validateAddresses(addresses, false);
@@ -98,6 +105,8 @@ exports.validateOurAddresses = validateOurAddresses;
  * Validate that the transfer amount + fee is valid, and we have enough balance
  * Note: Does not verify amounts are positive / integer, validateDestinations
  * handles that.
+ *
+ * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
 function validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight) {
     if (fee < Config_1.default.minimumFee) {
@@ -123,6 +132,8 @@ function validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, cur
 exports.validateAmount = validateAmount;
 /**
  * Validates mixin is valid and in allowed range
+ *
+ * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
 function validateMixin(mixin, height) {
     if (mixin < 0) {
@@ -143,6 +154,11 @@ function validateMixin(mixin, height) {
     return WalletError_1.SUCCESS;
 }
 exports.validateMixin = validateMixin;
+/**
+ * Validates the payment ID is valid (or an empty string)
+ *
+ * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ */
 function validatePaymentID(paymentID) {
     if (paymentID === '') {
         return WalletError_1.SUCCESS;

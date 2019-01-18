@@ -219,3 +219,11 @@ class TransactionData {
     }
 }
 exports.TransactionData = TransactionData;
+class TxInputAndOwner {
+    constructor(input, privateSpendKey, publicSpendKey) {
+        this.input = input;
+        this.privateSpendKey = privateSpendKey;
+        this.publicSpendKey = publicSpendKey;
+    }
+}
+exports.TxInputAndOwner = TxInputAndOwner;

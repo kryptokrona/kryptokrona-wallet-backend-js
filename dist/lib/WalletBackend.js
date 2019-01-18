@@ -485,7 +485,9 @@ class WalletBackend extends events_1.EventEmitter {
      * @return Returns either an error, or the transaction hash.
      */
     sendTransactionBasic(destination, amount, paymentID) {
-        return Transfer_1.sendTransactionBasic(this.daemon, this.subWallets, destination, amount, paymentID);
+        return __awaiter(this, void 0, void 0, function* () {
+            return Transfer_1.sendTransactionBasic(this.daemon, this.subWallets, destination, amount, paymentID);
+        });
     }
     /**
      * Sends a transaction, which permits multiple amounts to different destinations,
@@ -580,7 +582,7 @@ class WalletBackend extends events_1.EventEmitter {
             /* Take the blocks to process for this tick */
             const blocks = _.take(this.blocksToProcess, Config_1.default.blocksPerTick);
             for (const block of blocks) {
-                Logger_1.logger.log('Processing block ' + block.blockHeight, Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
+                Logger_1.logger.log('Processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 /* Forked chain, remove old data */
                 if (this.walletSynchronizer.getHeight() >= block.blockHeight) {
                     Logger_1.logger.log('Removing forked transactions', Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
@@ -616,7 +618,7 @@ class WalletBackend extends events_1.EventEmitter {
                     yield this.fetchAndStoreBlocks();
                 }
                 catch (err) {
-                    Logger_1.logger.log('Error fetching blocks: ' + err.toString(), Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                    Logger_1.logger.log('Error fetching blocks: ' + err.toString(), Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
                 }
                 return;
             }
@@ -624,7 +626,7 @@ class WalletBackend extends events_1.EventEmitter {
                 yield this.processBlocks();
             }
             catch (err) {
-                Logger_1.logger.log('Error processing blocks: ' + err.toString(), Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                Logger_1.logger.log('Error processing blocks: ' + err.toString(), Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
             }
         });
     }

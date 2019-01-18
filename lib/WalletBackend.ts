@@ -737,10 +737,10 @@ export class WalletBackend extends EventEmitter {
      *
      * @return Returns either an error, or the transaction hash.
      */
-    public sendTransactionBasic(
+    public async sendTransactionBasic(
         destination: string,
         amount: number,
-        paymentID?: string): WalletError | string {
+        paymentID?: string): Promise<WalletError | string> {
 
         return sendTransactionBasic(
             this.daemon, this.subWallets, destination, amount, paymentID,
@@ -768,7 +768,7 @@ export class WalletBackend extends EventEmitter {
         fee?: number,
         paymentID?: string,
         subWalletsToTakeFrom?: string[],
-        changeAddress?: string): WalletError | string {
+        changeAddress?: string): Promise<WalletError | string> {
 
         return sendTransactionAdvanced(
             this.daemon, this.subWallets, destinations, mixin, fee, paymentID,
@@ -880,7 +880,7 @@ export class WalletBackend extends EventEmitter {
 
             logger.log(
                 'Processing block ' + block.blockHeight,
-                LogLevel.INFO,
+                LogLevel.DEBUG,
                 LogCategory.SYNC,
             );
 
@@ -941,7 +941,7 @@ export class WalletBackend extends EventEmitter {
             } catch (err) {
                 logger.log(
                     'Error fetching blocks: ' + err.toString(),
-                    LogLevel.DEBUG,
+                    LogLevel.INFO,
                     LogCategory.SYNC,
                 );
             }
@@ -954,7 +954,7 @@ export class WalletBackend extends EventEmitter {
         } catch (err) {
             logger.log(
                 'Error processing blocks: ' + err.toString(),
-                LogLevel.DEBUG,
+                LogLevel.INFO,
                 LogCategory.SYNC,
             );
         }

@@ -5,8 +5,8 @@
 import { CryptoUtils } from './CnUtils';
 import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';
 import { SubWallet } from './SubWallet';
-import { Transaction, TransactionInput } from './Types';
-import { getCurrentTimestampAdjusted } from './Utilities';
+import { Transaction, TransactionInput, TxInputAndOwner } from './Types';
+import { addressToKeys, getCurrentTimestampAdjusted } from './Utilities';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import * as _ from 'lodash';
@@ -363,6 +363,9 @@ export class SubWallets {
         return [unlockedBalance, lockedBalance];
     }
 
+    /**
+     * Gets all addresses contained in this SubWallets container
+     */
     public getAddresses(): string[] {
         const addresses: string[] = [];
 
@@ -371,5 +374,52 @@ export class SubWallets {
         }
 
         return addresses;
+    }
+
+    /**
+     * Get input sufficient to spend the amount passed in, from the given
+     * subwallets, along with the keys for that inputs owner.
+     *
+     * Throws if the subwallets don't exist, or not enough money is found.
+     *
+     * @returns Returns the inputs and their owners, and the sum of their money
+     */
+    public getTransactionInputsForAmount(
+        amount: number,
+        subWalletsToTakeFrom: string[],
+        currentHeight: number): [TxInputAndOwner[], number] {
+
+        let availableInputs: TxInputAndOwner[] = [];
+
+        /* Loop through each subwallet that we can take from */
+        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(addressToKeys)) {
+            const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
+
+            if (!subWallet) {
+                throw new Error('Subwallet not found!');
+            }
+
+            /* Fetch the spendable inputs */
+            availableInputs.concat(subWallet.getSpendableInputs(currentHeight));
+        }
+
+        /* Shuffle the inputs */
+        availableInputs = _.shuffle(availableInputs);
+
+        let foundMoney: number = 0;
+
+        const inputsToUse: TxInputAndOwner[] = [];
+
+        for (const input of availableInputs) {
+            inputsToUse.push(input);
+
+            foundMoney += input.input.amount;
+
+            if (foundMoney >= amount) {
+                return [_.sortBy(inputsToUse, (x) => x.input.amount), foundMoney];
+            }
+        }
+
+        throw new Error('Failed to find enough money!');
     }
 }

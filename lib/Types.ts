@@ -468,3 +468,24 @@ export class TransactionData {
     /* Mapping of public spend key to key image */
     public readonly keyImagesToMarkSpent: Array<[string, string]> = [];
 }
+
+export class TxInputAndOwner {
+    /* The input */
+    public readonly input: TransactionInput;
+
+   /* The private spend key of the input owner */
+    public readonly privateSpendKey: string;
+
+    /* The public spend key of the input owner */
+    public readonly publicSpendKey: string;
+
+    constructor(
+        input: TransactionInput,
+        privateSpendKey: string,
+        publicSpendKey: string) {
+
+        this.input = input;
+        this.privateSpendKey = privateSpendKey;
+        this.publicSpendKey = publicSpendKey;
+    }
+}

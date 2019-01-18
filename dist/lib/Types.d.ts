@@ -79,3 +79,9 @@ export declare class TransactionData {
     readonly inputsToAdd: Array<[string, TransactionInput]>;
     readonly keyImagesToMarkSpent: Array<[string, string]>;
 }
+export declare class TxInputAndOwner {
+    readonly input: TransactionInput;
+    readonly privateSpendKey: string;
+    readonly publicSpendKey: string;
+    constructor(input: TransactionInput, privateSpendKey: string, publicSpendKey: string);
+}

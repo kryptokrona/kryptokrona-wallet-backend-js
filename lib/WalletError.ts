@@ -229,10 +229,13 @@ export class WalletError {
                 return 'The hash given is not 64 characters long.';
             }
             case WalletErrorCode.HASH_INVALID: {
-                return 'The hash given is not a hex string (A-Za-z0-9)';
+                return 'The hash given is not a hex string (A-Za-z0-9).';
             }
             case WalletErrorCode.NON_INTEGER_GIVEN: {
-                return 'The number given was a float, not an integer';
+                return 'The number given was a float, not an integer.';
+            }
+            case WalletErrorCode.UNKNOWN_ERROR: {
+                return 'An unknown error occured.';
             }
         }
     }
@@ -429,6 +432,9 @@ export enum WalletErrorCode {
 
     /* Input is a float not an int */
     NON_INTEGER_GIVEN = 50,
+
+    /* An unknown error occured */
+    UNKNOWN_ERROR = 51,
 }
 
 /**

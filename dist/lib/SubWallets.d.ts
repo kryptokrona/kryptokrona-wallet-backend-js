@@ -1,6 +1,6 @@
 import { SubWalletsJSON } from './JsonSerialization';
 import { SubWallet } from './SubWallet';
-import { Transaction, TransactionInput } from './Types';
+import { Transaction, TransactionInput, TxInputAndOwner } from './Types';
 import { WalletError } from './WalletError';
 /**
  * Stores each subwallet, along with transactions and public spend keys
@@ -133,5 +133,17 @@ export declare class SubWallets {
      * @return Returns [unlockedBalance, lockedBalance]
      */
     getBalance(currentHeight: number, subWalletsToTakeFrom?: string[]): [number, number];
+    /**
+     * Gets all addresses contained in this SubWallets container
+     */
     getAddresses(): string[];
+    /**
+     * Get input sufficient to spend the amount passed in, from the given
+     * subwallets, along with the keys for that inputs owner.
+     *
+     * Throws if the subwallets don't exist, or not enough money is found.
+     *
+     * @returns Returns the inputs and their owners, and the sum of their money
+     */
+    getTransactionInputsForAmount(amount: number, subWalletsToTakeFrom: string[], currentHeight: number): [TxInputAndOwner[], number];
 }

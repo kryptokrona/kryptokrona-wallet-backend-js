@@ -4,7 +4,7 @@
 
 import { CryptoUtils } from './CnUtils';
 import { SubWalletJSON } from './JsonSerialization';
-import { TransactionInput, UnconfirmedInput } from './Types';
+import { TransactionInput, TxInputAndOwner, UnconfirmedInput } from './Types';
 import { isInputUnlocked } from './Utilities';
 
 import * as _ from 'lodash';
@@ -232,11 +232,13 @@ export class SubWallet {
 
     public getTxInputKeyImage(
         derivation: string,
-        outputIndex: number) {
-        return CryptoUtils.generateKeyImagePrimitive(
+        outputIndex: number): string {
+        const [keyImage, privateEphemeral] = CryptoUtils.generateKeyImagePrimitive(
             this.publicSpendKey, this.privateSpendKey as string, outputIndex,
             derivation,
         );
+
+        return keyImage;
     }
 
     public getBalance(currentHeight: number): [number, number] {
@@ -254,5 +256,21 @@ export class SubWallet {
         lockedBalance += _.sumBy(this.unconfirmedIncomingAmounts, 'amount');
 
         return [unlockedBalance, lockedBalance];
+    }
+
+    public getSpendableInputs(currentHeight: number): TxInputAndOwner[] {
+        const inputs: TxInputAndOwner[] = [];
+
+        for (const input of this.unspentInputs) {
+            if (isInputUnlocked(input.unlockTime, currentHeight)) {
+                inputs.push(
+                    new TxInputAndOwner(
+                        input, this.privateSpendKey as string, this.publicSpendKey,
+                    ),
+                );
+            }
+        }
+
+        return inputs;
     }
 }
