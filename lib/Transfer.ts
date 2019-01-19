@@ -15,7 +15,7 @@ import { IDaemon } from './IDaemon';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { SubWallets } from './SubWallets';
 import { TxInputAndOwner } from './Types';
-import { prettyPrintAmount } from './Utilities';
+import { prettyPrintAmount, splitAmountIntoDenominations } from './Utilities';
 
 import {
     validateAddresses, validateAmount, validateDestinations,
@@ -122,14 +122,21 @@ export async function sendTransactionAdvanced(
         return error;
     }
 
-    const tmp: Array<[string, number]> = [];
-
     const totalAmount: number = _.sumBy(
         addressesAndAmounts, ([address, amount]) => amount,
     ) + fee;
 
+    const amounts: Array<[string, number]> = [];
+
+    /* Split amounts into denominations */
+    addressesAndAmounts.map(([address, amount]) => {
+        for (const denomination of splitAmountIntoDenominations(amount)) {
+            amounts.push([address, denomination]);
+        }
+    });
+
     /* Prepare destinations keys */
-    const transfers: TxDestination[] = addressesAndAmounts.map(([address, amount]) => {
+    const transfers: TxDestination[] = amounts.map(([address, amount]) => {
         const decoded: DecodedAddress = CryptoUtils.decodeAddress(address);
 
         /* Assign payment ID from integrated address is present */
@@ -147,6 +154,18 @@ export async function sendTransactionAdvanced(
         totalAmount, subWalletsToTakeFrom, daemon.getNetworkBlockCount(),
     );
 
+    /* Need to send change back to ourselves */
+    if (foundMoney > totalAmount) {
+        const decoded: DecodedAddress = CryptoUtils.decodeAddress(changeAddress);
+
+        for (const denomination of splitAmountIntoDenominations(foundMoney - totalAmount)) {
+            transfers.push({
+                amount: denomination,
+                keys: decoded,
+            });
+        }
+    }
+
     const ourOutputs: Output[] = inputs.map((input) => {
 
         const [keyImage, tmpSecretKey] = CryptoUtils.generateKeyImage(
@@ -163,8 +182,6 @@ export async function sendTransactionAdvanced(
             index: input.input.transactionIndex,
             input: {
                 privateEphemeral: tmpSecretKey,
-                privateSpendKey: input.privateSpendKey,
-                publicSpendKey: input.publicSpendKey,
             },
             key: input.input.key,
             keyImage: keyImage,
@@ -196,19 +213,21 @@ export async function sendTransactionAdvanced(
         return new WalletError(WalletErrorCode.UNKNOWN_ERROR, err.toString());
     }
 
-    try {
-        const relaySuccess: boolean = await daemon.sendTransaction(tx.rawTransaction);
+    let relaySuccess: boolean;
 
-        if (relaySuccess) {
-            return tx.hash;
-        } else {
-            return new WalletError(WalletErrorCode.DAEMON_ERROR);
-        }
+    try {
+        relaySuccess = await daemon.sendTransaction(tx.rawTransaction);
+
     /* Timeout */
     } catch (err) {
         return new WalletError(WalletErrorCode.DAEMON_OFFLINE);
     }
 
+    if (!relaySuccess) {
+        return new WalletError(WalletErrorCode.DAEMON_ERROR);
+    }
+
+    /* TODO: Mark inputs spent */
     return tx.hash;
 }
 
@@ -231,7 +250,7 @@ async function getRingParticipants(
 
     const amounts: number[] = inputs.map((input) => input.input.amount);
 
-    const outs = await daemon.getRandomOutputsByAmount(amounts, mixin);
+    const outs = await daemon.getRandomOutputsByAmount(amounts, requestedOuts);
 
     if (outs.length === 0) {
         return new WalletError(WalletErrorCode.DAEMON_OFFLINE);
@@ -250,12 +269,14 @@ async function getRingParticipants(
             );
         }
 
-        if (foundOutputs.length < mixin) {
+        const [, outputs] = foundOutputs;
+
+        if (outputs.length < mixin) {
             return new WalletError(
                 WalletErrorCode.NOT_ENOUGH_FAKE_OUTPUTS,
                 `Failed to get enough matching outputs for amount ${amount} ` +
-                `(${prettyPrintAmount(amount)}). Needed outputs: ${requestedOuts} ` +
-                `, found outputs: ${foundOutputs.length}. Further explanation here: ` +
+                `(${prettyPrintAmount(amount)}). Needed outputs: ${mixin} ` +
+                `, found outputs: ${outputs.length}. Further explanation here: ` +
                 `https://gist.github.com/zpalmtree/80b3e80463225bcfb8f8432043cb594c`,
             );
         }
@@ -280,7 +301,7 @@ async function getRingParticipants(
             return new WalletError(
                 WalletErrorCode.NOT_ENOUGH_FAKE_OUTPUTS,
                 `Failed to get enough matching outputs for amount ${amount} ` +
-                `(${prettyPrintAmount(amount)}). Needed outputs: ${requestedOuts} ` +
+                `(${prettyPrintAmount(amount)}). Needed outputs: ${mixin} ` +
                 `, found outputs: ${outputs.length}. Further explanation here: ` +
                 `https://gist.github.com/zpalmtree/80b3e80463225bcfb8f8432043cb594c`,
             );

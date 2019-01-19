@@ -252,7 +252,7 @@ export class ConventionalDaemon implements IDaemon {
     }
 
     public async sendTransaction(rawTransaction: string): Promise<boolean> {
-        const result = this.daemon.sendRawTransaction({
+        const result = await this.daemon.sendRawTransaction({
             tx: rawTransaction,
         });
 

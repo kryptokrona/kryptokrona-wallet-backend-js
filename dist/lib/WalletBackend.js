@@ -268,7 +268,7 @@ class WalletBackend extends events_1.EventEmitter {
         if (version !== Constants_1.WALLET_FILE_FORMAT_VERSION) {
             throw new Error('Unsupported wallet file format version!');
         }
-        return Object.assign(wallet, json, {
+        return Object.assign(wallet, {
             subWallets: SubWallets_1.SubWallets.fromJSON(json.subWallets),
             walletSynchronizer: WalletSynchronizer_1.WalletSynchronizer.fromJSON(json.walletSynchronizer),
         });
@@ -651,6 +651,7 @@ class WalletBackend extends events_1.EventEmitter {
     initAfterLoad(daemon) {
         this.daemon = daemon;
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
+        this.mainLoopExecutor = new Metronome_1.Metronome(this.mainLoop.bind(this), Config_1.default.mainLoopInterval);
     }
 }
 exports.WalletBackend = WalletBackend;

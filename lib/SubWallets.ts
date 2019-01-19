@@ -22,7 +22,7 @@ export class SubWallets {
     public static fromJSON(json: SubWalletsJSON): SubWallets {
         const subWallets = Object.create(SubWallets.prototype);
 
-        return Object.assign(subWallets, json, {
+        return Object.assign(subWallets, {
             publicSpendKeys: json.publicSpendKeys,
 
             subWallets: new Map<string, SubWallet>(
@@ -330,7 +330,7 @@ export class SubWallets {
     }
 
     /**
-     * Returns the summed balance of the given subwallets. If none are given,
+     * Returns the summed balance of the given subwallet addresses. If none are given,
      * take from all.
      *
      * @return Returns [unlockedBalance, lockedBalance]
@@ -339,15 +339,23 @@ export class SubWallets {
         currentHeight: number,
         subWalletsToTakeFrom?: string[]): [number, number] {
 
+        let publicSpendKeys: string[] = [];
+
         /* If no subwallets given, take from all */
         if (!subWalletsToTakeFrom) {
-            subWalletsToTakeFrom = this.publicSpendKeys;
+            publicSpendKeys = this.publicSpendKeys;
+        } else {
+            publicSpendKeys = subWalletsToTakeFrom.map((address) => {
+                const [publicViewKey, publicSpendKey] = addressToKeys(address);
+
+                return publicSpendKey;
+            });
         }
 
         let unlockedBalance: number = 0;
         let lockedBalance: number = 0;
 
-        for (const publicSpendKey of subWalletsToTakeFrom) {
+        for (const publicSpendKey of publicSpendKeys) {
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
             if (!subWallet) {
@@ -400,7 +408,7 @@ export class SubWallets {
             }
 
             /* Fetch the spendable inputs */
-            availableInputs.concat(subWallet.getSpendableInputs(currentHeight));
+            availableInputs = availableInputs.concat(subWallet.getSpendableInputs(currentHeight));
         }
 
         /* Shuffle the inputs */
@@ -420,6 +428,6 @@ export class SubWallets {
             }
         }
 
-        throw new Error('Failed to find enough money!');
+        throw new Error(`Failed to find enough money! Needed: ${amount}, found: ${foundMoney}`);
     }
 }

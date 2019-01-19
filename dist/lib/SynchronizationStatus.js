@@ -12,7 +12,7 @@ class SynchronizationStatus {
     }
     static fromJSON(json) {
         const synchronizationStatus = Object.create(SynchronizationStatus.prototype);
-        return Object.assign(synchronizationStatus, json, {
+        return Object.assign(synchronizationStatus, {
             blockHashCheckpoints: json.blockHashCheckpoints,
             lastKnownBlockHashes: json.lastKnownBlockHashes,
             lastKnownBlockHeight: json.lastKnownBlockHeight,

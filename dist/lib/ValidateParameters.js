@@ -112,7 +112,7 @@ function validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, cur
     if (fee < Config_1.default.minimumFee) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.FEE_TOO_SMALL);
     }
-    if (Number.isInteger(fee)) {
+    if (!Number.isInteger(fee)) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NON_INTEGER_GIVEN);
     }
     /* Get available balance, given the source addresses */

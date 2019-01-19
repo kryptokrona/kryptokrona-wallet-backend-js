@@ -195,7 +195,7 @@ class ConventionalDaemon {
     }
     sendTransaction(rawTransaction) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = this.daemon.sendRawTransaction({
+            const result = yield this.daemon.sendRawTransaction({
                 tx: rawTransaction,
             });
             return result.status === 'OK';

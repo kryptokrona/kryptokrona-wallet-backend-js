@@ -149,7 +149,7 @@ export function validateAmount(
         return new WalletError(WalletErrorCode.FEE_TOO_SMALL);
     }
 
-    if (Number.isInteger(fee)) {
+    if (!Number.isInteger(fee)) {
         return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
     }
 

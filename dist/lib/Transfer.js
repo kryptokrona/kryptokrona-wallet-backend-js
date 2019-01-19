@@ -81,10 +81,16 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         if (!deepEqual(error, WalletError_1.SUCCESS)) {
             return error;
         }
-        const tmp = [];
         const totalAmount = _.sumBy(addressesAndAmounts, ([address, amount]) => amount) + fee;
+        const amounts = [];
+        /* Split amounts into denominations */
+        addressesAndAmounts.map(([address, amount]) => {
+            for (const denomination of Utilities_1.splitAmountIntoDenominations(amount)) {
+                amounts.push([address, denomination]);
+            }
+        });
         /* Prepare destinations keys */
-        const transfers = addressesAndAmounts.map(([address, amount]) => {
+        const transfers = amounts.map(([address, amount]) => {
             const decoded = CnUtils_1.CryptoUtils.decodeAddress(address);
             /* Assign payment ID from integrated address is present */
             if (decoded.paymentId !== '') {
@@ -96,6 +102,16 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             };
         });
         const [inputs, foundMoney] = subWallets.getTransactionInputsForAmount(totalAmount, subWalletsToTakeFrom, daemon.getNetworkBlockCount());
+        /* Need to send change back to ourselves */
+        if (foundMoney > totalAmount) {
+            const decoded = CnUtils_1.CryptoUtils.decodeAddress(changeAddress);
+            for (const denomination of Utilities_1.splitAmountIntoDenominations(foundMoney - totalAmount)) {
+                transfers.push({
+                    amount: denomination,
+                    keys: decoded,
+                });
+            }
+        }
         const ourOutputs = inputs.map((input) => {
             const [keyImage, tmpSecretKey] = CnUtils_1.CryptoUtils.generateKeyImage(input.input.transactionPublicKey, subWallets.getPrivateViewKey(), input.publicSpendKey, input.privateSpendKey, input.input.transactionIndex);
             return {
@@ -104,8 +120,6 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
                 index: input.input.transactionIndex,
                 input: {
                     privateEphemeral: tmpSecretKey,
-                    privateSpendKey: input.privateSpendKey,
-                    publicSpendKey: input.publicSpendKey,
                 },
                 key: input.input.key,
                 keyImage: keyImage,
@@ -123,19 +137,18 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             Logger_1.logger.log('Failed to create transaction: ' + err.toString(), Logger_1.LogLevel.ERROR, Logger_1.LogCategory.TRANSACTIONS);
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNKNOWN_ERROR, err.toString());
         }
+        let relaySuccess;
         try {
-            const relaySuccess = yield daemon.sendTransaction(tx.rawTransaction);
-            if (relaySuccess) {
-                return tx.hash;
-            }
-            else {
-                return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_ERROR);
-            }
+            relaySuccess = yield daemon.sendTransaction(tx.rawTransaction);
             /* Timeout */
         }
         catch (err) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_OFFLINE);
         }
+        if (!relaySuccess) {
+            return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_ERROR);
+        }
+        /* TODO: Mark inputs spent */
         return tx.hash;
     });
 }
@@ -153,7 +166,7 @@ function getRingParticipants(inputs, mixin, daemon) {
            one of the mixin outs, we can skip it and still form the transaction */
         const requestedOuts = mixin + 1;
         const amounts = inputs.map((input) => input.input.amount);
-        const outs = yield daemon.getRandomOutputsByAmount(amounts, mixin);
+        const outs = yield daemon.getRandomOutputsByAmount(amounts, requestedOuts);
         if (outs.length === 0) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_OFFLINE);
         }
@@ -165,10 +178,11 @@ function getRingParticipants(inputs, mixin, daemon) {
                     `(${Utilities_1.prettyPrintAmount(amount)}). Further explanation here: ` +
                     `https://gist.github.com/zpalmtree/80b3e80463225bcfb8f8432043cb594c`);
             }
-            if (foundOutputs.length < mixin) {
+            const [, outputs] = foundOutputs;
+            if (outputs.length < mixin) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NOT_ENOUGH_FAKE_OUTPUTS, `Failed to get enough matching outputs for amount ${amount} ` +
-                    `(${Utilities_1.prettyPrintAmount(amount)}). Needed outputs: ${requestedOuts} ` +
-                    `, found outputs: ${foundOutputs.length}. Further explanation here: ` +
+                    `(${Utilities_1.prettyPrintAmount(amount)}). Needed outputs: ${mixin} ` +
+                    `, found outputs: ${outputs.length}. Further explanation here: ` +
                     `https://gist.github.com/zpalmtree/80b3e80463225bcfb8f8432043cb594c`);
             }
         }
@@ -187,7 +201,7 @@ function getRingParticipants(inputs, mixin, daemon) {
         for (const [amount, outputs] of outs) {
             if (outputs.length < mixin) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NOT_ENOUGH_FAKE_OUTPUTS, `Failed to get enough matching outputs for amount ${amount} ` +
-                    `(${Utilities_1.prettyPrintAmount(amount)}). Needed outputs: ${requestedOuts} ` +
+                    `(${Utilities_1.prettyPrintAmount(amount)}). Needed outputs: ${mixin} ` +
                     `, found outputs: ${outputs.length}. Further explanation here: ` +
                     `https://gist.github.com/zpalmtree/80b3e80463225bcfb8f8432043cb594c`);
             }

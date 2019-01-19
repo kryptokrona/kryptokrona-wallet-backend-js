@@ -14,7 +14,7 @@ export class SubWallet {
     public static fromJSON(json: SubWalletJSON): SubWallet {
         const subWallet = Object.create(SubWallet.prototype);
 
-        return Object.assign(subWallet, json, {
+        return Object.assign(subWallet, {
             unspentInputs: json.unspentInputs.map((x) => TransactionInput.fromJSON(x)),
 
             lockedInputs: json.lockedInputs.map((x) => TransactionInput.fromJSON(x)),

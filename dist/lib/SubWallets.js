@@ -55,7 +55,7 @@ class SubWallets {
      */
     static fromJSON(json) {
         const subWallets = Object.create(SubWallets.prototype);
-        return Object.assign(subWallets, json, {
+        return Object.assign(subWallets, {
             publicSpendKeys: json.publicSpendKeys,
             subWallets: new Map(json.subWallet.map((x) => [x.publicSpendKey, SubWallet_1.SubWallet.fromJSON(x)])),
             transactions: json.transactions.map((x) => Types_1.Transaction.fromJSON(x)),
@@ -242,19 +242,26 @@ class SubWallets {
         return subWallet.getTxInputKeyImage(derivation, outputIndex);
     }
     /**
-     * Returns the summed balance of the given subwallets. If none are given,
+     * Returns the summed balance of the given subwallet addresses. If none are given,
      * take from all.
      *
      * @return Returns [unlockedBalance, lockedBalance]
      */
     getBalance(currentHeight, subWalletsToTakeFrom) {
+        let publicSpendKeys = [];
         /* If no subwallets given, take from all */
         if (!subWalletsToTakeFrom) {
-            subWalletsToTakeFrom = this.publicSpendKeys;
+            publicSpendKeys = this.publicSpendKeys;
+        }
+        else {
+            publicSpendKeys = subWalletsToTakeFrom.map((address) => {
+                const [publicViewKey, publicSpendKey] = Utilities_1.addressToKeys(address);
+                return publicSpendKey;
+            });
         }
         let unlockedBalance = 0;
         let lockedBalance = 0;
-        for (const publicSpendKey of subWalletsToTakeFrom) {
+        for (const publicSpendKey of publicSpendKeys) {
             const subWallet = this.subWallets.get(publicSpendKey);
             if (!subWallet) {
                 throw new Error('Subwallet not found!');
@@ -292,7 +299,7 @@ class SubWallets {
                 throw new Error('Subwallet not found!');
             }
             /* Fetch the spendable inputs */
-            availableInputs.concat(subWallet.getSpendableInputs(currentHeight));
+            availableInputs = availableInputs.concat(subWallet.getSpendableInputs(currentHeight));
         }
         /* Shuffle the inputs */
         availableInputs = _.shuffle(availableInputs);
@@ -305,7 +312,7 @@ class SubWallets {
                 return [_.sortBy(inputsToUse, (x) => x.input.amount), foundMoney];
             }
         }
-        throw new Error('Failed to find enough money!');
+        throw new Error(`Failed to find enough money! Needed: ${amount}, found: ${foundMoney}`);
     }
 }
 exports.SubWallets = SubWallets;

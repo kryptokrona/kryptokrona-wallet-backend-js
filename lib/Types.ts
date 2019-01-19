@@ -11,7 +11,7 @@ export class Block {
     public static fromJSON(json: any): Block {
         const block = Object.create(Block.prototype);
 
-        return Object.assign(block, json, {
+        return Object.assign(block, {
             coinbaseTransaction: RawCoinbaseTransaction.fromJSON(json.coinbaseTX),
 
             transactions: json.transactions.map(RawTransaction.fromJSON),
@@ -58,7 +58,7 @@ export class RawCoinbaseTransaction {
     public static fromJSON(json: any): RawCoinbaseTransaction {
         const coinbaseTX = Object.create(RawCoinbaseTransaction.prototype);
 
-        return Object.assign(coinbaseTX, json, {
+        return Object.assign(coinbaseTX, {
             keyOutputs: json.outputs.map(KeyOutput.fromJSON),
 
             hash: json.hash,
@@ -99,7 +99,7 @@ export class RawTransaction extends RawCoinbaseTransaction {
     public static fromJSON(json: any): RawTransaction {
         const coinbaseTX = Object.create(RawTransaction.prototype);
 
-        return Object.assign(coinbaseTX, json, {
+        return Object.assign(coinbaseTX, {
             keyOutputs: json.outputs.map(KeyOutput.fromJSON),
 
             hash: json.hash,
@@ -140,7 +140,7 @@ export class Transaction {
     public static fromJSON(json: TransactionJSON): Transaction {
         const transaction = Object.create(Transaction.prototype);
 
-        return Object.assign(transaction, json, {
+        return Object.assign(transaction, {
             transfers: new Map<string, number>(
                 json.transfers.map((x) => [x.publicKey, x.amount] as [string, number]),
             ),
@@ -246,7 +246,7 @@ export class TransactionInput {
     public static fromJSON(json: TransactionInputJSON): TransactionInput {
         const transactionInput = Object.create(TransactionInput.prototype);
 
-        return Object.assign(transactionInput, json, {
+        return Object.assign(transactionInput, {
             keyImage: json.keyImage,
 
             amount: json.amount,
@@ -359,7 +359,7 @@ export class UnconfirmedInput {
     public static fromJSON(json: UnconfirmedInputJSON): UnconfirmedInput {
         const unconfirmedInput = Object.create(UnconfirmedInput.prototype);
 
-        return Object.assign(unconfirmedInput, json, {
+        return Object.assign(unconfirmedInput, {
             amount: json.amount,
 
             key: json.key,
@@ -402,7 +402,7 @@ export class KeyOutput {
     public static fromJSON(json: any): KeyOutput {
         const keyOutput = Object.create(KeyOutput.prototype);
 
-        return Object.assign(keyOutput, json, {
+        return Object.assign(keyOutput, {
             amount: json.amount,
             key: json.key,
         });
@@ -431,7 +431,7 @@ export class KeyInput {
     public static fromJSON(json: any): KeyInput {
         const keyInput = Object.create(KeyInput.prototype);
 
-        return Object.assign(keyInput, json, {
+        return Object.assign(keyInput, {
             amount: json.amount,
             keyImage: json.k_image,
             outputIndexes: json.key_offsets,

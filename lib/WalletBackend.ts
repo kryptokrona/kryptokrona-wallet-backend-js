@@ -405,7 +405,7 @@ export class WalletBackend extends EventEmitter {
             throw new Error('Unsupported wallet file format version!');
         }
 
-        return Object.assign(wallet, json, {
+        return Object.assign(wallet, {
             subWallets: SubWallets.fromJSON(json.subWallets),
             walletSynchronizer: WalletSynchronizer.fromJSON(json.walletSynchronizer),
         });
@@ -981,6 +981,11 @@ export class WalletBackend extends EventEmitter {
      */
     private initAfterLoad(daemon: IDaemon): void {
         this.daemon = daemon;
+
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
+
+        this.mainLoopExecutor = new Metronome(
+            this.mainLoop.bind(this), config.mainLoopInterval,
+        );
     }
 }

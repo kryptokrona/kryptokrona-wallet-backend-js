@@ -2,6 +2,8 @@
 //
 // Please see the included LICENSE file for more information.
 
+import { LogCategory, logger, LogLevel } from './Logger';
+
 export class Metronome {
 
     /**
@@ -50,7 +52,15 @@ export class Metronome {
      * Run the function, then recurse
      */
     private async tick(): Promise<void> {
-        await this.func();
+        try {
+            await this.func();
+        } catch (err) {
+            logger.log(
+                'Threw exception processing tick function: ' + err,
+                LogLevel.ERROR,
+                LogCategory.SYNC
+            );
+        }
 
         if (!this.shouldStop) {
             this.timer = setTimeout(this.tick.bind(this), this.interval);

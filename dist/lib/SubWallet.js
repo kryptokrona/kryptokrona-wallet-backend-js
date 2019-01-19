@@ -35,7 +35,7 @@ class SubWallet {
     }
     static fromJSON(json) {
         const subWallet = Object.create(SubWallet.prototype);
-        return Object.assign(subWallet, json, {
+        return Object.assign(subWallet, {
             unspentInputs: json.unspentInputs.map((x) => Types_1.TransactionInput.fromJSON(x)),
             lockedInputs: json.lockedInputs.map((x) => Types_1.TransactionInput.fromJSON(x)),
             spentInputs: json.spentInputs.map((x) => Types_1.TransactionInput.fromJSON(x)),

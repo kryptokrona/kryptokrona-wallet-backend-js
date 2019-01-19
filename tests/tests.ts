@@ -136,9 +136,25 @@ function roundTrip(
        'Wallet loading failed');
 
     await tester.test(async () => {
-        const wallet = WalletBackend.createWallet(daemon);
+        try {
+            const wallet = WalletBackend.createWallet(daemon);
 
-        return roundTrip(wallet, daemon, 'password');
+            if (!roundTrip(wallet, daemon, 'password')) {
+                return false;
+            }
+
+            /* Verify loaded wallet runs */
+            await wallet.start();
+
+            await delay(1000 * 2);
+
+            await wallet.stop();
+
+        } catch (err) {
+            return false;
+        }
+
+        return true;
 
     }, 'Checking can open saved file',
        'Can open saved file',

@@ -127,7 +127,7 @@ export declare class SubWallets {
      */
     getTxInputKeyImage(publicSpendKey: string, derivation: string, outputIndex: number): string;
     /**
-     * Returns the summed balance of the given subwallets. If none are given,
+     * Returns the summed balance of the given subwallet addresses. If none are given,
      * take from all.
      *
      * @return Returns [unlockedBalance, lockedBalance]

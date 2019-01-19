@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const Logger_1 = require("./Logger");
 class Metronome {
     /**
      * @param func      The function to run
@@ -42,7 +43,12 @@ class Metronome {
      */
     tick() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.func();
+            try {
+                yield this.func();
+            }
+            catch (err) {
+                Logger_1.logger.log('Threw exception processing tick function: ' + err, Logger_1.LogLevel.ERROR, Logger_1.LogCategory.SYNC);
+            }
             if (!this.shouldStop) {
                 this.timer = setTimeout(this.tick.bind(this), this.interval);
             }

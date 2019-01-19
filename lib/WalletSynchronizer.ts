@@ -27,7 +27,7 @@ export class WalletSynchronizer {
     public static fromJSON(json: WalletSynchronizerJSON): WalletSynchronizer {
         const walletSynchronizer = Object.create(WalletSynchronizer.prototype);
 
-        return Object.assign(walletSynchronizer, json, {
+        return Object.assign(walletSynchronizer, {
             privateViewKey: json.privateViewKey,
             startHeight: json.startHeight,
             startTimestamp: json.startTimestamp,

@@ -68,3 +68,28 @@ export function prettyPrintAmount(amount: number): string {
 export function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/* Split each amount into uniform amounts, e.g.
+   1234567 = 1000000 + 200000 + 30000 + 4000 + 500 + 60 + 7 */
+export function splitAmountIntoDenominations(amount: number): number[] {
+    let multiplier: number = 1;
+
+    const splitAmounts: number[] = [];
+
+    while (amount >= 1) {
+        const denomination: number = multiplier * (amount % 10);
+
+        /* If we have for example, 1010 - we want 1000 + 10,
+           not 1000 + 0 + 10 + 0 */
+        if (denomination !== 0) {
+            splitAmounts.push(denomination);
+        }
+
+        amount /= 10;
+        multiplier *= 10;
+    }
+
+    console.log(splitAmounts);
+
+    return splitAmounts;
+}
