@@ -7,10 +7,12 @@ import deepEqual = require('deep-equal');
 import * as _ from 'lodash';
 
 import {
-    CreatedTransaction, DecodedAddress, Output, RandomOutput, TxDestination, Wallet,
+    CreatedTransaction, DecodedAddress, Output, RandomOutput, Transaction,
+    TxDestination, Vout, Wallet,
 } from 'turtlecoin-utils';
 
 import { CryptoUtils } from './CnUtils';
+import { PRETTY_AMOUNTS } from './Constants';
 import { IDaemon } from './IDaemon';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { SubWallets } from './SubWallets';
@@ -213,6 +215,14 @@ export async function sendTransactionAdvanced(
         return new WalletError(WalletErrorCode.UNKNOWN_ERROR, err.toString());
     }
 
+    if (!verifyAmounts(tx.transaction.vout)) {
+        return new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY);
+    }
+
+    if (!verifyTransactionFee(tx.transaction, fee)) {
+        return new WalletError(WalletErrorCode.UNEXPECTED_FEE);
+    }
+
     let relaySuccess: boolean;
 
     try {
@@ -229,6 +239,33 @@ export async function sendTransactionAdvanced(
 
     /* TODO: Mark inputs spent */
     return tx.hash;
+}
+
+function verifyAmounts(amounts: Vout[]): boolean {
+    for (const vout of amounts) {
+        if (!PRETTY_AMOUNTS.includes(vout.amount)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function verifyTransactionFee(transaction: Transaction, expectedFee: number): boolean {
+    let inputTotal: number = 0;
+    let outputTotal: number = 0;
+
+    for (const input of transaction.vin) {
+        inputTotal += input.amount;
+    }
+
+    for (const output of transaction.vout) {
+        outputTotal += output.amount;
+    }
+
+    const actualFee: number = inputTotal - outputTotal;
+
+    return actualFee === expectedFee;
 }
 
 /**

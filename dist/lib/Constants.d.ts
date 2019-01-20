@@ -51,3 +51,7 @@ export declare const MAXIMUM_SYNC_QUEUE_SIZE: number;
  * Used to determine whether an unlock time is a height, or a timestamp
  */
 export declare const MAX_BLOCK_NUMBER: number;
+/**
+ * Valid output amounts to be mixable
+ */
+export declare const PRETTY_AMOUNTS: number[];

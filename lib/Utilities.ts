@@ -85,11 +85,9 @@ export function splitAmountIntoDenominations(amount: number): number[] {
             splitAmounts.push(denomination);
         }
 
-        amount /= 10;
+        amount = Math.floor(amount / 10);
         multiplier *= 10;
     }
-
-    console.log(splitAmounts);
 
     return splitAmounts;
 }

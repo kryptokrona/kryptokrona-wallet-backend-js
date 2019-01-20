@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const deepEqual = require("deep-equal");
 const _ = require("lodash");
 const CnUtils_1 = require("./CnUtils");
+const Constants_1 = require("./Constants");
 const Logger_1 = require("./Logger");
 const Utilities_1 = require("./Utilities");
 const ValidateParameters_1 = require("./ValidateParameters");
@@ -137,6 +138,12 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             Logger_1.logger.log('Failed to create transaction: ' + err.toString(), Logger_1.LogLevel.ERROR, Logger_1.LogCategory.TRANSACTIONS);
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNKNOWN_ERROR, err.toString());
         }
+        if (!verifyAmounts(tx.transaction.vout)) {
+            return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.AMOUNTS_NOT_PRETTY);
+        }
+        if (!verifyTransactionFee(tx.transaction, fee)) {
+            return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNEXPECTED_FEE);
+        }
         let relaySuccess;
         try {
             relaySuccess = yield daemon.sendTransaction(tx.rawTransaction);
@@ -153,6 +160,26 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
     });
 }
 exports.sendTransactionAdvanced = sendTransactionAdvanced;
+function verifyAmounts(amounts) {
+    for (const vout of amounts) {
+        if (!Constants_1.PRETTY_AMOUNTS.includes(vout.amount)) {
+            return false;
+        }
+    }
+    return true;
+}
+function verifyTransactionFee(transaction, expectedFee) {
+    let inputTotal = 0;
+    let outputTotal = 0;
+    for (const input of transaction.vin) {
+        inputTotal += input.amount;
+    }
+    for (const output of transaction.vout) {
+        outputTotal += output.amount;
+    }
+    const actualFee = inputTotal - outputTotal;
+    return actualFee === expectedFee;
+}
 /**
  * Get sufficient random outputs for the transaction. Returns an error if
  * can't get outputs or can't get enough outputs.
