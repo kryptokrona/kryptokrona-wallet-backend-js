@@ -934,16 +934,16 @@ tunnel-agent@^0.6.0:
     safe-buffer "^5.0.1"
 
 turtlecoin-rpc@^0.12.0:
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/turtlecoin-rpc/-/turtlecoin-rpc-0.12.0.tgz#044af6ee48189879b52c76df95aaef7a7c5c90b5"
-  integrity sha512-26z0E36dHoSB2+bWeuGXPCsJD/qf+UO0dYp7tclF18YO5clIeQJ/2kUCe2xiqczTH+q2NYawULl3CzAThYQGxg==
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/turtlecoin-rpc/-/turtlecoin-rpc-0.12.1.tgz#0533fed1051fe066d4c3b9cb7aa91948907bc9c4"
+  integrity sha512-1ppTfIS4XUoOSw62/pXQmLKFoBImhYasKihuYz072qeSIYU/4hTIOiFT6lMYeYj8yBTP0lJzK9BGwfPGfOkLqg==
   dependencies:
     request "^2.88.0"
     request-promise-native "^1.0.5"
 
 "turtlecoin-utils@https://github.com/turtlecoin/turtlecoin-utils.git":
   version "0.0.2"
-  resolved "https://github.com/turtlecoin/turtlecoin-utils.git#8fd6dd26403e5d3a9348436e11045df15db137d7"
+  resolved "https://github.com/turtlecoin/turtlecoin-utils.git#bad8160c12c3557ca2ac4a9f9b0705782cdc8e8b"
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"
