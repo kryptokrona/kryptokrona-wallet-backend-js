@@ -247,7 +247,7 @@ export class WalletSynchronizer {
             if (found) {
                 transfers.set(
                     publicSpendKey,
-                    input.amount + (transfers.get(publicSpendKey) || 0),
+                    -input.amount + (transfers.get(publicSpendKey) || 0),
                 );
 
                 txData.keyImagesToMarkSpent.push([publicSpendKey, input.keyImage]);
