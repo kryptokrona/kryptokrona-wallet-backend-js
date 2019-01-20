@@ -91,6 +91,9 @@
 
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
     <span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
+    <span class="hljs-comment">/* OR
+    const daemon = new WB.BlockchainCacheApi('blockapi.turtlepay.io, true);
+    */</span>
 
     <span class="hljs-keyword">const</span> wallet = WB.WalletBackend.createWallet(daemon);
 
@@ -108,10 +111,14 @@
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Caught promise rejection: '</span> + err);
 });</code></pre>
 				<h3 id="typescript">Typescript</h3>
-				<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { WalletBackend, ConventionalDaemon } <span class="hljs-keyword">from</span> <span class="hljs-string">'turtlecoin-wallet-backend'</span>;
+				<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { WalletBackend, ConventionalDaemon, BlockchainCacheAPI } <span class="hljs-keyword">from</span> <span class="hljs-string">'turtlecoin-wallet-backend'</span>;
 
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; {
     <span class="hljs-keyword">const</span> daemon: ConventionalDaemon = <span class="hljs-keyword">new</span> ConventionalDaemon(<span class="hljs-params">'127.0.0.1', 11898</span>);
+
+    <span class="hljs-comment">/* OR
+    const daemon: BlockchainCacheApi = new BlockchainCacheApi('blockapi.turtlepay.io, true);
+    */</span>
 
     <span class="hljs-keyword">const</span> wallet: WalletBackend = WalletBackend.createWallet(<span class="hljs-params">daemon</span>);
 
@@ -154,6 +161,9 @@
 				<ul>
 					<li class="globals  ">
 						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_blockchaincacheapi_.html">"<wbr>Blockchain<wbr>Cache<wbr>Api"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/_conventionaldaemon_.html">"<wbr>Conventional<wbr>Daemon"</a>

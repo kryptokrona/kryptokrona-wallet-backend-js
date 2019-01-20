@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>IDaemon | turtlecoin-wallet-backend</title>
+	<title>BlockchainCacheApi | turtlecoin-wallet-backend</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -52,13 +52,13 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_idaemon_.html">&quot;IDaemon&quot;</a>
+					<a href="../modules/_blockchaincacheapi_.html">&quot;BlockchainCacheApi&quot;</a>
 				</li>
 				<li>
-					<a href="_idaemon_.idaemon.html">IDaemon</a>
+					<a href="_blockchaincacheapi_.blockchaincacheapi.html">BlockchainCacheApi</a>
 				</li>
 			</ul>
-			<h1>Interface IDaemon</h1>
+			<h1>Class BlockchainCacheApi</h1>
 		</div>
 	</div>
 </header>
@@ -68,7 +68,7 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Provides an interface to a daemon or similar, such as a blockchain cache</p>
+						<p>Implements the daemon interface, talking to a standard TurtleCoind.</p>
 					</div>
 				</div>
 			</section>
@@ -76,15 +76,14 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">IDaemon</span>
+						<span class="target">BlockchainCacheApi</span>
 					</li>
 				</ul>
 			</section>
 			<section class="tsd-panel">
-				<h3>Implemented by</h3>
+				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../classes/_blockchaincacheapi_.blockchaincacheapi.html" class="tsd-signature-type">BlockchainCacheApi</a></li>
-					<li><a href="../classes/_conventionaldaemon_.conventionaldaemon.html" class="tsd-signature-type">ConventionalDaemon</a></li>
+					<li><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -92,44 +91,88 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getcancelledtransactions" class="tsd-kind-icon">get<wbr>Cancelled<wbr>Transactions</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getglobalindexesforrange" class="tsd-kind-icon">get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getlocaldaemonblockcount" class="tsd-kind-icon">get<wbr>Local<wbr>Daemon<wbr>Block<wbr>Count</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getnetworkblockcount" class="tsd-kind-icon">get<wbr>Network<wbr>Block<wbr>Count</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getrandomoutputsbyamount" class="tsd-kind-icon">get<wbr>Random<wbr>Outputs<wbr>ByAmount</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#getwalletsyncdata" class="tsd-kind-icon">get<wbr>Wallet<wbr>Sync<wbr>Data</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#init" class="tsd-kind-icon">init</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#nodefee" class="tsd-kind-icon">node<wbr>Fee</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#sendtransaction" class="tsd-kind-icon">send<wbr>Transaction</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_idaemon_.idaemon.html#updatedaemoninfo" class="tsd-kind-icon">update<wbr>Daemon<wbr>Info</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#getcancelledtransactions" class="tsd-kind-icon">get<wbr>Cancelled<wbr>Transactions</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#getglobalindexesforrange" class="tsd-kind-icon">get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#getlocaldaemonblockcount" class="tsd-kind-icon">get<wbr>Local<wbr>Daemon<wbr>Block<wbr>Count</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#getnetworkblockcount" class="tsd-kind-icon">get<wbr>Network<wbr>Block<wbr>Count</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#getrandomoutputsbyamount" class="tsd-kind-icon">get<wbr>Random<wbr>Outputs<wbr>ByAmount</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#getwalletsyncdata" class="tsd-kind-icon">get<wbr>Wallet<wbr>Sync<wbr>Data</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#init" class="tsd-kind-icon">init</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#nodefee" class="tsd-kind-icon">node<wbr>Fee</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#sendtransaction" class="tsd-kind-icon">send<wbr>Transaction</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_blockchaincacheapi_.blockchaincacheapi.html#updatedaemoninfo" class="tsd-kind-icon">update<wbr>Daemon<wbr>Info</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="getcancelledtransactions" class="tsd-anchor"></a>
-					<h3>get<wbr>Cancelled<wbr>Transactions</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Cancelled<wbr>Transactions<span class="tsd-signature-symbol">(</span>transactionHashes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Blockchain<wbr>Cache<wbr>Api<span class="tsd-signature-symbol">(</span>cacheBaseURL<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, ssl<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_blockchaincacheapi_.blockchaincacheapi.html" class="tsd-signature-type">BlockchainCacheApi</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L67">IDaemon.ts:67</a></li>
+									<li>Defined in BlockchainCacheApi.ts:60</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Get any transactions which we have sent, but are no longer present in
-									the pool or a block. (They have returned to our wallet)</p>
-								</div>
 							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>cacheBaseURL: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The base URL for our API. Shouldn&#39;t have a trailing &#39;/&#39;</p>
+										</div>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> ssl: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;true</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>Should we use https? Defaults to true.</p>
+											<p>Example usage:</p>
+											<pre><code><span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> BlockchainCacheApi(<span class="hljs-string">'blockapi.turtlepay.io'</span>, <span class="hljs-literal">true</span>);</code></pre>
+										</div>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_blockchaincacheapi_.blockchaincacheapi.html" class="tsd-signature-type">BlockchainCacheApi</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getcancelledtransactions" class="tsd-anchor"></a>
+					<h3>get<wbr>Cancelled<wbr>Transactions</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Cancelled<wbr>Transactions<span class="tsd-signature-symbol">(</span>transactionHashes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getcancelledtransactions">getCancelledTransactions</a></p>
+								<ul>
+									<li>Defined in BlockchainCacheApi.ts:190</li>
+								</ul>
+							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -140,17 +183,18 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getglobalindexesforrange" class="tsd-anchor"></a>
 					<h3>get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range<span class="tsd-signature-symbol">(</span>startHeight<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, endHeight<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getglobalindexesforrange">getGlobalIndexesForRange</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L59">IDaemon.ts:59</a></li>
+									<li>Defined in BlockchainCacheApi.ts:180</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -171,62 +215,64 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getlocaldaemonblockcount" class="tsd-anchor"></a>
 					<h3>get<wbr>Local<wbr>Daemon<wbr>Block<wbr>Count</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Local<wbr>Daemon<wbr>Block<wbr>Count<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getlocaldaemonblockcount">getLocalDaemonBlockCount</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L51">IDaemon.ts:51</a></li>
+									<li>Defined in BlockchainCacheApi.ts:86</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Returns the height that the local daemon has.</p>
+									<p>Get the amount of blocks the daemon we&#39;re connected to has</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getnetworkblockcount" class="tsd-anchor"></a>
 					<h3>get<wbr>Network<wbr>Block<wbr>Count</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Network<wbr>Block<wbr>Count<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getnetworkblockcount">getNetworkBlockCount</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L46">IDaemon.ts:46</a></li>
+									<li>Defined in BlockchainCacheApi.ts:79</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Returns the height that the network has. Possibly 0 if can&#39;t connect
-									to daemon</p>
+									<p>Get the amount of blocks the network has</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getrandomoutputsbyamount" class="tsd-anchor"></a>
 					<h3>get<wbr>Random<wbr>Outputs<wbr>ByAmount</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Random<wbr>Outputs<wbr>ByAmount<span class="tsd-signature-symbol">(</span>amounts<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span>, requestedOuts<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getrandomoutputsbyamount">getRandomOutputsByAmount</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L76">IDaemon.ts:76</a></li>
+									<li>Defined in BlockchainCacheApi.ts:208</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -250,17 +296,18 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getwalletsyncdata" class="tsd-anchor"></a>
 					<h3>get<wbr>Wallet<wbr>Sync<wbr>Data</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Wallet<wbr>Sync<wbr>Data<span class="tsd-signature-symbol">(</span>blockHashCheckpoints<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, startHeight<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, startTimestamp<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Block</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#getwalletsyncdata">getWalletSyncData</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L22">IDaemon.ts:22</a></li>
+									<li>Defined in BlockchainCacheApi.ts:148</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -294,70 +341,66 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="init" class="tsd-anchor"></a>
 					<h3>init</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">init<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#init">init</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L35">IDaemon.ts:35</a></li>
+									<li>Defined in BlockchainCacheApi.ts:93</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Initializes the daemon if necessary, with node fee and internal data</p>
+									<p>Initialize the daemon and the fee info</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="nodefee" class="tsd-anchor"></a>
 					<h3>node<wbr>Fee</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">node<wbr>Fee<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#nodefee">nodeFee</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L30">IDaemon.ts:30</a></li>
+									<li>Defined in BlockchainCacheApi.ts:133</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Gets the node fee address and amount. Will be <code>[&#39;&#39;, 0]</code> if none/invalid</p>
+									<p>Get the node fee and address</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="sendtransaction" class="tsd-anchor"></a>
 					<h3>send<wbr>Transaction</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">send<wbr>Transaction<span class="tsd-signature-symbol">(</span>rawTransaction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#sendtransaction">sendTransaction</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L88">IDaemon.ts:88</a></li>
+									<li>Defined in BlockchainCacheApi.ts:245</li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Sends a raw serialized transaction to the daemon. Returns true/false
-									based on daemon status.</p>
-								</div>
-								<p>Will throw on timeout.</p>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -365,26 +408,26 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>Whether the transaction was accepted</p>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="updatedaemoninfo" class="tsd-anchor"></a>
 					<h3>update<wbr>Daemon<wbr>Info</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">update<wbr>Daemon<wbr>Info<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_idaemon_.idaemon.html">IDaemon</a>.<a href="../interfaces/_idaemon_.idaemon.html#updatedaemoninfo">updateDaemonInfo</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/cf0ccb4/lib/IDaemon.ts#L40">IDaemon.ts:40</a></li>
+									<li>Defined in BlockchainCacheApi.ts:101</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Updates internal daemon info</p>
+									<p>Update the daemon info</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -399,13 +442,13 @@
 					<li class="globals  ">
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
+					<li class="current tsd-kind-external-module">
 						<a href="../modules/_blockchaincacheapi_.html">"<wbr>Blockchain<wbr>Cache<wbr>Api"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="../modules/_conventionaldaemon_.html">"<wbr>Conventional<wbr>Daemon"</a>
 					</li>
-					<li class="current tsd-kind-external-module">
+					<li class=" tsd-kind-external-module">
 						<a href="../modules/_idaemon_.html">"IDaemon"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
@@ -426,38 +469,41 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_idaemon_.idaemon.html" class="tsd-kind-icon">IDaemon</a>
+					<li class="current tsd-kind-class tsd-parent-kind-external-module">
+						<a href="_blockchaincacheapi_.blockchaincacheapi.html" class="tsd-kind-icon">Blockchain<wbr>Cache<wbr>Api</a>
 						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#getcancelledtransactions" class="tsd-kind-icon">get<wbr>Cancelled<wbr>Transactions</a>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#getglobalindexesforrange" class="tsd-kind-icon">get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#getcancelledtransactions" class="tsd-kind-icon">get<wbr>Cancelled<wbr>Transactions</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#getlocaldaemonblockcount" class="tsd-kind-icon">get<wbr>Local<wbr>Daemon<wbr>Block<wbr>Count</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#getglobalindexesforrange" class="tsd-kind-icon">get<wbr>Global<wbr>Indexes<wbr>For<wbr>Range</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#getnetworkblockcount" class="tsd-kind-icon">get<wbr>Network<wbr>Block<wbr>Count</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#getlocaldaemonblockcount" class="tsd-kind-icon">get<wbr>Local<wbr>Daemon<wbr>Block<wbr>Count</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#getrandomoutputsbyamount" class="tsd-kind-icon">get<wbr>Random<wbr>Outputs<wbr>ByAmount</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#getnetworkblockcount" class="tsd-kind-icon">get<wbr>Network<wbr>Block<wbr>Count</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#getwalletsyncdata" class="tsd-kind-icon">get<wbr>Wallet<wbr>Sync<wbr>Data</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#getrandomoutputsbyamount" class="tsd-kind-icon">get<wbr>Random<wbr>Outputs<wbr>ByAmount</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#init" class="tsd-kind-icon">init</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#getwalletsyncdata" class="tsd-kind-icon">get<wbr>Wallet<wbr>Sync<wbr>Data</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#nodefee" class="tsd-kind-icon">node<wbr>Fee</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#init" class="tsd-kind-icon">init</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#sendtransaction" class="tsd-kind-icon">send<wbr>Transaction</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#nodefee" class="tsd-kind-icon">node<wbr>Fee</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_idaemon_.idaemon.html#updatedaemoninfo" class="tsd-kind-icon">update<wbr>Daemon<wbr>Info</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#sendtransaction" class="tsd-kind-icon">send<wbr>Transaction</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_blockchaincacheapi_.blockchaincacheapi.html#updatedaemoninfo" class="tsd-kind-icon">update<wbr>Daemon<wbr>Info</a>
 							</li>
 						</ul>
 					</li>

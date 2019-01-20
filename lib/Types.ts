@@ -404,6 +404,7 @@ export class KeyOutput {
 
         return Object.assign(keyOutput, {
             amount: json.amount,
+            globalIndex: json.globalIndex,
             key: json.key,
         });
     }

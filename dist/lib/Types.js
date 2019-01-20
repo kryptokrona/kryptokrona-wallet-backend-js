@@ -184,6 +184,7 @@ class KeyOutput {
         const keyOutput = Object.create(KeyOutput.prototype);
         return Object.assign(keyOutput, {
             amount: json.amount,
+            globalIndex: json.globalIndex,
             key: json.key,
         });
     }
