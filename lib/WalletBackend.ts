@@ -252,6 +252,10 @@ export class WalletBackend extends EventEmitter {
             return new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN);
         }
 
+        if (!Number.isInteger(scanHeight)) {
+            return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
+        }
+
         /* Can't sync from the current scan height, not newly created */
         const newWallet: boolean = false;
 
@@ -310,6 +314,10 @@ export class WalletBackend extends EventEmitter {
             return new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN);
         }
 
+        if (!Number.isInteger(scanHeight)) {
+            return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
+        }
+
         /* Can't sync from the current scan height, not newly created */
         const newWallet: boolean = false;
 
@@ -356,6 +364,10 @@ export class WalletBackend extends EventEmitter {
 
         if (scanHeight < 0) {
             return new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN);
+        }
+
+        if (!Number.isInteger(scanHeight)) {
+            return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
         }
 
         /* Can't sync from the current scan height, not newly created */
