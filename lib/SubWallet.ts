@@ -39,40 +39,60 @@ export class SubWallet {
         });
     }
 
-    /* A vector of the stored transaction input data, to be used for
-       sending transactions later */
+    /**
+     * A vector of the stored transaction input data, to be used for
+     * sending transactions later
+     */
     private unspentInputs: TransactionInput[] = [];
 
-    /* Inputs which have been used in a transaction, and are waiting to
-       either be put into a block, or return to our wallet */
+    /**
+     * Inputs which have been used in a transaction, and are waiting to
+     * either be put into a block, or return to our wallet
+     */
     private lockedInputs: TransactionInput[] = [];
 
-    /* Inputs which have been spent in a transaction */
+    /**
+     * Inputs which have been spent in a transaction
+     */
     private spentInputs: TransactionInput[] = [];
 
-    /* Inputs which have come in from a transaction we sent - either from
-       change or from sending to ourself - we use this to display unlocked
-       balance correctly */
+    /**
+     * Inputs which have come in from a transaction we sent - either from
+     * change or from sending to ourself - we use this to display unlocked
+     * balance correctly
+     */
     private unconfirmedIncomingAmounts: UnconfirmedInput[] = [];
 
-    /* This subwallet's public spend key */
+    /**
+     * This subwallet's public spend key
+     */
     private readonly publicSpendKey: string;
 
-    /* The subwallet's private spend key (undefined if view wallet) */
+    /**
+     * The subwallet's private spend key (undefined if view wallet)
+     */
     private readonly privateSpendKey?: string;
 
-    /* The timestamp to begin syncing the wallet at
-       (usually creation time or zero) */
+    /**
+     * The timestamp to begin syncing the wallet at
+     * (usually creation time or zero)
+     */
     private syncStartTimestamp: number = 0;
 
-    /* The height to begin syncing the wallet at */
+    /**
+     * The height to begin syncing the wallet at
+     */
     private syncStartHeight: number = 0;
 
-    /* This subwallet's public address */
+    /**
+     * This subwallet's public address
+     */
     private readonly address: string;
 
-    /* The wallet has one 'main' address which we will use by default
-       when treating it as a single user wallet */
+    /**
+     * The wallet has one 'main' address which we will use by default
+     * when treating it as a single user wallet
+     */
     private readonly primaryAddress: boolean;
 
     constructor(
@@ -115,18 +135,30 @@ export class SubWallet {
         };
     }
 
+    /**
+     * Get the private spend key, or null key if view wallet
+     */
     public getPrivateSpendKey(): string {
         return this.privateSpendKey || '0'.repeat(64);
     }
 
+    /**
+     * Whether this address is the primary wallet address
+     */
     public isPrimaryAddress(): boolean {
         return this.primaryAddress;
     }
 
+    /**
+     * Get this wallets address
+     */
     public getAddress(): string {
         return this.address;
     }
 
+    /**
+     * Store an unspent input
+     */
     public storeTransactionInput(input: TransactionInput, isViewWallet: boolean): void {
         if (!isViewWallet) {
             /* Find the input in the unconfirmed incoming amounts - inputs we
@@ -140,6 +172,9 @@ export class SubWallet {
         this.unspentInputs.push(input);
     }
 
+    /**
+     * Move input from unspent/locked to spend container
+     */
     public markInputAsSpent(keyImage: string, spendHeight: number): void {
         /* Remove from unspent if exists */
         let [removedInput] = _.remove(this.unspentInputs, (input) => {
@@ -162,6 +197,27 @@ export class SubWallet {
         this.spentInputs.push(removedInput);
     }
 
+    /**
+     * Move an input from the unspent container to the locked container
+     */
+    public markInputAsLocked(keyImage: string): void {
+        /* Remove input from unspent */
+        const [removedInput] = _.remove(this.unspentInputs, (input) => {
+            return input.keyImage === keyImage;
+        });
+
+        if (!removedInput) {
+            throw new Error('Could not find key image to lock!');
+        }
+
+        /* Add to locked */
+        this.lockedInputs.push(removedInput);
+    }
+
+    /**
+     * Remove inputs belonging to a cancelled transaction and mark them as
+     * unspent
+     */
     public removeCancelledTransaction(transactionHash: string): void {
         /* Find inputs used in the cancelled transaction, and remove them from
            the locked inputs */
@@ -185,6 +241,9 @@ export class SubWallet {
         });
     }
 
+    /**
+     * Remove transactions and inputs that occured after a fork height
+     */
     public removeForkedTransactions(forkHeight: number): void {
         this.lockedInputs = [];
         this.unconfirmedIncomingAmounts = [];
@@ -210,6 +269,9 @@ export class SubWallet {
         );
     }
 
+    /**
+     * Convert a timestamp to a height
+     */
     public convertSyncTimestampToHeight(startTimestamp: number, startHeight: number): void {
         /* If we don't have a start timestamp then we don't need to convert */
         if (this.syncStartTimestamp !== 0) {
@@ -218,6 +280,9 @@ export class SubWallet {
         }
     }
 
+    /**
+     * Whether the container includes this key image
+     */
     public hasKeyImage(keyImage: string): boolean {
         if (this.unspentInputs.some((input) => input.keyImage === keyImage)) {
             return true;
@@ -230,6 +295,9 @@ export class SubWallet {
         return false;
     }
 
+    /**
+     * Generate the key image for this input
+     */
     public getTxInputKeyImage(
         derivation: string,
         outputIndex: number): string {
@@ -241,6 +309,9 @@ export class SubWallet {
         return keyImage;
     }
 
+    /**
+     * Get the unlocked/locked balance at a given height
+     */
     public getBalance(currentHeight: number): [number, number] {
         let unlockedBalance: number = 0;
         let lockedBalance: number = 0;
@@ -258,6 +329,9 @@ export class SubWallet {
         return [unlockedBalance, lockedBalance];
     }
 
+    /**
+     * Get inputs that are available to be spent, and their keys
+     */
     public getSpendableInputs(currentHeight: number): TxInputAndOwner[] {
         const inputs: TxInputAndOwner[] = [];
 
@@ -272,5 +346,9 @@ export class SubWallet {
         }
 
         return inputs;
+    }
+
+    public storeUnconfirmedIncomingInput(input: UnconfirmedInput): void {
+        this.unconfirmedIncomingAmounts.push(input);
     }
 }

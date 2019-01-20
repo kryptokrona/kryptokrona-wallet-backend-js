@@ -1,6 +1,6 @@
 import { SubWalletsJSON } from './JsonSerialization';
 import { SubWallet } from './SubWallet';
-import { Transaction, TransactionInput, TxInputAndOwner } from './Types';
+import { Transaction, TransactionInput, TxInputAndOwner, UnconfirmedInput } from './Types';
 import { WalletError } from './WalletError';
 /**
  * Stores each subwallet, along with transactions and public spend keys
@@ -79,6 +79,10 @@ export declare class SubWallets {
      */
     addTransaction(transaction: Transaction): void;
     /**
+     * Adds a transaction we sent to the locked transactions container
+     */
+    addUnconfirmedTransaction(transaction: Transaction): void;
+    /**
      * @param publicSpendKey    The public spend key of the subwallet to add this
      *                          input to
      *
@@ -94,6 +98,7 @@ export declare class SubWallets {
      * for spending. Input is identified by keyImage (unique)
      */
     markInputAsSpent(publicSpendKey: string, keyImage: string, spendHeight: number): void;
+    markInputAsLocked(publicSpendKey: string, keyImage: string): void;
     /**
      * Remove a transaction that we sent by didn't get included in a block and
      * returned to us. Removes the correspoding inputs, too.
@@ -146,4 +151,13 @@ export declare class SubWallets {
      * @returns Returns the inputs and their owners, and the sum of their money
      */
     getTransactionInputsForAmount(amount: number, subWalletsToTakeFrom: string[], currentHeight: number): [TxInputAndOwner[], number];
+    /**
+     * Store the private key for a given transaction
+     */
+    storeTxPrivateKey(txPrivateKey: string, txHash: string): void;
+    /**
+     * Store an unconfirmed incoming amount, so we can correctly display locked
+     * balances
+     */
+    storeUnconfirmedIncomingInput(input: UnconfirmedInput, publicSpendKey: string): void;
 }

@@ -16,10 +16,10 @@ import { PRETTY_AMOUNTS } from './Constants';
 import { IDaemon } from './IDaemon';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { SubWallets } from './SubWallets';
-import { TxInputAndOwner } from './Types';
+import { Transaction as TX, TxInputAndOwner, UnconfirmedInput } from './Types';
 
 import {
-    getMaxTxSize, prettyPrintAmount, prettyPrintBytes,
+    addressToKeys, getMaxTxSize, prettyPrintAmount, prettyPrintBytes,
     splitAmountIntoDenominations,
 } from './Utilities';
 
@@ -160,11 +160,13 @@ export async function sendTransactionAdvanced(
         totalAmount, subWalletsToTakeFrom, daemon.getNetworkBlockCount(),
     );
 
+    const changeRequired: number = foundMoney - totalAmount;
+
     /* Need to send change back to ourselves */
-    if (foundMoney > totalAmount) {
+    if (changeRequired > 0) {
         const decoded: DecodedAddress = CryptoUtils.decodeAddress(changeAddress);
 
-        for (const denomination of splitAmountIntoDenominations(foundMoney - totalAmount)) {
+        for (const denomination of splitAmountIntoDenominations(changeRequired)) {
             transfers.push({
                 amount: denomination,
                 keys: decoded,
@@ -252,8 +254,102 @@ export async function sendTransactionAdvanced(
         return new WalletError(WalletErrorCode.DAEMON_ERROR);
     }
 
-    /* TODO: Mark inputs spent */
+    /* Store the unconfirmed transaction, update our balance */
+    storeSentTransaction(
+        tx.hash, fee, paymentID, inputs, changeAddress, changeRequired,
+        subWallets,
+    );
+
+    /* Update our locked balanced with the incoming funds */
+    storeUnconfirmedIncomingInputs(
+        subWallets, tx.transaction.vout, tx.transaction.transactionKeys.publicKey, tx.hash,
+    );
+
+    subWallets.storeTxPrivateKey(tx.transaction.transactionKeys.privateKey, tx.hash);
+
+    /* Lock the input for spending till confirmed/cancelled */
+    for (const input of inputs) {
+        subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage);
+    }
+
     return tx.hash;
+}
+
+function storeSentTransaction(
+    hash: string,
+    fee: number,
+    paymentID: string,
+    ourInputs: TxInputAndOwner[],
+    changeAddress: string,
+    changeRequired: number,
+    subWallets: SubWallets): void {
+
+    const transfers: Map<string, number> = new Map();
+
+    for (const input of ourInputs) {
+        /* Amounts we have spent, subtract them from the transfers map */
+        transfers.set(
+            input.publicSpendKey,
+            -input.input.amount + (transfers.get(input.publicSpendKey) || 0),
+        );
+    }
+
+    if (changeRequired !== 0) {
+        const [publicViewKey, publicSpendKey] = addressToKeys(changeAddress);
+
+        transfers.set(
+            publicSpendKey,
+            changeRequired + (transfers.get(publicSpendKey) || 0),
+        );
+    }
+
+    const timestamp: number = 0;
+    const blockHeight: number = 0;
+    const unlockTime: number = 0;
+    const isCoinbaseTransaction: boolean = false;
+
+    const tx: TX = new TX(
+        transfers, hash, fee, timestamp, blockHeight, paymentID,
+        unlockTime, isCoinbaseTransaction,
+    );
+
+    subWallets.addUnconfirmedTransaction(tx);
+}
+
+function storeUnconfirmedIncomingInputs(
+    subWallets: SubWallets,
+    keyOutputs: Vout[],
+    txPublicKey: string,
+    txHash: string): void {
+
+    const derivation: string = CryptoUtils.generateKeyDerivation(
+        txPublicKey, subWallets.getPrivateViewKey(),
+    );
+
+    const spendKeys: string[] = subWallets.getPublicSpendKeys();
+
+    let outputIndex: number = 0;
+
+    for (const output of keyOutputs) {
+        /* Derive the spend key from the transaction, using the previous
+           derivation */
+        const derivedSpendKey = CryptoUtils.underivePublicKey(
+            derivation, outputIndex, output.target.data,
+        );
+
+        /* See if the derived spend key matches any of our spend keys */
+        if (!_.includes(spendKeys, derivedSpendKey)) {
+            continue;
+        }
+
+        const input: UnconfirmedInput = new UnconfirmedInput(
+            output.amount, output.target.data, txHash,
+        );
+
+        subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
+
+        outputIndex++;
+    }
 }
 
 /**

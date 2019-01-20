@@ -166,7 +166,7 @@ class WalletSynchronizer {
             sumOfInputs += input.amount;
             const [found, publicSpendKey] = this.subWallets.getKeyImageOwner(input.keyImage);
             if (found) {
-                transfers.set(publicSpendKey, input.amount + (transfers.get(publicSpendKey) || 0));
+                transfers.set(publicSpendKey, -input.amount + (transfers.get(publicSpendKey) || 0));
                 txData.keyImagesToMarkSpent.push([publicSpendKey, input.keyImage]);
             }
         }

@@ -16,6 +16,7 @@ const _ = require("lodash");
 const CnUtils_1 = require("./CnUtils");
 const Constants_1 = require("./Constants");
 const Logger_1 = require("./Logger");
+const Types_1 = require("./Types");
 const Utilities_1 = require("./Utilities");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletError_1 = require("./WalletError");
@@ -103,10 +104,11 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             };
         });
         const [inputs, foundMoney] = subWallets.getTransactionInputsForAmount(totalAmount, subWalletsToTakeFrom, daemon.getNetworkBlockCount());
+        const changeRequired = foundMoney - totalAmount;
         /* Need to send change back to ourselves */
-        if (foundMoney > totalAmount) {
+        if (changeRequired > 0) {
             const decoded = CnUtils_1.CryptoUtils.decodeAddress(changeAddress);
-            for (const denomination of Utilities_1.splitAmountIntoDenominations(foundMoney - totalAmount)) {
+            for (const denomination of Utilities_1.splitAmountIntoDenominations(changeRequired)) {
                 transfers.push({
                     amount: denomination,
                     keys: decoded,
@@ -162,11 +164,53 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         if (!relaySuccess) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_ERROR);
         }
-        /* TODO: Mark inputs spent */
+        /* Store the unconfirmed transaction, update our balance */
+        storeSentTransaction(tx.hash, fee, paymentID, inputs, changeAddress, changeRequired, subWallets);
+        /* Update our locked balanced with the incoming funds */
+        storeUnconfirmedIncomingInputs(subWallets, tx.transaction.vout, tx.transaction.transactionKeys.publicKey, tx.hash);
+        subWallets.storeTxPrivateKey(tx.transaction.transactionKeys.privateKey, tx.hash);
+        /* Lock the input for spending till confirmed/cancelled */
+        for (const input of inputs) {
+            subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage);
+        }
         return tx.hash;
     });
 }
 exports.sendTransactionAdvanced = sendTransactionAdvanced;
+function storeSentTransaction(hash, fee, paymentID, ourInputs, changeAddress, changeRequired, subWallets) {
+    const transfers = new Map();
+    for (const input of ourInputs) {
+        /* Amounts we have spent, subtract them from the transfers map */
+        transfers.set(input.publicSpendKey, -input.input.amount + (transfers.get(input.publicSpendKey) || 0));
+    }
+    if (changeRequired !== 0) {
+        const [publicViewKey, publicSpendKey] = Utilities_1.addressToKeys(changeAddress);
+        transfers.set(publicSpendKey, changeRequired + (transfers.get(publicSpendKey) || 0));
+    }
+    const timestamp = 0;
+    const blockHeight = 0;
+    const unlockTime = 0;
+    const isCoinbaseTransaction = false;
+    const tx = new Types_1.Transaction(transfers, hash, fee, timestamp, blockHeight, paymentID, unlockTime, isCoinbaseTransaction);
+    subWallets.addUnconfirmedTransaction(tx);
+}
+function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txHash) {
+    const derivation = CnUtils_1.CryptoUtils.generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey());
+    const spendKeys = subWallets.getPublicSpendKeys();
+    let outputIndex = 0;
+    for (const output of keyOutputs) {
+        /* Derive the spend key from the transaction, using the previous
+           derivation */
+        const derivedSpendKey = CnUtils_1.CryptoUtils.underivePublicKey(derivation, outputIndex, output.target.data);
+        /* See if the derived spend key matches any of our spend keys */
+        if (!_.includes(spendKeys, derivedSpendKey)) {
+            continue;
+        }
+        const input = new Types_1.UnconfirmedInput(output.amount, output.target.data, txHash);
+        subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
+        outputIndex++;
+    }
+}
 /**
  * Verify the transaction is small enough to fit in a block
  */

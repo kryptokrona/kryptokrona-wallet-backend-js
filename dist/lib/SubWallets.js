@@ -136,9 +136,18 @@ class SubWallets {
             return tx.hash === transaction.hash;
         });
         if (this.transactions.some((tx) => tx.hash === transaction.hash)) {
-            throw new Error('Transaction ' + transaction.hash + ' was added to the wallet twice!');
+            throw new Error(`Transaction ${transaction.hash} was added to the wallet twice!`);
         }
         this.transactions.push(transaction);
+    }
+    /**
+     * Adds a transaction we sent to the locked transactions container
+     */
+    addUnconfirmedTransaction(transaction) {
+        if (this.lockedTransactions.some((tx) => tx.hash === transaction.hash)) {
+            throw new Error(`Transaction ${transaction.hash} was added to the wallet twice!`);
+        }
+        this.lockedTransactions.push(transaction);
     }
     /**
      * @param publicSpendKey    The public spend key of the subwallet to add this
@@ -167,6 +176,13 @@ class SubWallets {
             throw new Error('Subwallet not found!');
         }
         subWallet.markInputAsSpent(keyImage, spendHeight);
+    }
+    markInputAsLocked(publicSpendKey, keyImage) {
+        const subWallet = this.subWallets.get(publicSpendKey);
+        if (!subWallet) {
+            throw new Error('Subwallet not found!');
+        }
+        subWallet.markInputAsLocked(keyImage);
     }
     /**
      * Remove a transaction that we sent by didn't get included in a block and
@@ -313,6 +329,23 @@ class SubWallets {
             }
         }
         throw new Error(`Failed to find enough money! Needed: ${amount}, found: ${foundMoney}`);
+    }
+    /**
+     * Store the private key for a given transaction
+     */
+    storeTxPrivateKey(txPrivateKey, txHash) {
+        this.transactionPrivateKeys.set(txHash, txPrivateKey);
+    }
+    /**
+     * Store an unconfirmed incoming amount, so we can correctly display locked
+     * balances
+     */
+    storeUnconfirmedIncomingInput(input, publicSpendKey) {
+        const subWallet = this.subWallets.get(publicSpendKey);
+        if (!subWallet) {
+            throw new Error('Subwallet not found!');
+        }
+        subWallet.storeUnconfirmedIncomingInput(input);
     }
 }
 exports.SubWallets = SubWallets;

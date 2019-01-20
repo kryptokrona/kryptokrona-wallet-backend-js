@@ -5,7 +5,11 @@
 import { CryptoUtils } from './CnUtils';
 import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';
 import { SubWallet } from './SubWallet';
-import { Transaction, TransactionInput, TxInputAndOwner } from './Types';
+
+import {
+    Transaction, TransactionInput, TxInputAndOwner, UnconfirmedInput,
+} from './Types';
+
 import { addressToKeys, getCurrentTimestampAdjusted } from './Utilities';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
@@ -199,10 +203,21 @@ export class SubWallets {
         });
 
         if (this.transactions.some((tx) => tx.hash === transaction.hash)) {
-            throw new Error('Transaction ' + transaction.hash + ' was added to the wallet twice!');
+            throw new Error(`Transaction ${transaction.hash} was added to the wallet twice!`);
         }
 
         this.transactions.push(transaction);
+    }
+
+    /**
+     * Adds a transaction we sent to the locked transactions container
+     */
+    public addUnconfirmedTransaction(transaction: Transaction): void {
+        if (this.lockedTransactions.some((tx) => tx.hash === transaction.hash)) {
+            throw new Error(`Transaction ${transaction.hash} was added to the wallet twice!`);
+        }
+
+        this.lockedTransactions.push(transaction);
     }
 
     /**
@@ -237,6 +252,16 @@ export class SubWallets {
         }
 
         subWallet.markInputAsSpent(keyImage, spendHeight);
+    }
+
+    public markInputAsLocked(publicSpendKey: string, keyImage: string): void {
+        const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
+
+        if (!subWallet) {
+            throw new Error('Subwallet not found!');
+        }
+
+        subWallet.markInputAsLocked(keyImage);
     }
 
     /**
@@ -429,5 +454,29 @@ export class SubWallets {
         }
 
         throw new Error(`Failed to find enough money! Needed: ${amount}, found: ${foundMoney}`);
+    }
+
+    /**
+     * Store the private key for a given transaction
+     */
+    public storeTxPrivateKey(txPrivateKey: string, txHash: string): void {
+        this.transactionPrivateKeys.set(txHash, txPrivateKey);
+    }
+
+    /**
+     * Store an unconfirmed incoming amount, so we can correctly display locked
+     * balances
+     */
+    public storeUnconfirmedIncomingInput(
+        input: UnconfirmedInput,
+        publicSpendKey: string) {
+
+        const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
+
+        if (!subWallet) {
+            throw new Error('Subwallet not found!');
+        }
+
+        subWallet.storeUnconfirmedIncomingInput(input);
     }
 }
