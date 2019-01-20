@@ -17,7 +17,11 @@ import { IDaemon } from './IDaemon';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { SubWallets } from './SubWallets';
 import { TxInputAndOwner } from './Types';
-import { prettyPrintAmount, splitAmountIntoDenominations } from './Utilities';
+
+import {
+    getMaxTxSize, prettyPrintAmount, prettyPrintBytes,
+    splitAmountIntoDenominations,
+} from './Utilities';
 
 import {
     validateAddresses, validateAmount, validateDestinations,
@@ -215,6 +219,17 @@ export async function sendTransactionAdvanced(
         return new WalletError(WalletErrorCode.UNKNOWN_ERROR, err.toString());
     }
 
+    /* Check the transaction isn't too large to fit in a block */
+    const tooBigErr: WalletError = isTransactionPayloadTooBig(
+        tx.rawTransaction, daemon.getNetworkBlockCount(),
+    );
+
+    if (!deepEqual(tooBigErr, SUCCESS)) {
+        return tooBigErr;
+    }
+
+    /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
+       they will not be mixable */
     if (!verifyAmounts(tx.transaction.vout)) {
         return new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY);
     }
@@ -241,6 +256,34 @@ export async function sendTransactionAdvanced(
     return tx.hash;
 }
 
+/**
+ * Verify the transaction is small enough to fit in a block
+ */
+function isTransactionPayloadTooBig(
+    rawTransaction: string,
+    currentHeight: number): WalletError {
+
+    /* Divided by two because it's represented as hex */
+    const txSize: number = rawTransaction.length / 2;
+
+    const maxTxSize: number = getMaxTxSize(currentHeight);
+
+    if (txSize > maxTxSize) {
+        return new WalletError(
+            WalletErrorCode.TOO_MANY_INPUTS_TO_FIT_IN_BLOCK,
+            `Transaction is too large: (${prettyPrintBytes(txSize)}). Max ` +
+            `allowed size is ${prettyPrintBytes(maxTxSize)}. Decrease the ` +
+            `amount you are sending, or perform some fusion transactions.`,
+        );
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * Verify all the output amounts are members of PRETTY_AMOUNTS, otherwise they
+ * will not be mixable
+ */
 function verifyAmounts(amounts: Vout[]): boolean {
     for (const vout of amounts) {
         if (!PRETTY_AMOUNTS.includes(vout.amount)) {
@@ -251,6 +294,9 @@ function verifyAmounts(amounts: Vout[]): boolean {
     return true;
 }
 
+/**
+ * Verify the transaction fee is the same as the requested transaction fee
+ */
 function verifyTransactionFee(transaction: Transaction, expectedFee: number): boolean {
     let inputTotal: number = 0;
     let outputTotal: number = 0;

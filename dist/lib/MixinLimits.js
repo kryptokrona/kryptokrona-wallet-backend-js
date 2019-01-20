@@ -24,7 +24,7 @@ class MixinLimits {
      */
     getDefaultMixinByHeight(height) {
         /* No limits defined, or height is before first limit */
-        if (this.limits.length === 0 || _.last(this.limits).height < height) {
+        if (this.limits.length === 0 || _.last(this.limits).height > height) {
             return this.defaultMixin;
         }
         for (const limit of this.limits) {

@@ -55,3 +55,19 @@ export declare const MAX_BLOCK_NUMBER: number;
  * Valid output amounts to be mixable
  */
 export declare const PRETTY_AMOUNTS: number[];
+/**
+ * Part of the how fast blocks can grow formula
+ */
+export declare const MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR: number;
+/**
+ * Part of the how fast blocks can grow
+ */
+export declare const MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR: number;
+/**
+ * Initial block size
+ */
+export declare const MAX_BLOCK_SIZE_INITIAL: number;
+/**
+ * Reserved space for miner transaction in block
+ */
+export declare const CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE: number;

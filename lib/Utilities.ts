@@ -4,7 +4,12 @@
 
 import { CryptoUtils } from './CnUtils';
 import config from './Config';
-import { MAX_BLOCK_NUMBER } from './Constants';
+
+import {
+    CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE, MAX_BLOCK_NUMBER,
+    MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR,
+    MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR, MAX_BLOCK_SIZE_INITIAL,
+} from './Constants';
 
 export function isHex64(key: string) {
     const regex = new RegExp('^[0-9a-fA-F]{64}$');
@@ -90,4 +95,58 @@ export function splitAmountIntoDenominations(amount: number): number[] {
     }
 
     return splitAmounts;
+}
+
+/* The formula for the block size is as follows. Calculate the
+   maxBlockCumulativeSize. This is equal to:
+   100,000 + ((height * 102,400) / 1,051,200)
+   At a block height of 400k, this gives us a size of 138,964.
+   The constants this calculation arise from can be seen below, or in
+   src/CryptoNoteCore/Currency.cpp::maxBlockCumulativeSize(). Call this value
+   x.
+
+   Next, calculate the median size of the last 100 blocks. Take the max of
+   this value, and 100,000. Multiply this value by 1.25. Call this value y.
+
+   Finally, return the minimum of x and y.
+
+   Or, in short: min(140k (slowly rising), 1.25 * max(100k, median(last 100 blocks size)))
+   Block size will always be 125k or greater (Assuming non testnet)
+
+   To get the max transaction size, remove 600 from this value, for the
+   reserved miner transaction.
+
+   We are going to ignore the median(last 100 blocks size), as it is possible
+   for a transaction to be valid for inclusion in a block when it is submitted,
+   but not when it actually comes to be mined, for example if the median
+   block size suddenly decreases. This gives a bit of a lower cap of max
+   tx sizes, but prevents anything getting stuck in the pool.
+
+*/
+export function getMaxTxSize(currentHeight: number): number {
+    const numerator: number = currentHeight * MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR;
+    const denominator: number = MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR;
+    const growth: number = numerator / denominator;
+    const x: number = MAX_BLOCK_SIZE_INITIAL + growth;
+    const y: number = 125000;
+
+    /* Need space for the miner transaction */
+    return Math.min(x, y) - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
+}
+
+/**
+ * Converts an amount in bytes, say, 10000, into 9.76 KB
+ */
+export function prettyPrintBytes(bytes: number): string {
+    const suffixes: string[] = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+    let selectedSuffix: number = 0;
+
+    while (bytes >= 1024 && selectedSuffix < suffixes.length - 1) {
+        selectedSuffix++;
+
+        bytes = Math.floor(bytes / 1024);
+    }
+
+    return bytes.toFixed(2) + ' ' + suffixes[selectedSuffix];
 }

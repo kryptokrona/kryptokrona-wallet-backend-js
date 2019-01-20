@@ -138,6 +138,13 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             Logger_1.logger.log('Failed to create transaction: ' + err.toString(), Logger_1.LogLevel.ERROR, Logger_1.LogCategory.TRANSACTIONS);
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNKNOWN_ERROR, err.toString());
         }
+        /* Check the transaction isn't too large to fit in a block */
+        const tooBigErr = isTransactionPayloadTooBig(tx.rawTransaction, daemon.getNetworkBlockCount());
+        if (!deepEqual(tooBigErr, WalletError_1.SUCCESS)) {
+            return tooBigErr;
+        }
+        /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
+           they will not be mixable */
         if (!verifyAmounts(tx.transaction.vout)) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.AMOUNTS_NOT_PRETTY);
         }
@@ -160,6 +167,24 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
     });
 }
 exports.sendTransactionAdvanced = sendTransactionAdvanced;
+/**
+ * Verify the transaction is small enough to fit in a block
+ */
+function isTransactionPayloadTooBig(rawTransaction, currentHeight) {
+    /* Divided by two because it's represented as hex */
+    const txSize = rawTransaction.length / 2;
+    const maxTxSize = Utilities_1.getMaxTxSize(currentHeight);
+    if (txSize > maxTxSize) {
+        return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.TOO_MANY_INPUTS_TO_FIT_IN_BLOCK, `Transaction is too large: (${Utilities_1.prettyPrintBytes(txSize)}). Max ` +
+            `allowed size is ${Utilities_1.prettyPrintBytes(maxTxSize)}. Decrease the ` +
+            `amount you are sending, or perform some fusion transactions.`);
+    }
+    return WalletError_1.SUCCESS;
+}
+/**
+ * Verify all the output amounts are members of PRETTY_AMOUNTS, otherwise they
+ * will not be mixable
+ */
 function verifyAmounts(amounts) {
     for (const vout of amounts) {
         if (!Constants_1.PRETTY_AMOUNTS.includes(vout.amount)) {
@@ -168,6 +193,9 @@ function verifyAmounts(amounts) {
     }
     return true;
 }
+/**
+ * Verify the transaction fee is the same as the requested transaction fee
+ */
 function verifyTransactionFee(transaction, expectedFee) {
     let inputTotal = 0;
     let outputTotal = 0;
