@@ -103,11 +103,6 @@ class BlockchainCacheApi {
             }
             this.localDaemonBlockCount = info.height;
             this.networkBlockCount = info.network_height;
-            /* Height returned is one more than the current height - but we
-               don't want to overflow is the height returned is zero */
-            if (this.networkBlockCount !== 0) {
-                this.networkBlockCount--;
-            }
             this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
             this.lastKnownHashrate = info.difficulty / Config_1.default.blockTargetTime;
         });
