@@ -248,6 +248,10 @@ export declare class WalletBackend extends EventEmitter {
      */
     private blocksToProcess;
     /**
+     * Have we started the mainloop
+     */
+    private started;
+    /**
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
      *

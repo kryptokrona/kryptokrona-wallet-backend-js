@@ -455,6 +455,11 @@ export class WalletBackend extends EventEmitter {
     private blocksToProcess: Block[] = [];
 
     /**
+     * Have we started the mainloop
+     */
+    private started: boolean = false;
+
+    /**
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
      *
@@ -571,8 +576,11 @@ export class WalletBackend extends EventEmitter {
      * not process blocks until you call this method.
      */
     public async start(): Promise<void> {
-        await this.daemon.init();
-        this.mainLoopExecutor.start();
+        if (!this.started) {
+            await this.daemon.init();
+            this.mainLoopExecutor.start();
+            this.started = true;
+        }
     }
 
     /**

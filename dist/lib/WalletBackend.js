@@ -61,6 +61,10 @@ class WalletBackend extends events_1.EventEmitter {
          * Blocks previously downloaded that we need to process
          */
         this.blocksToProcess = [];
+        /**
+         * Have we started the mainloop
+         */
+        this.started = false;
         this.subWallets = new SubWallets_1.SubWallets(address, scanHeight, newWallet, privateViewKey, privateSpendKey);
         let timestamp = 0;
         if (newWallet) {
@@ -348,8 +352,11 @@ class WalletBackend extends events_1.EventEmitter {
      */
     start() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.daemon.init();
-            this.mainLoopExecutor.start();
+            if (!this.started) {
+                yield this.daemon.init();
+                this.mainLoopExecutor.start();
+                this.started = true;
+            }
         });
     }
     /**
