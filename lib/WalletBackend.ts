@@ -797,6 +797,21 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Get the unlocked and locked balance for the wallet container.
+     *
+     * @param subWalletsToTakeFrom The addresses to check the balance of. If
+     *                             not given, defaults to all addresses.
+     *
+     * @return Returns [unlockedBalance, lockedBalance]
+     */
+    public getBalance(subWalletsToTakeFrom?: string[]): [number, number] {
+        return this.subWallets.getBalance(
+            this.daemon.getNetworkBlockCount(),
+            subWalletsToTakeFrom,
+        );
+    }
+
+    /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
      * for later processing. Checks if we are synced and fires the sync/desync
      * event.

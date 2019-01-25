@@ -524,6 +524,17 @@ class WalletBackend extends events_1.EventEmitter {
         return Transfer_1.sendTransactionAdvanced(this.daemon, this.subWallets, destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress);
     }
     /**
+     * Get the unlocked and locked balance for the wallet container.
+     *
+     * @param subWalletsToTakeFrom The addresses to check the balance of. If
+     *                             not given, defaults to all addresses.
+     *
+     * @return Returns [unlockedBalance, lockedBalance]
+     */
+    getBalance(subWalletsToTakeFrom) {
+        return this.subWallets.getBalance(this.daemon.getNetworkBlockCount(), subWalletsToTakeFrom);
+    }
+    /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
      * for later processing. Checks if we are synced and fires the sync/desync
      * event.

@@ -404,6 +404,15 @@ export declare class WalletBackend extends EventEmitter {
      */
     sendTransactionAdvanced(destinations: Array<[string, number]>, mixin?: number, fee?: number, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string): Promise<WalletError | string>;
     /**
+     * Get the unlocked and locked balance for the wallet container.
+     *
+     * @param subWalletsToTakeFrom The addresses to check the balance of. If
+     *                             not given, defaults to all addresses.
+     *
+     * @return Returns [unlockedBalance, lockedBalance]
+     */
+    getBalance(subWalletsToTakeFrom?: string[]): [number, number];
+    /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
      * for later processing. Checks if we are synced and fires the sync/desync
      * event.
