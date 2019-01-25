@@ -14,7 +14,6 @@ module.exports = {
     './lib/SubWallet.ts',
     './lib/SynchronizationStatus.ts',
     './lib/Types.ts',
-    './lib/Utilities.ts',
     './lib/WalletSynchronizer.ts',
     './lib/index.ts',
     './lib/MixinLimits.ts',
