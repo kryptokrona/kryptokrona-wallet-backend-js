@@ -5,7 +5,7 @@ import deepEqual = require('deep-equal');
 
 import {
     ConventionalDaemon, IDaemon, prettyPrintAmount, SUCCESS, validateAddresses,
-    WalletBackend, WalletError, WalletErrorCode,
+    WalletBackend, WalletError, WalletErrorCode, BlockchainCacheApi, LogLevel,
 } from '../lib/index';
 
 import { CryptoUtils } from '../lib/CnUtils';
@@ -101,7 +101,7 @@ function roundTrip(
     const tester: Tester = new Tester();
 
     /* Setup a daemon */
-    const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+    const daemon: BlockchainCacheApi = new BlockchainCacheApi('blockapi.turtlepay.io');
 
     /* Begin testing */
     await tester.test(async () => {
@@ -380,7 +380,10 @@ function roundTrip(
     if (doPerformanceTests) {
         /* TODO: Maybe use a remote node? */
         await tester.test(async () => {
-            const wallet = WalletBackend.createWallet(daemon);
+            /* Reinit daemon so it has no leftover state */
+            const daemon2: BlockchainCacheApi = new BlockchainCacheApi('blockapi.turtlepay.io');
+
+            const wallet = WalletBackend.createWallet(daemon2);
 
             /* Not started sync, all should be zero */
             const [a, b, c] = wallet.getSyncStatus();
@@ -403,7 +406,7 @@ function roundTrip(
 
         }, 'Testing getSyncStatus (5 second test)',
            'getSyncStatus works',
-           'getSyncStatus doesn\'t work! (Do you have a local daemon running?)');
+           'getSyncStatus doesn\'t work! (Is the blockchain cache down?)');
 
         await tester.test(async () => {
 
@@ -489,7 +492,7 @@ function roundTrip(
 
             if (walletBlockCount === 0) {
                 console.log(colors.red(' ❌ ') +
-                    'You must have a daemon running on 127.0.0.1:11898 to run this test...');
+                    'Failed to sync with blockchain cache...');
                 return false;
             }
 
