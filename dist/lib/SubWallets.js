@@ -245,6 +245,16 @@ class SubWallets {
         return this.publicSpendKeys;
     }
     /**
+     * Get all [public, private] spend keys in a container
+     */
+    getAllSpendKeys() {
+        const keys = [];
+        for (const [publicKey, subWallet] of this.subWallets) {
+            keys.push([publicKey, subWallet.getPrivateSpendKey()]);
+        }
+        return keys;
+    }
+    /**
      * Generate the key image for an input
      */
     getTxInputKeyImage(publicSpendKey, derivation, outputIndex) {

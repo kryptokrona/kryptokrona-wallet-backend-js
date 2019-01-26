@@ -13,29 +13,29 @@ import * as pbkdf2 from 'pbkdf2';
 
 import config from './Config';
 
+import { IDaemon } from './IDaemon';
+import { Metronome } from './Metronome';
+import { SubWallets } from './SubWallets';
+import { openWallet } from './OpenWallet';
 import { CryptoUtils } from './CnUtils';
+import { WalletBackendJSON } from './JsonSerialization';
+import { validateAddresses } from './ValidateParameters';
+import { WalletSynchronizer } from './WalletSynchronizer';
+import { LogCategory, logger, LogLevel } from './Logger';
+import { Block, Transaction, TransactionData } from './Types';
+import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
+import { sendTransactionAdvanced, sendTransactionBasic } from './Transfer';
 
 import {
     IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER,
     PBKDF2_ITERATIONS, WALLET_FILE_FORMAT_VERSION,
+    GLOBAL_INDEXES_OBSCURITY,
 } from './Constants';
-
-import { IDaemon } from './IDaemon';
-import { WalletBackendJSON } from './JsonSerialization';
-import { LogCategory, logger, LogLevel } from './Logger';
-import { Metronome } from './Metronome';
-import { openWallet } from './OpenWallet';
-import { SubWallets } from './SubWallets';
-import { sendTransactionAdvanced, sendTransactionBasic } from './Transfer';
-import { Block, Transaction, TransactionData } from './Types';
 
 import {
     addressToKeys, delay, getCurrentTimestampAdjusted, isHex64,
+    getLowerBound, getUpperBound,
 } from './Utilities';
-
-import { validateAddresses } from './ValidateParameters';
-import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
-import { WalletSynchronizer } from './WalletSynchronizer';
 
 export declare interface WalletBackend {
 
@@ -904,6 +904,25 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Get the global indexes for a range of blocks
+     *
+     * When we get the global indexes, we pass in a range of blocks, to obscure
+     * which transactions we are interested in - the ones that belong to us.
+     * To do this, we get the global indexes for all transactions in a range.
+     *
+     * For example, if we want the global indexes for a transaction in block
+     * 17, we get all the indexes from block 10 to block 20.
+     */
+    private async getGlobalIndexes(blockHeight: number): Promise<Map<string, number[]>> {
+        const startHeight: number = getLowerBound(blockHeight, GLOBAL_INDEXES_OBSCURITY);
+        const endHeight: number = getUpperBound(blockHeight, GLOBAL_INDEXES_OBSCURITY);
+
+        return this.daemon.getGlobalIndexesForRange(
+            startHeight, endHeight,
+        );
+    }
+
+    /**
      * Process config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
@@ -931,21 +950,39 @@ export class WalletBackend extends EventEmitter {
                 this.subWallets.removeForkedTransactions(block.blockHeight);
             }
 
-            let txData: TransactionData = new TransactionData();
+            const txData: TransactionData = await this.processTxOutputsStandalone(
+                block,
+                this.getPrivateViewKey(),
+                this.subWallets.getAllSpendKeys(),
+                this.subWallets.isViewWallet,
+                config.scanCoinbaseTransactions,
+            );
 
-            /* Process the coinbase tx if we're not skipping them for speed */
-            if (config.scanCoinbaseTransactions) {
-                txData = await this.walletSynchronizer.processCoinbaseTransaction(
-                    block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
-                    txData,
-                );
-            }
+            let globalIndexes: Map<string, number[]> = new Map();
 
-            /* Process the normal txs */
-            for (const tx of block.transactions) {
-                txData = await this.walletSynchronizer.processTransaction(
-                    tx, block.blockTimestamp, block.blockHeight, txData,
-                );
+            for (const [publicKey, input] of txData.inputsToAdd) {
+                /* Using a daemon type which doesn't provide output indexes,
+                   and not in a view wallet */
+                if (!this.subWallets.isViewWallet && input.globalOutputIndex === undefined) {
+                    /* Fetch the indexes if we don't have them already */
+                    if (_.isEmpty(globalIndexes)) {
+                        globalIndexes = await this.getGlobalIndexes(block.blockHeight);
+                    }
+
+                    /* If the indexes returned doesn't include our array, the daemon is
+                       faulty. If we can't connect to the daemon, it will throw instead,
+                       which we will catch further up */
+                    const ourIndexes: number[] | undefined = globalIndexes.get(
+                        input.parentTransactionHash,
+                    );
+
+                    if (!ourIndexes) {
+                        throw new Error('Could not get global indexes from daemon! ' +
+                                        'Possibly faulty/malicious daemon.');
+                    }
+
+                    input.globalOutputIndex = ourIndexes[input.transactionIndex];
+                }
             }
 
             /* Store the data */
@@ -963,6 +1000,39 @@ export class WalletBackend extends EventEmitter {
                 LogCategory.SYNC,
             );
         }
+    }
+
+    /**
+     * Process transaction outputs of the given block. No external dependencies,
+     * lets us easily swap out with a C++ replacement for SPEEEED
+     *
+     * @param keys Array of spend keys in the format [publicKey, privateKey]
+     */
+    private async processTxOutputsStandalone(
+        block: Block,
+        privateViewKey: string,
+        spendKeys: Array<[string, string]>,
+        isViewWallet: boolean,
+        processCoinbaseTransactions: boolean): Promise<TransactionData> {
+
+        let txData: TransactionData = new TransactionData();
+
+        /* Process the coinbase tx if we're not skipping them for speed */
+        if (config.scanCoinbaseTransactions) {
+            txData = await this.walletSynchronizer.processCoinbaseTransaction(
+                block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
+                txData,
+            );
+        }
+
+        /* Process the normal txs */
+        for (const tx of block.transactions) {
+            txData = await this.walletSynchronizer.processTransaction(
+                tx, block.blockTimestamp, block.blockHeight, txData,
+            );
+        }
+
+        return txData;
     }
 
     /**

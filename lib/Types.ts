@@ -286,7 +286,7 @@ export class TransactionInput {
     public readonly transactionIndex: number;
 
     /* The index of this output in the global 'DB' */
-    public readonly globalOutputIndex: number;
+    public globalOutputIndex: number | undefined;
 
     /* The transaction key we took from the key outputs. NOT the same as the
        transaction public key. Confusing, I know. */
@@ -308,7 +308,7 @@ export class TransactionInput {
         blockHeight: number,
         transactionPublicKey: string,
         transactionIndex: number,
-        globalOutputIndex: number,
+        globalOutputIndex: number | undefined,
         key: string,
         spendHeight: number,
         unlockTime: number,
@@ -338,7 +338,7 @@ export class TransactionInput {
 
             transactionIndex: this.transactionIndex,
 
-            globalOutputIndex: this.globalOutputIndex,
+            globalOutputIndex: this.globalOutputIndex || 0,
 
             key: this.key,
 

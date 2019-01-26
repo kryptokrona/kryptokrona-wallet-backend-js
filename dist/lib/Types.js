@@ -144,7 +144,7 @@ class TransactionInput {
             blockHeight: this.blockHeight,
             transactionPublicKey: this.transactionPublicKey,
             transactionIndex: this.transactionIndex,
-            globalOutputIndex: this.globalOutputIndex,
+            globalOutputIndex: this.globalOutputIndex || 0,
             key: this.key,
             spendHeight: this.spendHeight,
             unlockTime: this.unlockTime,

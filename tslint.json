@@ -13,7 +13,8 @@
         "no-var-requires": false,
         "prefer-object-spread": false,
         "unified-signatures": false,
-        "object-literal-shorthand": false
+        "object-literal-shorthand": false,
+        "ordered-imports": false
     },
     "rulesDirectory": []
 }

@@ -18,18 +18,18 @@ const fs = require("fs");
 const _ = require("lodash");
 const pbkdf2 = require("pbkdf2");
 const Config_1 = require("./Config");
-const CnUtils_1 = require("./CnUtils");
-const Constants_1 = require("./Constants");
-const Logger_1 = require("./Logger");
 const Metronome_1 = require("./Metronome");
-const OpenWallet_1 = require("./OpenWallet");
 const SubWallets_1 = require("./SubWallets");
-const Transfer_1 = require("./Transfer");
-const Types_1 = require("./Types");
-const Utilities_1 = require("./Utilities");
+const OpenWallet_1 = require("./OpenWallet");
+const CnUtils_1 = require("./CnUtils");
 const ValidateParameters_1 = require("./ValidateParameters");
-const WalletError_1 = require("./WalletError");
 const WalletSynchronizer_1 = require("./WalletSynchronizer");
+const Logger_1 = require("./Logger");
+const Types_1 = require("./Types");
+const WalletError_1 = require("./WalletError");
+const Transfer_1 = require("./Transfer");
+const Constants_1 = require("./Constants");
+const Utilities_1 = require("./Utilities");
 /**
  * The WalletBackend provides an interface that allows you to synchronize
  * with a daemon, download blocks, process them, and pick out transactions that
@@ -601,6 +601,23 @@ class WalletBackend extends events_1.EventEmitter {
         }
     }
     /**
+     * Get the global indexes for a range of blocks
+     *
+     * When we get the global indexes, we pass in a range of blocks, to obscure
+     * which transactions we are interested in - the ones that belong to us.
+     * To do this, we get the global indexes for all transactions in a range.
+     *
+     * For example, if we want the global indexes for a transaction in block
+     * 17, we get all the indexes from block 10 to block 20.
+     */
+    getGlobalIndexes(blockHeight) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const startHeight = Utilities_1.getLowerBound(blockHeight, Constants_1.GLOBAL_INDEXES_OBSCURITY);
+            const endHeight = Utilities_1.getUpperBound(blockHeight, Constants_1.GLOBAL_INDEXES_OBSCURITY);
+            return this.daemon.getGlobalIndexesForRange(startHeight, endHeight);
+        });
+    }
+    /**
      * Process config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
@@ -615,14 +632,26 @@ class WalletBackend extends events_1.EventEmitter {
                     Logger_1.logger.log('Removing forked transactions', Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
                     this.subWallets.removeForkedTransactions(block.blockHeight);
                 }
-                let txData = new Types_1.TransactionData();
-                /* Process the coinbase tx if we're not skipping them for speed */
-                if (Config_1.default.scanCoinbaseTransactions) {
-                    txData = yield this.walletSynchronizer.processCoinbaseTransaction(block.coinbaseTransaction, block.blockTimestamp, block.blockHeight, txData);
-                }
-                /* Process the normal txs */
-                for (const tx of block.transactions) {
-                    txData = yield this.walletSynchronizer.processTransaction(tx, block.blockTimestamp, block.blockHeight, txData);
+                const txData = yield this.processTxOutputsStandalone(block, this.getPrivateViewKey(), this.subWallets.getAllSpendKeys(), this.subWallets.isViewWallet, Config_1.default.scanCoinbaseTransactions);
+                let globalIndexes = new Map();
+                for (const [publicKey, input] of txData.inputsToAdd) {
+                    /* Using a daemon type which doesn't provide output indexes,
+                       and not in a view wallet */
+                    if (!this.subWallets.isViewWallet && input.globalOutputIndex === undefined) {
+                        /* Fetch the indexes if we don't have them already */
+                        if (_.isEmpty(globalIndexes)) {
+                            globalIndexes = yield this.getGlobalIndexes(block.blockHeight);
+                        }
+                        /* If the indexes returned doesn't include our array, the daemon is
+                           faulty. If we can't connect to the daemon, it will throw instead,
+                           which we will catch further up */
+                        const ourIndexes = globalIndexes.get(input.parentTransactionHash);
+                        if (!ourIndexes) {
+                            throw new Error('Could not get global indexes from daemon! ' +
+                                'Possibly faulty/malicious daemon.');
+                        }
+                        input.globalOutputIndex = ourIndexes[input.transactionIndex];
+                    }
                 }
                 /* Store the data */
                 this.storeTxData(txData, block.blockHeight);
@@ -632,6 +661,26 @@ class WalletBackend extends events_1.EventEmitter {
                 this.blocksToProcess = _.drop(this.blocksToProcess);
                 Logger_1.logger.log('Finished processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             }
+        });
+    }
+    /**
+     * Process transaction outputs of the given block. No external dependencies,
+     * lets us easily swap out with a C++ replacement for SPEEEED
+     *
+     * @param keys Array of spend keys in the format [publicKey, privateKey]
+     */
+    processTxOutputsStandalone(block, privateViewKey, spendKeys, isViewWallet, processCoinbaseTransactions) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let txData = new Types_1.TransactionData();
+            /* Process the coinbase tx if we're not skipping them for speed */
+            if (Config_1.default.scanCoinbaseTransactions) {
+                txData = yield this.walletSynchronizer.processCoinbaseTransaction(block.coinbaseTransaction, block.blockTimestamp, block.blockHeight, txData);
+            }
+            /* Process the normal txs */
+            for (const tx of block.transactions) {
+                txData = yield this.walletSynchronizer.processTransaction(tx, block.blockTimestamp, block.blockHeight, txData);
+            }
+            return txData;
         });
     }
     /**

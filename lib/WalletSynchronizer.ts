@@ -2,22 +2,19 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { CryptoUtils } from './CnUtils';
-import { GLOBAL_INDEXES_OBSCURITY } from './Constants';
+import * as _ from 'lodash';
+
 import { IDaemon } from './IDaemon';
+import { SubWallets } from './SubWallets';
+import { CryptoUtils } from './CnUtils';
+import { SynchronizationStatus } from './SynchronizationStatus';
 import { WalletSynchronizerJSON } from './JsonSerialization';
 import { LogCategory, logger, LogLevel } from './Logger';
-import { SubWallets } from './SubWallets';
-import { SynchronizationStatus } from './SynchronizationStatus';
 
 import {
     Block, KeyInput, RawCoinbaseTransaction, RawTransaction, Transaction,
     TransactionData, TransactionInput,
 } from './Types';
-
-import { getLowerBound, getUpperBound } from './Utilities';
-
-import * as _ from 'lodash';
 
 /**
  * Decrypts blocks for our transactions and inputs
@@ -195,37 +192,6 @@ export class WalletSynchronizer {
     }
 
     /**
-     * Get the global indexes for a range of blocks
-     *
-     * When we get the global indexes, we pass in a range of blocks, to obscure
-     * which transactions we are interested in - the ones that belong to us.
-     * To do this, we get the global indexes for all transactions in a range.
-     *
-     * For example, if we want the global indexes for a transaction in block
-     * 17, we get all the indexes from block 10 to block 20.
-     */
-    public async getGlobalIndexes(blockHeight: number, hash: string): Promise<number[]> {
-        const startHeight: number = getLowerBound(blockHeight, GLOBAL_INDEXES_OBSCURITY);
-        const endHeight: number = getUpperBound(blockHeight, GLOBAL_INDEXES_OBSCURITY);
-
-        const indexes: Map<string, number[]> = await this.daemon.getGlobalIndexesForRange(
-            startHeight, endHeight,
-        );
-
-        /* If the indexes returned doesn't include our array, the daemon is
-           faulty. If we can't connect to the daemon, it will throw instead,
-           which we will catch further up */
-        const ourIndexes: number[] | undefined = indexes.get(hash);
-
-        if (!ourIndexes) {
-            throw new Error('Could not get global indexes from daemon! ' +
-                            'Possibly faulty/malicious daemon.');
-        }
-
-        return ourIndexes;
-    }
-
-    /**
      * Process the transaction inputs of a transaction, and pick out transfers
      * and transactions that are ours
      */
@@ -273,8 +239,6 @@ export class WalletSynchronizer {
 
         let sumOfOutputs: number = 0;
 
-        let globalIndexes: number[] = [];
-
         const spendKeys: string[] = this.subWallets.getPublicSpendKeys();
 
         for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
@@ -294,21 +258,6 @@ export class WalletSynchronizer {
             /* The public spend key of the subwallet that owns this input */
             const ownerSpendKey = derivedSpendKey;
 
-            /* Blockchain cache api gives us global indexes. Regular daemon
-               doesn't. It's too slow. */
-            let globalOutputIndex = output.globalIndex;
-
-            if (!globalOutputIndex) {
-                /* Get the indexes, if we haven't already got them. (Don't need
-                   to get them if we're in a view wallet, since we can't spend.) */
-                if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
-                    globalIndexes = await this.getGlobalIndexes(blockHeight, rawTX.hash);
-                }
-
-                /* Will be undefined if a view wallet, so use zero instead */
-                globalOutputIndex = globalIndexes[outputIndex] || 0;
-            }
-
             transfers.set(
                 ownerSpendKey,
                 output.amount + (transfers.get(ownerSpendKey) || 0),
@@ -323,7 +272,7 @@ export class WalletSynchronizer {
 
             const txInput: TransactionInput = new TransactionInput(
                 keyImage, output.amount, blockHeight,
-                rawTX.transactionPublicKey, outputIndex, globalOutputIndex,
+                rawTX.transactionPublicKey, outputIndex, output.globalIndex,
                 output.key, spendHeight, rawTX.unlockTime, rawTX.hash,
             );
 

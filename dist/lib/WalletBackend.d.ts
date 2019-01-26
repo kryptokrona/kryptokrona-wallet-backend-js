@@ -423,10 +423,28 @@ export declare class WalletBackend extends EventEmitter {
      */
     private storeTxData;
     /**
+     * Get the global indexes for a range of blocks
+     *
+     * When we get the global indexes, we pass in a range of blocks, to obscure
+     * which transactions we are interested in - the ones that belong to us.
+     * To do this, we get the global indexes for all transactions in a range.
+     *
+     * For example, if we want the global indexes for a transaction in block
+     * 17, we get all the indexes from block 10 to block 20.
+     */
+    private getGlobalIndexes;
+    /**
      * Process config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
     private processBlocks;
+    /**
+     * Process transaction outputs of the given block. No external dependencies,
+     * lets us easily swap out with a C++ replacement for SPEEEED
+     *
+     * @param keys Array of spend keys in the format [publicKey, privateKey]
+     */
+    private processTxOutputsStandalone;
     /**
      * Main loop. Download blocks, process them.
      */

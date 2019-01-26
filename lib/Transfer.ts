@@ -186,7 +186,7 @@ export async function sendTransactionAdvanced(
 
         return {
             amount: input.input.amount,
-            globalIndex: input.input.globalOutputIndex,
+            globalIndex: input.input.globalOutputIndex as number,
             index: input.input.transactionIndex,
             input: {
                 privateEphemeral: tmpSecretKey,

@@ -44,12 +44,12 @@ export declare class TransactionInput {
     readonly blockHeight: number;
     readonly transactionPublicKey: string;
     readonly transactionIndex: number;
-    readonly globalOutputIndex: number;
+    globalOutputIndex: number | undefined;
     readonly key: string;
     spendHeight: number;
     readonly unlockTime: number;
     readonly parentTransactionHash: string;
-    constructor(keyImage: string, amount: number, blockHeight: number, transactionPublicKey: string, transactionIndex: number, globalOutputIndex: number, key: string, spendHeight: number, unlockTime: number, parentTransactionHash: string);
+    constructor(keyImage: string, amount: number, blockHeight: number, transactionPublicKey: string, transactionIndex: number, globalOutputIndex: number | undefined, key: string, spendHeight: number, unlockTime: number, parentTransactionHash: string);
     toJSON(): TransactionInputJSON;
 }
 export declare class UnconfirmedInput {

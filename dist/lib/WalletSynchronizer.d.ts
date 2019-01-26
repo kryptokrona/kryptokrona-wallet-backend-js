@@ -1,6 +1,6 @@
 import { IDaemon } from './IDaemon';
-import { WalletSynchronizerJSON } from './JsonSerialization';
 import { SubWallets } from './SubWallets';
+import { WalletSynchronizerJSON } from './JsonSerialization';
 import { Block, KeyInput, RawCoinbaseTransaction, RawTransaction, TransactionData } from './Types';
 /**
  * Decrypts blocks for our transactions and inputs
@@ -44,17 +44,6 @@ export declare class WalletSynchronizer {
      * Download the next set of blocks from the daemon
      */
     getBlocks(): Promise<Block[]>;
-    /**
-     * Get the global indexes for a range of blocks
-     *
-     * When we get the global indexes, we pass in a range of blocks, to obscure
-     * which transactions we are interested in - the ones that belong to us.
-     * To do this, we get the global indexes for all transactions in a range.
-     *
-     * For example, if we want the global indexes for a transaction in block
-     * 17, we get all the indexes from block 10 to block 20.
-     */
-    getGlobalIndexes(blockHeight: number, hash: string): Promise<number[]>;
     /**
      * Process the transaction inputs of a transaction, and pick out transfers
      * and transactions that are ours

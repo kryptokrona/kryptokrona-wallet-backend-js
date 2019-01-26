@@ -128,6 +128,10 @@ export declare class SubWallets {
      */
     getPublicSpendKeys(): string[];
     /**
+     * Get all [public, private] spend keys in a container
+     */
+    getAllSpendKeys(): Array<[string, string]>;
+    /**
      * Generate the key image for an input
      */
     getTxInputKeyImage(publicSpendKey: string, derivation: string, outputIndex: number): string;

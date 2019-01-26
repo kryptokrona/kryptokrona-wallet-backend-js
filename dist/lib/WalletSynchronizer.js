@@ -11,13 +11,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const CnUtils_1 = require("./CnUtils");
-const Constants_1 = require("./Constants");
-const Logger_1 = require("./Logger");
-const SynchronizationStatus_1 = require("./SynchronizationStatus");
-const Types_1 = require("./Types");
-const Utilities_1 = require("./Utilities");
 const _ = require("lodash");
+const CnUtils_1 = require("./CnUtils");
+const SynchronizationStatus_1 = require("./SynchronizationStatus");
+const Logger_1 = require("./Logger");
+const Types_1 = require("./Types");
 /**
  * Decrypts blocks for our transactions and inputs
  */
@@ -131,32 +129,6 @@ class WalletSynchronizer {
         });
     }
     /**
-     * Get the global indexes for a range of blocks
-     *
-     * When we get the global indexes, we pass in a range of blocks, to obscure
-     * which transactions we are interested in - the ones that belong to us.
-     * To do this, we get the global indexes for all transactions in a range.
-     *
-     * For example, if we want the global indexes for a transaction in block
-     * 17, we get all the indexes from block 10 to block 20.
-     */
-    getGlobalIndexes(blockHeight, hash) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const startHeight = Utilities_1.getLowerBound(blockHeight, Constants_1.GLOBAL_INDEXES_OBSCURITY);
-            const endHeight = Utilities_1.getUpperBound(blockHeight, Constants_1.GLOBAL_INDEXES_OBSCURITY);
-            const indexes = yield this.daemon.getGlobalIndexesForRange(startHeight, endHeight);
-            /* If the indexes returned doesn't include our array, the daemon is
-               faulty. If we can't connect to the daemon, it will throw instead,
-               which we will catch further up */
-            const ourIndexes = indexes.get(hash);
-            if (!ourIndexes) {
-                throw new Error('Could not get global indexes from daemon! ' +
-                    'Possibly faulty/malicious daemon.');
-            }
-            return ourIndexes;
-        });
-    }
-    /**
      * Process the transaction inputs of a transaction, and pick out transfers
      * and transactions that are ours
      */
@@ -180,7 +152,6 @@ class WalletSynchronizer {
         return __awaiter(this, void 0, void 0, function* () {
             const derivation = CnUtils_1.CryptoUtils.generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
             let sumOfOutputs = 0;
-            let globalIndexes = [];
             const spendKeys = this.subWallets.getPublicSpendKeys();
             for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
                 sumOfOutputs += output.amount;
@@ -193,23 +164,11 @@ class WalletSynchronizer {
                 }
                 /* The public spend key of the subwallet that owns this input */
                 const ownerSpendKey = derivedSpendKey;
-                /* Blockchain cache api gives us global indexes. Regular daemon
-                   doesn't. It's too slow. */
-                let globalOutputIndex = output.globalIndex;
-                if (!globalOutputIndex) {
-                    /* Get the indexes, if we haven't already got them. (Don't need
-                       to get them if we're in a view wallet, since we can't spend.) */
-                    if (_.isEmpty(globalIndexes) && !this.subWallets.isViewWallet) {
-                        globalIndexes = yield this.getGlobalIndexes(blockHeight, rawTX.hash);
-                    }
-                    /* Will be undefined if a view wallet, so use zero instead */
-                    globalOutputIndex = globalIndexes[outputIndex] || 0;
-                }
                 transfers.set(ownerSpendKey, output.amount + (transfers.get(ownerSpendKey) || 0));
                 /* Not spent yet! */
                 const spendHeight = 0;
                 const keyImage = this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
-                const txInput = new Types_1.TransactionInput(keyImage, output.amount, blockHeight, rawTX.transactionPublicKey, outputIndex, globalOutputIndex, output.key, spendHeight, rawTX.unlockTime, rawTX.hash);
+                const txInput = new Types_1.TransactionInput(keyImage, output.amount, blockHeight, rawTX.transactionPublicKey, outputIndex, output.globalIndex, output.key, spendHeight, rawTX.unlockTime, rawTX.hash);
                 txData.inputsToAdd.push([ownerSpendKey, txInput]);
             }
             return [sumOfOutputs, transfers, txData];
