@@ -2,8 +2,8 @@
 import { EventEmitter } from 'events';
 import { IDaemon } from './IDaemon';
 import { LogCategory, LogLevel } from './Logger';
-import { Transaction } from './Types';
 import { WalletError } from './WalletError';
+import { Block, Transaction, TransactionInput } from './Types';
 export declare interface WalletBackend {
     /**
      * This is emitted whenever the wallet finds a new transaction.
@@ -252,6 +252,10 @@ export declare class WalletBackend extends EventEmitter {
      */
     private started;
     /**
+     * External function to process a blocks outputs.
+     */
+    private externalBlockProcessFunction?;
+    /**
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
      *
@@ -308,6 +312,23 @@ export declare class WalletBackend extends EventEmitter {
      *
      */
     setLoggerCallback(callback: (prettyMessage: string, message: string, level: LogLevel, categories: LogCategory[]) => any): void;
+    /**
+     * Provide a function to process blocks instead of the inbuilt one. The
+     * only use for this is to leverage native code to provide quicker
+     * cryptography functions - the default JavaScript is not that speedy.
+     *
+     * If you don't know what you're doing,
+     * DO NOT TOUCH THIS - YOU WILL BREAK WALLET SYNCING
+     *
+     * Note you don't have to set the globalIndex properties on returned inputs.
+     * We will fetch them from the daemon if needed. However, if you have them,
+     * return them, to save us a daemon call.
+     *
+     * @param spendKeys An array of [publicSpendKey, privateSpendKey]
+     * @param processCoinbaseTransactions Whether you should process coinbase transactions or not
+     *
+     */
+    setBlockOutputProcessFunc(func: (block: Block, privateViewKey: string, spendKeys: Array<[string, string]>, isViewWallet: boolean, processCoinbaseTransactions: boolean) => Array<[string, TransactionInput]>): void;
     /**
      * Initializes and starts the wallet sync process. You should call this
      * function before enquiring about daemon info or fee info. The wallet will
@@ -438,13 +459,6 @@ export declare class WalletBackend extends EventEmitter {
      * inputs that belong to us
      */
     private processBlocks;
-    /**
-     * Process transaction outputs of the given block. No external dependencies,
-     * lets us easily swap out with a C++ replacement for SPEEEED
-     *
-     * @param keys Array of spend keys in the format [publicKey, privateKey]
-     */
-    private processTxOutputsStandalone;
     /**
      * Main loop. Download blocks, process them.
      */

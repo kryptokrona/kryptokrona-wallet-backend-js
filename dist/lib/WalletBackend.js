@@ -25,7 +25,6 @@ const CnUtils_1 = require("./CnUtils");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletSynchronizer_1 = require("./WalletSynchronizer");
 const Logger_1 = require("./Logger");
-const Types_1 = require("./Types");
 const WalletError_1 = require("./WalletError");
 const Transfer_1 = require("./Transfer");
 const Constants_1 = require("./Constants");
@@ -346,6 +345,25 @@ class WalletBackend extends events_1.EventEmitter {
         Logger_1.logger.setLoggerCallback(callback);
     }
     /**
+     * Provide a function to process blocks instead of the inbuilt one. The
+     * only use for this is to leverage native code to provide quicker
+     * cryptography functions - the default JavaScript is not that speedy.
+     *
+     * If you don't know what you're doing,
+     * DO NOT TOUCH THIS - YOU WILL BREAK WALLET SYNCING
+     *
+     * Note you don't have to set the globalIndex properties on returned inputs.
+     * We will fetch them from the daemon if needed. However, if you have them,
+     * return them, to save us a daemon call.
+     *
+     * @param spendKeys An array of [publicSpendKey, privateSpendKey]
+     * @param processCoinbaseTransactions Whether you should process coinbase transactions or not
+     *
+     */
+    setBlockOutputProcessFunc(func) {
+        this.externalBlockProcessFunction = func;
+    }
+    /**
      * Initializes and starts the wallet sync process. You should call this
      * function before enquiring about daemon info or fee info. The wallet will
      * not process blocks until you call this method.
@@ -632,9 +650,14 @@ class WalletBackend extends events_1.EventEmitter {
                     Logger_1.logger.log('Removing forked transactions', Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
                     this.subWallets.removeForkedTransactions(block.blockHeight);
                 }
-                const txData = yield this.processTxOutputsStandalone(block, this.getPrivateViewKey(), this.subWallets.getAllSpendKeys(), this.subWallets.isViewWallet, Config_1.default.scanCoinbaseTransactions);
+                /* User can supply us a function to do the processing, possibly
+                   utilizing native code for moar speed */
+                const processFunction = this.externalBlockProcessFunction
+                    || this.walletSynchronizer.processBlockOutputs.bind(this.walletSynchronizer);
+                const blockInputs = yield processFunction(block, this.getPrivateViewKey(), this.subWallets.getAllSpendKeys(), this.subWallets.isViewWallet, Config_1.default.scanCoinbaseTransactions);
                 let globalIndexes = new Map();
-                for (const [publicKey, input] of txData.inputsToAdd) {
+                /* Fill in output indexes if not returned from daemon */
+                for (const [publicKey, input] of blockInputs) {
                     /* Using a daemon type which doesn't provide output indexes,
                        and not in a view wallet */
                     if (!this.subWallets.isViewWallet && input.globalOutputIndex === undefined) {
@@ -653,6 +676,7 @@ class WalletBackend extends events_1.EventEmitter {
                         input.globalOutputIndex = ourIndexes[input.transactionIndex];
                     }
                 }
+                const txData = this.walletSynchronizer.processBlock(block, blockInputs);
                 /* Store the data */
                 this.storeTxData(txData, block.blockHeight);
                 /* Store the block hash we just processed */
@@ -661,26 +685,6 @@ class WalletBackend extends events_1.EventEmitter {
                 this.blocksToProcess = _.drop(this.blocksToProcess);
                 Logger_1.logger.log('Finished processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             }
-        });
-    }
-    /**
-     * Process transaction outputs of the given block. No external dependencies,
-     * lets us easily swap out with a C++ replacement for SPEEEED
-     *
-     * @param keys Array of spend keys in the format [publicKey, privateKey]
-     */
-    processTxOutputsStandalone(block, privateViewKey, spendKeys, isViewWallet, processCoinbaseTransactions) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let txData = new Types_1.TransactionData();
-            /* Process the coinbase tx if we're not skipping them for speed */
-            if (Config_1.default.scanCoinbaseTransactions) {
-                txData = yield this.walletSynchronizer.processCoinbaseTransaction(block.coinbaseTransaction, block.blockTimestamp, block.blockHeight, txData);
-            }
-            /* Process the normal txs */
-            for (const tx of block.transactions) {
-                txData = yield this.walletSynchronizer.processTransaction(tx, block.blockTimestamp, block.blockHeight, txData);
-            }
-            return txData;
         });
     }
     /**

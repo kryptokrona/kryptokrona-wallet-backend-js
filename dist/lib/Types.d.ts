@@ -75,9 +75,9 @@ export declare class KeyInput {
     constructor(amount: number, keyImage: string, outputIndexes: number[]);
 }
 export declare class TransactionData {
-    readonly transactionsToAdd: Transaction[];
-    readonly inputsToAdd: Array<[string, TransactionInput]>;
-    readonly keyImagesToMarkSpent: Array<[string, string]>;
+    transactionsToAdd: Transaction[];
+    inputsToAdd: Array<[string, TransactionInput]>;
+    keyImagesToMarkSpent: Array<[string, string]>;
 }
 export declare class TxInputAndOwner {
     readonly input: TransactionInput;

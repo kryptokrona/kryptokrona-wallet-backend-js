@@ -461,13 +461,13 @@ export class KeyInput {
 }
 
 export class TransactionData {
-    public readonly transactionsToAdd: Transaction[] = [];
+    public transactionsToAdd: Transaction[] = [];
 
     /* Mapping of public spend key to inputs */
-    public readonly inputsToAdd: Array<[string, TransactionInput]> = [];
+    public inputsToAdd: Array<[string, TransactionInput]> = [];
 
     /* Mapping of public spend key to key image */
-    public readonly keyImagesToMarkSpent: Array<[string, string]> = [];
+    public keyImagesToMarkSpent: Array<[string, string]> = [];
 }
 
 export class TxInputAndOwner {

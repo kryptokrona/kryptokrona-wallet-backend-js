@@ -1,7 +1,7 @@
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
 import { WalletSynchronizerJSON } from './JsonSerialization';
-import { Block, KeyInput, RawCoinbaseTransaction, RawTransaction, TransactionData } from './Types';
+import { Block, TransactionData, TransactionInput } from './Types';
 /**
  * Decrypts blocks for our transactions and inputs
  */
@@ -44,18 +44,14 @@ export declare class WalletSynchronizer {
      * Download the next set of blocks from the daemon
      */
     getBlocks(): Promise<Block[]>;
+    processBlock(block: Block, ourInputs: Array<[string, TransactionInput]>): TransactionData;
     /**
-     * Process the transaction inputs of a transaction, and pick out transfers
-     * and transactions that are ours
+     * Process transaction outputs of the given block. No external dependencies,
+     * lets us easily swap out with a C++ replacement for SPEEEED
+     *
+     * @param keys Array of spend keys in the format [publicKey, privateKey]
      */
-    processTransactionInputs(keyInputs: KeyInput[], transfers: Map<string, number>, blockHeight: number, txData: TransactionData): [number, Map<string, number>, TransactionData];
-    /**
-     * Process the outputs of a transaction, and pick out transfers and
-     * transactions that are ours, along with creating new inputs
-     */
-    processTransactionOutputs(rawTX: RawCoinbaseTransaction, transfers: Map<string, number>, blockHeight: number, txData: TransactionData): Promise<[number, Map<string, number>, TransactionData]>;
-    processTransaction(rawTX: RawTransaction, blockTimestamp: number, blockHeight: number, txData: TransactionData): Promise<TransactionData>;
-    processCoinbaseTransaction(rawTX: RawCoinbaseTransaction, blockTimestamp: number, blockHeight: number, txData: TransactionData): Promise<TransactionData>;
+    processBlockOutputs(block: Block, privateViewKey: string, spendKeys: Array<[string, string]>, isViewWallet: boolean, processCoinbaseTransactions: boolean): Array<[string, TransactionInput]>;
     /**
      * Get the height of the sync process
      */
@@ -67,4 +63,10 @@ export declare class WalletSynchronizer {
      */
     findCancelledTransactions(transactionHashes: string[]): Promise<string[]>;
     storeBlockHash(blockHeight: number, blockHash: string): void;
+    /**
+     * Process the outputs of a transaction, and create inputs that are ours
+     */
+    private processTransactionOutputs;
+    private processCoinbaseTransaction;
+    private processTransaction;
 }

@@ -22,9 +22,9 @@ import { WalletBackendJSON } from './JsonSerialization';
 import { validateAddresses } from './ValidateParameters';
 import { WalletSynchronizer } from './WalletSynchronizer';
 import { LogCategory, logger, LogLevel } from './Logger';
-import { Block, Transaction, TransactionData } from './Types';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 import { sendTransactionAdvanced, sendTransactionBasic } from './Transfer';
+import { Block, Transaction, TransactionData, TransactionInput } from './Types';
 
 import {
     IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER,
@@ -460,6 +460,17 @@ export class WalletBackend extends EventEmitter {
     private started: boolean = false;
 
     /**
+     * External function to process a blocks outputs.
+     */
+    private externalBlockProcessFunction?: (
+        block: Block,
+        privateViewKey: string,
+        spendKeys: Array<[string, string]>,
+        isViewWallet: boolean,
+        processCoinbaseTransactions: boolean,
+    ) => Array<[string, TransactionInput]>;
+
+    /**
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
      *
@@ -568,6 +579,32 @@ export class WalletBackend extends EventEmitter {
                    categories: LogCategory[]) => any): void {
 
         logger.setLoggerCallback(callback);
+    }
+
+    /**
+     * Provide a function to process blocks instead of the inbuilt one. The
+     * only use for this is to leverage native code to provide quicker
+     * cryptography functions - the default JavaScript is not that speedy.
+     *
+     * If you don't know what you're doing,
+     * DO NOT TOUCH THIS - YOU WILL BREAK WALLET SYNCING
+     *
+     * Note you don't have to set the globalIndex properties on returned inputs.
+     * We will fetch them from the daemon if needed. However, if you have them,
+     * return them, to save us a daemon call.
+     *
+     * @param spendKeys An array of [publicSpendKey, privateSpendKey]
+     * @param processCoinbaseTransactions Whether you should process coinbase transactions or not
+     *
+     */
+    public setBlockOutputProcessFunc(func: (
+            block: Block,
+            privateViewKey: string,
+            spendKeys: Array<[string, string]>,
+            isViewWallet: boolean,
+            processCoinbaseTransactions: boolean,
+        ) => Array<[string, TransactionInput]>) {
+        this.externalBlockProcessFunction = func;
     }
 
     /**
@@ -950,7 +987,12 @@ export class WalletBackend extends EventEmitter {
                 this.subWallets.removeForkedTransactions(block.blockHeight);
             }
 
-            const txData: TransactionData = await this.processTxOutputsStandalone(
+            /* User can supply us a function to do the processing, possibly
+               utilizing native code for moar speed */
+            const processFunction = this.externalBlockProcessFunction
+                                 || this.walletSynchronizer.processBlockOutputs.bind(this.walletSynchronizer);
+
+            const blockInputs: Array<[string, TransactionInput]> = await processFunction(
                 block,
                 this.getPrivateViewKey(),
                 this.subWallets.getAllSpendKeys(),
@@ -960,7 +1002,8 @@ export class WalletBackend extends EventEmitter {
 
             let globalIndexes: Map<string, number[]> = new Map();
 
-            for (const [publicKey, input] of txData.inputsToAdd) {
+            /* Fill in output indexes if not returned from daemon */
+            for (const [publicKey, input] of blockInputs) {
                 /* Using a daemon type which doesn't provide output indexes,
                    and not in a view wallet */
                 if (!this.subWallets.isViewWallet && input.globalOutputIndex === undefined) {
@@ -985,6 +1028,10 @@ export class WalletBackend extends EventEmitter {
                 }
             }
 
+            const txData: TransactionData = this.walletSynchronizer.processBlock(
+                block, blockInputs,
+            );
+
             /* Store the data */
             this.storeTxData(txData, block.blockHeight);
 
@@ -1000,39 +1047,6 @@ export class WalletBackend extends EventEmitter {
                 LogCategory.SYNC,
             );
         }
-    }
-
-    /**
-     * Process transaction outputs of the given block. No external dependencies,
-     * lets us easily swap out with a C++ replacement for SPEEEED
-     *
-     * @param keys Array of spend keys in the format [publicKey, privateKey]
-     */
-    private async processTxOutputsStandalone(
-        block: Block,
-        privateViewKey: string,
-        spendKeys: Array<[string, string]>,
-        isViewWallet: boolean,
-        processCoinbaseTransactions: boolean): Promise<TransactionData> {
-
-        let txData: TransactionData = new TransactionData();
-
-        /* Process the coinbase tx if we're not skipping them for speed */
-        if (config.scanCoinbaseTransactions) {
-            txData = await this.walletSynchronizer.processCoinbaseTransaction(
-                block.coinbaseTransaction, block.blockTimestamp, block.blockHeight,
-                txData,
-            );
-        }
-
-        /* Process the normal txs */
-        for (const tx of block.transactions) {
-            txData = await this.walletSynchronizer.processTransaction(
-                tx, block.blockTimestamp, block.blockHeight, txData,
-            );
-        }
-
-        return txData;
     }
 
     /**
