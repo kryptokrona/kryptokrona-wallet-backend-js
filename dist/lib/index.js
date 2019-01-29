@@ -21,3 +21,5 @@ exports.LogLevel = Logger_1.LogLevel;
 exports.LogCategory = Logger_1.LogCategory;
 var ValidateParameters_1 = require("./ValidateParameters");
 exports.validateAddresses = ValidateParameters_1.validateAddresses;
+var Types_1 = require("./Types");
+exports.TransactionInput = Types_1.TransactionInput;
