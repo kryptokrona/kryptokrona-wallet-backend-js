@@ -81,12 +81,12 @@ exports.isInputUnlocked = isInputUnlocked;
 function prettyPrintAmount(amount) {
     /* Get the amount we need to divide atomic units by. 2 decimal places = 100 */
     const divisor = Math.pow(10, Config_1.Config.decimalPlaces);
-    /* This should make us have the right amount of decimals, but lets used
-       toFixed() to be sure anyway */
-    const unAtomic = (amount / divisor).toFixed(Config_1.Config.decimalPlaces);
+    const dollars = amount >= 0 ? Math.floor(amount / divisor) : Math.ceil(amount / divisor);
+    /* Make sure 1 is displaced as 01 */
+    const cents = (Math.abs(amount % divisor)).toString().padStart(Config_1.Config.decimalPlaces, '0');
     /* Makes our numbers thousand separated. https://stackoverflow.com/a/2901298/8737306 */
-    const formatted = unAtomic.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return formatted + ' ' + Config_1.Config.ticker;
+    const formatted = dollars.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return formatted + '.' + cents + ' ' + Config_1.Config.ticker;
 }
 exports.prettyPrintAmount = prettyPrintAmount;
 /**

@@ -90,14 +90,15 @@ export function prettyPrintAmount(amount: number): string {
     /* Get the amount we need to divide atomic units by. 2 decimal places = 100 */
     const divisor: number = Math.pow(10, Config.decimalPlaces);
 
-    /* This should make us have the right amount of decimals, but lets used
-       toFixed() to be sure anyway */
-    const unAtomic: string = (amount / divisor).toFixed(Config.decimalPlaces);
+    const dollars: number = amount >= 0 ? Math.floor(amount / divisor) : Math.ceil(amount / divisor);
+
+    /* Make sure 1 is displaced as 01 */
+    const cents: string = (Math.abs(amount % divisor)).toString().padStart(Config.decimalPlaces, '0');
 
     /* Makes our numbers thousand separated. https://stackoverflow.com/a/2901298/8737306 */
-    const formatted: string = unAtomic.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const formatted: string = dollars.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    return formatted + ' ' + Config.ticker;
+    return formatted + '.' + cents + ' ' + Config.ticker;
 }
 
 /**
