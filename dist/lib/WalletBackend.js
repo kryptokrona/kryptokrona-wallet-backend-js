@@ -562,7 +562,7 @@ class WalletBackend extends events_1.EventEmitter {
      * Get all transactions in a wallet container
      */
     getTransactions() {
-        return this.subWallets.getTransactions().concat(this.subWallets.getUnconfirmedTransactions());
+        return this.subWallets.getUnconfirmedTransactions().concat(this.subWallets.getTransactions());
     }
     /**
      * Get the number of transactions in the wallet container. Can be used
