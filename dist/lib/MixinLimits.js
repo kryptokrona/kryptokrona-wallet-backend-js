@@ -4,6 +4,12 @@
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
+/**
+ * @param height        Height this mixin limit becomes active at
+ * @param minMixin      Minimum mixin allowed at this height
+ * @param maxMixin      Maximum mixin allowed at this height
+ * @param defaultMixin  Default mixin to use at this height (should be in min/max bounds)
+ */
 class MixinLimit {
     constructor(height, minMixin, maxMixin, defaultMixin) {
         this.height = height;
@@ -13,6 +19,10 @@ class MixinLimit {
     }
 }
 exports.MixinLimit = MixinLimit;
+/**
+ * @param limits        Mixin limits to apply. Can be empty
+ * @param defaultMixin  Default mixin to use if no limits given or before the first limit comes into play
+ */
 class MixinLimits {
     constructor(limits, defaultMixin) {
         /* Order limits by height (descending) */

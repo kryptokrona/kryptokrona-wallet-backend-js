@@ -4,6 +4,12 @@
 
 import * as _ from 'lodash';
 
+/**
+ * @param height        Height this mixin limit becomes active at
+ * @param minMixin      Minimum mixin allowed at this height
+ * @param maxMixin      Maximum mixin allowed at this height
+ * @param defaultMixin  Default mixin to use at this height (should be in min/max bounds)
+ */
 export class MixinLimit {
     public readonly height: number;
     public readonly minMixin: number;
@@ -24,6 +30,10 @@ export class MixinLimit {
     }
 }
 
+/**
+ * @param limits        Mixin limits to apply. Can be empty
+ * @param defaultMixin  Default mixin to use if no limits given or before the first limit comes into play
+ */
 export class MixinLimits {
     private readonly limits: MixinLimit[];
     private readonly defaultMixin: number;

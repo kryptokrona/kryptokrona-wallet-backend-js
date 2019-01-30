@@ -15,7 +15,6 @@ module.exports = {
     './lib/Types.ts',
     './lib/WalletSynchronizer.ts',
     './lib/index.ts',
-    './lib/MixinLimits.ts',
     './lib/Transfer.ts',
   ],
   mode: 'modules'

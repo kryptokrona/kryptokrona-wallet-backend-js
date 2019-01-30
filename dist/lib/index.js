@@ -23,3 +23,6 @@ var ValidateParameters_1 = require("./ValidateParameters");
 exports.validateAddresses = ValidateParameters_1.validateAddresses;
 var Types_1 = require("./Types");
 exports.TransactionInput = Types_1.TransactionInput;
+var MixinLimits_1 = require("./MixinLimits");
+exports.MixinLimit = MixinLimits_1.MixinLimit;
+exports.MixinLimits = MixinLimits_1.MixinLimits;
