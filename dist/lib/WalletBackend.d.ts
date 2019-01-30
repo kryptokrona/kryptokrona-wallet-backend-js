@@ -435,6 +435,16 @@ export declare class WalletBackend extends EventEmitter {
      */
     getBalance(subWalletsToTakeFrom?: string[]): [number, number];
     /**
+     * Get all transactions in a wallet container
+     */
+    getTransactions(): Transaction[];
+    /**
+     * Get the number of transactions in the wallet container. Can be used
+     * if you want to avoid fetching every transactions repeatedly when nothing
+     * has changed.
+     */
+    getNumTransactions(): number;
+    /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
      * for later processing. Checks if we are synced and fires the sync/desync
      * event.

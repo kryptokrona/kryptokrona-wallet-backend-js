@@ -559,6 +559,20 @@ class WalletBackend extends events_1.EventEmitter {
         return this.subWallets.getBalance(this.daemon.getNetworkBlockCount(), subWalletsToTakeFrom);
     }
     /**
+     * Get all transactions in a wallet container
+     */
+    getTransactions() {
+        return this.subWallets.getTransactions();
+    }
+    /**
+     * Get the number of transactions in the wallet container. Can be used
+     * if you want to avoid fetching every transactions repeatedly when nothing
+     * has changed.
+     */
+    getNumTransactions() {
+        return this.subWallets.getNumTransactions();
+    }
+    /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
      * for later processing. Checks if we are synced and fires the sync/desync
      * event.

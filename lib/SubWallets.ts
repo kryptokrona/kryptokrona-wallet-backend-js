@@ -492,4 +492,20 @@ export class SubWallets {
 
         subWallet.storeUnconfirmedIncomingInput(input);
     }
+
+    /**
+     * Get all transactions in a wallet container
+     */
+    public getTransactions(): Transaction[] {
+        return this.transactions;
+    }
+
+    /**
+     * Get the number of transactions in the wallet container. Can be used
+     * if you want to avoid fetching every transactions repeatedly when nothing
+     * has changed.
+     */
+    public getNumTransactions(): number {
+        return this.transactions.length;
+    }
 }

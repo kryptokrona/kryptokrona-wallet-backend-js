@@ -164,4 +164,14 @@ export declare class SubWallets {
      * balances
      */
     storeUnconfirmedIncomingInput(input: UnconfirmedInput, publicSpendKey: string): void;
+    /**
+     * Get all transactions in a wallet container
+     */
+    getTransactions(): Transaction[];
+    /**
+     * Get the number of transactions in the wallet container. Can be used
+     * if you want to avoid fetching every transactions repeatedly when nothing
+     * has changed.
+     */
+    getNumTransactions(): number;
 }
