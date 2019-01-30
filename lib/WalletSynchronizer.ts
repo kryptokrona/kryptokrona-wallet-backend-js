@@ -414,8 +414,8 @@ export class WalletSynchronizer {
             const isCoinbaseTransaction: boolean = false;
 
             return [new Transaction(
-                transfers, rawTX.hash, fee, block.blockTimestamp,
-                block.blockHeight, rawTX.paymentID, rawTX.unlockTime,
+                transfers, rawTX.hash, fee, block.blockHeight,
+                block.blockTimestamp, rawTX.paymentID, rawTX.unlockTime,
                 isCoinbaseTransaction,
             ), spentKeyImages];
         }

@@ -253,7 +253,7 @@ class WalletSynchronizer {
             const fee = _.sumBy(rawTX.keyInputs, 'amount') -
                 _.sumBy(rawTX.keyOutputs, 'amount');
             const isCoinbaseTransaction = false;
-            return [new Types_1.Transaction(transfers, rawTX.hash, fee, block.blockTimestamp, block.blockHeight, rawTX.paymentID, rawTX.unlockTime, isCoinbaseTransaction), spentKeyImages];
+            return [new Types_1.Transaction(transfers, rawTX.hash, fee, block.blockHeight, block.blockTimestamp, rawTX.paymentID, rawTX.unlockTime, isCoinbaseTransaction), spentKeyImages];
         }
         return [undefined, []];
     }
