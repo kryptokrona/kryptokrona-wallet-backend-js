@@ -169,7 +169,7 @@ export class Transaction {
 
             unlockTime: json.unlockTime,
 
-            isCoinbaseTransactions: json.isCoinbaseTransaction,
+            isCoinbaseTransaction: json.isCoinbaseTransaction,
         });
     }
 

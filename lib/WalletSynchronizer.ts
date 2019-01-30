@@ -203,7 +203,7 @@ export class WalletSynchronizer {
                 block, ourInputs,
             );
 
-            if (tx) {
+            if (tx !== undefined) {
                 txData.transactionsToAdd.push(tx);
             }
         }
@@ -213,7 +213,7 @@ export class WalletSynchronizer {
                 block, ourInputs, rawTX,
             );
 
-            if (tx) {
+            if (tx !== undefined) {
                 txData.transactionsToAdd.push(tx);
                 txData.keyImagesToMarkSpent = txData.keyImagesToMarkSpent.concat(
                     keyImagesToMarkSpent,
@@ -363,7 +363,7 @@ export class WalletSynchronizer {
             const paymentID: string = '';
 
             return new Transaction(
-                transfers, rawTX.hash, fee, block.blockTimestamp, block.blockHeight,
+                transfers, rawTX.hash, fee, block.blockHeight, block.blockTimestamp,
                 paymentID, rawTX.unlockTime, isCoinbaseTransaction,
             );
         }

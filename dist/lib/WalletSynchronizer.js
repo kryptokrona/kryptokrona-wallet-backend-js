@@ -133,13 +133,13 @@ class WalletSynchronizer {
         const txData = new Types_1.TransactionData();
         if (Config_1.Config.scanCoinbaseTransactions) {
             const tx = this.processCoinbaseTransaction(block, ourInputs);
-            if (tx) {
+            if (tx !== undefined) {
                 txData.transactionsToAdd.push(tx);
             }
         }
         for (const rawTX of block.transactions) {
             const [tx, keyImagesToMarkSpent] = this.processTransaction(block, ourInputs, rawTX);
-            if (tx) {
+            if (tx !== undefined) {
                 txData.transactionsToAdd.push(tx);
                 txData.keyImagesToMarkSpent = txData.keyImagesToMarkSpent.concat(keyImagesToMarkSpent);
             }
@@ -229,7 +229,7 @@ class WalletSynchronizer {
             const isCoinbaseTransaction = true;
             /* Coinbase transactions can't have payment ID's */
             const paymentID = '';
-            return new Types_1.Transaction(transfers, rawTX.hash, fee, block.blockTimestamp, block.blockHeight, paymentID, rawTX.unlockTime, isCoinbaseTransaction);
+            return new Types_1.Transaction(transfers, rawTX.hash, fee, block.blockHeight, block.blockTimestamp, paymentID, rawTX.unlockTime, isCoinbaseTransaction);
         }
         return undefined;
     }

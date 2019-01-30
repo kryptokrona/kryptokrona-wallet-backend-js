@@ -84,7 +84,7 @@ class Transaction {
             timestamp: json.timestamp,
             paymentID: json.paymentID,
             unlockTime: json.unlockTime,
-            isCoinbaseTransactions: json.isCoinbaseTransaction,
+            isCoinbaseTransaction: json.isCoinbaseTransaction,
         });
     }
     constructor(transfers, hash, fee, blockHeight, timestamp, paymentID, unlockTime, isCoinbaseTransaction) {
