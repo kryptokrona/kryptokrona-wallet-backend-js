@@ -34,8 +34,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const MixinLimits_1 = require("./MixinLimits");
 /**
  * Configuration for the wallet backend
+ *
+ * @hidden
  */
-class Config {
+class OurConfig {
     constructor() {
         /**
          * The amount of decimal places your coin has, e.g. TurtleCoin has two
@@ -105,4 +107,25 @@ class Config {
         this.integratedAddressLength = this.standardAddressLength + ((64 * 11) / 8);
     }
 }
-exports.default = new Config();
+/**
+ * @hidden
+ */
+exports.Config = new OurConfig();
+/**
+ * Merge the default config with the provided config
+ *
+ * @hidden
+ */
+function MergeConfig(config) {
+    const finalConfig = new OurConfig();
+    if (!config) {
+        return;
+    }
+    for (const [key, value] of Object.entries(config)) {
+        if (finalConfig[key] !== undefined) {
+            finalConfig[key] = value;
+        }
+    }
+    exports.Config = finalConfig;
+}
+exports.MergeConfig = MergeConfig;

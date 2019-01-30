@@ -212,7 +212,7 @@ class SubWallet {
      * Generate the key image for this input
      */
     getTxInputKeyImage(derivation, outputIndex) {
-        const [keyImage, privateEphemeral] = CnUtils_1.CryptoUtils.generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
+        const [keyImage, privateEphemeral] = CnUtils_1.CryptoUtils().generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
         return keyImage;
     }
     /**

@@ -13,6 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const deepEqual = require("deep-equal");
 const _ = require("lodash");
+const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const Constants_1 = require("./Constants");
 const Logger_1 = require("./Logger");
@@ -20,7 +21,6 @@ const Types_1 = require("./Types");
 const Utilities_1 = require("./Utilities");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletError_1 = require("./WalletError");
-const Config_1 = require("./Config");
 /**
  * Sends a transaction of amount to the address destination, using the
  * given payment ID, if specified.
@@ -60,10 +60,10 @@ exports.sendTransactionBasic = sendTransactionBasic;
 function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress) {
     return __awaiter(this, void 0, void 0, function* () {
         if (mixin === undefined) {
-            mixin = Config_1.default.mixinLimits.getDefaultMixinByHeight(daemon.getNetworkBlockCount());
+            mixin = Config_1.Config.mixinLimits.getDefaultMixinByHeight(daemon.getNetworkBlockCount());
         }
         if (fee === undefined) {
-            fee = Config_1.default.minimumFee;
+            fee = Config_1.Config.minimumFee;
         }
         if (paymentID === undefined) {
             paymentID = '';
@@ -93,7 +93,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         });
         /* Prepare destinations keys */
         const transfers = amounts.map(([address, amount]) => {
-            const decoded = CnUtils_1.CryptoUtils.decodeAddress(address);
+            const decoded = CnUtils_1.CryptoUtils().decodeAddress(address);
             /* Assign payment ID from integrated address is present */
             if (decoded.paymentId !== '') {
                 paymentID = decoded.paymentId;
@@ -107,7 +107,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         const changeRequired = foundMoney - totalAmount;
         /* Need to send change back to ourselves */
         if (changeRequired > 0) {
-            const decoded = CnUtils_1.CryptoUtils.decodeAddress(changeAddress);
+            const decoded = CnUtils_1.CryptoUtils().decodeAddress(changeAddress);
             for (const denomination of Utilities_1.splitAmountIntoDenominations(changeRequired)) {
                 transfers.push({
                     amount: denomination,
@@ -116,7 +116,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             }
         }
         const ourOutputs = inputs.map((input) => {
-            const [keyImage, tmpSecretKey] = CnUtils_1.CryptoUtils.generateKeyImage(input.input.transactionPublicKey, subWallets.getPrivateViewKey(), input.publicSpendKey, input.privateSpendKey, input.input.transactionIndex);
+            const [keyImage, tmpSecretKey] = CnUtils_1.CryptoUtils().generateKeyImage(input.input.transactionPublicKey, subWallets.getPrivateViewKey(), input.publicSpendKey, input.privateSpendKey, input.input.transactionIndex);
             return {
                 amount: input.input.amount,
                 globalIndex: input.input.globalOutputIndex,
@@ -134,7 +134,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         }
         let tx;
         try {
-            tx = CnUtils_1.CryptoUtils.createTransaction(transfers, ourOutputs, randomOuts, mixin, fee, paymentID);
+            tx = CnUtils_1.CryptoUtils().createTransaction(transfers, ourOutputs, randomOuts, mixin, fee, paymentID);
         }
         catch (err) {
             Logger_1.logger.log('Failed to create transaction: ' + err.toString(), Logger_1.LogLevel.ERROR, Logger_1.LogCategory.TRANSACTIONS);
@@ -195,13 +195,13 @@ function storeSentTransaction(hash, fee, paymentID, ourInputs, changeAddress, ch
     subWallets.addUnconfirmedTransaction(tx);
 }
 function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txHash) {
-    const derivation = CnUtils_1.CryptoUtils.generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey());
+    const derivation = CnUtils_1.CryptoUtils().generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey());
     const spendKeys = subWallets.getPublicSpendKeys();
     let outputIndex = 0;
     for (const output of keyOutputs) {
         /* Derive the spend key from the transaction, using the previous
            derivation */
-        const derivedSpendKey = CnUtils_1.CryptoUtils.underivePublicKey(derivation, outputIndex, output.target.data);
+        const derivedSpendKey = CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, output.target.data);
         /* See if the derived spend key matches any of our spend keys */
         if (!_.includes(spendKeys, derivedSpendKey)) {
             continue;

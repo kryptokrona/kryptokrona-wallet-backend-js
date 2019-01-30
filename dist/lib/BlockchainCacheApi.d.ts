@@ -1,5 +1,5 @@
-import { IDaemon } from './IDaemon';
 import { Block } from './Types';
+import { IDaemon } from './IDaemon';
 /**
  * Implements the daemon interface, talking to a standard TurtleCoind.
  */

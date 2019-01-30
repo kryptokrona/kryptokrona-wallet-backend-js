@@ -17,13 +17,13 @@ const crypto = require("crypto");
 const fs = require("fs");
 const _ = require("lodash");
 const pbkdf2 = require("pbkdf2");
-const Config_1 = require("./Config");
 const Metronome_1 = require("./Metronome");
 const SubWallets_1 = require("./SubWallets");
 const OpenWallet_1 = require("./OpenWallet");
 const CnUtils_1 = require("./CnUtils");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletSynchronizer_1 = require("./WalletSynchronizer");
+const Config_1 = require("./Config");
 const Logger_1 = require("./Logger");
 const WalletError_1 = require("./WalletError");
 const Transfer_1 = require("./Transfer");
@@ -71,7 +71,7 @@ class WalletBackend extends events_1.EventEmitter {
         }
         this.walletSynchronizer = new WalletSynchronizer_1.WalletSynchronizer(daemon, this.subWallets, timestamp, scanHeight, privateViewKey);
         this.daemon = daemon;
-        this.mainLoopExecutor = new Metronome_1.Metronome(this.mainLoop.bind(this), Config_1.default.mainLoopInterval);
+        this.mainLoopExecutor = new Metronome_1.Metronome(this.mainLoop.bind(this), Config_1.Config.mainLoopInterval);
     }
     /**
      * @param filename  The location of the wallet file on disk
@@ -95,7 +95,8 @@ class WalletBackend extends events_1.EventEmitter {
      * }
      * ```
      */
-    static openWalletFromFile(daemon, filename, password) {
+    static openWalletFromFile(daemon, filename, password, config) {
+        Config_1.MergeConfig(config);
         const walletJSON = OpenWallet_1.openWallet(filename, password);
         if (walletJSON instanceof WalletError_1.WalletError) {
             return walletJSON;
@@ -121,7 +122,8 @@ class WalletBackend extends events_1.EventEmitter {
      * ```
      *
      */
-    static loadWalletFromJSON(daemon, json) {
+    static loadWalletFromJSON(daemon, json, config) {
+        Config_1.MergeConfig(config);
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
             wallet.initAfterLoad(daemon);
@@ -157,10 +159,11 @@ class WalletBackend extends events_1.EventEmitter {
      * }
      * ```
      */
-    static importWalletFromSeed(daemon, scanHeight, mnemonicSeed) {
+    static importWalletFromSeed(daemon, scanHeight, mnemonicSeed, config) {
+        Config_1.MergeConfig(config);
         let keys;
         try {
-            keys = CnUtils_1.CryptoUtils.createAddressFromMnemonic(mnemonicSeed);
+            keys = CnUtils_1.CryptoUtils().createAddressFromMnemonic(mnemonicSeed);
         }
         catch (err) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.INVALID_MNEMONIC, err.toString());
@@ -201,13 +204,14 @@ class WalletBackend extends events_1.EventEmitter {
      * ```
      *
      */
-    static importWalletFromKeys(daemon, scanHeight, privateViewKey, privateSpendKey) {
+    static importWalletFromKeys(daemon, scanHeight, privateViewKey, privateSpendKey, config) {
+        Config_1.MergeConfig(config);
         if (!Utilities_1.isHex64(privateViewKey) || !Utilities_1.isHex64(privateSpendKey)) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.INVALID_KEY_FORMAT);
         }
         let keys;
         try {
-            keys = CnUtils_1.CryptoUtils.createAddressFromKeys(privateSpendKey, privateViewKey);
+            keys = CnUtils_1.CryptoUtils().createAddressFromKeys(privateSpendKey, privateViewKey);
         }
         catch (err) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.INVALID_KEY_FORMAT, err.toString());
@@ -236,7 +240,8 @@ class WalletBackend extends events_1.EventEmitter {
      * This is useful for viewing your balance whilst not risking your funds
      * or private keys being stolen.
      */
-    static importViewWallet(daemon, scanHeight, privateViewKey, address) {
+    static importViewWallet(daemon, scanHeight, privateViewKey, address, config) {
+        Config_1.MergeConfig(config);
         if (!Utilities_1.isHex64(privateViewKey)) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.INVALID_KEY_FORMAT);
         }
@@ -262,10 +267,11 @@ class WalletBackend extends events_1.EventEmitter {
      * The created addresses view key will be derived in terms of the spend key,
      * i.e. it will have a mnemonic seed.
      */
-    static createWallet(daemon) {
+    static createWallet(daemon, config) {
+        Config_1.MergeConfig(config);
         const newWallet = true;
         const scanHeight = 0;
-        const keys = CnUtils_1.CryptoUtils.createNewAddress();
+        const keys = CnUtils_1.CryptoUtils().createNewAddress();
         const wallet = new WalletBackend(daemon, keys.address, scanHeight, newWallet, keys.view.privateKey, keys.spend.privateKey);
         return wallet;
     }
@@ -306,7 +312,7 @@ class WalletBackend extends events_1.EventEmitter {
      * you want to scan them, flip it on/off here.
      */
     scanCoinbaseTransactions(shouldScan) {
-        Config_1.default.scanCoinbaseTransactions = shouldScan;
+        Config_1.Config.scanCoinbaseTransactions = shouldScan;
     }
     /**
      * Converts the wallet into a JSON string. This can be used to later restore
@@ -447,7 +453,7 @@ class WalletBackend extends events_1.EventEmitter {
         if (spendKeys instanceof WalletError_1.WalletError) {
             return spendKeys;
         }
-        const parsedAddr = CnUtils_1.CryptoUtils.createAddressFromKeys(spendKeys[1], privateViewKey);
+        const parsedAddr = CnUtils_1.CryptoUtils().createAddressFromKeys(spendKeys[1], privateViewKey);
         if (!parsedAddr.mnemonic) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.KEYS_NOT_DETERMINISTIC);
         }
@@ -585,7 +591,7 @@ class WalletBackend extends events_1.EventEmitter {
             yield daemonInfo;
             /* Sleep for a second (not blocking the event loop) before
                continuing processing */
-            yield Utilities_1.delay(Config_1.default.blockFetchInterval);
+            yield Utilities_1.delay(Config_1.Config.blockFetchInterval);
         });
     }
     /**
@@ -636,13 +642,13 @@ class WalletBackend extends events_1.EventEmitter {
         });
     }
     /**
-     * Process config.blocksPerTick stored blocks, finding transactions and
+     * Process Config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
     processBlocks() {
         return __awaiter(this, void 0, void 0, function* () {
             /* Take the blocks to process for this tick */
-            const blocks = _.take(this.blocksToProcess, Config_1.default.blocksPerTick);
+            const blocks = _.take(this.blocksToProcess, Config_1.Config.blocksPerTick);
             for (const block of blocks) {
                 Logger_1.logger.log('Processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 /* Forked chain, remove old data */
@@ -654,7 +660,7 @@ class WalletBackend extends events_1.EventEmitter {
                    utilizing native code for moar speed */
                 const processFunction = this.externalBlockProcessFunction
                     || this.walletSynchronizer.processBlockOutputs.bind(this.walletSynchronizer);
-                const blockInputs = yield processFunction(block, this.getPrivateViewKey(), this.subWallets.getAllSpendKeys(), this.subWallets.isViewWallet, Config_1.default.scanCoinbaseTransactions);
+                const blockInputs = yield processFunction(block, this.getPrivateViewKey(), this.subWallets.getAllSpendKeys(), this.subWallets.isViewWallet, Config_1.Config.scanCoinbaseTransactions);
                 let globalIndexes = new Map();
                 /* Fill in output indexes if not returned from daemon */
                 for (const [publicKey, input] of blockInputs) {
@@ -731,7 +737,7 @@ class WalletBackend extends events_1.EventEmitter {
     initAfterLoad(daemon) {
         this.daemon = daemon;
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
-        this.mainLoopExecutor = new Metronome_1.Metronome(this.mainLoop.bind(this), Config_1.default.mainLoopInterval);
+        this.mainLoopExecutor = new Metronome_1.Metronome(this.mainLoop.bind(this), Config_1.Config.mainLoopInterval);
     }
 }
 exports.WalletBackend = WalletBackend;

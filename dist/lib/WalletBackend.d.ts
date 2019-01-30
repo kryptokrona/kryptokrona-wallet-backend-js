@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
 import { IDaemon } from './IDaemon';
+import { IConfig } from './Config';
 import { LogCategory, LogLevel } from './Logger';
 import { WalletError } from './WalletError';
 import { Block, Transaction, TransactionInput } from './Types';
@@ -125,7 +126,7 @@ export declare class WalletBackend extends EventEmitter {
      * }
      * ```
      */
-    static openWalletFromFile(daemon: IDaemon, filename: string, password: string): WalletBackend | WalletError;
+    static openWalletFromFile(daemon: IDaemon, filename: string, password: string, config?: IConfig): WalletBackend | WalletError;
     /**
      * @returns     Returns a WalletBackend, or a WalletError if the JSON is
      *              an invalid format
@@ -145,7 +146,7 @@ export declare class WalletBackend extends EventEmitter {
      * ```
      *
      */
-    static loadWalletFromJSON(daemon: IDaemon, json: string): WalletBackend | WalletError;
+    static loadWalletFromJSON(daemon: IDaemon, json: string, config?: IConfig): WalletBackend | WalletError;
     /**
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -172,7 +173,7 @@ export declare class WalletBackend extends EventEmitter {
      * }
      * ```
      */
-    static importWalletFromSeed(daemon: IDaemon, scanHeight: number, mnemonicSeed: string): WalletBackend | WalletError;
+    static importWalletFromSeed(daemon: IDaemon, scanHeight: number, mnemonicSeed: string, config?: IConfig): WalletBackend | WalletError;
     /**
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -198,7 +199,7 @@ export declare class WalletBackend extends EventEmitter {
      * ```
      *
      */
-    static importWalletFromKeys(daemon: IDaemon, scanHeight: number, privateViewKey: string, privateSpendKey: string): WalletBackend | WalletError;
+    static importWalletFromKeys(daemon: IDaemon, scanHeight: number, privateViewKey: string, privateSpendKey: string, config?: IConfig): WalletBackend | WalletError;
     /**
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -212,14 +213,14 @@ export declare class WalletBackend extends EventEmitter {
      * This is useful for viewing your balance whilst not risking your funds
      * or private keys being stolen.
      */
-    static importViewWallet(daemon: IDaemon, scanHeight: number, privateViewKey: string, address: string): WalletBackend | WalletError;
+    static importViewWallet(daemon: IDaemon, scanHeight: number, privateViewKey: string, address: string, config?: IConfig): WalletBackend | WalletError;
     /**
      * This method creates a new wallet instance with a random key pair.
      *
      * The created addresses view key will be derived in terms of the spend key,
      * i.e. it will have a mnemonic seed.
      */
-    static createWallet(daemon: IDaemon): WalletBackend;
+    static createWallet(daemon: IDaemon, config?: IConfig): WalletBackend;
     private static reviver;
     private static fromJSON;
     /**
@@ -455,7 +456,7 @@ export declare class WalletBackend extends EventEmitter {
      */
     private getGlobalIndexes;
     /**
-     * Process config.blocksPerTick stored blocks, finding transactions and
+     * Process Config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
     private processBlocks;

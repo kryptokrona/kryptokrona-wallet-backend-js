@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { CryptoUtils } from './CnUtils';
+import { CryptoUtils} from './CnUtils';
 import { SubWalletJSON } from './JsonSerialization';
 import { TransactionInput, TxInputAndOwner, UnconfirmedInput } from './Types';
 import { isInputUnlocked } from './Utilities';
@@ -301,7 +301,7 @@ export class SubWallet {
     public getTxInputKeyImage(
         derivation: string,
         outputIndex: number): string {
-        const [keyImage, privateEphemeral] = CryptoUtils.generateKeyImagePrimitive(
+        const [keyImage, privateEphemeral] = CryptoUtils().generateKeyImagePrimitive(
             this.publicSpendKey, this.privateSpendKey as string, outputIndex,
             derivation,
         );

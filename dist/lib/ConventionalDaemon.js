@@ -12,11 +12,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
+const Config_1 = require("./Config");
 const Logger_1 = require("./Logger");
 const Types_1 = require("./Types");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletError_1 = require("./WalletError");
-const Config_1 = require("./Config");
 /* REEEEE ADD TYPES */
 const TurtleCoind = require('turtlecoin-rpc').TurtleCoind;
 /**
@@ -54,7 +54,7 @@ class ConventionalDaemon {
             host: daemonHost,
             port: daemonPort,
             ssl: false,
-            timeout: Config_1.default.requestTimeout,
+            timeout: Config_1.Config.requestTimeout,
         });
     }
     /**
@@ -99,7 +99,7 @@ class ConventionalDaemon {
                 this.networkBlockCount--;
             }
             this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
-            this.lastKnownHashrate = info.difficulty / Config_1.default.blockTargetTime;
+            this.lastKnownHashrate = info.difficulty / Config_1.Config.blockTargetTime;
         });
     }
     /**

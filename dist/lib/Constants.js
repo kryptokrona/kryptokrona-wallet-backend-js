@@ -115,7 +115,7 @@ exports.MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR = 100 * 1024;
 /**
  * Part of the how fast blocks can grow
  */
-exports.MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR = 365 * 24 * 60 * 60 / Config_1.default.blockTargetTime;
+exports.MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR = 365 * 24 * 60 * 60 / Config_1.Config.blockTargetTime;
 /**
  * Initial block size
  */

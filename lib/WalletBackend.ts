@@ -11,16 +11,15 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as pbkdf2 from 'pbkdf2';
 
-import config from './Config';
-
 import { IDaemon } from './IDaemon';
 import { Metronome } from './Metronome';
 import { SubWallets } from './SubWallets';
 import { openWallet } from './OpenWallet';
-import { CryptoUtils } from './CnUtils';
+import { CryptoUtils} from './CnUtils';
 import { WalletBackendJSON } from './JsonSerialization';
 import { validateAddresses } from './ValidateParameters';
 import { WalletSynchronizer } from './WalletSynchronizer';
+import { Config, MergeConfig, IConfig } from './Config';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 import { sendTransactionAdvanced, sendTransactionBasic } from './Transfer';
@@ -169,7 +168,10 @@ export class WalletBackend extends EventEmitter {
     public static openWalletFromFile(
         daemon: IDaemon,
         filename: string,
-        password: string): WalletBackend | WalletError {
+        password: string,
+        config?: IConfig): WalletBackend | WalletError {
+
+        MergeConfig(config);
 
         const walletJSON = openWallet(filename, password);
 
@@ -199,7 +201,13 @@ export class WalletBackend extends EventEmitter {
      * ```
      *
      */
-    public static loadWalletFromJSON(daemon: IDaemon, json: string): WalletBackend | WalletError {
+    public static loadWalletFromJSON(
+        daemon: IDaemon,
+        json: string,
+        config?: IConfig): WalletBackend | WalletError {
+
+        MergeConfig(config);
+
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
             wallet.initAfterLoad(daemon);
@@ -238,12 +246,15 @@ export class WalletBackend extends EventEmitter {
     public static importWalletFromSeed(
         daemon: IDaemon,
         scanHeight: number,
-        mnemonicSeed: string): WalletBackend | WalletError {
+        mnemonicSeed: string,
+        config?: IConfig): WalletBackend | WalletError {
+
+        MergeConfig(config);
 
         let keys;
 
         try {
-            keys = CryptoUtils.createAddressFromMnemonic(mnemonicSeed);
+            keys = CryptoUtils().createAddressFromMnemonic(mnemonicSeed);
         } catch (err) {
             return new WalletError(WalletErrorCode.INVALID_MNEMONIC, err.toString());
         }
@@ -296,7 +307,10 @@ export class WalletBackend extends EventEmitter {
         daemon: IDaemon,
         scanHeight: number,
         privateViewKey: string,
-        privateSpendKey: string): WalletBackend | WalletError {
+        privateSpendKey: string,
+        config?: IConfig): WalletBackend | WalletError {
+
+        MergeConfig(config);
 
         if (!isHex64(privateViewKey) || !isHex64(privateSpendKey)) {
             return new WalletError(WalletErrorCode.INVALID_KEY_FORMAT);
@@ -305,7 +319,7 @@ export class WalletBackend extends EventEmitter {
         let keys;
 
         try {
-            keys = CryptoUtils.createAddressFromKeys(privateSpendKey, privateViewKey);
+            keys = CryptoUtils().createAddressFromKeys(privateSpendKey, privateViewKey);
         } catch (err) {
             return new WalletError(WalletErrorCode.INVALID_KEY_FORMAT, err.toString());
         }
@@ -346,7 +360,10 @@ export class WalletBackend extends EventEmitter {
         daemon: IDaemon,
         scanHeight: number,
         privateViewKey: string,
-        address: string): WalletBackend | WalletError {
+        address: string,
+        config?: IConfig): WalletBackend | WalletError {
+
+        MergeConfig(config);
 
         if (!isHex64(privateViewKey)) {
             return new WalletError(WalletErrorCode.INVALID_KEY_FORMAT);
@@ -387,12 +404,17 @@ export class WalletBackend extends EventEmitter {
      * The created addresses view key will be derived in terms of the spend key,
      * i.e. it will have a mnemonic seed.
      */
-    public static createWallet(daemon: IDaemon): WalletBackend {
+    public static createWallet(
+        daemon: IDaemon,
+        config?: IConfig): WalletBackend {
+
+        MergeConfig(config);
+
         const newWallet: boolean = true;
 
         const scanHeight: number = 0;
 
-        const keys = CryptoUtils.createNewAddress();
+        const keys = CryptoUtils().createNewAddress();
 
         const wallet = new WalletBackend(
             daemon, keys.address, scanHeight, newWallet, keys.view.privateKey,
@@ -508,7 +530,7 @@ export class WalletBackend extends EventEmitter {
         this.daemon = daemon;
 
         this.mainLoopExecutor = new Metronome(
-            this.mainLoop.bind(this), config.mainLoopInterval,
+            this.mainLoop.bind(this), Config.mainLoopInterval,
         );
     }
 
@@ -534,7 +556,7 @@ export class WalletBackend extends EventEmitter {
      * you want to scan them, flip it on/off here.
      */
     public scanCoinbaseTransactions(shouldScan: boolean) {
-        config.scanCoinbaseTransactions = shouldScan;
+        Config.scanCoinbaseTransactions = shouldScan;
     }
 
     /**
@@ -707,7 +729,7 @@ export class WalletBackend extends EventEmitter {
             return spendKeys as WalletError;
         }
 
-        const parsedAddr = CryptoUtils.createAddressFromKeys(spendKeys[1], privateViewKey);
+        const parsedAddr = CryptoUtils().createAddressFromKeys(spendKeys[1], privateViewKey);
 
         if (!parsedAddr.mnemonic) {
             return new WalletError(WalletErrorCode.KEYS_NOT_DETERMINISTIC);
@@ -892,7 +914,7 @@ export class WalletBackend extends EventEmitter {
 
         /* Sleep for a second (not blocking the event loop) before
            continuing processing */
-        await delay(config.blockFetchInterval);
+        await delay(Config.blockFetchInterval);
     }
 
     /**
@@ -960,12 +982,12 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Process config.blocksPerTick stored blocks, finding transactions and
+     * Process Config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
     private async processBlocks(): Promise<void> {
         /* Take the blocks to process for this tick */
-        const blocks: Block[] = _.take(this.blocksToProcess, config.blocksPerTick);
+        const blocks: Block[] = _.take(this.blocksToProcess, Config.blocksPerTick);
 
         for (const block of blocks) {
 
@@ -997,7 +1019,7 @@ export class WalletBackend extends EventEmitter {
                 this.getPrivateViewKey(),
                 this.subWallets.getAllSpendKeys(),
                 this.subWallets.isViewWallet,
-                config.scanCoinbaseTransactions,
+                Config.scanCoinbaseTransactions,
             );
 
             let globalIndexes: Map<string, number[]> = new Map();
@@ -1104,7 +1126,7 @@ export class WalletBackend extends EventEmitter {
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
 
         this.mainLoopExecutor = new Metronome(
-            this.mainLoop.bind(this), config.mainLoopInterval,
+            this.mainLoop.bind(this), Config.mainLoopInterval,
         );
     }
 }

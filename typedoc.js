@@ -5,7 +5,6 @@ module.exports = {
   excludePrivate: true,
   exclude: [
     './lib/CnUtils.ts',
-    './lib/Config.ts',
     './lib/Constants.ts',
     './lib/JsonSerialization.ts',
     './lib/Metronome.ts',

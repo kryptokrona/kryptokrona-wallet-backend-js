@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { CryptoUtils } from './CnUtils';
+import { CryptoUtils} from './CnUtils';
 import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';
 import { SubWallet } from './SubWallet';
 
@@ -103,7 +103,7 @@ export class SubWallets {
             timestamp = getCurrentTimestampAdjusted();
         }
 
-        const publicKeys = CryptoUtils.decodeAddress(address);
+        const publicKeys = CryptoUtils().decodeAddress(address);
 
         this.publicSpendKeys.push(publicKeys.publicSpendKey);
 

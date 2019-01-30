@@ -2,8 +2,8 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { CryptoUtils } from './CnUtils';
-import config from './Config';
+import { Config } from './Config';
+import { CryptoUtils} from './CnUtils';
 
 import {
     CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE, MAX_BLOCK_NUMBER,
@@ -26,7 +26,7 @@ export function isHex64(val: string) {
  * @hidden
  */
 export function addressToKeys(address: string): [string, string] {
-    const parsed = CryptoUtils.decodeAddress(address);
+    const parsed = CryptoUtils().decodeAddress(address);
 
     return [parsed.publicViewKey, parsed.publicSpendKey];
 }
@@ -59,7 +59,7 @@ export function getUpperBound(val: number, nearestMultiple: number): number {
 export function getCurrentTimestampAdjusted(): number {
     const timestamp = Math.floor(Date.now() / 1000);
 
-    return timestamp - (100 * config.blockTargetTime);
+    return timestamp - (100 * Config.blockTargetTime);
 }
 
 /**
@@ -88,16 +88,16 @@ export function isInputUnlocked(unlockTime: number, currentHeight: number): bool
  */
 export function prettyPrintAmount(amount: number): string {
     /* Get the amount we need to divide atomic units by. 2 decimal places = 100 */
-    const divisor: number = Math.pow(10, config.decimalPlaces);
+    const divisor: number = Math.pow(10, Config.decimalPlaces);
 
     /* This should make us have the right amount of decimals, but lets used
        toFixed() to be sure anyway */
-    const unAtomic: string = (amount / divisor).toFixed(config.decimalPlaces);
+    const unAtomic: string = (amount / divisor).toFixed(Config.decimalPlaces);
 
     /* Makes our numbers thousand separated. https://stackoverflow.com/a/2901298/8737306 */
     const formatted: string = unAtomic.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    return formatted + ' ' + config.ticker;
+    return formatted + ' ' + Config.ticker;
 }
 
 /**

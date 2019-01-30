@@ -6,13 +6,12 @@ import * as _ from 'lodash';
 
 import request = require('request-promise-native');
 
-import { IDaemon } from './IDaemon';
-import { LogCategory, logger, LogLevel } from './Logger';
 import { Block } from './Types';
+import { Config } from './Config';
+import { IDaemon } from './IDaemon';
 import { validateAddresses } from './ValidateParameters';
+import { LogCategory, logger, LogLevel } from './Logger';
 import { WalletError, WalletErrorCode } from './WalletError';
-
-import config from './Config';
 
 /**
  * Implements the daemon interface, talking to a standard TurtleCoind.
@@ -124,7 +123,7 @@ export class BlockchainCacheApi implements IDaemon {
 
         this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
-        this.lastKnownHashrate = info.difficulty / config.blockTargetTime;
+        this.lastKnownHashrate = info.difficulty / Config.blockTargetTime;
     }
 
     /**
@@ -300,7 +299,7 @@ export class BlockchainCacheApi implements IDaemon {
         return request({
             json: true,
             method: 'GET',
-            timeout: config.requestTimeout,
+            timeout: Config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
         });
     }
@@ -313,7 +312,7 @@ export class BlockchainCacheApi implements IDaemon {
             body: body,
             json: true,
             method: 'POST',
-            timeout: config.requestTimeout,
+            timeout: Config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
         });
     }

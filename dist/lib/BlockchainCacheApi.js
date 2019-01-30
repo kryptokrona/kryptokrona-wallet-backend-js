@@ -13,11 +13,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
 const request = require("request-promise-native");
-const Logger_1 = require("./Logger");
 const Types_1 = require("./Types");
-const ValidateParameters_1 = require("./ValidateParameters");
-const WalletError_1 = require("./WalletError");
 const Config_1 = require("./Config");
+const ValidateParameters_1 = require("./ValidateParameters");
+const Logger_1 = require("./Logger");
+const WalletError_1 = require("./WalletError");
 /**
  * Implements the daemon interface, talking to a standard TurtleCoind.
  */
@@ -109,7 +109,7 @@ class BlockchainCacheApi {
                 this.networkBlockCount--;
             }
             this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
-            this.lastKnownHashrate = info.difficulty / Config_1.default.blockTargetTime;
+            this.lastKnownHashrate = info.difficulty / Config_1.Config.blockTargetTime;
         });
     }
     /**
@@ -245,7 +245,7 @@ class BlockchainCacheApi {
         return request({
             json: true,
             method: 'GET',
-            timeout: Config_1.default.requestTimeout,
+            timeout: Config_1.Config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
         });
     }
@@ -257,7 +257,7 @@ class BlockchainCacheApi {
             body: body,
             json: true,
             method: 'POST',
-            timeout: Config_1.default.requestTimeout,
+            timeout: Config_1.Config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
         });
     }

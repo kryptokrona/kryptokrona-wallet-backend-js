@@ -11,11 +11,12 @@ import {
     TxDestination, Vout, Wallet,
 } from 'turtlecoin-utils';
 
-import { CryptoUtils } from './CnUtils';
-import { PRETTY_AMOUNTS } from './Constants';
+import { Config } from './Config';
 import { IDaemon } from './IDaemon';
-import { LogCategory, logger, LogLevel } from './Logger';
+import { CryptoUtils} from './CnUtils';
 import { SubWallets } from './SubWallets';
+import { PRETTY_AMOUNTS } from './Constants';
+import { LogCategory, logger, LogLevel } from './Logger';
 import { Transaction as TX, TxInputAndOwner, UnconfirmedInput } from './Types';
 
 import {
@@ -30,8 +31,6 @@ import {
 } from './ValidateParameters';
 
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
-
-import config from './Config';
 
 /**
  * Sends a transaction of amount to the address destination, using the
@@ -91,13 +90,13 @@ export async function sendTransactionAdvanced(
     changeAddress?: string): Promise<WalletError | string> {
 
     if (mixin === undefined) {
-        mixin = config.mixinLimits.getDefaultMixinByHeight(
+        mixin = Config.mixinLimits.getDefaultMixinByHeight(
             daemon.getNetworkBlockCount(),
         );
     }
 
     if (fee === undefined) {
-        fee = config.minimumFee;
+        fee = Config.minimumFee;
     }
 
     if (paymentID === undefined) {
@@ -143,7 +142,7 @@ export async function sendTransactionAdvanced(
 
     /* Prepare destinations keys */
     const transfers: TxDestination[] = amounts.map(([address, amount]) => {
-        const decoded: DecodedAddress = CryptoUtils.decodeAddress(address);
+        const decoded: DecodedAddress = CryptoUtils().decodeAddress(address);
 
         /* Assign payment ID from integrated address is present */
         if (decoded.paymentId !== '') {
@@ -164,7 +163,7 @@ export async function sendTransactionAdvanced(
 
     /* Need to send change back to ourselves */
     if (changeRequired > 0) {
-        const decoded: DecodedAddress = CryptoUtils.decodeAddress(changeAddress);
+        const decoded: DecodedAddress = CryptoUtils().decodeAddress(changeAddress);
 
         for (const denomination of splitAmountIntoDenominations(changeRequired)) {
             transfers.push({
@@ -176,7 +175,7 @@ export async function sendTransactionAdvanced(
 
     const ourOutputs: Output[] = inputs.map((input) => {
 
-        const [keyImage, tmpSecretKey] = CryptoUtils.generateKeyImage(
+        const [keyImage, tmpSecretKey] = CryptoUtils().generateKeyImage(
             input.input.transactionPublicKey,
             subWallets.getPrivateViewKey(),
             input.publicSpendKey,
@@ -207,7 +206,7 @@ export async function sendTransactionAdvanced(
     let tx: CreatedTransaction;
 
     try {
-        tx = CryptoUtils.createTransaction(
+        tx = CryptoUtils().createTransaction(
             transfers, ourOutputs, randomOuts as RandomOutput[][], mixin, fee,
             paymentID,
         );
@@ -322,7 +321,7 @@ function storeUnconfirmedIncomingInputs(
     txPublicKey: string,
     txHash: string): void {
 
-    const derivation: string = CryptoUtils.generateKeyDerivation(
+    const derivation: string = CryptoUtils().generateKeyDerivation(
         txPublicKey, subWallets.getPrivateViewKey(),
     );
 
@@ -333,7 +332,7 @@ function storeUnconfirmedIncomingInputs(
     for (const output of keyOutputs) {
         /* Derive the spend key from the transaction, using the previous
            derivation */
-        const derivedSpendKey = CryptoUtils.underivePublicKey(
+        const derivedSpendKey = CryptoUtils().underivePublicKey(
             derivation, outputIndex, output.target.data,
         );
 

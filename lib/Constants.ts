@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import config from './Config';
+import { Config } from './Config';
 
 /**
  * What version of the file format are we on (to make it easier to
@@ -145,7 +145,7 @@ export const MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR: number = 100 * 1024;
  * Part of the how fast blocks can grow
  */
 export const MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR: number
-    = 365 * 24 * 60 * 60 / config.blockTargetTime;
+    = 365 * 24 * 60 * 60 / Config.blockTargetTime;
 
 /**
  * Initial block size

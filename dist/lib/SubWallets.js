@@ -45,7 +45,7 @@ class SubWallets {
         if (newWallet) {
             timestamp = Utilities_1.getCurrentTimestampAdjusted();
         }
-        const publicKeys = CnUtils_1.CryptoUtils.decodeAddress(address);
+        const publicKeys = CnUtils_1.CryptoUtils().decodeAddress(address);
         this.publicSpendKeys.push(publicKeys.publicSpendKey);
         const subWallet = new SubWallet_1.SubWallet(address, scanHeight, timestamp, publicKeys.publicSpendKey, privateSpendKey);
         this.subWallets.set(publicKeys.publicSpendKey, subWallet);

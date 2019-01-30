@@ -377,6 +377,23 @@ function roundTrip(
        'getSpendKeys works',
        'getSpendKeys doesn\'t work!');
 
+    await tester.test(async () => {
+        const keyWallet = WalletBackend.importWalletFromKeys(
+            daemon, 0,
+            '1f3f6c220dd9f97619dbf44d967f79f3041b9b1c63da2c895f980f1411d5d704',
+            '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f', {
+                addressPrefix: 8411,
+            },
+        ) as WalletBackend;
+
+        const address: string = keyWallet.getPrimaryAddress();
+        
+        return address === 'dg5NZstxyAegrTA1Z771tPZaf13V6YHAjUjAieQfjwCb6P1eYHuMmwRcDcQ1eAs41sQrh98FjBXn257HZzh2CCwE2spKE2gmA';
+
+    }, 'Testing supplied config is applied',
+       'Supplied config applied correctly',
+       'Supplied config not applied!');
+
     if (doPerformanceTests) {
         /* TODO: Maybe use a remote node? */
         await tester.test(async () => {
@@ -411,7 +428,7 @@ function roundTrip(
         await tester.test(async () => {
 
             /* Just random public + private keys */
-            const derivation: string = CryptoUtils.generateKeyDerivation(
+            const derivation: string = CryptoUtils().generateKeyDerivation(
                 'f235acd76ee38ec4f7d95123436200f9ed74f9eb291b1454fbc30742481be1ab',
                 '89df8c4d34af41a51cfae0267e8254cadd2298f9256439fa1cfa7e25ee606606',
             );
@@ -422,7 +439,7 @@ function roundTrip(
 
             for (let i = 0; i < loopIterations; i++) {
                 /* Use i as output index to prevent optimization */
-                const derivedOutputKey = CryptoUtils.underivePublicKey(
+                const derivedOutputKey = CryptoUtils().underivePublicKey(
                     derivation, i,
                     '4a078e76cd41a3d3b534b83dc6f2ea2de500b653ca82273b7bfad8045d85a400',
                 );
@@ -449,7 +466,7 @@ function roundTrip(
 
             for (let i = 0; i < loopIterations; i++) {
                 /* Just random public + private keys */
-                const derivation: string = CryptoUtils.generateKeyDerivation(
+                const derivation: string = CryptoUtils().generateKeyDerivation(
                     'f235acd76ee38ec4f7d95123436200f9ed74f9eb291b1454fbc30742481be1ab',
                     '89df8c4d34af41a51cfae0267e8254cadd2298f9256439fa1cfa7e25ee606606',
                 );

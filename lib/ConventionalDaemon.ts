@@ -4,13 +4,12 @@
 
 import * as _ from 'lodash';
 
+import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { Block } from './Types';
 import { validateAddresses } from './ValidateParameters';
 import { WalletError, WalletErrorCode } from './WalletError';
-
-import config from './Config';
 
 /* REEEEE ADD TYPES */
 const TurtleCoind = require('turtlecoin-rpc').TurtleCoind;
@@ -74,7 +73,7 @@ export class ConventionalDaemon implements IDaemon {
             host: daemonHost,
             port: daemonPort,
             ssl: false,
-            timeout: config.requestTimeout,
+            timeout: Config.requestTimeout,
         });
     }
 
@@ -129,7 +128,7 @@ export class ConventionalDaemon implements IDaemon {
 
         this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
-        this.lastKnownHashrate = info.difficulty / config.blockTargetTime;
+        this.lastKnownHashrate = info.difficulty / Config.blockTargetTime;
     }
 
     /**

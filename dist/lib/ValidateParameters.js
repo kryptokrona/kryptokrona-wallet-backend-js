@@ -18,7 +18,7 @@ const Config_1 = require("./Config");
 function validateAddresses(addresses, integratedAddressesAllowed) {
     for (const address of addresses) {
         try {
-            const parsed = CnUtils_1.CryptoUtils.decodeAddress(address);
+            const parsed = CnUtils_1.CryptoUtils().decodeAddress(address);
             if (parsed.paymentId.length !== 0 && !integratedAddressesAllowed) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_IS_INTEGRATED);
             }
@@ -65,11 +65,11 @@ exports.validateDestinations = validateDestinations;
  */
 function validateIntegratedAddresses(destinations, paymentID) {
     for (const [destination, amount] of destinations) {
-        if (destination.length !== Config_1.default.integratedAddressLength) {
+        if (destination.length !== Config_1.Config.integratedAddressLength) {
             continue;
         }
         /* Extract the payment ID */
-        const parsedAddress = CnUtils_1.CryptoUtils.decodeAddress(destination);
+        const parsedAddress = CnUtils_1.CryptoUtils().decodeAddress(destination);
         if (paymentID === '') {
             paymentID = parsedAddress.paymentId;
         }
@@ -91,7 +91,7 @@ function validateOurAddresses(addresses, subWallets) {
         return error;
     }
     for (const address of addresses) {
-        const parsedAddress = CnUtils_1.CryptoUtils.decodeAddress(address);
+        const parsedAddress = CnUtils_1.CryptoUtils().decodeAddress(address);
         const keys = subWallets.getPublicSpendKeys();
         if (!keys.includes(parsedAddress.publicSpendKey)) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_NOT_IN_WALLET, `The address given (${address}) does not exist in the wallet ` +
@@ -109,7 +109,7 @@ exports.validateOurAddresses = validateOurAddresses;
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
 function validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight) {
-    if (fee < Config_1.default.minimumFee) {
+    if (fee < Config_1.Config.minimumFee) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.FEE_TOO_SMALL);
     }
     if (!Number.isInteger(fee)) {
@@ -142,7 +142,7 @@ function validateMixin(mixin, height) {
     if (!Number.isInteger(mixin)) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NON_INTEGER_GIVEN);
     }
-    const [minMixin, maxMixin] = Config_1.default.mixinLimits.getMixinLimitsByHeight(height);
+    const [minMixin, maxMixin] = Config_1.Config.mixinLimits.getMixinLimitsByHeight(height);
     if (mixin < minMixin) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.MIXIN_TOO_SMALL, `The mixin value given (${mixin}) is lower than the minimum mixin ` +
             `allowed (${minMixin})`);

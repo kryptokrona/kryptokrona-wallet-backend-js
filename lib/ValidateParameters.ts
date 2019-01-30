@@ -6,11 +6,11 @@ import deepEqual = require('deep-equal');
 
 import * as _ from 'lodash';
 
-import { CryptoUtils } from './CnUtils';
+import { CryptoUtils} from './CnUtils';
 import { SubWallets } from './SubWallets';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
-import config from './Config';
+import { Config } from './Config';
 
 /**
  * @param addresses The addresses to validate
@@ -25,7 +25,7 @@ export function validateAddresses(
 
     for (const address of addresses) {
         try {
-            const parsed = CryptoUtils.decodeAddress(address);
+            const parsed = CryptoUtils().decodeAddress(address);
 
             if (parsed.paymentId.length !== 0 && !integratedAddressesAllowed) {
                 return new WalletError(WalletErrorCode.ADDRESS_IS_INTEGRATED);
@@ -82,12 +82,12 @@ export function validateIntegratedAddresses(
     paymentID: string): WalletError {
 
     for (const [destination, amount] of destinations) {
-        if (destination.length !== config.integratedAddressLength) {
+        if (destination.length !== Config.integratedAddressLength) {
             continue;
         }
 
         /* Extract the payment ID */
-        const parsedAddress = CryptoUtils.decodeAddress(destination);
+        const parsedAddress = CryptoUtils().decodeAddress(destination);
 
         if (paymentID === '') {
             paymentID = parsedAddress.paymentId;
@@ -115,7 +115,7 @@ export function validateOurAddresses(
     }
 
     for (const address of addresses) {
-        const parsedAddress = CryptoUtils.decodeAddress(address);
+        const parsedAddress = CryptoUtils().decodeAddress(address);
 
         const keys: string[] = subWallets.getPublicSpendKeys();
 
@@ -145,7 +145,7 @@ export function validateAmount(
     subWallets: SubWallets,
     currentHeight: number): WalletError {
 
-    if (fee < config.minimumFee) {
+    if (fee < Config.minimumFee) {
         return new WalletError(WalletErrorCode.FEE_TOO_SMALL);
     }
 
@@ -188,7 +188,7 @@ export function validateMixin(mixin: number, height: number): WalletError {
         return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
     }
 
-    const [minMixin, maxMixin] = config.mixinLimits.getMixinLimitsByHeight(height);
+    const [minMixin, maxMixin] = Config.mixinLimits.getMixinLimitsByHeight(height);
 
     if (mixin < minMixin) {
         return new WalletError(

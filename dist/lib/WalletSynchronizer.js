@@ -131,7 +131,7 @@ class WalletSynchronizer {
     }
     processBlock(block, ourInputs) {
         const txData = new Types_1.TransactionData();
-        if (Config_1.default.scanCoinbaseTransactions) {
+        if (Config_1.Config.scanCoinbaseTransactions) {
             const tx = this.processCoinbaseTransaction(block, ourInputs);
             if (tx) {
                 txData.transactionsToAdd.push(tx);
@@ -194,12 +194,12 @@ class WalletSynchronizer {
      */
     processTransactionOutputs(rawTX, blockHeight) {
         const inputs = [];
-        const derivation = CnUtils_1.CryptoUtils.generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
+        const derivation = CnUtils_1.CryptoUtils().generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
         const spendKeys = this.subWallets.getPublicSpendKeys();
         for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
             /* Derive the spend key from the transaction, using the previous
                derivation */
-            const derivedSpendKey = CnUtils_1.CryptoUtils.underivePublicKey(derivation, outputIndex, output.key);
+            const derivedSpendKey = CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, output.key);
             /* See if the derived spend key matches any of our spend keys */
             if (!_.includes(spendKeys, derivedSpendKey)) {
                 continue;
