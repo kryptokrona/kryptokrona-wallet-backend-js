@@ -7,6 +7,9 @@ import {
     UnconfirmedInputJSON,
 } from './JsonSerialization';
 
+/**
+ * @hidden
+ */
 export class Block {
     public static fromJSON(json: any): Block {
         const block = Object.create(Block.prototype);
@@ -54,6 +57,9 @@ export class Block {
     }
 }
 
+/**
+ * @hidden
+ */
 export class RawCoinbaseTransaction {
     public static fromJSON(json: any): RawCoinbaseTransaction {
         const coinbaseTX = Object.create(RawCoinbaseTransaction.prototype);
@@ -95,6 +101,9 @@ export class RawCoinbaseTransaction {
     }
 }
 
+/**
+ * @hidden
+ */
 export class RawTransaction extends RawCoinbaseTransaction {
     public static fromJSON(json: any): RawTransaction {
         const coinbaseTX = Object.create(RawTransaction.prototype);
@@ -135,6 +144,9 @@ export class RawTransaction extends RawCoinbaseTransaction {
     }
 }
 
+/**
+ *
+ */
 export class Transaction {
 
     public static fromJSON(json: TransactionJSON): Transaction {
@@ -241,6 +253,9 @@ export class Transaction {
     }
 }
 
+/**
+ * @hidden
+ */
 export class TransactionInput {
 
     public static fromJSON(json: TransactionInputJSON): TransactionInput {
@@ -354,6 +369,9 @@ export class TransactionInput {
 /* A structure just used to display locked balance, due to change from
    sent transactions. We just need the amount and a unique identifier
    (hash+key), since we can't spend it, we don't need all the other stuff */
+/**
+ * @hidden
+ */
 export class UnconfirmedInput {
 
     public static fromJSON(json: UnconfirmedInputJSON): UnconfirmedInput {
@@ -398,6 +416,9 @@ export class UnconfirmedInput {
     }
 }
 
+/**
+ * @hidden
+ */
 export class KeyOutput {
     public static fromJSON(json: any): KeyOutput {
         const keyOutput = Object.create(KeyOutput.prototype);
@@ -428,6 +449,9 @@ export class KeyOutput {
     }
 }
 
+/**
+ * @hidden
+ */
 export class KeyInput {
     public static fromJSON(json: any): KeyInput {
         const keyInput = Object.create(KeyInput.prototype);
@@ -460,6 +484,9 @@ export class KeyInput {
     }
 }
 
+/**
+ * @hidden
+ */
 export class TransactionData {
     public transactionsToAdd: Transaction[] = [];
 
@@ -470,6 +497,9 @@ export class TransactionData {
     public keyImagesToMarkSpent: Array<[string, string]> = [];
 }
 
+/**
+ * @hidden
+ */
 export class TxInputAndOwner {
     /* The input */
     public readonly input: TransactionInput;

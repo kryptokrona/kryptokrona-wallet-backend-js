@@ -1,4 +1,7 @@
 import { TransactionInputJSON, TransactionJSON, UnconfirmedInputJSON } from './JsonSerialization';
+/**
+ * @hidden
+ */
 export declare class Block {
     static fromJSON(json: any): Block;
     readonly coinbaseTransaction: RawCoinbaseTransaction;
@@ -8,6 +11,9 @@ export declare class Block {
     readonly blockTimestamp: number;
     constructor(coinbaseTransaction: RawCoinbaseTransaction, transactions: RawTransaction[], blockHeight: number, blockHash: string, blockTimestamp: number);
 }
+/**
+ * @hidden
+ */
 export declare class RawCoinbaseTransaction {
     static fromJSON(json: any): RawCoinbaseTransaction;
     readonly keyOutputs: KeyOutput[];
@@ -16,12 +22,18 @@ export declare class RawCoinbaseTransaction {
     readonly unlockTime: number;
     constructor(keyOutputs: KeyOutput[], hash: string, transactionPublicKey: string, unlockTime: number);
 }
+/**
+ * @hidden
+ */
 export declare class RawTransaction extends RawCoinbaseTransaction {
     static fromJSON(json: any): RawTransaction;
     readonly paymentID: string;
     readonly keyInputs: KeyInput[];
     constructor(keyOutputs: KeyOutput[], hash: string, transactionPublicKey: string, unlockTime: number, paymentID: string, keyInputs: KeyInput[]);
 }
+/**
+ *
+ */
 export declare class Transaction {
     static fromJSON(json: TransactionJSON): Transaction;
     transfers: Map<string, number>;
@@ -37,6 +49,9 @@ export declare class Transaction {
     isFusionTransaction(): boolean;
     toJSON(): TransactionJSON;
 }
+/**
+ * @hidden
+ */
 export declare class TransactionInput {
     static fromJSON(json: TransactionInputJSON): TransactionInput;
     readonly keyImage: string;
@@ -52,6 +67,9 @@ export declare class TransactionInput {
     constructor(keyImage: string, amount: number, blockHeight: number, transactionPublicKey: string, transactionIndex: number, globalOutputIndex: number | undefined, key: string, spendHeight: number, unlockTime: number, parentTransactionHash: string);
     toJSON(): TransactionInputJSON;
 }
+/**
+ * @hidden
+ */
 export declare class UnconfirmedInput {
     static fromJSON(json: UnconfirmedInputJSON): UnconfirmedInput;
     readonly amount: number;
@@ -60,6 +78,9 @@ export declare class UnconfirmedInput {
     constructor(amount: number, key: string, parentTransactionHash: string);
     toJSON(): UnconfirmedInputJSON;
 }
+/**
+ * @hidden
+ */
 export declare class KeyOutput {
     static fromJSON(json: any): KeyOutput;
     readonly key: string;
@@ -67,6 +88,9 @@ export declare class KeyOutput {
     readonly globalIndex?: number;
     constructor(key: string, amount: number);
 }
+/**
+ * @hidden
+ */
 export declare class KeyInput {
     static fromJSON(json: any): KeyInput;
     readonly amount: number;
@@ -74,11 +98,17 @@ export declare class KeyInput {
     readonly outputIndexes: number[];
     constructor(amount: number, keyImage: string, outputIndexes: number[]);
 }
+/**
+ * @hidden
+ */
 export declare class TransactionData {
     transactionsToAdd: Transaction[];
     inputsToAdd: Array<[string, TransactionInput]>;
     keyImagesToMarkSpent: Array<[string, string]>;
 }
+/**
+ * @hidden
+ */
 export declare class TxInputAndOwner {
     readonly input: TransactionInput;
     readonly privateSpendKey: string;

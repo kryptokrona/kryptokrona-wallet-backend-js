@@ -4,6 +4,9 @@
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
 const JsonSerialization_1 = require("./JsonSerialization");
+/**
+ * @hidden
+ */
 class Block {
     static fromJSON(json) {
         const block = Object.create(Block.prototype);
@@ -24,6 +27,9 @@ class Block {
     }
 }
 exports.Block = Block;
+/**
+ * @hidden
+ */
 class RawCoinbaseTransaction {
     static fromJSON(json) {
         const coinbaseTX = Object.create(RawCoinbaseTransaction.prototype);
@@ -42,6 +48,9 @@ class RawCoinbaseTransaction {
     }
 }
 exports.RawCoinbaseTransaction = RawCoinbaseTransaction;
+/**
+ * @hidden
+ */
 class RawTransaction extends RawCoinbaseTransaction {
     static fromJSON(json) {
         const coinbaseTX = Object.create(RawTransaction.prototype);
@@ -61,6 +70,9 @@ class RawTransaction extends RawCoinbaseTransaction {
     }
 }
 exports.RawTransaction = RawTransaction;
+/**
+ *
+ */
 class Transaction {
     static fromJSON(json) {
         const transaction = Object.create(Transaction.prototype);
@@ -109,6 +121,9 @@ class Transaction {
     }
 }
 exports.Transaction = Transaction;
+/**
+ * @hidden
+ */
 class TransactionInput {
     static fromJSON(json) {
         const transactionInput = Object.create(TransactionInput.prototype);
@@ -156,6 +171,9 @@ exports.TransactionInput = TransactionInput;
 /* A structure just used to display locked balance, due to change from
    sent transactions. We just need the amount and a unique identifier
    (hash+key), since we can't spend it, we don't need all the other stuff */
+/**
+ * @hidden
+ */
 class UnconfirmedInput {
     static fromJSON(json) {
         const unconfirmedInput = Object.create(UnconfirmedInput.prototype);
@@ -179,6 +197,9 @@ class UnconfirmedInput {
     }
 }
 exports.UnconfirmedInput = UnconfirmedInput;
+/**
+ * @hidden
+ */
 class KeyOutput {
     static fromJSON(json) {
         const keyOutput = Object.create(KeyOutput.prototype);
@@ -194,6 +215,9 @@ class KeyOutput {
     }
 }
 exports.KeyOutput = KeyOutput;
+/**
+ * @hidden
+ */
 class KeyInput {
     static fromJSON(json) {
         const keyInput = Object.create(KeyInput.prototype);
@@ -210,6 +234,9 @@ class KeyInput {
     }
 }
 exports.KeyInput = KeyInput;
+/**
+ * @hidden
+ */
 class TransactionData {
     constructor() {
         this.transactionsToAdd = [];
@@ -220,6 +247,9 @@ class TransactionData {
     }
 }
 exports.TransactionData = TransactionData;
+/**
+ * @hidden
+ */
 class TxInputAndOwner {
     constructor(input, privateSpendKey, publicSpendKey) {
         this.input = input;
