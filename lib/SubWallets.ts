@@ -508,4 +508,20 @@ export class SubWallets {
     public getNumTransactions(): number {
         return this.transactions.length;
     }
+
+    /**
+     * Get all unconfirmed transactions in a wallet container
+     */
+    public getUnconfirmedTransactions(): Transaction[] {
+        return this.lockedTransactions;
+    }
+
+    /**
+     * Get the number of unconfirmed transactions in the wallet container. Can be used
+     * if you want to avoid fetching every transactions repeatedly when nothing
+     * has changed.
+     */
+    public getNumUnconfirmedTransactions(): number {
+        return this.lockedTransactions.length;
+    }
 }

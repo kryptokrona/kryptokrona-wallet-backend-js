@@ -562,7 +562,7 @@ class WalletBackend extends events_1.EventEmitter {
      * Get all transactions in a wallet container
      */
     getTransactions() {
-        return this.subWallets.getTransactions();
+        return this.subWallets.getTransactions().concat(this.subWallets.getUnconfirmedTransactions());
     }
     /**
      * Get the number of transactions in the wallet container. Can be used
@@ -570,7 +570,8 @@ class WalletBackend extends events_1.EventEmitter {
      * has changed.
      */
     getNumTransactions() {
-        return this.subWallets.getNumTransactions();
+        return this.subWallets.getNumTransactions()
+            + this.subWallets.getNumUnconfirmedTransactions();
     }
     /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`

@@ -174,4 +174,14 @@ export declare class SubWallets {
      * has changed.
      */
     getNumTransactions(): number;
+    /**
+     * Get all unconfirmed transactions in a wallet container
+     */
+    getUnconfirmedTransactions(): Transaction[];
+    /**
+     * Get the number of unconfirmed transactions in the wallet container. Can be used
+     * if you want to avoid fetching every transactions repeatedly when nothing
+     * has changed.
+     */
+    getNumUnconfirmedTransactions(): number;
 }

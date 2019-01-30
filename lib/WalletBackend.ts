@@ -874,7 +874,9 @@ export class WalletBackend extends EventEmitter {
      * Get all transactions in a wallet container
      */
     public getTransactions(): Transaction[] {
-        return this.subWallets.getTransactions();
+        return this.subWallets.getTransactions().concat(
+               this.subWallets.getUnconfirmedTransactions(),
+        );
     }
 
     /**
@@ -883,7 +885,8 @@ export class WalletBackend extends EventEmitter {
      * has changed.
      */
     public getNumTransactions(): number {
-        return this.subWallets.getNumTransactions();
+        return this.subWallets.getNumTransactions()
+             + this.subWallets.getNumUnconfirmedTransactions();
     }
 
     /**
