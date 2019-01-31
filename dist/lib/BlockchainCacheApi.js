@@ -160,14 +160,16 @@ class BlockchainCacheApi {
     }
     getCancelledTransactions(transactionHashes) {
         return __awaiter(this, void 0, void 0, function* () {
-            /*
-            const data = await this.daemon.getTransactionsStatus({
-                transactionHashes,
-            });
-    
-            return data.transactionsUnknown || [];
-            */
-            return [];
+            try {
+                const data = yield this.makePostRequest('/get_transactions_status', {
+                    transactionHashes,
+                });
+                return data.transactionsUnknown || [];
+            }
+            catch (err) {
+                Logger_1.logger.log('Failed to get transactions status: ' + err.toString(), Logger_1.LogLevel.ERROR, Logger_1.LogCategory.DAEMON);
+                return [];
+            }
         });
     }
     /**

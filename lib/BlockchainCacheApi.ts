@@ -187,14 +187,21 @@ export class BlockchainCacheApi implements IDaemon {
     }
 
     public async getCancelledTransactions(transactionHashes: string[]): Promise<string[]> {
-        /*
-        const data = await this.daemon.getTransactionsStatus({
-            transactionHashes,
-        });
+        try {
+            const data = await this.makePostRequest('/get_transactions_status', {
+                transactionHashes,
+            });
 
-        return data.transactionsUnknown || [];
-        */
-        return [];
+            return data.transactionsUnknown || [];
+        } catch (err) {
+            logger.log(
+                'Failed to get transactions status: ' + err.toString(),
+                LogLevel.ERROR,
+                LogCategory.DAEMON,
+            );
+
+            return [];
+        }
     }
 
     /**
