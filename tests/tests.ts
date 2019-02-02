@@ -6,6 +6,7 @@ import deepEqual = require('deep-equal');
 import {
     ConventionalDaemon, IDaemon, prettyPrintAmount, SUCCESS, validateAddresses,
     WalletBackend, WalletError, WalletErrorCode, BlockchainCacheApi, LogLevel,
+    isValidMnemonic, isValidMnemonicWord
 } from '../lib/index';
 
 import { CryptoUtils } from '../lib/CnUtils';
@@ -390,12 +391,26 @@ function roundTrip(
         );
 
         const address: string = (keyWallet as WalletBackend).getPrimaryAddress();
-        
+
         return address === 'dg5NZstxyAegrTA1Z771tPZaf13V6YHAjUjAieQfjwCb6P1eYHuMmwRcDcQ1eAs41sQrh98FjBXn257HZzh2CCwE2spKE2gmA';
 
     }, 'Testing supplied config is applied',
        'Supplied config applied correctly',
        'Supplied config not applied!');
+
+    await tester.test(async () => {
+        const test1: boolean = !isValidMnemonicWord('aaaaa');
+        const test2: boolean = isValidMnemonicWord('abbey');
+        const test3: boolean = isValidMnemonic('nugget lazy gang sonic vulture exit veteran poverty affair ringing opus soapy sonic afield dating lectures worry tuxedo ruffled rated locker bested aunt bifocals opus')[0];
+        const test4: boolean = !isValidMnemonic('')[0];
+        const test5: boolean = !isValidMnemonic('nugget lazy gang sonic vulture exit veteran poverty affair ringing opus soapy sonic afield dating lectures worry tuxedo ruffled rated locker bested aunt bifocals soapy')[0];
+        const test6: boolean = !isValidMnemonic('a lazy gang sonic vulture exit veteran poverty affair ringing opus soapy sonic afield dating lectures worry tuxedo ruffled rated locker bested aunt bifocals opus')[0];
+
+        return test1 && test2 && test3 && test4 && test5 && test6;
+
+    }, 'Testing isValidMnemonic',
+       'isValidMnemonic works',
+       'isValidMnemonic doesnt\' work!');
 
     if (doPerformanceTests) {
         /* TODO: Maybe use a remote node? */

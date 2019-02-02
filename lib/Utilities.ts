@@ -11,6 +11,8 @@ import {
     MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR, MAX_BLOCK_SIZE_INITIAL,
 } from './Constants';
 
+import { English } from './WordList';
+
 /**
  * Verifies if a key or payment ID is valid (64 char hex)
  */
@@ -193,4 +195,49 @@ export function prettyPrintBytes(bytes: number): string {
     }
 
     return bytes.toFixed(2) + ' ' + suffixes[selectedSuffix];
+}
+
+/**
+ * Returns whether the given word is in the mnemonic english dictionary. Note that
+ * just because all the words are valid, does not mean the mnemonic is valid.
+ *
+ * Use isValidMnemonic to verify that.
+ */
+export function isValidMnemonicWord(word: string): boolean {
+    return English.includes(word);
+}
+
+/**
+ * Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage
+ * describing what is invalid.
+ */
+export function isValidMnemonic(mnemonic: string): [boolean, string] {
+    const words = mnemonic.split(' ').map((x) => x.toLowerCase());
+
+    if (words.length !== 25) {
+        return [false, 'The mnemonic seed given is the wrong length.'];
+    }
+
+    const invalidWords = [];
+
+    for (const word of words) {
+        if (!isValidMnemonicWord(word)) {
+            invalidWords.push(word);
+        }
+    }
+
+    if (invalidWords.length !== 0) {
+        return [
+            false,
+            'The following mnemonic words are not in the english word list: '
+                + invalidWords.join(', '),
+        ];
+    }
+
+    try {
+        CryptoUtils().createAddressFromMnemonic(words.join(' '));
+        return [true, ''];
+    } catch (err) {
+        return [false, 'Mnemonic checksum word is invalid'];
+    }
 }

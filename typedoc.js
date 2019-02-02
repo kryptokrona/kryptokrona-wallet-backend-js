@@ -15,6 +15,7 @@ module.exports = {
     './lib/WalletSynchronizer.ts',
     './lib/index.ts',
     './lib/Transfer.ts',
+    './lib/WordList.ts',
   ],
   mode: 'modules'
 }

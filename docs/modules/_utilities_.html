@@ -70,6 +70,8 @@
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#ishex64" class="tsd-kind-icon">is<wbr>Hex64</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#isvalidmnemonic" class="tsd-kind-icon">is<wbr>Valid<wbr>Mnemonic</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#isvalidmnemonicword" class="tsd-kind-icon">is<wbr>Valid<wbr>Mnemonic<wbr>Word</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#prettyprintamount" class="tsd-kind-icon">pretty<wbr>Print<wbr>Amount</a></li>
 							</ul>
 						</section>
@@ -88,7 +90,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/b7b3b55/lib/Utilities.ts#L17">Utilities.ts:17</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1047d8c/lib/Utilities.ts#L19">Utilities.ts:19</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -107,6 +109,65 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="isvalidmnemonic" class="tsd-anchor"></a>
+					<h3>is<wbr>Valid<wbr>Mnemonic</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Valid<wbr>Mnemonic<span class="tsd-signature-symbol">(</span>mnemonic<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1047d8c/lib/Utilities.ts#L214">Utilities.ts:214</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage
+									describing what is invalid.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>mnemonic: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="isvalidmnemonicword" class="tsd-anchor"></a>
+					<h3>is<wbr>Valid<wbr>Mnemonic<wbr>Word</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Valid<wbr>Mnemonic<wbr>Word<span class="tsd-signature-symbol">(</span>word<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1047d8c/lib/Utilities.ts#L206">Utilities.ts:206</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns whether the given word is in the mnemonic english dictionary. Note that
+									just because all the words are valid, does not mean the mnemonic is valid.</p>
+								</div>
+								<p>Use isValidMnemonic to verify that.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>word: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
 					<a name="prettyprintamount" class="tsd-anchor"></a>
 					<h3>pretty<wbr>Print<wbr>Amount</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
@@ -116,7 +177,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/b7b3b55/lib/Utilities.ts#L89">Utilities.ts:89</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1047d8c/lib/Utilities.ts#L91">Utilities.ts:91</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -182,6 +243,12 @@
 				<ul class="before-current">
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_utilities_.html#ishex64" class="tsd-kind-icon">is<wbr>Hex64</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_utilities_.html#isvalidmnemonic" class="tsd-kind-icon">is<wbr>Valid<wbr>Mnemonic</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_utilities_.html#isvalidmnemonicword" class="tsd-kind-icon">is<wbr>Valid<wbr>Mnemonic<wbr>Word</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_utilities_.html#prettyprintamount" class="tsd-kind-icon">pretty<wbr>Print<wbr>Amount</a>

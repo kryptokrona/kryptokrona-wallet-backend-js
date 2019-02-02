@@ -86,3 +86,9 @@ export declare function getMaxTxSize(currentHeight: number): number;
  * @hidden
  */
 export declare function prettyPrintBytes(bytes: number): string;
+export declare function isValidMnemonicWord(word: string): boolean;
+/**
+ * Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage
+ * describing what is invalid.
+ */
+export declare function isValidMnemonic(mnemonic: string): [boolean, string];

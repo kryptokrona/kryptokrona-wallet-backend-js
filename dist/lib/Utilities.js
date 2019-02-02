@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const Constants_1 = require("./Constants");
+const WordList_1 = require("./WordList");
 /**
  * Verifies if a key or payment ID is valid (64 char hex)
  */
@@ -173,3 +174,38 @@ function prettyPrintBytes(bytes) {
     return bytes.toFixed(2) + ' ' + suffixes[selectedSuffix];
 }
 exports.prettyPrintBytes = prettyPrintBytes;
+function isValidMnemonicWord(word) {
+    return WordList_1.English.includes(word);
+}
+exports.isValidMnemonicWord = isValidMnemonicWord;
+/**
+ * Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage
+ * describing what is invalid.
+ */
+function isValidMnemonic(mnemonic) {
+    const words = mnemonic.split(' ').map((x) => x.toLowerCase());
+    if (words.length !== 25) {
+        return [false, 'The mnemonic seed given is the wrong length.'];
+    }
+    const invalidWords = [];
+    for (const word of words) {
+        if (!isValidMnemonicWord(word)) {
+            invalidWords.push(word);
+        }
+    }
+    if (invalidWords.length !== 0) {
+        return [
+            false,
+            'The following mnemonic words are not in the english word list: '
+                + invalidWords.join(', '),
+        ];
+    }
+    try {
+        CnUtils_1.CryptoUtils().createAddressFromMnemonic(words.join(' '));
+        return [true, ''];
+    }
+    catch (err) {
+        return [false, 'Mnemonic checksum word is invalid'];
+    }
+}
+exports.isValidMnemonic = isValidMnemonic;
