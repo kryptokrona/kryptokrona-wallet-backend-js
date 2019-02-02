@@ -119,14 +119,14 @@ export declare class WalletBackend extends EventEmitter {
      *
      * Usage:
      * ```
-     * const wallet = WalletBackend.openWalletFromFile('mywallet.wallet', 'hunter2');
+     * const [wallet, error] = WalletBackend.openWalletFromFile('mywallet.wallet', 'hunter2');
      *
-     * if (wallet instanceof WalletError) {
-     *      console.log('Failed to open wallet: ' + wallet.toString());
+     * if (error) {
+     *      console.log('Failed to open wallet: ' + error.toString());
      * }
      * ```
      */
-    static openWalletFromFile(daemon: IDaemon, filename: string, password: string, config?: IConfig): WalletBackend | WalletError;
+    static openWalletFromFile(daemon: IDaemon, filename: string, password: string, config?: IConfig): [WalletBackend | undefined, WalletError | undefined];
     /**
      * @returns     Returns a WalletBackend, or a WalletError if the JSON is
      *              an invalid format
@@ -138,15 +138,15 @@ export declare class WalletBackend extends EventEmitter {
      * ```
      * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
      *
-     * const wallet = WalletBackend.loadWalletFromJSON(daemon, json);
+     * const [wallet, error] = WalletBackend.loadWalletFromJSON(daemon, json);
      *
-     * if (wallet instanceof WalletError) {
-     *      console.log('Failed to load wallet: ' + wallet.toString());
+     * if (error) {
+     *      console.log('Failed to load wallet: ' + error.toString());
      * }
      * ```
      *
      */
-    static loadWalletFromJSON(daemon: IDaemon, json: string, config?: IConfig): WalletBackend | WalletError;
+    static loadWalletFromJSON(daemon: IDaemon, json: string, config?: IConfig): [WalletBackend | undefined, WalletError | undefined];
     /**
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -166,14 +166,14 @@ export declare class WalletBackend extends EventEmitter {
      *              'puddle looking orbit rest agenda jukebox opened sarcasm ' +
      *              'solved eskimos';
      *
-     * const wallet = WalletBackend.importWalletFromSeed(daemon, 100000, seed);
+     * const [wallet, error] = WalletBackend.importWalletFromSeed(daemon, 100000, seed);
      *
-     * if (wallet instanceof WalletError) {
-     *      console.log('Failed to load wallet: ' + wallet.toString());
+     * if (error) {
+     *      console.log('Failed to load wallet: ' + error.toString());
      * }
      * ```
      */
-    static importWalletFromSeed(daemon: IDaemon, scanHeight: number, mnemonicSeed: string, config?: IConfig): WalletBackend | WalletError;
+    static importWalletFromSeed(daemon: IDaemon, scanHeight: number, mnemonicSeed: string, config?: IConfig): [WalletBackend | undefined, WalletError | undefined];
     /**
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -191,15 +191,15 @@ export declare class WalletBackend extends EventEmitter {
      * const privateViewKey = 'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01';
      * const privateSpendKey = 'f1b1e9a6f56241594ddabb243cdb39355a8b4a1a1c0343dde36f3b57835fe607';
      *
-     * const wallet = WalletBackend.importWalletFromSeed(daemon, 100000, privateViewKey, privateSpendKey);
+     * const [wallet, error] = WalletBackend.importWalletFromSeed(daemon, 100000, privateViewKey, privateSpendKey);
      *
-     * if (wallet instanceof WalletError) {
-     *      console.log('Failed to load wallet: ' + wallet.toString());
+     * if (error) {
+     *      console.log('Failed to load wallet: ' + error.toString());
      * }
      * ```
      *
      */
-    static importWalletFromKeys(daemon: IDaemon, scanHeight: number, privateViewKey: string, privateSpendKey: string, config?: IConfig): WalletBackend | WalletError;
+    static importWalletFromKeys(daemon: IDaemon, scanHeight: number, privateViewKey: string, privateSpendKey: string, config?: IConfig): [WalletBackend | undefined, WalletError | undefined];
     /**
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -213,7 +213,7 @@ export declare class WalletBackend extends EventEmitter {
      * This is useful for viewing your balance whilst not risking your funds
      * or private keys being stolen.
      */
-    static importViewWallet(daemon: IDaemon, scanHeight: number, privateViewKey: string, address: string, config?: IConfig): WalletBackend | WalletError;
+    static importViewWallet(daemon: IDaemon, scanHeight: number, privateViewKey: string, address: string, config?: IConfig): [WalletBackend | undefined, WalletError | undefined];
     /**
      * This method creates a new wallet instance with a random key pair.
      *

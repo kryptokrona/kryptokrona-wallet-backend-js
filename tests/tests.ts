@@ -81,14 +81,14 @@ function roundTrip(
     }
 
     /* Check we can re-open saved file */
-    const loadedWallet = WalletBackend.openWalletFromFile(
+    const [loadedWallet, error] = WalletBackend.openWalletFromFile(
         daemon, 'tmp.wallet', password,
     );
 
     /* Remove file */
     fs.unlinkSync('tmp.wallet');
 
-    if (loadedWallet instanceof WalletError) {
+    if (error) {
         return false;
     }
 
@@ -112,7 +112,7 @@ function roundTrip(
         const initialJSON = JSON.stringify(wallet, null, 4);
 
         /* Load a new wallet from the dumped JSON */
-        const loadedWallet = WalletBackend.loadWalletFromJSON(daemon, initialJSON);
+        const [loadedWallet, error] = WalletBackend.loadWalletFromJSON(daemon, initialJSON);
 
         /* Re-dump to JSON  */
         const finalJSON = JSON.stringify(loadedWallet, null, 4);
@@ -125,11 +125,11 @@ function roundTrip(
 
     await tester.test(async () => {
         /* Load a test file to check compatibility with C++ wallet backend */
-        const testWallet = WalletBackend.openWalletFromFile(
+        const [testWallet, error] = WalletBackend.openWalletFromFile(
             daemon, './tests/test.wallet', 'password',
         );
 
-        return testWallet instanceof WalletBackend;
+        return error === undefined;
 
     }, 'Loading test wallet file',
        'Wallet loading succeeded',
@@ -200,14 +200,15 @@ function roundTrip(
        'Special passwords do not work as expected!');
 
     await tester.test(async () => {
-        const seedWallet = WalletBackend.importWalletFromSeed(
+        const [seedWallet, error] = WalletBackend.importWalletFromSeed(
             daemon, 0,
             'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon ' +
             'tadpoles hacksaw dormant hence abort listen history atom cadets stylishly ' +
             'snout vegan girth guest history',
-        ) as WalletBackend;
+        );
 
-        const [privateSpendKey, privateViewKey] = seedWallet.getPrimaryAddressPrivateKeys();
+        const [privateSpendKey, privateViewKey]
+            = (seedWallet as WalletBackend).getPrimaryAddressPrivateKeys();
 
         return privateSpendKey === 'd61a57a59318d70ff77cc7f8ad7f62887c828da1d5d3f3b0d2f7d3fa596c2904'
             && privateViewKey === '688e5229df6463ec4c27f6ee11c3f1d3d4b4d2480c0aabe64fb807182cfdc801';
@@ -217,13 +218,13 @@ function roundTrip(
        'Mnemonic seed wallet has incorrect keys!');
 
     await tester.test(async () => {
-        const keyWallet = WalletBackend.importWalletFromKeys(
+        const [keyWallet, error] = WalletBackend.importWalletFromKeys(
             daemon, 0,
             '688e5229df6463ec4c27f6ee11c3f1d3d4b4d2480c0aabe64fb807182cfdc801',
             'd61a57a59318d70ff77cc7f8ad7f62887c828da1d5d3f3b0d2f7d3fa596c2904',
-        ) as WalletBackend;
+        );
 
-        const seed = keyWallet.getMnemonicSeed() as string;
+        const seed = (keyWallet as WalletBackend).getMnemonicSeed() as string;
 
         return seed === 'skulls woozy ouch summon gifts huts waffle ourselves obtains ' +
                         'hexagon tadpoles hacksaw dormant hence abort listen history ' +
@@ -234,13 +235,13 @@ function roundTrip(
        'Deterministic key wallet has incorrect seed!');
 
     await tester.test(async () => {
-        const keyWallet = WalletBackend.importWalletFromKeys(
+        const [keyWallet, error] = WalletBackend.importWalletFromKeys(
             daemon, 0,
             '1f3f6c220dd9f97619dbf44d967f79f3041b9b1c63da2c895f980f1411d5d704',
             '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f',
-        ) as WalletBackend;
+        );
 
-        const err = keyWallet.getMnemonicSeed() as WalletError;
+        const err = (keyWallet as WalletBackend).getMnemonicSeed() as WalletError;
 
         return err.errorCode === WalletErrorCode.KEYS_NOT_DETERMINISTIC;
 
@@ -249,13 +250,13 @@ function roundTrip(
        'Non deterministic wallet has seed!');
 
     await tester.test(async () => {
-        const viewWallet = WalletBackend.importViewWallet(
+        const [viewWallet, error] = WalletBackend.importViewWallet(
             daemon, 0,
             '3c6cfe7a29a371278abd9f5725a3d2af5eb73d88b4ed9b8d6c2ff993bbc4c20a',
             'TRTLuybJFCU8BjP18bH3VZCNAu1fZ2r3d85SsU2w3VnJAHoRfnzLKgtTK2b58nfwDu59hKxwVuSMhTN31gmUW8nN9aoAN9N8Qyb',
-        ) as WalletBackend;
+        );
 
-        const [privateSpendKey, privateViewKey] = viewWallet.getPrimaryAddressPrivateKeys();
+        const [privateSpendKey, privateViewKey] = (viewWallet as WalletBackend).getPrimaryAddressPrivateKeys();
 
         return privateSpendKey === '0'.repeat(64);
 
@@ -264,14 +265,14 @@ function roundTrip(
        'View wallet has private spend key!');
 
     await tester.test(async () => {
-        const seedWallet = WalletBackend.importWalletFromSeed(
+        const [seedWallet, error] = WalletBackend.importWalletFromSeed(
             daemon, 0,
             'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon ' +
             'tadpoles hacksaw dormant hence abort listen history atom cadets stylishly ' +
             'snout vegan girth guest history',
-        ) as WalletBackend;
+        );
 
-        const address = seedWallet.getPrimaryAddress();
+        const address = (seedWallet as WalletBackend).getPrimaryAddress();
 
         return address === 'TRTLv1s9JQeHAJFoHvcqVBPyHYom2ynKeK6dpYptbp8gQNzdzE73ZD' +
                            'kNmNurqfhhcMSUXpS1ZGEJKiKJUcPCyw7vYaCc354DCN1';
@@ -348,27 +349,29 @@ function roundTrip(
     await tester.test(async () => {
         const privateViewKey: string = '3c6cfe7a29a371278abd9f5725a3d2af5eb73d88b4ed9b8d6c2ff993bbc4c20a';
 
-        const viewWallet = WalletBackend.importViewWallet(
+        const [viewWallet, error] = WalletBackend.importViewWallet(
             daemon, 0,
             privateViewKey,
             'TRTLuybJFCU8BjP18bH3VZCNAu1fZ2r3d85SsU2w3VnJAHoRfnzLKgtTK2b58nfwDu59hKxwVuSMhTN31gmUW8nN9aoAN9N8Qyb',
-        ) as WalletBackend;
+        );
 
-        return viewWallet.getPrivateViewKey() === privateViewKey;
+        return (viewWallet as WalletBackend).getPrivateViewKey() === privateViewKey;
 
     }, 'Testing getPrivateViewKey',
        'getPrivateViewKey works',
        'getPrivateViewKey doesn\'t work!');
 
     await tester.test(async () => {
-        const keyWallet = WalletBackend.importWalletFromKeys(
+        const [keyWallet, error] = WalletBackend.importWalletFromKeys(
             daemon, 0,
             '1f3f6c220dd9f97619dbf44d967f79f3041b9b1c63da2c895f980f1411d5d704',
             '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f',
-        ) as WalletBackend;
+        );
+
+        const wallet = keyWallet as WalletBackend;
 
         const [publicSpendKey, privateSpendKey]
-            = keyWallet.getSpendKeys(keyWallet.getPrimaryAddress()) as [string, string];
+            = wallet.getSpendKeys(wallet.getPrimaryAddress()) as [string, string];
 
         return publicSpendKey === 'ff9b6e048297ee435d6219005974c2c8df620a4aca9ca5c4e13f071823482029' &&
                privateSpendKey === '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f';
@@ -378,15 +381,15 @@ function roundTrip(
        'getSpendKeys doesn\'t work!');
 
     await tester.test(async () => {
-        const keyWallet = WalletBackend.importWalletFromKeys(
+        const [keyWallet, error] = WalletBackend.importWalletFromKeys(
             daemon, 0,
             '1f3f6c220dd9f97619dbf44d967f79f3041b9b1c63da2c895f980f1411d5d704',
             '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f', {
                 addressPrefix: 8411,
             },
-        ) as WalletBackend;
+        );
 
-        const address: string = keyWallet.getPrimaryAddress();
+        const address: string = (keyWallet as WalletBackend).getPrimaryAddress();
         
         return address === 'dg5NZstxyAegrTA1Z771tPZaf13V6YHAjUjAieQfjwCb6P1eYHuMmwRcDcQ1eAs41sQrh98FjBXn257HZzh2CCwE2spKE2gmA';
 
@@ -487,12 +490,14 @@ function roundTrip(
            'generateKeyDerivation performance test failed!');
 
         await tester.test(async () => {
-            const wallet = WalletBackend.importWalletFromSeed(
+            const [walletTmp, error] = WalletBackend.importWalletFromSeed(
                 daemon, 0,
                 'skulls woozy ouch summon gifts huts waffle ourselves obtains hexagon ' +
                 'tadpoles hacksaw dormant hence abort listen history atom cadets stylishly ' +
                 'snout vegan girth guest history',
-            ) as WalletBackend;
+            );
+
+            const wallet = walletTmp as WalletBackend;
 
             const startTime = new Date().getTime();
 

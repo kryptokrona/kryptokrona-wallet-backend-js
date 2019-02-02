@@ -12,24 +12,23 @@ import { WalletError, WalletErrorCode } from './WalletError';
  * Open the wallet from the given filename with the given password and return
  * a JSON string. Uses pbkdf2 encryption, not the same as turtle-service
  *
- * @returns Returns either the wallet as a JSON string (can then be used with
- *                  loadWalletFromJSON) or a WalletError if password is wrong
- *                  or data is corrupted.
+ * Returns the JSON, and an error. If error is not undefined, the JSON will
+ * be an empty string.
  */
-export function openWallet(filename: string, password: string): string | WalletError {
+export function openWallet(filename: string, password: string): [string, WalletError | undefined] {
     let data: Buffer;
 
     try {
         data = fs.readFileSync(filename);
     } catch (err) {
-        return new WalletError(WalletErrorCode.FILENAME_NON_EXISTENT, err.toString());
+        return ['', new WalletError(WalletErrorCode.FILENAME_NON_EXISTENT, err.toString())];
     }
 
     /* Take a slice containing the wallet identifier magic bytes */
     const magicBytes1: Buffer = data.slice(0, IS_A_WALLET_IDENTIFIER.length);
 
     if (magicBytes1.compare(IS_A_WALLET_IDENTIFIER) !== 0) {
-        return new WalletError(WalletErrorCode.NOT_A_WALLET_FILE);
+        return ['', new WalletError(WalletErrorCode.NOT_A_WALLET_FILE)];
     }
 
     /* Remove the magic bytes */
@@ -53,7 +52,7 @@ export function openWallet(filename: string, password: string): string | WalletE
         /* Perform the decryption */
         decrypted = Buffer.concat([decipher.update(data), decipher.final()]);
     } catch (err) {
-        return new WalletError(WalletErrorCode.WRONG_PASSWORD);
+        return ['', new WalletError(WalletErrorCode.WRONG_PASSWORD)];
     }
 
     /* Grab the second set of magic bytes */
@@ -61,11 +60,11 @@ export function openWallet(filename: string, password: string): string | WalletE
 
     /* Verify the magic bytes are present */
     if (magicBytes2.compare(IS_CORRECT_PASSWORD_IDENTIFIER) !== 0) {
-        return new WalletError(WalletErrorCode.WRONG_PASSWORD);
+        return ['', new WalletError(WalletErrorCode.WRONG_PASSWORD)];
     }
 
     /* Remove the magic bytes */
     decrypted = decrypted.slice(IS_CORRECT_PASSWORD_IDENTIFIER.length, decrypted.length);
 
-    return decrypted.toString();
+    return [decrypted.toString(), undefined];
 }

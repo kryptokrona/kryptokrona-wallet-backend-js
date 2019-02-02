@@ -158,10 +158,10 @@ export class WalletBackend extends EventEmitter {
      *
      * Usage:
      * ```
-     * const wallet = WalletBackend.openWalletFromFile('mywallet.wallet', 'hunter2');
+     * const [wallet, error] = WalletBackend.openWalletFromFile('mywallet.wallet', 'hunter2');
      *
-     * if (wallet instanceof WalletError) {
-     *      console.log('Failed to open wallet: ' + wallet.toString());
+     * if (error) {
+     *      console.log('Failed to open wallet: ' + error.toString());
      * }
      * ```
      */
@@ -169,17 +169,17 @@ export class WalletBackend extends EventEmitter {
         daemon: IDaemon,
         filename: string,
         password: string,
-        config?: IConfig): WalletBackend | WalletError {
+        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
 
         MergeConfig(config);
 
-        const walletJSON = openWallet(filename, password);
+        const [walletJSON, error] = openWallet(filename, password);
 
-        if (walletJSON instanceof WalletError) {
-            return walletJSON as WalletError;
+        if (error) {
+            return [undefined, error];
         }
 
-        return WalletBackend.loadWalletFromJSON(daemon, walletJSON as string);
+        return WalletBackend.loadWalletFromJSON(daemon, walletJSON);
     }
 
     /**
@@ -193,10 +193,10 @@ export class WalletBackend extends EventEmitter {
      * ```
      * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
      *
-     * const wallet = WalletBackend.loadWalletFromJSON(daemon, json);
+     * const [wallet, error] = WalletBackend.loadWalletFromJSON(daemon, json);
      *
-     * if (wallet instanceof WalletError) {
-     *      console.log('Failed to load wallet: ' + wallet.toString());
+     * if (error) {
+     *      console.log('Failed to load wallet: ' + error.toString());
      * }
      * ```
      *
@@ -204,16 +204,16 @@ export class WalletBackend extends EventEmitter {
     public static loadWalletFromJSON(
         daemon: IDaemon,
         json: string,
-        config?: IConfig): WalletBackend | WalletError {
+        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
 
         MergeConfig(config);
 
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
             wallet.initAfterLoad(daemon);
-            return wallet;
+            return [wallet, undefined];
         } catch (err) {
-            return new WalletError(WalletErrorCode.WALLET_FILE_CORRUPTED);
+            return [undefined, new WalletError(WalletErrorCode.WALLET_FILE_CORRUPTED)];
         }
     }
 
@@ -236,10 +236,10 @@ export class WalletBackend extends EventEmitter {
      *              'puddle looking orbit rest agenda jukebox opened sarcasm ' +
      *              'solved eskimos';
      *
-     * const wallet = WalletBackend.importWalletFromSeed(daemon, 100000, seed);
+     * const [wallet, error] = WalletBackend.importWalletFromSeed(daemon, 100000, seed);
      *
-     * if (wallet instanceof WalletError) {
-     *      console.log('Failed to load wallet: ' + wallet.toString());
+     * if (error) {
+     *      console.log('Failed to load wallet: ' + error.toString());
      * }
      * ```
      */
@@ -247,7 +247,7 @@ export class WalletBackend extends EventEmitter {
         daemon: IDaemon,
         scanHeight: number,
         mnemonicSeed: string,
-        config?: IConfig): WalletBackend | WalletError {
+        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
 
         MergeConfig(config);
 
@@ -256,15 +256,15 @@ export class WalletBackend extends EventEmitter {
         try {
             keys = CryptoUtils().createAddressFromMnemonic(mnemonicSeed);
         } catch (err) {
-            return new WalletError(WalletErrorCode.INVALID_MNEMONIC, err.toString());
+            return [undefined, new WalletError(WalletErrorCode.INVALID_MNEMONIC, err.toString())];
         }
 
         if (scanHeight < 0) {
-            return new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN);
+            return [undefined, new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN)];
         }
 
         if (!Number.isInteger(scanHeight)) {
-            return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
+            return [undefined, new WalletError(WalletErrorCode.NON_INTEGER_GIVEN)];
         }
 
         /* Can't sync from the current scan height, not newly created */
@@ -275,7 +275,7 @@ export class WalletBackend extends EventEmitter {
             keys.spend.privateKey,
         );
 
-        return wallet;
+        return [wallet, undefined];
     }
 
     /**
@@ -295,10 +295,10 @@ export class WalletBackend extends EventEmitter {
      * const privateViewKey = 'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01';
      * const privateSpendKey = 'f1b1e9a6f56241594ddabb243cdb39355a8b4a1a1c0343dde36f3b57835fe607';
      *
-     * const wallet = WalletBackend.importWalletFromSeed(daemon, 100000, privateViewKey, privateSpendKey);
+     * const [wallet, error] = WalletBackend.importWalletFromSeed(daemon, 100000, privateViewKey, privateSpendKey);
      *
-     * if (wallet instanceof WalletError) {
-     *      console.log('Failed to load wallet: ' + wallet.toString());
+     * if (error) {
+     *      console.log('Failed to load wallet: ' + error.toString());
      * }
      * ```
      *
@@ -308,12 +308,12 @@ export class WalletBackend extends EventEmitter {
         scanHeight: number,
         privateViewKey: string,
         privateSpendKey: string,
-        config?: IConfig): WalletBackend | WalletError {
+        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
 
         MergeConfig(config);
 
         if (!isHex64(privateViewKey) || !isHex64(privateSpendKey)) {
-            return new WalletError(WalletErrorCode.INVALID_KEY_FORMAT);
+            return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
         }
 
         let keys;
@@ -321,15 +321,15 @@ export class WalletBackend extends EventEmitter {
         try {
             keys = CryptoUtils().createAddressFromKeys(privateSpendKey, privateViewKey);
         } catch (err) {
-            return new WalletError(WalletErrorCode.INVALID_KEY_FORMAT, err.toString());
+            return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT, err.toString())];
         }
 
         if (scanHeight < 0) {
-            return new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN);
+            return [undefined, new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN)];
         }
 
         if (!Number.isInteger(scanHeight)) {
-            return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
+            return [undefined, new WalletError(WalletErrorCode.NON_INTEGER_GIVEN)];
         }
 
         /* Can't sync from the current scan height, not newly created */
@@ -340,7 +340,7 @@ export class WalletBackend extends EventEmitter {
             keys.spend.privateKey,
         );
 
-        return wallet;
+        return [wallet, undefined];
     }
 
     /**
@@ -361,12 +361,12 @@ export class WalletBackend extends EventEmitter {
         scanHeight: number,
         privateViewKey: string,
         address: string,
-        config?: IConfig): WalletBackend | WalletError {
+        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
 
         MergeConfig(config);
 
         if (!isHex64(privateViewKey)) {
-            return new WalletError(WalletErrorCode.INVALID_KEY_FORMAT);
+            return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
         }
 
         const integratedAddressesAllowed: boolean = false;
@@ -376,15 +376,15 @@ export class WalletBackend extends EventEmitter {
         );
 
         if (!deepEqual(err, SUCCESS)) {
-            return err;
+            return [undefined, err];
         }
 
         if (scanHeight < 0) {
-            return new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN);
+            return [undefined, new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN)];
         }
 
         if (!Number.isInteger(scanHeight)) {
-            return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
+            return [undefined, new WalletError(WalletErrorCode.NON_INTEGER_GIVEN)];
         }
 
         /* Can't sync from the current scan height, not newly created */
@@ -395,7 +395,7 @@ export class WalletBackend extends EventEmitter {
             undefined, /* No private spend key */
         );
 
-        return wallet;
+        return [wallet, undefined];
     }
 
     /**
