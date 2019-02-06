@@ -238,7 +238,15 @@ export declare class WalletBackend extends EventEmitter {
     /**
      * Executes the main loop every n seconds for us
      */
-    private mainLoopExecutor;
+    private syncThread;
+    /**
+     * Update daemon info every n seconds
+     */
+    private daemonUpdateThread;
+    /**
+     * Check on locked tx status every n seconds
+     */
+    private lockedTransactionsCheckThread;
     /**
      * Whether our wallet is synced. Used for selectively firing the sync/desync
      * event.
@@ -445,6 +453,14 @@ export declare class WalletBackend extends EventEmitter {
      */
     getNumTransactions(): number;
     /**
+     * Remove any transactions that have been cancelled
+     */
+    private checkLockedTransactions;
+    /**
+     * Update daemon status
+     */
+    private updateDaemonInfo;
+    /**
      * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
      * for later processing. Checks if we are synced and fires the sync/desync
      * event.
@@ -473,7 +489,7 @@ export declare class WalletBackend extends EventEmitter {
     /**
      * Main loop. Download blocks, process them.
      */
-    private mainLoop;
+    private sync;
     /**
      * Converts recursively to JSON. Should be used in conjuction with JSON.stringify.
      * Usage:

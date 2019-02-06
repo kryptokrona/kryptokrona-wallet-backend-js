@@ -58,7 +58,7 @@ export class Metronome {
             logger.log(
                 'Threw exception processing tick function: ' + err,
                 LogLevel.ERROR,
-                LogCategory.SYNC
+                LogCategory.SYNC,
             );
         }
 

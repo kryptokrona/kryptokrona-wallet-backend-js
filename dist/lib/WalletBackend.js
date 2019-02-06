@@ -71,7 +71,9 @@ class WalletBackend extends events_1.EventEmitter {
         }
         this.walletSynchronizer = new WalletSynchronizer_1.WalletSynchronizer(daemon, this.subWallets, timestamp, scanHeight, privateViewKey);
         this.daemon = daemon;
-        this.mainLoopExecutor = new Metronome_1.Metronome(this.mainLoop.bind(this), Config_1.Config.mainLoopInterval);
+        this.syncThread = new Metronome_1.Metronome(() => this.sync(), Config_1.Config.syncThreadInterval);
+        this.daemonUpdateThread = new Metronome_1.Metronome(() => this.updateDaemonInfo(), Config_1.Config.daemonUpdateInterval);
+        this.lockedTransactionsCheckThread = new Metronome_1.Metronome(() => this.checkLockedTransactions(), Config_1.Config.lockedTransactionsCheckInterval);
     }
     /**
      * @param filename  The location of the wallet file on disk
@@ -378,7 +380,9 @@ class WalletBackend extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.started) {
                 yield this.daemon.init();
-                this.mainLoopExecutor.start();
+                this.syncThread.start();
+                this.daemonUpdateThread.start();
+                this.lockedTransactionsCheckThread.start();
                 this.started = true;
             }
         });
@@ -388,7 +392,9 @@ class WalletBackend extends events_1.EventEmitter {
      * process.
      */
     stop() {
-        this.mainLoopExecutor.stop();
+        this.syncThread.stop();
+        this.daemonUpdateThread.stop();
+        this.lockedTransactionsCheckThread.stop();
     }
     /**
      * Get the node fee the daemon you are connected to is charging for
@@ -574,12 +580,23 @@ class WalletBackend extends events_1.EventEmitter {
             + this.subWallets.getNumUnconfirmedTransactions();
     }
     /**
-     * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
-     * for later processing. Checks if we are synced and fires the sync/desync
-     * event.
+     * Remove any transactions that have been cancelled
      */
-    fetchAndStoreBlocks() {
+    checkLockedTransactions() {
         return __awaiter(this, void 0, void 0, function* () {
+            const lockedTransactionHashes = this.subWallets.getLockedTransactionHashes();
+            const cancelledTransactions = yield this.walletSynchronizer.findCancelledTransactions(lockedTransactionHashes);
+            for (const cancelledTX of cancelledTransactions) {
+                this.subWallets.removeCancelledTransaction(cancelledTX);
+            }
+        });
+    }
+    /**
+     * Update daemon status
+     */
+    updateDaemonInfo() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.daemon.updateDaemonInfo();
             const walletHeight = this.walletSynchronizer.getHeight();
             const networkHeight = this.daemon.getNetworkBlockCount();
             if (walletHeight >= networkHeight) {
@@ -587,11 +604,6 @@ class WalletBackend extends events_1.EventEmitter {
                 if (!this.synced) {
                     this.emit('sync', walletHeight, networkHeight);
                     this.synced = true;
-                }
-                const lockedTransactionHashes = this.subWallets.getLockedTransactionHashes();
-                const cancelledTransactions = yield this.walletSynchronizer.findCancelledTransactions(lockedTransactionHashes);
-                for (const cancelledTX of cancelledTransactions) {
-                    this.subWallets.removeCancelledTransaction(cancelledTX);
                 }
             }
             else {
@@ -601,12 +613,22 @@ class WalletBackend extends events_1.EventEmitter {
                     this.synced = false;
                 }
             }
-            const daemonInfo = this.daemon.updateDaemonInfo();
+        });
+    }
+    /**
+     * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
+     * for later processing. Checks if we are synced and fires the sync/desync
+     * event.
+     */
+    fetchAndStoreBlocks() {
+        return __awaiter(this, void 0, void 0, function* () {
+            /* Don't get blocks if we're synced already */
+            const walletHeight = this.walletSynchronizer.getHeight();
+            const networkHeight = this.daemon.getNetworkBlockCount();
+            if (walletHeight >= networkHeight) {
+                return;
+            }
             this.blocksToProcess = yield this.walletSynchronizer.getBlocks();
-            yield daemonInfo;
-            /* Sleep for a second (not blocking the event loop) before
-               continuing processing */
-            yield Utilities_1.delay(Config_1.Config.blockFetchInterval);
         });
     }
     /**
@@ -711,7 +733,7 @@ class WalletBackend extends events_1.EventEmitter {
     /**
      * Main loop. Download blocks, process them.
      */
-    mainLoop() {
+    sync() {
         return __awaiter(this, void 0, void 0, function* () {
             /* No blocks. Get some more from the daemon. */
             if (_.isEmpty(this.blocksToProcess)) {
@@ -721,7 +743,6 @@ class WalletBackend extends events_1.EventEmitter {
                 catch (err) {
                     Logger_1.logger.log('Error fetching blocks: ' + err.toString(), Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
                 }
-                return;
             }
             try {
                 yield this.processBlocks();
@@ -752,7 +773,9 @@ class WalletBackend extends events_1.EventEmitter {
     initAfterLoad(daemon) {
         this.daemon = daemon;
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
-        this.mainLoopExecutor = new Metronome_1.Metronome(this.mainLoop.bind(this), Config_1.Config.mainLoopInterval);
+        this.syncThread = new Metronome_1.Metronome(() => this.sync(), Config_1.Config.syncThreadInterval);
+        this.daemonUpdateThread = new Metronome_1.Metronome(() => this.updateDaemonInfo(), Config_1.Config.daemonUpdateInterval);
+        this.lockedTransactionsCheckThread = new Metronome_1.Metronome(() => this.checkLockedTransactions(), Config_1.Config.lockedTransactionsCheckInterval);
     }
 }
 exports.WalletBackend = WalletBackend;

@@ -86,6 +86,12 @@ export declare function getMaxTxSize(currentHeight: number): number;
  * @hidden
  */
 export declare function prettyPrintBytes(bytes: number): string;
+/**
+ * Returns whether the given word is in the mnemonic english dictionary. Note that
+ * just because all the words are valid, does not mean the mnemonic is valid.
+ *
+ * Use isValidMnemonic to verify that.
+ */
 export declare function isValidMnemonicWord(word: string): boolean;
 /**
  * Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage

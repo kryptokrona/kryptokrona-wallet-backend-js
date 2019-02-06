@@ -174,6 +174,12 @@ function prettyPrintBytes(bytes) {
     return bytes.toFixed(2) + ' ' + suffixes[selectedSuffix];
 }
 exports.prettyPrintBytes = prettyPrintBytes;
+/**
+ * Returns whether the given word is in the mnemonic english dictionary. Note that
+ * just because all the words are valid, does not mean the mnemonic is valid.
+ *
+ * Use isValidMnemonic to verify that.
+ */
 function isValidMnemonicWord(word) {
     return WordList_1.English.includes(word);
 }

@@ -463,7 +463,17 @@ export class WalletBackend extends EventEmitter {
     /**
      * Executes the main loop every n seconds for us
      */
-    private mainLoopExecutor: Metronome;
+    private syncThread: Metronome;
+
+    /**
+     * Update daemon info every n seconds
+     */
+    private daemonUpdateThread: Metronome;
+
+    /**
+     * Check on locked tx status every n seconds
+     */
+    private lockedTransactionsCheckThread: Metronome;
 
     /**
      * Whether our wallet is synced. Used for selectively firing the sync/desync
@@ -529,8 +539,19 @@ export class WalletBackend extends EventEmitter {
 
         this.daemon = daemon;
 
-        this.mainLoopExecutor = new Metronome(
-            this.mainLoop.bind(this), Config.mainLoopInterval,
+        this.syncThread = new Metronome(
+            () => this.sync(),
+            Config.syncThreadInterval,
+        );
+
+        this.daemonUpdateThread = new Metronome(
+            () => this.updateDaemonInfo(),
+            Config.daemonUpdateInterval,
+        );
+
+        this.lockedTransactionsCheckThread = new Metronome(
+            () => this.checkLockedTransactions(),
+            Config.lockedTransactionsCheckInterval,
         );
     }
 
@@ -637,7 +658,11 @@ export class WalletBackend extends EventEmitter {
     public async start(): Promise<void> {
         if (!this.started) {
             await this.daemon.init();
-            this.mainLoopExecutor.start();
+
+            this.syncThread.start();
+            this.daemonUpdateThread.start();
+            this.lockedTransactionsCheckThread.start();
+
             this.started = true;
         }
     }
@@ -647,7 +672,9 @@ export class WalletBackend extends EventEmitter {
      * process.
      */
     public stop(): void {
-        this.mainLoopExecutor.stop();
+        this.syncThread.stop();
+        this.daemonUpdateThread.stop();
+        this.lockedTransactionsCheckThread.stop();
     }
 
     /**
@@ -890,11 +917,24 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
-     * for later processing. Checks if we are synced and fires the sync/desync
-     * event.
+     * Remove any transactions that have been cancelled
      */
-    private async fetchAndStoreBlocks(): Promise<void> {
+    private async checkLockedTransactions(): Promise<void> {
+        const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
+
+        const cancelledTransactions: string[]
+            = await this.walletSynchronizer.findCancelledTransactions(lockedTransactionHashes);
+
+        for (const cancelledTX of cancelledTransactions) {
+            this.subWallets.removeCancelledTransaction(cancelledTX);
+        }
+    }
+
+    /**
+     * Update daemon status
+     */
+    private async updateDaemonInfo(): Promise<void> {
+        this.daemon.updateDaemonInfo();
 
         const walletHeight: number = this.walletSynchronizer.getHeight();
         const networkHeight: number = this.daemon.getNetworkBlockCount();
@@ -906,16 +946,6 @@ export class WalletBackend extends EventEmitter {
                 this.emit('sync', walletHeight, networkHeight);
                 this.synced = true;
             }
-
-            const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
-
-            const cancelledTransactions: string[]
-                = await this.walletSynchronizer.findCancelledTransactions(lockedTransactionHashes);
-
-            for (const cancelledTX of cancelledTransactions) {
-                this.subWallets.removeCancelledTransaction(cancelledTX);
-            }
-
         } else {
 
             /* We are no longer synced :( */
@@ -924,16 +954,23 @@ export class WalletBackend extends EventEmitter {
                 this.synced = false;
             }
         }
+    }
 
-        const daemonInfo: Promise<void> = this.daemon.updateDaemonInfo();
+    /**
+     * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
+     * for later processing. Checks if we are synced and fires the sync/desync
+     * event.
+     */
+    private async fetchAndStoreBlocks(): Promise<void> {
+        /* Don't get blocks if we're synced already */
+        const walletHeight: number = this.walletSynchronizer.getHeight();
+        const networkHeight: number = this.daemon.getNetworkBlockCount();
+
+        if (walletHeight >= networkHeight) {
+            return;
+        }
 
         this.blocksToProcess = await this.walletSynchronizer.getBlocks();
-
-        await daemonInfo;
-
-        /* Sleep for a second (not blocking the event loop) before
-           continuing processing */
-        await delay(Config.blockFetchInterval);
     }
 
     /**
@@ -1093,7 +1130,7 @@ export class WalletBackend extends EventEmitter {
     /**
      * Main loop. Download blocks, process them.
      */
-    private async mainLoop(): Promise<void> {
+    private async sync(): Promise<void> {
         /* No blocks. Get some more from the daemon. */
         if (_.isEmpty(this.blocksToProcess)) {
             try {
@@ -1105,8 +1142,6 @@ export class WalletBackend extends EventEmitter {
                     LogCategory.SYNC,
                 );
             }
-
-            return;
         }
 
         try {
@@ -1144,8 +1179,19 @@ export class WalletBackend extends EventEmitter {
 
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
 
-        this.mainLoopExecutor = new Metronome(
-            this.mainLoop.bind(this), Config.mainLoopInterval,
+        this.syncThread = new Metronome(
+            () => this.sync(),
+            Config.syncThreadInterval,
+        );
+
+        this.daemonUpdateThread = new Metronome(
+            () => this.updateDaemonInfo(),
+            Config.daemonUpdateInterval,
+        );
+
+        this.lockedTransactionsCheckThread = new Metronome(
+            () => this.checkLockedTransactions(),
+            Config.lockedTransactionsCheckInterval,
         );
     }
 }

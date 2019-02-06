@@ -2,35 +2,6 @@
 //
 // Please see the included LICENSE file for more information.
 
-/* I'm gonna give an extended explanation of how mainLoopInterval,
-   blockFetchInterval, and blocksPerTick interact here.
-   As you may know, nodeJS is single threaded. When we run a function, it
-   runs to completion and blocks any other functions waiting to be ran in
-   a setTimeout/setInterval.
-
-   Obviously we want to download and process blocks from the daemon. Processing
-   blocks is somewhat slow, with it taking somewhere between 10 to 30 seconds
-   to process 100 blocks.
-
-   Obviously blocking the event loop for 10 seconds is very far from ideal -
-   if we want an interactive UI, we need preferably sub second responses.
-
-   A decent way to solve this is to fetch blocks, say, every second.
-   (blockFetchInterval)
-   Store these 100 blocks to process for later.
-
-   Then, every mainLoopInterval (10 milliseconds), take blocksPerTick blocks
-   from the queue, and process it. This should take less than a second,
-   but potentially can be longer if we need to contact the daemon for global
-   indexes. Either way, it should be pretty fast.
-
-   Since we then timeout, any other code in the event loop waiting to run
-   can proceed, for example user input.
-
-   For my experiments, it seems like processing one block per tick is optimal.
-   Depending on how many transactions are in the block, and how powerful your
-   CPU is, 10 blocks can take a number of seconds. */
-
 import { MixinLimit, MixinLimits } from './MixinLimits';
 
 /**
@@ -64,12 +35,17 @@ export interface IConfig {
     /**
      * How often to process blocks, in millseconds
      */
-    mainLoopInterval?: number;
+    syncThreadInterval?: number;
 
     /**
-     * How often to fetch blocks from the daemon, in milliseconds
+     * How often to update the daemon info
      */
-    blockFetchInterval?: number;
+    daemonUpdateInterval?: number;
+
+    /**
+     * How often to check on locked transactions
+     */
+    lockedTransactionsCheckInterval?: number;
 
     /**
      * The amount of blocks to process per 'tick' of the mainloop. Note: too
@@ -145,12 +121,17 @@ class OurConfig implements IConfig {
     /**
      * How often to process blocks, in millseconds
      */
-    public mainLoopInterval: number = 10;
+    public syncThreadInterval: number = 10;
 
     /**
-     * How often to fetch blocks from the daemon, in milliseconds
+     * How often to update the daemon info
      */
-    public blockFetchInterval: number = 1 * 1000;
+    public daemonUpdateInterval: number = 5 * 1000;
+
+    /**
+     * How often to check on locked transactions
+     */
+    public lockedTransactionsCheckInterval: number = 30 * 1000;
 
     /**
      * The amount of blocks to process per 'tick' of the mainloop. Note: too

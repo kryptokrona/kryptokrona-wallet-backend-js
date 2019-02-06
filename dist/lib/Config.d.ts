@@ -26,11 +26,15 @@ export interface IConfig {
     /**
      * How often to process blocks, in millseconds
      */
-    mainLoopInterval?: number;
+    syncThreadInterval?: number;
     /**
-     * How often to fetch blocks from the daemon, in milliseconds
+     * How often to update the daemon info
      */
-    blockFetchInterval?: number;
+    daemonUpdateInterval?: number;
+    /**
+     * How often to check on locked transactions
+     */
+    lockedTransactionsCheckInterval?: number;
     /**
      * The amount of blocks to process per 'tick' of the mainloop. Note: too
      * high a value will cause the event loop to be blocked, and your interaction
@@ -88,11 +92,15 @@ declare class OurConfig implements IConfig {
     /**
      * How often to process blocks, in millseconds
      */
-    mainLoopInterval: number;
+    syncThreadInterval: number;
     /**
-     * How often to fetch blocks from the daemon, in milliseconds
+     * How often to update the daemon info
      */
-    blockFetchInterval: number;
+    daemonUpdateInterval: number;
+    /**
+     * How often to check on locked transactions
+     */
+    lockedTransactionsCheckInterval: number;
     /**
      * The amount of blocks to process per 'tick' of the mainloop. Note: too
      * high a value will cause the event loop to be blocked, and your interaction
