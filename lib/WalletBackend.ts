@@ -701,10 +701,18 @@ export class WalletBackend extends EventEmitter {
      *
      * Note: secret key will be 00000... (64 zeros) if view wallet.
      *
+     * Usage:
+     * ```
+     * const [publicSpendKey, privateSpendKey, error] = getSpendKeys('TRTLxyz...');
+     * if (error) {
+     *      console.log(error);
+     * }
+     * ```
+     *
      * @return Returns either the public and private spend key, or a WalletError
      *         if the address doesn't exist or is invalid
      */
-    public getSpendKeys(address: string): WalletError | [string, string] {
+    public getSpendKeys(address: string): [string, string, WalletError | undefined] {
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletError = validateAddresses(
@@ -712,7 +720,7 @@ export class WalletBackend extends EventEmitter {
         );
 
         if (!deepEqual(err, SUCCESS)) {
-            return err;
+            return ['', '', err];
         }
 
         const [publicViewKey, publicSpendKey] = addressToKeys(address);
@@ -720,15 +728,17 @@ export class WalletBackend extends EventEmitter {
         const [err2, privateSpendKey] = this.subWallets.getPrivateSpendKey(publicSpendKey);
 
         if (!deepEqual(err2, SUCCESS)) {
-            return err2;
+            return ['', '', err2];
         }
 
-        return [publicSpendKey, privateSpendKey];
+        return [publicSpendKey, privateSpendKey, undefined];
     }
 
     /**
      * Get the private spend and private view for the primary address.
      * The primary address is the first created wallet in the container.
+     *
+     * @return Returns [privateSpendKey, privateViewKey]
      */
     public getPrimaryAddressPrivateKeys(): [string, string] {
         return [this.subWallets.getPrimaryPrivateSpendKey(), this.getPrivateViewKey()];
@@ -737,8 +747,17 @@ export class WalletBackend extends EventEmitter {
     /**
      * Get the primary address mnemonic seed. If the primary address isn't
      * a deterministic wallet, it will return a WalletError.
+     *
+     * Usage:
+     * ```
+     * const [seed, error] = wallet.getMnemonicSeed();
+     * if (error) {
+     *      console.log('Wallet is not a deterministic wallet');
+     * }
+     * ```
+     *
      */
-    public getMnemonicSeed(): WalletError | string {
+    public getMnemonicSeed(): [string | undefined, WalletError | undefined] {
         return this.getMnemonicSeedForAddress(this.subWallets.getPrimaryAddress());
     }
 
@@ -747,22 +766,22 @@ export class WalletBackend extends EventEmitter {
      * is invalid or the address isn't a deterministic wallet, it will return
      * a WalletError.
      */
-    public getMnemonicSeedForAddress(address: string): WalletError | string {
+    public getMnemonicSeedForAddress(address: string): [string | undefined, WalletError | undefined] {
         const privateViewKey: string = this.getPrivateViewKey();
 
-        const spendKeys = this.getSpendKeys(address);
+        const [publicSpendKey, privateSpendKey, error] = this.getSpendKeys(address);
 
-        if (spendKeys instanceof WalletError) {
-            return spendKeys as WalletError;
+        if (error) {
+            return [undefined, error];
         }
 
-        const parsedAddr = CryptoUtils().createAddressFromKeys(spendKeys[1], privateViewKey);
+        const parsedAddr = CryptoUtils().createAddressFromKeys(privateSpendKey, privateViewKey);
 
         if (!parsedAddr.mnemonic) {
-            return new WalletError(WalletErrorCode.KEYS_NOT_DETERMINISTIC);
+            return [undefined, new WalletError(WalletErrorCode.KEYS_NOT_DETERMINISTIC)];
         }
 
-        return parsedAddr.mnemonic;
+        return [parsedAddr.mnemonic, undefined];
     }
 
     /**

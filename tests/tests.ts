@@ -225,7 +225,7 @@ function roundTrip(
             'd61a57a59318d70ff77cc7f8ad7f62887c828da1d5d3f3b0d2f7d3fa596c2904',
         );
 
-        const seed = (keyWallet as WalletBackend).getMnemonicSeed() as string;
+        const [seed, error2] = (keyWallet as WalletBackend).getMnemonicSeed();
 
         return seed === 'skulls woozy ouch summon gifts huts waffle ourselves obtains ' +
                         'hexagon tadpoles hacksaw dormant hence abort listen history ' +
@@ -242,9 +242,9 @@ function roundTrip(
             '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f',
         );
 
-        const err = (keyWallet as WalletBackend).getMnemonicSeed() as WalletError;
+        const [seed, err] = (keyWallet as WalletBackend).getMnemonicSeed();
 
-        return err.errorCode === WalletErrorCode.KEYS_NOT_DETERMINISTIC;
+        return (err as WalletError).errorCode === WalletErrorCode.KEYS_NOT_DETERMINISTIC;
 
     }, 'Verifying non deterministic wallet doesn\'t create seed',
        'Non deterministic wallet has no seed',
@@ -297,21 +297,21 @@ function roundTrip(
         /* Create a new wallet */
         const wallet = WalletBackend.createWallet(daemon);
 
-        const err1: WalletError = wallet.getMnemonicSeedForAddress('') as WalletError;
+        const [seed, err1] = wallet.getMnemonicSeedForAddress('');
 
         /* Verify invalid address is detected */
-        const test1: boolean = err1.errorCode === WalletErrorCode.ADDRESS_NOT_VALID;
+        const test1: boolean = (err1 as WalletError).errorCode === WalletErrorCode.ADDRESS_NOT_VALID;
 
-        const err2: WalletError = wallet.getMnemonicSeedForAddress(
+        const [seed2, err2] = wallet.getMnemonicSeedForAddress(
             'TRTLv1s9JQeHAJFoHvcqVBPyHYom2ynKeK6dpYptbp8gQNzdzE73ZD' +
             'kNmNurqfhhcMSUXpS1ZGEJKiKJUcPCyw7vYaCc354DCN1',
-        ) as WalletError;
+        );
 
         /* Random address shouldn't be present in wallet */
         const test2: boolean = deepEqual(err2, new WalletError(WalletErrorCode.ADDRESS_NOT_IN_WALLET));
 
         /* Should get a seed back when we supply our address */
-        const test3: boolean = typeof wallet.getMnemonicSeedForAddress(wallet.getPrimaryAddress()) === 'string';
+        const test3: boolean = wallet.getMnemonicSeedForAddress(wallet.getPrimaryAddress())[0] !== undefined;
 
         /* TODO: Add a test for testing a new subwallet address, when we add
            subwallet creation */
@@ -371,8 +371,8 @@ function roundTrip(
 
         const wallet = keyWallet as WalletBackend;
 
-        const [publicSpendKey, privateSpendKey]
-            = wallet.getSpendKeys(wallet.getPrimaryAddress()) as [string, string];
+        const [publicSpendKey, privateSpendKey, error2]
+            = wallet.getSpendKeys(wallet.getPrimaryAddress());
 
         return publicSpendKey === 'ff9b6e048297ee435d6219005974c2c8df620a4aca9ca5c4e13f071823482029' &&
                privateSpendKey === '55e0aa4ca65c0ae016c7364eec313f56fc162901ead0e38a9f846686ac78560f';
