@@ -16,9 +16,25 @@ const Config_1 = require("./Config");
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
 function validateAddresses(addresses, integratedAddressesAllowed) {
+    const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
     for (const address of addresses) {
         try {
+            /* Verify address lengths are correct */
+            if (address.length !== Config_1.Config.standardAddressLength
+                && address.length !== Config_1.Config.integratedAddressLength) {
+                return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_WRONG_LENGTH);
+            }
+            /* Verify every address character is in the base58 set */
+            if (![...address].every((x) => alphabet.includes(x))) {
+                return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_NOT_BASE58);
+            }
+            /* Verify checksum */
             const parsed = CnUtils_1.CryptoUtils().decodeAddress(address);
+            /* Verify the prefix is correct */
+            if (parsed.prefix !== Config_1.Config.addressPrefix) {
+                return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_WRONG_PREFIX);
+            }
+            /* Verify it's not an integrated, if those aren't allowed */
             if (parsed.paymentId.length !== 0 && !integratedAddressesAllowed) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_IS_INTEGRATED);
             }

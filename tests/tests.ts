@@ -300,7 +300,7 @@ function roundTrip(
         const [seed, err1] = wallet.getMnemonicSeedForAddress('');
 
         /* Verify invalid address is detected */
-        const test1: boolean = (err1 as WalletError).errorCode === WalletErrorCode.ADDRESS_NOT_VALID;
+        const test1: boolean = (err1 as WalletError).errorCode === WalletErrorCode.ADDRESS_WRONG_LENGTH;
 
         const [seed2, err2] = wallet.getMnemonicSeedForAddress(
             'TRTLv1s9JQeHAJFoHvcqVBPyHYom2ynKeK6dpYptbp8gQNzdzE73ZD' +

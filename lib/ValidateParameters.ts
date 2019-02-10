@@ -23,10 +23,30 @@ export function validateAddresses(
     addresses: string[],
     integratedAddressesAllowed: boolean): WalletError {
 
+    const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
     for (const address of addresses) {
         try {
+            /* Verify address lengths are correct */
+            if (address.length !== Config.standardAddressLength
+             && address.length !== Config.integratedAddressLength) {
+                return new WalletError(WalletErrorCode.ADDRESS_WRONG_LENGTH);
+            }
+
+            /* Verify every address character is in the base58 set */
+            if (![...address].every((x) => alphabet.includes(x))) {
+                return new WalletError(WalletErrorCode.ADDRESS_NOT_BASE58);
+            }
+
+            /* Verify checksum */
             const parsed = CryptoUtils().decodeAddress(address);
 
+            /* Verify the prefix is correct */
+            if (parsed.prefix !== Config.addressPrefix) {
+                return new WalletError(WalletErrorCode.ADDRESS_WRONG_PREFIX);
+            }
+
+            /* Verify it's not an integrated, if those aren't allowed */
             if (parsed.paymentId.length !== 0 && !integratedAddressesAllowed) {
                 return new WalletError(WalletErrorCode.ADDRESS_IS_INTEGRATED);
             }
