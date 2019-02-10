@@ -70,11 +70,6 @@
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_validateparameters_.html#validateaddresses" class="tsd-kind-icon">validate<wbr>Addresses</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_validateparameters_.html#validateamount" class="tsd-kind-icon">validate<wbr>Amount</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_validateparameters_.html#validatedestinations" class="tsd-kind-icon">validate<wbr>Destinations</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_validateparameters_.html#validateintegratedaddresses" class="tsd-kind-icon">validate<wbr>Integrated<wbr>Addresses</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_validateparameters_.html#validatemixin" class="tsd-kind-icon">validate<wbr>Mixin</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_validateparameters_.html#validateouraddresses" class="tsd-kind-icon">validate<wbr>Our<wbr>Addresses</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_validateparameters_.html#validatepaymentid" class="tsd-kind-icon">validate<wbr>PaymentID</a></li>
 							</ul>
 						</section>
@@ -93,7 +88,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f899cb8/lib/ValidateParameters.ts#L22">ValidateParameters.ts:22</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/319f629/lib/ValidateParameters.ts#L22">ValidateParameters.ts:22</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -120,175 +115,6 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="validateamount" class="tsd-anchor"></a>
-					<h3>validate<wbr>Amount</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">validate<wbr>Amount<span class="tsd-signature-symbol">(</span>destinations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span>, fee<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, subWalletsToTakeFrom<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, subWallets<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SubWallets</span>, currentHeight<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f899cb8/lib/ValidateParameters.ts#L141">ValidateParameters.ts:141</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Validate that the transfer amount + fee is valid, and we have enough balance
-										Note: Does not verify amounts are positive / integer, validateDestinations
-									handles that.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>destinations: <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-								<li>
-									<h5>fee: <span class="tsd-signature-type">number</span></h5>
-								</li>
-								<li>
-									<h5>subWalletsToTakeFrom: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
-								</li>
-								<li>
-									<h5>subWallets: <span class="tsd-signature-type">SubWallets</span></h5>
-								</li>
-								<li>
-									<h5>currentHeight: <span class="tsd-signature-type">number</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></h4>
-							<p>Returns SUCCESS if valid, otherwise a WalletError describing the error</p>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="validatedestinations" class="tsd-anchor"></a>
-					<h3>validate<wbr>Destinations</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">validate<wbr>Destinations<span class="tsd-signature-symbol">(</span>destinations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f899cb8/lib/ValidateParameters.ts#L46">ValidateParameters.ts:46</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Validate the amounts being sent are valid, and the addresses are valid.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>destinations: <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></h4>
-							<p>Returns SUCCESS if valid, otherwise a WalletError describing the error</p>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="validateintegratedaddresses" class="tsd-anchor"></a>
-					<h3>validate<wbr>Integrated<wbr>Addresses</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">validate<wbr>Integrated<wbr>Addresses<span class="tsd-signature-symbol">(</span>destinations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span>, paymentID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f899cb8/lib/ValidateParameters.ts#L80">ValidateParameters.ts:80</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Validate that the payment ID&#39;s included in integrated addresses are valid.</p>
-								</div>
-								<p>You should have already called validateAddresses() before this function</p>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>destinations: <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-								<li>
-									<h5>paymentID: <span class="tsd-signature-type">string</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></h4>
-							<p>Returns SUCCESS if valid, otherwise a WalletError describing the error</p>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="validatemixin" class="tsd-anchor"></a>
-					<h3>validate<wbr>Mixin</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">validate<wbr>Mixin<span class="tsd-signature-symbol">(</span>mixin<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, height<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f899cb8/lib/ValidateParameters.ts#L182">ValidateParameters.ts:182</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Validates mixin is valid and in allowed range</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>mixin: <span class="tsd-signature-type">number</span></h5>
-								</li>
-								<li>
-									<h5>height: <span class="tsd-signature-type">number</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></h4>
-							<p>Returns SUCCESS if valid, otherwise a WalletError describing the error</p>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="validateouraddresses" class="tsd-anchor"></a>
-					<h3>validate<wbr>Our<wbr>Addresses</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">validate<wbr>Our<wbr>Addresses<span class="tsd-signature-symbol">(</span>addresses<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, subWallets<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SubWallets</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f899cb8/lib/ValidateParameters.ts#L107">ValidateParameters.ts:107</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Validate the the addresses given are both valid, and exist in the subwallet</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>addresses: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
-								</li>
-								<li>
-									<h5>subWallets: <span class="tsd-signature-type">SubWallets</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></h4>
-							<p>Returns SUCCESS if valid, otherwise a WalletError describing the error</p>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
 					<a name="validatepaymentid" class="tsd-anchor"></a>
 					<h3>validate<wbr>PaymentID</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
@@ -298,7 +124,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f899cb8/lib/ValidateParameters.ts#L217">ValidateParameters.ts:217</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/319f629/lib/ValidateParameters.ts#L227">ValidateParameters.ts:227</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -364,21 +190,6 @@
 				<ul class="before-current">
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_validateparameters_.html#validateaddresses" class="tsd-kind-icon">validate<wbr>Addresses</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_validateparameters_.html#validateamount" class="tsd-kind-icon">validate<wbr>Amount</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_validateparameters_.html#validatedestinations" class="tsd-kind-icon">validate<wbr>Destinations</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_validateparameters_.html#validateintegratedaddresses" class="tsd-kind-icon">validate<wbr>Integrated<wbr>Addresses</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_validateparameters_.html#validatemixin" class="tsd-kind-icon">validate<wbr>Mixin</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_validateparameters_.html#validateouraddresses" class="tsd-kind-icon">validate<wbr>Our<wbr>Addresses</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_validateparameters_.html#validatepaymentid" class="tsd-kind-icon">validate<wbr>PaymentID</a>

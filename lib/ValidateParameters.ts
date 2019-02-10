@@ -42,6 +42,8 @@ export function validateAddresses(
  * Validate the amounts being sent are valid, and the addresses are valid.
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export function validateDestinations(destinations: Array<[string, number]>): WalletError {
     if (destinations.length === 0) {
@@ -76,6 +78,8 @@ export function validateDestinations(destinations: Array<[string, number]>): Wal
  * You should have already called validateAddresses() before this function
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export function validateIntegratedAddresses(
     destinations: Array<[string, number]>,
@@ -103,6 +107,8 @@ export function validateIntegratedAddresses(
  * Validate the the addresses given are both valid, and exist in the subwallet
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export function validateOurAddresses(
     addresses: string[],
@@ -137,6 +143,8 @@ export function validateOurAddresses(
  * handles that.
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export function validateAmount(
     destinations: Array<[string, number]>,
@@ -178,6 +186,8 @@ export function validateAmount(
  * Validates mixin is valid and in allowed range
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export function validateMixin(mixin: number, height: number): WalletError {
     if (mixin < 0) {

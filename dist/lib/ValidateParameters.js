@@ -34,6 +34,8 @@ exports.validateAddresses = validateAddresses;
  * Validate the amounts being sent are valid, and the addresses are valid.
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 function validateDestinations(destinations) {
     if (destinations.length === 0) {
@@ -62,6 +64,8 @@ exports.validateDestinations = validateDestinations;
  * You should have already called validateAddresses() before this function
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 function validateIntegratedAddresses(destinations, paymentID) {
     for (const [destination, amount] of destinations) {
@@ -84,6 +88,8 @@ exports.validateIntegratedAddresses = validateIntegratedAddresses;
  * Validate the the addresses given are both valid, and exist in the subwallet
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 function validateOurAddresses(addresses, subWallets) {
     const error = validateAddresses(addresses, false);
@@ -107,6 +113,8 @@ exports.validateOurAddresses = validateOurAddresses;
  * handles that.
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 function validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight) {
     if (fee < Config_1.Config.minimumFee) {
@@ -134,6 +142,8 @@ exports.validateAmount = validateAmount;
  * Validates mixin is valid and in allowed range
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 function validateMixin(mixin, height) {
     if (mixin < 0) {

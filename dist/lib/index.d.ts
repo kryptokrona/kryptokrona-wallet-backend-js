@@ -5,6 +5,6 @@ export { ConventionalDaemon } from './ConventionalDaemon';
 export { IDaemon } from './IDaemon';
 export { prettyPrintAmount, isHex64, isValidMnemonic, isValidMnemonicWord } from './Utilities';
 export { LogLevel, LogCategory } from './Logger';
-export { validateAddresses } from './ValidateParameters';
+export { validateAddresses, validatePaymentID } from './ValidateParameters';
 export { TransactionInput } from './Types';
 export { MixinLimit, MixinLimits } from './MixinLimits';

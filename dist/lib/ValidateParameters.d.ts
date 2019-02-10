@@ -12,6 +12,8 @@ export declare function validateAddresses(addresses: string[], integratedAddress
  * Validate the amounts being sent are valid, and the addresses are valid.
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export declare function validateDestinations(destinations: Array<[string, number]>): WalletError;
 /**
@@ -20,12 +22,16 @@ export declare function validateDestinations(destinations: Array<[string, number
  * You should have already called validateAddresses() before this function
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export declare function validateIntegratedAddresses(destinations: Array<[string, number]>, paymentID: string): WalletError;
 /**
  * Validate the the addresses given are both valid, and exist in the subwallet
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export declare function validateOurAddresses(addresses: string[], subWallets: SubWallets): WalletError;
 /**
@@ -34,12 +40,16 @@ export declare function validateOurAddresses(addresses: string[], subWallets: Su
  * handles that.
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export declare function validateAmount(destinations: Array<[string, number]>, fee: number, subWalletsToTakeFrom: string[], subWallets: SubWallets, currentHeight: number): WalletError;
 /**
  * Validates mixin is valid and in allowed range
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
+ *
+ * @hidden
  */
 export declare function validateMixin(mixin: number, height: number): WalletError;
 /**
