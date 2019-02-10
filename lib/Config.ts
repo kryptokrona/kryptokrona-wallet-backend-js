@@ -180,7 +180,7 @@ class OurConfig implements IConfig {
        payment ID's are 64 chars, and base58 encoding is done by encoding
        chunks of 8 chars at once into blocks of 11 chars, we can calculate
        this automatically */
-    public integratedAddressLength: number = this.standardAddressLength + ((64 * 11) / 8);
+    public integratedAddressLength: number = 99 + ((64 * 11) / 8);
 
     [key: string]: any;
 }
