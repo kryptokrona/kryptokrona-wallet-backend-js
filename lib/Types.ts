@@ -19,11 +19,11 @@ export class Block {
 
             transactions: json.transactions.map(RawTransaction.fromJSON),
 
-            blockHeight: json.blockHeight,
+            blockHeight: Number(json.blockHeight),
 
             blockHash: json.blockHash,
 
-            blockTimestamp: json.blockTimestamp,
+            blockTimestamp: Number(json.blockTimestamp),
         });
     }
 
@@ -71,7 +71,7 @@ export class RawCoinbaseTransaction {
 
             transactionPublicKey: json.txPublicKey,
 
-            unlockTime: json.unlockTime,
+            unlockTime: Number(json.unlockTime),
         });
     }
 
@@ -115,7 +115,7 @@ export class RawTransaction extends RawCoinbaseTransaction {
 
             transactionPublicKey: json.txPublicKey,
 
-            unlockTime: json.unlockTime,
+            unlockTime: Number(json.unlockTime),
 
             paymentID: json.paymentID,
 
@@ -159,15 +159,15 @@ export class Transaction {
 
             hash: json.hash,
 
-            fee: json.fee,
+            fee: Number(json.fee),
 
-            blockHeight: json.blockHeight,
+            blockHeight: Number(json.blockHeight),
 
-            timestamp: json.timestamp,
+            timestamp: Number(json.timestamp),
 
             paymentID: json.paymentID,
 
-            unlockTime: json.unlockTime,
+            unlockTime: Number(json.unlockTime),
 
             isCoinbaseTransaction: json.isCoinbaseTransaction,
         });

@@ -13,9 +13,9 @@ class Block {
         return Object.assign(block, {
             coinbaseTransaction: RawCoinbaseTransaction.fromJSON(json.coinbaseTX),
             transactions: json.transactions.map(RawTransaction.fromJSON),
-            blockHeight: json.blockHeight,
+            blockHeight: Number(json.blockHeight),
             blockHash: json.blockHash,
-            blockTimestamp: json.blockTimestamp,
+            blockTimestamp: Number(json.blockTimestamp),
         });
     }
     constructor(coinbaseTransaction, transactions, blockHeight, blockHash, blockTimestamp) {
@@ -37,7 +37,7 @@ class RawCoinbaseTransaction {
             keyOutputs: json.outputs.map(KeyOutput.fromJSON),
             hash: json.hash,
             transactionPublicKey: json.txPublicKey,
-            unlockTime: json.unlockTime,
+            unlockTime: Number(json.unlockTime),
         });
     }
     constructor(keyOutputs, hash, transactionPublicKey, unlockTime) {
@@ -58,7 +58,7 @@ class RawTransaction extends RawCoinbaseTransaction {
             keyOutputs: json.outputs.map(KeyOutput.fromJSON),
             hash: json.hash,
             transactionPublicKey: json.txPublicKey,
-            unlockTime: json.unlockTime,
+            unlockTime: Number(json.unlockTime),
             paymentID: json.paymentID,
             keyInputs: json.inputs.map(KeyInput.fromJSON),
         });
@@ -79,11 +79,11 @@ class Transaction {
         return Object.assign(transaction, {
             transfers: new Map(json.transfers.map((x) => [x.publicKey, x.amount])),
             hash: json.hash,
-            fee: json.fee,
-            blockHeight: json.blockHeight,
-            timestamp: json.timestamp,
+            fee: Number(json.fee),
+            blockHeight: Number(json.blockHeight),
+            timestamp: Number(json.timestamp),
             paymentID: json.paymentID,
-            unlockTime: json.unlockTime,
+            unlockTime: Number(json.unlockTime),
             isCoinbaseTransaction: json.isCoinbaseTransaction,
         });
     }
