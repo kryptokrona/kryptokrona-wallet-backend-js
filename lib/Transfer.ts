@@ -52,7 +52,7 @@ export async function sendTransactionBasic(
     subWallets: SubWallets,
     destination: string,
     amount: number,
-    paymentID?: string): Promise<WalletError | string> {
+    paymentID?: string): Promise<[string | undefined, WalletError | undefined]> {
 
     return sendTransactionAdvanced(
         daemon,
@@ -87,7 +87,7 @@ export async function sendTransactionAdvanced(
     fee?: number,
     paymentID?: string,
     subWalletsToTakeFrom?: string[],
-    changeAddress?: string): Promise<WalletError | string> {
+    changeAddress?: string): Promise<[string | undefined, WalletError | undefined]> {
 
     if (mixin === undefined) {
         mixin = Config.mixinLimits.getDefaultMixinByHeight(
@@ -124,7 +124,7 @@ export async function sendTransactionAdvanced(
     );
 
     if (!deepEqual(error, SUCCESS)) {
-        return error;
+        return [undefined, error];
     }
 
     const totalAmount: number = _.sumBy(
@@ -200,7 +200,7 @@ export async function sendTransactionAdvanced(
     );
 
     if (randomOuts instanceof WalletError) {
-        return randomOuts as WalletError;
+        return [undefined, randomOuts as WalletError];
     }
 
     let tx: CreatedTransaction;
@@ -217,7 +217,7 @@ export async function sendTransactionAdvanced(
             LogCategory.TRANSACTIONS,
         );
 
-        return new WalletError(WalletErrorCode.UNKNOWN_ERROR, err.toString());
+        return [undefined, new WalletError(WalletErrorCode.UNKNOWN_ERROR, err.toString())];
     }
 
     /* Check the transaction isn't too large to fit in a block */
@@ -226,17 +226,17 @@ export async function sendTransactionAdvanced(
     );
 
     if (!deepEqual(tooBigErr, SUCCESS)) {
-        return tooBigErr;
+        return [undefined, tooBigErr];
     }
 
     /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
        they will not be mixable */
     if (!verifyAmounts(tx.transaction.vout)) {
-        return new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY);
+        return [undefined, new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY)];
     }
 
     if (!verifyTransactionFee(tx.transaction, fee)) {
-        return new WalletError(WalletErrorCode.UNEXPECTED_FEE);
+        return [undefined, new WalletError(WalletErrorCode.UNEXPECTED_FEE)];
     }
 
     let relaySuccess: boolean;
@@ -246,11 +246,11 @@ export async function sendTransactionAdvanced(
 
     /* Timeout */
     } catch (err) {
-        return new WalletError(WalletErrorCode.DAEMON_OFFLINE);
+        return [undefined, new WalletError(WalletErrorCode.DAEMON_OFFLINE)];
     }
 
     if (!relaySuccess) {
-        return new WalletError(WalletErrorCode.DAEMON_ERROR);
+        return [undefined, new WalletError(WalletErrorCode.DAEMON_ERROR)];
     }
 
     /* Store the unconfirmed transaction, update our balance */
@@ -271,7 +271,7 @@ export async function sendTransactionAdvanced(
         subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage);
     }
 
-    return tx.hash;
+    return [tx.hash, undefined];
 }
 
 function storeSentTransaction(

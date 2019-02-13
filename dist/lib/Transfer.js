@@ -81,7 +81,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         }
         const error = validateTransaction(addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress, daemon.getNetworkBlockCount(), subWallets);
         if (!deepEqual(error, WalletError_1.SUCCESS)) {
-            return error;
+            return [undefined, error];
         }
         const totalAmount = _.sumBy(addressesAndAmounts, ([address, amount]) => amount) + fee;
         const amounts = [];
@@ -130,7 +130,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         });
         const randomOuts = yield getRingParticipants(inputs, mixin, daemon);
         if (randomOuts instanceof WalletError_1.WalletError) {
-            return randomOuts;
+            return [undefined, randomOuts];
         }
         let tx;
         try {
@@ -138,20 +138,20 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         }
         catch (err) {
             Logger_1.logger.log('Failed to create transaction: ' + err.toString(), Logger_1.LogLevel.ERROR, Logger_1.LogCategory.TRANSACTIONS);
-            return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNKNOWN_ERROR, err.toString());
+            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNKNOWN_ERROR, err.toString())];
         }
         /* Check the transaction isn't too large to fit in a block */
         const tooBigErr = isTransactionPayloadTooBig(tx.rawTransaction, daemon.getNetworkBlockCount());
         if (!deepEqual(tooBigErr, WalletError_1.SUCCESS)) {
-            return tooBigErr;
+            return [undefined, tooBigErr];
         }
         /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
            they will not be mixable */
         if (!verifyAmounts(tx.transaction.vout)) {
-            return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.AMOUNTS_NOT_PRETTY);
+            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.AMOUNTS_NOT_PRETTY)];
         }
         if (!verifyTransactionFee(tx.transaction, fee)) {
-            return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNEXPECTED_FEE);
+            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNEXPECTED_FEE)];
         }
         let relaySuccess;
         try {
@@ -159,10 +159,10 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             /* Timeout */
         }
         catch (err) {
-            return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_OFFLINE);
+            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_OFFLINE)];
         }
         if (!relaySuccess) {
-            return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_ERROR);
+            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_ERROR)];
         }
         /* Store the unconfirmed transaction, update our balance */
         storeSentTransaction(tx.hash, fee, paymentID, inputs, changeAddress, changeRequired, subWallets);
@@ -173,7 +173,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         for (const input of inputs) {
             subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage);
         }
-        return tx.hash;
+        return [tx.hash, undefined];
     });
 }
 exports.sendTransactionAdvanced = sendTransactionAdvanced;

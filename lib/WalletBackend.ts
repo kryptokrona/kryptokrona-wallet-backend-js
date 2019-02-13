@@ -865,7 +865,7 @@ export class WalletBackend extends EventEmitter {
     public async sendTransactionBasic(
         destination: string,
         amount: number,
-        paymentID?: string): Promise<WalletError | string> {
+        paymentID?: string): Promise<[string | undefined, WalletError | undefined]> {
 
         return sendTransactionBasic(
             this.daemon, this.subWallets, destination, amount, paymentID,
@@ -893,7 +893,7 @@ export class WalletBackend extends EventEmitter {
         fee?: number,
         paymentID?: string,
         subWalletsToTakeFrom?: string[],
-        changeAddress?: string): Promise<WalletError | string> {
+        changeAddress?: string): Promise<[string | undefined, WalletError | undefined]> {
 
         return sendTransactionAdvanced(
             this.daemon, this.subWallets, destinations, mixin, fee, paymentID,
