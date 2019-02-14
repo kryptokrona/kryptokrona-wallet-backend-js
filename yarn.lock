@@ -201,6 +201,13 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
+bindings@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.4.0.tgz#909efa49f2ebe07ecd3cb136778f665052040127"
+  integrity sha512-7znEVX22Djn+nYjxCWKDne0RRloa9XfYa84yk3s+HkE3LpDYZmhArYr9O9huBoHY3/oXispx5LorIX7Sl2CgSQ==
+  dependencies:
+    file-uri-to-path "1.0.0"
+
 bluebird@^3.5.0:
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.3.tgz#7d01c6f9616c9a51ab0f8c549a79dfe6ec33efa7"
@@ -408,6 +415,11 @@ fast-json-stable-stringify@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/fast-json-stable-stringify/-/fast-json-stable-stringify-2.0.0.tgz#d5142c0caee6b1189f87d3a76111064f86c8bbf2"
   integrity sha1-1RQsDK7msRifh9OnYREGT4bIu/I=
+
+file-uri-to-path@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz#553a7b8446ff6f684359c445f1e37a05dacc33dd"
+  integrity sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==
 
 forever-agent@~0.6.1:
   version "0.6.1"
@@ -671,6 +683,11 @@ minimist@~0.0.1:
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.0.10.tgz#de3f98543dbf96082be48ad1a0c7cda836301dcf"
   integrity sha1-3j+YVD2/lggr5IrRoMfNqDYwHc8=
+
+nan@^2.12.1:
+  version "2.12.1"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.12.1.tgz#7b1aa193e9aa86057e3c7bbd0ac448e770925552"
+  integrity sha512-JY7V6lRkStKcKTvHO5NVSQRv+RV+FIL5pvDoLiAtSL9pKlC5x9PKQcZDsq7m4FO4d57mkhC6Z+QhAh3Jdk5JFw==
 
 numeral@^2.0.6:
   version "2.0.6"
@@ -967,6 +984,14 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
+turtlecoin-crypto@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/turtlecoin-crypto/-/turtlecoin-crypto-0.0.1.tgz#33fcc36902b9b9d1f1e320f9d3cbea34d4c3cc31"
+  integrity sha512-S2GOuTTEDapFcMU2uDSQ3g0vL4lusX0ki++Cn22NNkSYdU5Ki6zGsxosyTbAVw2BPLPiAhscOFjXv3+wHtp/kw==
+  dependencies:
+    bindings "^1.4.0"
+    nan "^2.12.1"
+
 turtlecoin-rpc@^0.12.0:
   version "0.12.1"
   resolved "https://registry.yarnpkg.com/turtlecoin-rpc/-/turtlecoin-rpc-0.12.1.tgz#0533fed1051fe066d4c3b9cb7aa91948907bc9c4"
@@ -975,15 +1000,17 @@ turtlecoin-rpc@^0.12.0:
     request "^2.88.0"
     request-promise-native "^1.0.5"
 
-"turtlecoin-utils@https://github.com/turtlecoin/turtlecoin-utils.git":
+"turtlecoin-utils@https://github.com/turtlecoin/turtlecoin-utils.git#development":
   version "0.0.2"
-  resolved "https://github.com/turtlecoin/turtlecoin-utils.git#d905c889526de8c05a0d4351594fe4e2fe62c8af"
+  resolved "https://github.com/turtlecoin/turtlecoin-utils.git#f3b9a9bc5e4295a3478f62eec48fdf17c843168c"
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"
     numeral "^2.0.6"
     secure-random-string "^1.1.0"
     varint-decoder "^0.1.1"
+  optionalDependencies:
+    turtlecoin-crypto "0.0.1"
 
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
