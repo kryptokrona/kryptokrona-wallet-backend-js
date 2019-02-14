@@ -939,6 +939,12 @@ export class WalletBackend extends EventEmitter {
      * Remove any transactions that have been cancelled
      */
     private async checkLockedTransactions(): Promise<void> {
+        logger.log(
+            'Checking locked transactions...',
+            LogLevel.DEBUG,
+            [LogCategory.SYNC, LogCategory.TRANSACTIONS],
+        );
+
         const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
 
         const cancelledTransactions: string[]
@@ -953,6 +959,12 @@ export class WalletBackend extends EventEmitter {
      * Update daemon status
      */
     private async updateDaemonInfo(): Promise<void> {
+        logger.log(
+            'Updating daemon info...',
+            LogLevel.DEBUG,
+            LogCategory.DAEMON,
+        );
+
         this.daemon.updateDaemonInfo();
 
         const walletHeight: number = this.walletSynchronizer.getHeight();
@@ -986,6 +998,12 @@ export class WalletBackend extends EventEmitter {
         const networkHeight: number = this.daemon.getNetworkBlockCount();
 
         if (walletHeight >= networkHeight) {
+            logger.log(
+                `Wallet fully synced (${walletHeight} / ${networkHeight}). Not fetching blocks.`,
+                LogLevel.DEBUG,
+                LogCategory.SYNC,
+            );
+
             return;
         }
 
@@ -1152,6 +1170,12 @@ export class WalletBackend extends EventEmitter {
     private async sync(): Promise<void> {
         /* No blocks. Get some more from the daemon. */
         if (_.isEmpty(this.blocksToProcess)) {
+            logger.log(
+                'No blocks to process. Attempting to fetch more.',
+                LogLevel.DEBUG,
+                LogCategory.SYNC,
+            );
+
             try {
                 await this.fetchAndStoreBlocks();
             } catch (err) {

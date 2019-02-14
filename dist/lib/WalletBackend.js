@@ -603,6 +603,7 @@ class WalletBackend extends events_1.EventEmitter {
      */
     checkLockedTransactions() {
         return __awaiter(this, void 0, void 0, function* () {
+            Logger_1.logger.log('Checking locked transactions...', Logger_1.LogLevel.DEBUG, [Logger_1.LogCategory.SYNC, Logger_1.LogCategory.TRANSACTIONS]);
             const lockedTransactionHashes = this.subWallets.getLockedTransactionHashes();
             const cancelledTransactions = yield this.walletSynchronizer.findCancelledTransactions(lockedTransactionHashes);
             for (const cancelledTX of cancelledTransactions) {
@@ -615,6 +616,7 @@ class WalletBackend extends events_1.EventEmitter {
      */
     updateDaemonInfo() {
         return __awaiter(this, void 0, void 0, function* () {
+            Logger_1.logger.log('Updating daemon info...', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.DAEMON);
             this.daemon.updateDaemonInfo();
             const walletHeight = this.walletSynchronizer.getHeight();
             const networkHeight = this.daemon.getNetworkBlockCount();
@@ -645,6 +647,7 @@ class WalletBackend extends events_1.EventEmitter {
             const walletHeight = this.walletSynchronizer.getHeight();
             const networkHeight = this.daemon.getNetworkBlockCount();
             if (walletHeight >= networkHeight) {
+                Logger_1.logger.log(`Wallet fully synced (${walletHeight} / ${networkHeight}). Not fetching blocks.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 return;
             }
             this.blocksToProcess = yield this.walletSynchronizer.getBlocks();
@@ -756,6 +759,7 @@ class WalletBackend extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             /* No blocks. Get some more from the daemon. */
             if (_.isEmpty(this.blocksToProcess)) {
+                Logger_1.logger.log('No blocks to process. Attempting to fetch more.', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 try {
                     yield this.fetchAndStoreBlocks();
                 }
