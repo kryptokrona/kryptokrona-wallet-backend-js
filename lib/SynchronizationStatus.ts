@@ -44,7 +44,7 @@ export class SynchronizationStatus {
             if (blockHeight !== this.lastKnownBlockHeight + 1) {
                 throw new Error(
                     'Blocks were missed in syncing process! Expected: ' +
-                    this.lastKnownBlockHeight + 1 +
+                    (this.lastKnownBlockHeight + 1) +
                     ', Received: ' + blockHeight + '.\nPossibly malicious daemon.',
                 );
             }
