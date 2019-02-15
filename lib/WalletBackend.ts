@@ -698,9 +698,12 @@ export class WalletBackend extends EventEmitter {
     /**
      * Exposes some internal functions for those who know what they're doing...
      */
-    public internal(): { sync: () => Promise<void>; updateDaemonInfo: () => Promise<void>; } {
+    public internal(): {
+        sync: (sleep: boolean) => Promise<void>;
+        updateDaemonInfo: () => Promise<void>;
+    } {
         return {
-            sync: () => this.sync(true),
+            sync: (sleep) => this.sync(sleep),
             updateDaemonInfo: () => this.updateDaemonInfo(),
         };
     }

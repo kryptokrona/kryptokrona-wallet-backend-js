@@ -417,7 +417,7 @@ class WalletBackend extends events_1.EventEmitter {
      */
     internal() {
         return {
-            sync: () => this.sync(true),
+            sync: (sleep) => this.sync(sleep),
             updateDaemonInfo: () => this.updateDaemonInfo(),
         };
     }
