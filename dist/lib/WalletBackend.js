@@ -52,6 +52,13 @@ class WalletBackend extends events_1.EventEmitter {
     constructor(daemon, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
         super();
         /**
+         * Internal functions for those who know how to use them...
+         */
+        this.internal = {
+            sync: this.sync,
+            updateDaemonInfo: this.updateDaemonInfo,
+        };
+        /**
          * Whether our wallet is synced. Used for selectively firing the sync/desync
          * event.
          */

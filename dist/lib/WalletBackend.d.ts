@@ -224,6 +224,13 @@ export declare class WalletBackend extends EventEmitter {
     private static reviver;
     private static fromJSON;
     /**
+     * Internal functions for those who know how to use them...
+     */
+    internal: {
+        sync: () => Promise<void>;
+        updateDaemonInfo: () => Promise<void>;
+    };
+    /**
      *  Contains private keys, transactions, inputs, etc
      */
     private readonly subWallets;

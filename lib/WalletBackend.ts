@@ -446,6 +446,14 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Internal functions for those who know how to use them...
+     */
+    public internal = {
+        sync: this.sync,
+        updateDaemonInfo: this.updateDaemonInfo,
+    };
+
+    /**
      *  Contains private keys, transactions, inputs, etc
      */
     private readonly subWallets: SubWallets;
