@@ -540,7 +540,7 @@ export class WalletBackend extends EventEmitter {
         this.daemon = daemon;
 
         this.syncThread = new Metronome(
-            () => this.sync(),
+            () => this.sync(true),
             Config.syncThreadInterval,
         );
 
@@ -700,7 +700,7 @@ export class WalletBackend extends EventEmitter {
      */
     public internal(): { sync: () => Promise<void>; updateDaemonInfo: () => Promise<void>; } {
         return {
-            sync: () => this.sync(),
+            sync: () => this.sync(true),
             updateDaemonInfo: () => this.updateDaemonInfo(),
         };
     }
@@ -1002,7 +1002,7 @@ export class WalletBackend extends EventEmitter {
      * for later processing. Checks if we are synced and fires the sync/desync
      * event.
      */
-    private async fetchAndStoreBlocks(): Promise<void> {
+    private async fetchAndStoreBlocks(sleep: boolean): Promise<void> {
         /* Don't get blocks if we're synced already */
         const walletHeight: number = this.walletSynchronizer.getHeight();
         const networkHeight: number = this.daemon.getNetworkBlockCount();
@@ -1014,7 +1014,9 @@ export class WalletBackend extends EventEmitter {
                 LogCategory.SYNC,
             );
 
-            await delay(1000);
+            if (sleep) {
+                await delay(1000);
+            }
 
             return;
         }
@@ -1179,7 +1181,7 @@ export class WalletBackend extends EventEmitter {
     /**
      * Main loop. Download blocks, process them.
      */
-    private async sync(): Promise<void> {
+    private async sync(sleep: boolean): Promise<void> {
         /* No blocks. Get some more from the daemon. */
         if (_.isEmpty(this.blocksToProcess)) {
             logger.log(
@@ -1189,7 +1191,7 @@ export class WalletBackend extends EventEmitter {
             );
 
             try {
-                await this.fetchAndStoreBlocks();
+                await this.fetchAndStoreBlocks(sleep);
             } catch (err) {
                 logger.log(
                     'Error fetching blocks: ' + err.toString(),
@@ -1235,7 +1237,7 @@ export class WalletBackend extends EventEmitter {
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
 
         this.syncThread = new Metronome(
-            () => this.sync(),
+            () => this.sync(true),
             Config.syncThreadInterval,
         );
 

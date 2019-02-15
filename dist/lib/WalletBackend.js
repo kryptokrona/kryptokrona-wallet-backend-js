@@ -71,7 +71,7 @@ class WalletBackend extends events_1.EventEmitter {
         }
         this.walletSynchronizer = new WalletSynchronizer_1.WalletSynchronizer(daemon, this.subWallets, timestamp, scanHeight, privateViewKey);
         this.daemon = daemon;
-        this.syncThread = new Metronome_1.Metronome(() => this.sync(), Config_1.Config.syncThreadInterval);
+        this.syncThread = new Metronome_1.Metronome(() => this.sync(true), Config_1.Config.syncThreadInterval);
         this.daemonUpdateThread = new Metronome_1.Metronome(() => this.updateDaemonInfo(), Config_1.Config.daemonUpdateInterval);
         this.lockedTransactionsCheckThread = new Metronome_1.Metronome(() => this.checkLockedTransactions(), Config_1.Config.lockedTransactionsCheckInterval);
     }
@@ -417,7 +417,7 @@ class WalletBackend extends events_1.EventEmitter {
      */
     internal() {
         return {
-            sync: () => this.sync(),
+            sync: () => this.sync(true),
             updateDaemonInfo: () => this.updateDaemonInfo(),
         };
     }
@@ -650,14 +650,16 @@ class WalletBackend extends events_1.EventEmitter {
      * for later processing. Checks if we are synced and fires the sync/desync
      * event.
      */
-    fetchAndStoreBlocks() {
+    fetchAndStoreBlocks(sleep) {
         return __awaiter(this, void 0, void 0, function* () {
             /* Don't get blocks if we're synced already */
             const walletHeight = this.walletSynchronizer.getHeight();
             const networkHeight = this.daemon.getNetworkBlockCount();
             if (walletHeight >= networkHeight) {
                 Logger_1.logger.log(`Wallet fully synced (${walletHeight} / ${networkHeight}). Not fetching blocks.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
-                yield Utilities_1.delay(1000);
+                if (sleep) {
+                    yield Utilities_1.delay(1000);
+                }
                 return;
             }
             this.blocksToProcess = yield this.walletSynchronizer.getBlocks();
@@ -765,13 +767,13 @@ class WalletBackend extends events_1.EventEmitter {
     /**
      * Main loop. Download blocks, process them.
      */
-    sync() {
+    sync(sleep) {
         return __awaiter(this, void 0, void 0, function* () {
             /* No blocks. Get some more from the daemon. */
             if (_.isEmpty(this.blocksToProcess)) {
                 Logger_1.logger.log('No blocks to process. Attempting to fetch more.', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 try {
-                    yield this.fetchAndStoreBlocks();
+                    yield this.fetchAndStoreBlocks(sleep);
                 }
                 catch (err) {
                     Logger_1.logger.log('Error fetching blocks: ' + err.toString(), Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
@@ -806,7 +808,7 @@ class WalletBackend extends events_1.EventEmitter {
     initAfterLoad(daemon) {
         this.daemon = daemon;
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
-        this.syncThread = new Metronome_1.Metronome(() => this.sync(), Config_1.Config.syncThreadInterval);
+        this.syncThread = new Metronome_1.Metronome(() => this.sync(true), Config_1.Config.syncThreadInterval);
         this.daemonUpdateThread = new Metronome_1.Metronome(() => this.updateDaemonInfo(), Config_1.Config.daemonUpdateInterval);
         this.lockedTransactionsCheckThread = new Metronome_1.Metronome(() => this.checkLockedTransactions(), Config_1.Config.lockedTransactionsCheckInterval);
     }
