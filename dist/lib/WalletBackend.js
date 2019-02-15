@@ -64,11 +64,6 @@ class WalletBackend extends events_1.EventEmitter {
          * Have we started the mainloop
          */
         this.started = false;
-        //public internal(): { sync: () => Promise<void>; updateDaemonInfo: () => Promise<void>; } {
-        this.internal = {
-            sync: () => this.sync(),
-            updateDaemonInfo: () => this.updateDaemonInfo(),
-        };
         this.subWallets = new SubWallets_1.SubWallets(address, scanHeight, newWallet, privateViewKey, privateSpendKey);
         let timestamp = 0;
         if (newWallet) {
@@ -418,6 +413,15 @@ class WalletBackend extends events_1.EventEmitter {
         return this.subWallets.getPrivateViewKey();
     }
     /**
+     * Exposes some internal functions for those who know what they're doing...
+     */
+    internal() {
+        return {
+            sync: () => this.sync(),
+            updateDaemonInfo: () => this.updateDaemonInfo(),
+        };
+    }
+    /**
      * Gets the publicSpendKey and privateSpendKey for the given address, if
      * possible.
      *
@@ -653,6 +657,7 @@ class WalletBackend extends events_1.EventEmitter {
             const networkHeight = this.daemon.getNetworkBlockCount();
             if (walletHeight >= networkHeight) {
                 Logger_1.logger.log(`Wallet fully synced (${walletHeight} / ${networkHeight}). Not fetching blocks.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                yield Utilities_1.delay(1000);
                 return;
             }
             this.blocksToProcess = yield this.walletSynchronizer.getBlocks();

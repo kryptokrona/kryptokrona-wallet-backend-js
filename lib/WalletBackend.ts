@@ -1014,6 +1014,8 @@ export class WalletBackend extends EventEmitter {
                 LogCategory.SYNC,
             );
 
+            await delay(1000);
+
             return;
         }
 

@@ -361,7 +361,10 @@ export declare class WalletBackend extends EventEmitter {
      * Gets the shared private view key for this wallet container.
      */
     getPrivateViewKey(): string;
-    internal: {
+    /**
+     * Exposes some internal functions for those who know what they're doing...
+     */
+    internal(): {
         sync: () => Promise<void>;
         updateDaemonInfo: () => Promise<void>;
     };
