@@ -759,7 +759,12 @@ class WalletBackend extends events_1.EventEmitter {
                 /* Store the block hash we just processed */
                 this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
                 /* Remove the block we just processed */
-                this.blocksToProcess = _.drop(this.blocksToProcess);
+                /* Since we have an await above, it's possible for this function
+                   to get ran twice. Need to make sure we don't remove more than
+                   the block we just processed. */
+                if (this.blocksToProcess.length >= 1 && block.blockHeight === this.blocksToProcess[0].blockHeight) {
+                    this.blocksToProcess = _.drop(this.blocksToProcess);
+                }
                 Logger_1.logger.log('Finished processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             }
         });
