@@ -446,14 +446,6 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Internal functions for those who know how to use them...
-     */
-    public internal = {
-        sync: this.sync,
-        updateDaemonInfo: this.updateDaemonInfo,
-    };
-
-    /**
      *  Contains private keys, transactions, inputs, etc
      */
     private readonly subWallets: SubWallets;
@@ -701,6 +693,16 @@ export class WalletBackend extends EventEmitter {
      */
     public getPrivateViewKey(): string {
         return this.subWallets.getPrivateViewKey();
+    }
+
+    /**
+     * Exposes some internal functions for those who know what they're doing...
+     */
+    public internal(): { sync: () => Promise<void>; updateDaemonInfo: () => Promise<void>; } {
+        return {
+            sync: () => this.sync(),
+            updateDaemonInfo: () => this.updateDaemonInfo(),
+        };
     }
 
     /**

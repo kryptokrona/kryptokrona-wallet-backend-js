@@ -224,13 +224,6 @@ export declare class WalletBackend extends EventEmitter {
     private static reviver;
     private static fromJSON;
     /**
-     * Internal functions for those who know how to use them...
-     */
-    internal: {
-        sync: () => Promise<void>;
-        updateDaemonInfo: () => Promise<void>;
-    };
-    /**
      *  Contains private keys, transactions, inputs, etc
      */
     private readonly subWallets;
@@ -368,6 +361,10 @@ export declare class WalletBackend extends EventEmitter {
      * Gets the shared private view key for this wallet container.
      */
     getPrivateViewKey(): string;
+    internal: {
+        sync: () => Promise<void>;
+        updateDaemonInfo: () => Promise<void>;
+    };
     /**
      * Gets the publicSpendKey and privateSpendKey for the given address, if
      * possible.

@@ -52,13 +52,6 @@ class WalletBackend extends events_1.EventEmitter {
     constructor(daemon, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
         super();
         /**
-         * Internal functions for those who know how to use them...
-         */
-        this.internal = {
-            sync: this.sync,
-            updateDaemonInfo: this.updateDaemonInfo,
-        };
-        /**
          * Whether our wallet is synced. Used for selectively firing the sync/desync
          * event.
          */
@@ -71,6 +64,11 @@ class WalletBackend extends events_1.EventEmitter {
          * Have we started the mainloop
          */
         this.started = false;
+        //public internal(): { sync: () => Promise<void>; updateDaemonInfo: () => Promise<void>; } {
+        this.internal = {
+            sync: () => this.sync(),
+            updateDaemonInfo: () => this.updateDaemonInfo(),
+        };
         this.subWallets = new SubWallets_1.SubWallets(address, scanHeight, newWallet, privateViewKey, privateSpendKey);
         let timestamp = 0;
         if (newWallet) {
