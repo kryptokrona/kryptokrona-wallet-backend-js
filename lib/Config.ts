@@ -80,12 +80,69 @@ export interface IConfig {
      */
     standardAddressLength?: number;
 
-    /* The length of an integrated address for your coin - It's the same as
-       a normal address, but there is a paymentID included in there - since
-       payment ID's are 64 chars, and base58 encoding is done by encoding
-       chunks of 8 chars at once into blocks of 11 chars, we can calculate
-       this automatically */
+    /**
+     * The length of an integrated address for your coin - It's the same as
+     * a normal address, but there is a paymentID included in there - since
+     * payment ID's are 64 chars, and base58 encoding is done by encoding
+     * chunks of 8 chars at once into blocks of 11 chars, we can calculate
+     * this automatically
+     */
     integratedAddressLength?: number;
+
+    /**
+     * A replacement function for the JS/C++ underivePublicKey.
+     */
+    underivePublicKey?: (derivation: string,
+                         outputIndex: number,
+                         outputKey: string) => string;
+
+    /**
+     * A replacement function for the JS/C++ derivePublicKey.
+     */
+    derivePublicKey?: (derivation: string,
+                       outputIndex: number,
+                       publicKey: string) => string;
+
+    /**
+     * A replacement function for the JS/C++ deriveSecretKey.
+     */
+    deriveSecretKey?: (derivation: string,
+                       outputIndex: number,
+                       privateKey: string) => string;
+
+    /**
+     * A replacement function for the JS/C++ generateKeyImage.
+     */
+    generateKeyImage?: (transactionPublicKey: string,
+                        privateViewKey: string,
+                        publicSpendKey: string,
+                        privateSpendKey: string,
+                        outputIndex: number) => string;
+
+    /**
+     * A replacement function for the JS/C++ secretKeyToPublicKey.
+     */
+    secretKeyToPublicKey?: (privateKey: string) => string;
+
+    /**
+     * A replacement function for the JS/C++ cnFastHash.
+     */
+    cnFastHash?: (input: string) => string;
+
+    /**
+     * A replacement function for the JS/C++ generateRingSignatures.
+     */
+    generateRingSignatures?: (transactionPrefixHash: string,
+                              keyImage: string,
+                              inputKeys: string[],
+                              privateKey: string,
+                              realIndex: number) => string[];
+
+    /**
+     * A replacement function for the JS/C++ generateKeyDerivation.
+     */
+    generateKeyDerivation?: (transactionPublicKey: string,
+                             privateViewKey: string) => string;
 
     [key: string]: any;
 }
@@ -181,6 +238,61 @@ class OurConfig implements IConfig {
        chunks of 8 chars at once into blocks of 11 chars, we can calculate
        this automatically */
     public integratedAddressLength: number = 99 + ((64 * 11) / 8);
+
+    /**
+     * A replacement function for the JS/C++ underivePublicKey.
+     */
+    public underivePublicKey?: (derivation: string,
+                                outputIndex: number,
+                                outputKey: string) => string = undefined;
+
+    /**
+     * A replacement function for the JS/C++ derivePublicKey.
+     */
+    public derivePublicKey?: (derivation: string,
+                              outputIndex: number,
+                              publicKey: string) => string = undefined;
+
+    /**
+     * A replacement function for the JS/C++ deriveSecretKey.
+     */
+    public deriveSecretKey?: (derivation: string,
+                              outputIndex: number,
+                              privateKey: string) => string = undefined;
+
+    /**
+     * A replacement function for the JS/C++ generateKeyImage.
+     */
+    public generateKeyImage?: (transactionPublicKey: string,
+                               privateViewKey: string,
+                               publicSpendKey: string,
+                               privateSpendKey: string,
+                               outputIndex: number) => string = undefined;
+
+    /**
+     * A replacement function for the JS/C++ secretKeyToPublicKey.
+     */
+    public secretKeyToPublicKey?: (privateKey: string) => string = undefined;
+
+    /**
+     * A replacement function for the JS/C++ cnFastHash.
+     */
+    public cnFastHash?: (input: string) => string = undefined;
+
+    /**
+     * A replacement function for the JS/C++ generateRingSignatures.
+     */
+    public generateRingSignatures?: (transactionPrefixHash: string,
+                                     keyImage: string,
+                                     inputKeys: string[],
+                                     privateKey: string,
+                                     realIndex: number) => string[] = undefined;
+
+    /**
+     * A replacement function for the JS/C++ generateKeyDerivation.
+     */
+    public generateKeyDerivation?: (transactionPublicKey: string,
+                                    privateViewKey: string) => string = undefined;
 
     [key: string]: any;
 }

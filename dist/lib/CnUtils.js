@@ -14,8 +14,16 @@ const Config_1 = require("./Config");
 function CryptoUtils() {
     return new turtlecoin_utils_1.CryptoNote({
         addressPrefix: Config_1.Config.addressPrefix,
+        cnFastHash: Config_1.Config.cnFastHash,
         coinUnitPlaces: Config_1.Config.decimalPlaces,
+        derivePublicKey: Config_1.Config.derivePublicKey,
+        deriveSecretKey: Config_1.Config.deriveSecretKey,
+        generateKeyDerivation: Config_1.Config.generateKeyDerivation,
+        generateKeyImage: Config_1.Config.generateKeyImage,
+        generateRingSignatures: Config_1.Config.generateRingSignatures,
         keccakIterations: 1,
+        secretKeyToPublicKey: Config_1.Config.secretKeyToPublicKey,
+        underivePublicKey: Config_1.Config.underivePublicKey,
     });
 }
 exports.CryptoUtils = CryptoUtils;

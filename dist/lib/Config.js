@@ -81,6 +81,38 @@ class OurConfig {
            chunks of 8 chars at once into blocks of 11 chars, we can calculate
            this automatically */
         this.integratedAddressLength = 99 + ((64 * 11) / 8);
+        /**
+         * A replacement function for the JS/C++ underivePublicKey.
+         */
+        this.underivePublicKey = undefined;
+        /**
+         * A replacement function for the JS/C++ derivePublicKey.
+         */
+        this.derivePublicKey = undefined;
+        /**
+         * A replacement function for the JS/C++ deriveSecretKey.
+         */
+        this.deriveSecretKey = undefined;
+        /**
+         * A replacement function for the JS/C++ generateKeyImage.
+         */
+        this.generateKeyImage = undefined;
+        /**
+         * A replacement function for the JS/C++ secretKeyToPublicKey.
+         */
+        this.secretKeyToPublicKey = undefined;
+        /**
+         * A replacement function for the JS/C++ cnFastHash.
+         */
+        this.cnFastHash = undefined;
+        /**
+         * A replacement function for the JS/C++ generateRingSignatures.
+         */
+        this.generateRingSignatures = undefined;
+        /**
+         * A replacement function for the JS/C++ generateKeyDerivation.
+         */
+        this.generateKeyDerivation = undefined;
     }
 }
 /**
