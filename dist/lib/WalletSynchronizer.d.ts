@@ -43,7 +43,7 @@ export declare class WalletSynchronizer {
     /**
      * Download the next set of blocks from the daemon
      */
-    getBlocks(): Promise<Block[]>;
+    getBlocks(sleep: boolean): Promise<Block[]>;
     processBlock(block: Block, ourInputs: Array<[string, TransactionInput]>): TransactionData;
     /**
      * Process transaction outputs of the given block. No external dependencies,

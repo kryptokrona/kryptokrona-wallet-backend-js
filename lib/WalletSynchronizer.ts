@@ -4,6 +4,7 @@
 
 import * as _ from 'lodash';
 
+import { delay } from './Utilities';
 import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
@@ -100,7 +101,7 @@ export class WalletSynchronizer {
     /**
      * Download the next set of blocks from the daemon
      */
-    public async getBlocks(): Promise<Block[]> {
+    public async getBlocks(sleep: boolean): Promise<Block[]> {
         const localDaemonBlockCount: number = this.daemon.getLocalDaemonBlockCount();
 
         const walletBlockCount: number = this.synchronizationStatus.getHeight();
@@ -159,6 +160,10 @@ export class WalletSynchronizer {
                 LogLevel.DEBUG,
                 LogCategory.SYNC,
             );
+
+            if (sleep) {
+                await delay(1000);
+            }
 
             return [];
         }

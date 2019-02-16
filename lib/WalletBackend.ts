@@ -1024,7 +1024,7 @@ export class WalletBackend extends EventEmitter {
             return;
         }
 
-        this.blocksToProcess = await this.walletSynchronizer.getBlocks();
+        this.blocksToProcess = await this.walletSynchronizer.getBlocks(sleep);
     }
 
     /**

@@ -662,7 +662,7 @@ class WalletBackend extends events_1.EventEmitter {
                 }
                 return;
             }
-            this.blocksToProcess = yield this.walletSynchronizer.getBlocks();
+            this.blocksToProcess = yield this.walletSynchronizer.getBlocks(sleep);
         });
     }
     /**

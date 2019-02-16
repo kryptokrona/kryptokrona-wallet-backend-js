@@ -12,6 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
+const Utilities_1 = require("./Utilities");
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const SynchronizationStatus_1 = require("./SynchronizationStatus");
@@ -62,7 +63,7 @@ class WalletSynchronizer {
     /**
      * Download the next set of blocks from the daemon
      */
-    getBlocks() {
+    getBlocks(sleep) {
         return __awaiter(this, void 0, void 0, function* () {
             const localDaemonBlockCount = this.daemon.getLocalDaemonBlockCount();
             const walletBlockCount = this.synchronizationStatus.getHeight();
@@ -106,6 +107,9 @@ class WalletSynchronizer {
             }
             if (blocks.length === 0) {
                 Logger_1.logger.log('Zero blocks received from daemon, possibly fully synced', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                if (sleep) {
+                    yield Utilities_1.delay(1000);
+                }
                 return [];
             }
             /* Timestamp is transient and can change - block height is constant. */
