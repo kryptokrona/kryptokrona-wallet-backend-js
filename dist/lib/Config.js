@@ -113,6 +113,15 @@ class OurConfig {
          * A replacement function for the JS/C++ generateKeyDerivation.
          */
         this.generateKeyDerivation = undefined;
+        /**
+         * The amount of memory to use storing downloaded blocks - 50MB
+         */
+        this.blockStoreMemoryLimit = 1024 * 1024 * 50;
+        /**
+         * The amount of blocks to take from the daemon per request. Cannot take
+         * more than 100.
+         */
+        this.blocksPerDaemonRequest = 100;
     }
 }
 /**

@@ -482,11 +482,6 @@ export class WalletBackend extends EventEmitter {
     private synced: boolean = false;
 
     /**
-     * Blocks previously downloaded that we need to process
-     */
-    private blocksToProcess: Block[] = [];
-
-    /**
      * Have we started the mainloop
      */
     private started: boolean = false;
@@ -1001,33 +996,6 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
-     * for later processing. Checks if we are synced and fires the sync/desync
-     * event.
-     */
-    private async fetchAndStoreBlocks(sleep: boolean): Promise<void> {
-        /* Don't get blocks if we're synced already */
-        const walletHeight: number = this.walletSynchronizer.getHeight();
-        const networkHeight: number = this.daemon.getNetworkBlockCount();
-
-        if (walletHeight >= networkHeight) {
-            logger.log(
-                `Wallet fully synced (${walletHeight} / ${networkHeight}). Not fetching blocks.`,
-                LogLevel.DEBUG,
-                LogCategory.SYNC,
-            );
-
-            if (sleep) {
-                await delay(1000);
-            }
-
-            return;
-        }
-
-        this.blocksToProcess = await this.walletSynchronizer.getBlocks(sleep);
-    }
-
-    /**
      * Stores any transactions, inputs, and spend keys images
      */
     private storeTxData(txData: TransactionData, blockHeight: number): void {
@@ -1095,9 +1063,17 @@ export class WalletBackend extends EventEmitter {
      * Process Config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
-    private async processBlocks(): Promise<void> {
+    private async processBlocks(sleep: boolean): Promise<void> {
         /* Take the blocks to process for this tick */
-        const blocks: Block[] = _.take(this.blocksToProcess, Config.blocksPerTick);
+        const blocks: Block[] = await this.walletSynchronizer.fetchBlocks(Config.blocksPerTick);
+
+        if (blocks.length === 0) {
+            if (sleep) {
+                await delay(1000);
+            }
+
+            return;
+        }
 
         for (const block of blocks) {
 
@@ -1167,16 +1143,8 @@ export class WalletBackend extends EventEmitter {
             /* Store the data */
             this.storeTxData(txData, block.blockHeight);
 
-            /* Store the block hash we just processed */
-            this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
-
-            /* Remove the block we just processed */
-            /* Since we have an await above, it's possible for this function
-               to get ran twice. Need to make sure we don't remove more than
-               the block we just processed. */
-            if (this.blocksToProcess.length >= 1 && block.blockHeight === this.blocksToProcess[0].blockHeight) {
-                this.blocksToProcess = _.drop(this.blocksToProcess);
-            }
+            /* Store the block hash and remove the block we just processed */
+            this.walletSynchronizer.dropBlock(block.blockHeight, block.blockHash);
 
             logger.log(
                 'Finished processing block ' + block.blockHeight,
@@ -1190,27 +1158,8 @@ export class WalletBackend extends EventEmitter {
      * Main loop. Download blocks, process them.
      */
     private async sync(sleep: boolean): Promise<void> {
-        /* No blocks. Get some more from the daemon. */
-        if (_.isEmpty(this.blocksToProcess)) {
-            logger.log(
-                'No blocks to process. Attempting to fetch more.',
-                LogLevel.DEBUG,
-                LogCategory.SYNC,
-            );
-
-            try {
-                await this.fetchAndStoreBlocks(sleep);
-            } catch (err) {
-                logger.log(
-                    'Error fetching blocks: ' + err.toString(),
-                    LogLevel.INFO,
-                    LogCategory.SYNC,
-                );
-            }
-        }
-
         try {
-            await this.processBlocks();
+            await this.processBlocks(sleep);
         } catch (err) {
             logger.log(
                 'Error processing blocks: ' + err.toString(),

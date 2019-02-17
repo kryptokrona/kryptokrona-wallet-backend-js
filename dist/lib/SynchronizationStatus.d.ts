@@ -7,5 +7,5 @@ export declare class SynchronizationStatus {
     toJSON(): SynchronizationStatusJSON;
     getHeight(): number;
     storeBlockHash(blockHeight: number, blockHash: string): void;
-    getBlockHashCheckpoints(): string[];
+    getProcessedBlockHashCheckpoints(): string[];
 }

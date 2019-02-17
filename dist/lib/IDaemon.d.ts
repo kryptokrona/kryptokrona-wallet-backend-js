@@ -14,7 +14,7 @@ export interface IDaemon {
      * Gets blocks from the daemon. Blocks are returned starting from the last
      * known block hash (if higher than the startHeight/startTimestamp)
      */
-    getWalletSyncData(blockHashCheckpoints: string[], startHeight: number, startTimestamp: number): Promise<Block[]>;
+    getWalletSyncData(blockHashCheckpoints: string[], startHeight: number, startTimestamp: number, blockCount: number): Promise<Block[]>;
     /**
      * Gets the node fee address and amount. Will be `['', 0]` if none/invalid
      */

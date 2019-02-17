@@ -102,6 +102,15 @@ export interface IConfig {
      * A replacement function for the JS/C++ generateKeyDerivation.
      */
     generateKeyDerivation?: (transactionPublicKey: string, privateViewKey: string) => string;
+    /**
+     * The max amount of memory to use, storing downloaded blocks to be processed.
+     */
+    blockStoreMemoryLimit?: number;
+    /**
+     * The amount of blocks to take from the daemon per request. Cannot take
+     * more than 100.
+     */
+    blocksPerDaemonRequest?: number;
     [key: string]: any;
 }
 /**
@@ -200,6 +209,15 @@ declare class OurConfig implements IConfig {
      * A replacement function for the JS/C++ generateKeyDerivation.
      */
     generateKeyDerivation?: (transactionPublicKey: string, privateViewKey: string) => string;
+    /**
+     * The amount of memory to use storing downloaded blocks - 50MB
+     */
+    blockStoreMemoryLimit: number;
+    /**
+     * The amount of blocks to take from the daemon per request. Cannot take
+     * more than 100.
+     */
+    blocksPerDaemonRequest: number;
     [key: string]: any;
 }
 /**

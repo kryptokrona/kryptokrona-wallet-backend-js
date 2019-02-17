@@ -12,7 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
-const Utilities_1 = require("./Utilities");
+const object_sizeof_1 = require("object-sizeof");
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const SynchronizationStatus_1 = require("./SynchronizationStatus");
@@ -27,6 +27,14 @@ class WalletSynchronizer {
          * Stores the progress of our synchronization
          */
         this.synchronizationStatus = new SynchronizationStatus_1.SynchronizationStatus();
+        /**
+         * Whether we are already downloading a chunk of blocks
+         */
+        this.fetchingBlocks = false;
+        /**
+         * Stored blocks for later processing
+         */
+        this.storedBlocks = [];
         this.daemon = daemon;
         this.startTimestamp = startTimestamp;
         this.startHeight = startHeight;
@@ -59,79 +67,6 @@ class WalletSynchronizer {
             startTimestamp: this.startTimestamp,
             transactionSynchronizerStatus: this.synchronizationStatus.toJSON(),
         };
-    }
-    /**
-     * Download the next set of blocks from the daemon
-     */
-    getBlocks(sleep) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const localDaemonBlockCount = this.daemon.getLocalDaemonBlockCount();
-            const walletBlockCount = this.synchronizationStatus.getHeight();
-            /* Local daemon has less blocks than the wallet:
-    
-            With the get wallet sync data call, we give a height or a timestamp to
-            start at, and an array of block hashes of the last known blocks we
-            know about.
-    
-            If the daemon can find the hashes, it returns the next one it knows
-            about, so if we give a start height of 200,000, and a hash of
-            block 300,000, it will return block 300,001 and above.
-    
-            This works well, since if the chain forks at 300,000, it won't have the
-            hash of 300,000, so it will return the next hash we gave it,
-            in this case probably 299,999.
-    
-            On the wallet side, we'll detect a block lower than our last known
-            block, and handle the fork.
-    
-            However, if we're syncing our wallet with an unsynced daemon,
-            lets say our wallet is at height 600,000, and the daemon is at 300,000.
-            If our start height was at 200,000, then since it won't have any block
-            hashes around 600,000, it will start returning blocks from
-            200,000 and up, discarding our current progress.
-    
-            Therefore, we should wait until the local daemon has more blocks than
-            us to prevent discarding sync data. */
-            if (localDaemonBlockCount < walletBlockCount) {
-                return [];
-            }
-            /* The block hashes to try begin syncing from */
-            const blockCheckpoints = this.synchronizationStatus.getBlockHashCheckpoints();
-            let blocks = [];
-            try {
-                blocks = yield this.daemon.getWalletSyncData(blockCheckpoints, this.startHeight, this.startTimestamp);
-            }
-            catch (err) {
-                Logger_1.logger.log('Failed to get blocks from daemon', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
-                return [];
-            }
-            if (blocks.length === 0) {
-                Logger_1.logger.log('Zero blocks received from daemon, possibly fully synced', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
-                if (sleep) {
-                    yield Utilities_1.delay(1000);
-                }
-                return [];
-            }
-            /* Timestamp is transient and can change - block height is constant. */
-            if (this.startTimestamp !== 0) {
-                this.startTimestamp = 0;
-                this.startHeight = blocks[0].blockHeight;
-                this.subWallets.convertSyncTimestampToHeight(this.startTimestamp, this.startHeight);
-            }
-            /* If checkpoints are empty, this is the first sync request. */
-            if (_.isEmpty(blockCheckpoints)) {
-                const actualHeight = blocks[0].blockHeight;
-                /* Only check if a timestamp isn't given */
-                if (this.startTimestamp === 0) {
-                    /* The height we expect to get back from the daemon */
-                    if (actualHeight !== this.startHeight) {
-                        throw new Error('Received unexpected block height from daemon. ' +
-                            'Expected ' + this.startHeight + ', got ' + actualHeight + '\n');
-                    }
-                }
-            }
-            return blocks;
-        });
     }
     processBlock(block, ourInputs) {
         const txData = new Types_1.TransactionData();
@@ -190,8 +125,108 @@ class WalletSynchronizer {
             return this.daemon.getCancelledTransactions(transactionHashes);
         });
     }
-    storeBlockHash(blockHeight, blockHash) {
+    /**
+     * Retrieve blockCount blocks from the internal store. Does not remove
+     * them.
+     */
+    fetchBlocks(blockCount) {
+        return __awaiter(this, void 0, void 0, function* () {
+            /* Fetch more blocks if we haven't got any downloaded yet */
+            if (this.storedBlocks.length === 0) {
+                yield this.downloadBlocks();
+            }
+            return _.take(this.storedBlocks, blockCount);
+        });
+    }
+    dropBlock(blockHeight, blockHash) {
+        /* it's possible for this function to get ran twice.
+           Need to make sure we don't remove more than the block we just
+           processed. */
+        if (this.storedBlocks.length >= 1 &&
+            this.storedBlocks[0].blockHeight === blockHeight &&
+            this.storedBlocks[0].blockHash === blockHash) {
+            this.storedBlocks = _.drop(this.storedBlocks);
+        }
         this.synchronizationStatus.storeBlockHash(blockHeight, blockHash);
+        if (this.shouldFetchMoreBlocks()) {
+            /* Note - not awaiting here */
+            this.downloadBlocks();
+        }
+    }
+    getStoredBlockCheckpoints() {
+        const hashes = [];
+        for (const block of this.storedBlocks) {
+            /* Add to start of array - we want hashes in descending block height order */
+            hashes.unshift(block.blockHash);
+        }
+        return hashes;
+    }
+    /**
+     * Only retrieve more blocks if we're not getting close to the memory limit
+     */
+    shouldFetchMoreBlocks() {
+        /* Don't fetch more if we're already doing so */
+        if (this.fetchingBlocks) {
+            return false;
+        }
+        const ramUsage = object_sizeof_1.default(this.storedBlocks);
+        if (ramUsage * 1.5 < Config_1.Config.blockStoreMemoryLimit) {
+            Logger_1.logger.log(`Approximate ram usage of stored blocks: ${ramUsage}, fetching more.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+            return true;
+        }
+        return false;
+    }
+    downloadBlocks() {
+        return __awaiter(this, void 0, void 0, function* () {
+            /* Don't make more than one fetch request at once */
+            if (this.fetchingBlocks) {
+                return;
+            }
+            this.fetchingBlocks = true;
+            const localDaemonBlockCount = this.daemon.getLocalDaemonBlockCount();
+            const walletBlockCount = this.getHeight();
+            if (localDaemonBlockCount < walletBlockCount) {
+                return;
+            }
+            /* Get the checkpoints of the blocks we've got stored, so we can fetch
+               later ones. Also use the checkpoints of the previously processed
+               ones, in case we don't have any blocks yet. */
+            const blockCheckpoints = this.getStoredBlockCheckpoints()
+                .concat(this.synchronizationStatus.getProcessedBlockHashCheckpoints());
+            let blocks = [];
+            try {
+                blocks = yield this.daemon.getWalletSyncData(blockCheckpoints, this.startHeight, this.startTimestamp, Config_1.Config.blocksPerDaemonRequest);
+            }
+            catch (err) {
+                Logger_1.logger.log('Failed to get blocks from daemon', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                return;
+            }
+            if (blocks.length === 0) {
+                Logger_1.logger.log('Zero blocks received from daemon, possibly fully synced', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                return;
+            }
+            /* Timestamp is transient and can change - block height is constant. */
+            if (this.startTimestamp !== 0) {
+                this.startTimestamp = 0;
+                this.startHeight = blocks[0].blockHeight;
+                this.subWallets.convertSyncTimestampToHeight(this.startTimestamp, this.startHeight);
+            }
+            /* If checkpoints are empty, this is the first sync request. */
+            if (_.isEmpty(blockCheckpoints)) {
+                const actualHeight = blocks[0].blockHeight;
+                /* Only check if a timestamp isn't given */
+                if (this.startTimestamp === 0) {
+                    /* The height we expect to get back from the daemon */
+                    if (actualHeight !== this.startHeight) {
+                        throw new Error('Received unexpected block height from daemon. ' +
+                            'Expected ' + this.startHeight + ', got ' + actualHeight + '\n');
+                    }
+                }
+            }
+            /* Add the new blocks to the store */
+            this.storedBlocks = this.storedBlocks.concat(blocks);
+            this.fetchingBlocks = false;
+        });
     }
     /**
      * Process the outputs of a transaction, and create inputs that are ours

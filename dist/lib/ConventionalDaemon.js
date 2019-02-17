@@ -119,12 +119,13 @@ class ConventionalDaemon {
      * Gets blocks from the daemon. Blocks are returned starting from the last
      * known block hash (if higher than the startHeight/startTimestamp)
      */
-    getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp) {
+    getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp, blockCount) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.daemon.getWalletSyncData({
                 blockHashCheckpoints,
                 startHeight,
                 startTimestamp,
+                blockCount,
             });
             return data.map(Types_1.Block.fromJSON);
         });

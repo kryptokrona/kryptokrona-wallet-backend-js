@@ -144,6 +144,17 @@ export interface IConfig {
     generateKeyDerivation?: (transactionPublicKey: string,
                              privateViewKey: string) => string;
 
+    /**
+     * The max amount of memory to use, storing downloaded blocks to be processed.
+     */
+    blockStoreMemoryLimit?: number;
+
+    /**
+     * The amount of blocks to take from the daemon per request. Cannot take
+     * more than 100.
+     */
+    blocksPerDaemonRequest?: number;
+
     [key: string]: any;
 }
 
@@ -293,6 +304,17 @@ class OurConfig implements IConfig {
      */
     public generateKeyDerivation?: (transactionPublicKey: string,
                                     privateViewKey: string) => string = undefined;
+
+    /**
+     * The amount of memory to use storing downloaded blocks - 50MB
+     */
+    public blockStoreMemoryLimit: number = 1024 * 1024 * 50;
+
+    /**
+     * The amount of blocks to take from the daemon per request. Cannot take
+     * more than 100.
+     */
+    public blocksPerDaemonRequest: number = 100;
 
     [key: string]: any;
 }

@@ -129,7 +129,7 @@ class BlockchainCacheApi {
      * Gets blocks from the daemon. Blocks are returned starting from the last
      * known block hash (if higher than the startHeight/startTimestamp)
      */
-    getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp) {
+    getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp, blockCount) {
         return __awaiter(this, void 0, void 0, function* () {
             let data;
             try {
@@ -137,6 +137,7 @@ class BlockchainCacheApi {
                     blockHashCheckpoints,
                     startHeight,
                     startTimestamp,
+                    blockCount,
                 });
             }
             catch (err) {

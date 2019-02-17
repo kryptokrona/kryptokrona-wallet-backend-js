@@ -31,6 +31,14 @@ export declare class WalletSynchronizer {
      * Used to find spend keys, inspect key images, etc
      */
     private subWallets;
+    /**
+     * Whether we are already downloading a chunk of blocks
+     */
+    private fetchingBlocks;
+    /**
+     * Stored blocks for later processing
+     */
+    private storedBlocks;
     constructor(daemon: IDaemon, subWallets: SubWallets, startTimestamp: number, startHeight: number, privateViewKey: string);
     /**
      * Initialize things we can't initialize from the JSON
@@ -40,10 +48,6 @@ export declare class WalletSynchronizer {
      * Convert from class to stringable type
      */
     toJSON(): WalletSynchronizerJSON;
-    /**
-     * Download the next set of blocks from the daemon
-     */
-    getBlocks(sleep: boolean): Promise<Block[]>;
     processBlock(block: Block, ourInputs: Array<[string, TransactionInput]>): TransactionData;
     /**
      * Process transaction outputs of the given block. No external dependencies,
@@ -62,7 +66,18 @@ export declare class WalletSynchronizer {
      * returned to our wallet
      */
     findCancelledTransactions(transactionHashes: string[]): Promise<string[]>;
-    storeBlockHash(blockHeight: number, blockHash: string): void;
+    /**
+     * Retrieve blockCount blocks from the internal store. Does not remove
+     * them.
+     */
+    fetchBlocks(blockCount: number): Promise<Block[]>;
+    dropBlock(blockHeight: number, blockHash: string): void;
+    private getStoredBlockCheckpoints;
+    /**
+     * Only retrieve more blocks if we're not getting close to the memory limit
+     */
+    private shouldFetchMoreBlocks;
+    private downloadBlocks;
     /**
      * Process the outputs of a transaction, and create inputs that are ours
      */

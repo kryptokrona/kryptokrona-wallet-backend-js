@@ -66,7 +66,7 @@ export class SynchronizationStatus {
         }
     }
 
-    public getBlockHashCheckpoints(): string[] {
+    public getProcessedBlockHashCheckpoints(): string[] {
         return this.lastKnownBlockHashes.concat(this.blockHashCheckpoints);
     }
 }

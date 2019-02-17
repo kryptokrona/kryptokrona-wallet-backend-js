@@ -253,10 +253,6 @@ export declare class WalletBackend extends EventEmitter {
      */
     private synced;
     /**
-     * Blocks previously downloaded that we need to process
-     */
-    private blocksToProcess;
-    /**
      * Have we started the mainloop
      */
     private started;
@@ -486,12 +482,6 @@ export declare class WalletBackend extends EventEmitter {
      * Update daemon status
      */
     private updateDaemonInfo;
-    /**
-     * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
-     * for later processing. Checks if we are synced and fires the sync/desync
-     * event.
-     */
-    private fetchAndStoreBlocks;
     /**
      * Stores any transactions, inputs, and spend keys images
      */

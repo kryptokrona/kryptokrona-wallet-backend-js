@@ -147,7 +147,8 @@ export class BlockchainCacheApi implements IDaemon {
     public async getWalletSyncData(
         blockHashCheckpoints: string[],
         startHeight: number,
-        startTimestamp: number): Promise<Block[]> {
+        startTimestamp: number,
+        blockCount: number): Promise<Block[]> {
 
         let data;
 
@@ -156,6 +157,7 @@ export class BlockchainCacheApi implements IDaemon {
                 blockHashCheckpoints,
                 startHeight,
                 startTimestamp,
+                blockCount,
             });
         } catch (err) {
             logger.log(

@@ -57,10 +57,6 @@ class WalletBackend extends events_1.EventEmitter {
          */
         this.synced = false;
         /**
-         * Blocks previously downloaded that we need to process
-         */
-        this.blocksToProcess = [];
-        /**
          * Have we started the mainloop
          */
         this.started = false;
@@ -646,26 +642,6 @@ class WalletBackend extends events_1.EventEmitter {
         });
     }
     /**
-     * Downloads blocks from the daemon and stores them in `this.blocksToProcess`
-     * for later processing. Checks if we are synced and fires the sync/desync
-     * event.
-     */
-    fetchAndStoreBlocks(sleep) {
-        return __awaiter(this, void 0, void 0, function* () {
-            /* Don't get blocks if we're synced already */
-            const walletHeight = this.walletSynchronizer.getHeight();
-            const networkHeight = this.daemon.getNetworkBlockCount();
-            if (walletHeight >= networkHeight) {
-                Logger_1.logger.log(`Wallet fully synced (${walletHeight} / ${networkHeight}). Not fetching blocks.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
-                if (sleep) {
-                    yield Utilities_1.delay(1000);
-                }
-                return;
-            }
-            this.blocksToProcess = yield this.walletSynchronizer.getBlocks(sleep);
-        });
-    }
-    /**
      * Stores any transactions, inputs, and spend keys images
      */
     storeTxData(txData, blockHeight) {
@@ -716,10 +692,16 @@ class WalletBackend extends events_1.EventEmitter {
      * Process Config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
-    processBlocks() {
+    processBlocks(sleep) {
         return __awaiter(this, void 0, void 0, function* () {
             /* Take the blocks to process for this tick */
-            const blocks = _.take(this.blocksToProcess, Config_1.Config.blocksPerTick);
+            const blocks = yield this.walletSynchronizer.fetchBlocks(Config_1.Config.blocksPerTick);
+            if (blocks.length === 0) {
+                if (sleep) {
+                    yield Utilities_1.delay(1000);
+                }
+                return;
+            }
             for (const block of blocks) {
                 Logger_1.logger.log('Processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 /* Forked chain, remove old data */
@@ -756,15 +738,8 @@ class WalletBackend extends events_1.EventEmitter {
                 const txData = this.walletSynchronizer.processBlock(block, blockInputs);
                 /* Store the data */
                 this.storeTxData(txData, block.blockHeight);
-                /* Store the block hash we just processed */
-                this.walletSynchronizer.storeBlockHash(block.blockHeight, block.blockHash);
-                /* Remove the block we just processed */
-                /* Since we have an await above, it's possible for this function
-                   to get ran twice. Need to make sure we don't remove more than
-                   the block we just processed. */
-                if (this.blocksToProcess.length >= 1 && block.blockHeight === this.blocksToProcess[0].blockHeight) {
-                    this.blocksToProcess = _.drop(this.blocksToProcess);
-                }
+                /* Store the block hash and remove the block we just processed */
+                this.walletSynchronizer.dropBlock(block.blockHeight, block.blockHash);
                 Logger_1.logger.log('Finished processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             }
         });
@@ -774,18 +749,8 @@ class WalletBackend extends events_1.EventEmitter {
      */
     sync(sleep) {
         return __awaiter(this, void 0, void 0, function* () {
-            /* No blocks. Get some more from the daemon. */
-            if (_.isEmpty(this.blocksToProcess)) {
-                Logger_1.logger.log('No blocks to process. Attempting to fetch more.', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
-                try {
-                    yield this.fetchAndStoreBlocks(sleep);
-                }
-                catch (err) {
-                    Logger_1.logger.log('Error fetching blocks: ' + err.toString(), Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
-                }
-            }
             try {
-                yield this.processBlocks();
+                yield this.processBlocks(sleep);
             }
             catch (err) {
                 Logger_1.logger.log('Error processing blocks: ' + err.toString(), Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);

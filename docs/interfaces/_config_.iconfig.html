@@ -99,7 +99,9 @@
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_config_.iconfig.html#addressprefix" class="tsd-kind-icon">address<wbr>Prefix</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_config_.iconfig.html#blockstorememorylimit" class="tsd-kind-icon">block<wbr>Store<wbr>Memory<wbr>Limit</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_config_.iconfig.html#blocktargettime" class="tsd-kind-icon">block<wbr>Target<wbr>Time</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_config_.iconfig.html#blocksperdaemonrequest" class="tsd-kind-icon">blocks<wbr>Per<wbr>Daemon<wbr>Request</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_config_.iconfig.html#blockspertick" class="tsd-kind-icon">blocks<wbr>Per<wbr>Tick</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_config_.iconfig.html#cnfasthash" class="tsd-kind-icon">cn<wbr>Fast<wbr>Hash</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_config_.iconfig.html#daemonupdateinterval" class="tsd-kind-icon">daemon<wbr>Update<wbr>Interval</a></li>
@@ -133,7 +135,7 @@
 					<div class="tsd-signature tsd-kind-icon">address<wbr>Prefix<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L23">Config.ts:23</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L23">Config.ts:23</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -144,12 +146,27 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="blockstorememorylimit" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> block<wbr>Store<wbr>Memory<wbr>Limit</h3>
+					<div class="tsd-signature tsd-kind-icon">block<wbr>Store<wbr>Memory<wbr>Limit<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L150">Config.ts:150</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The max amount of memory to use, storing downloaded blocks to be processed.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="blocktargettime" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> block<wbr>Target<wbr>Time</h3>
 					<div class="tsd-signature tsd-kind-icon">block<wbr>Target<wbr>Time<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L33">Config.ts:33</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L33">Config.ts:33</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -159,12 +176,28 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="blocksperdaemonrequest" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> blocks<wbr>Per<wbr>Daemon<wbr>Request</h3>
+					<div class="tsd-signature tsd-kind-icon">blocks<wbr>Per<wbr>Daemon<wbr>Request<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L156">Config.ts:156</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The amount of blocks to take from the daemon per request. Cannot take
+							more than 100.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="blockspertick" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> blocks<wbr>Per<wbr>Tick</h3>
 					<div class="tsd-signature tsd-kind-icon">blocks<wbr>Per<wbr>Tick<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L55">Config.ts:55</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L55">Config.ts:55</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -181,7 +214,7 @@
 					<div class="tsd-signature tsd-kind-icon">cn<wbr>Fast<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L130">Config.ts:130</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L130">Config.ts:130</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -196,7 +229,7 @@
 					<div class="tsd-signature tsd-kind-icon">daemon<wbr>Update<wbr>Interval<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L43">Config.ts:43</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L43">Config.ts:43</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -211,7 +244,7 @@
 					<div class="tsd-signature tsd-kind-icon">decimal<wbr>Places<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L17">Config.ts:17</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L17">Config.ts:17</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -227,7 +260,7 @@
 					<div class="tsd-signature tsd-kind-icon">derive<wbr>Public<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L102">Config.ts:102</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L102">Config.ts:102</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -242,7 +275,7 @@
 					<div class="tsd-signature tsd-kind-icon">derive<wbr>Secret<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L109">Config.ts:109</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L109">Config.ts:109</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -257,7 +290,7 @@
 					<div class="tsd-signature tsd-kind-icon">generate<wbr>Key<wbr>Derivation<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L144">Config.ts:144</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L144">Config.ts:144</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -272,7 +305,7 @@
 					<div class="tsd-signature tsd-kind-icon">generate<wbr>Key<wbr>Image<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L116">Config.ts:116</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L116">Config.ts:116</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -287,7 +320,7 @@
 					<div class="tsd-signature tsd-kind-icon">generate<wbr>Ring<wbr>Signatures<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L135">Config.ts:135</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L135">Config.ts:135</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -302,7 +335,7 @@
 					<div class="tsd-signature tsd-kind-icon">integrated<wbr>Address<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L90">Config.ts:90</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L90">Config.ts:90</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -321,7 +354,7 @@
 					<div class="tsd-signature tsd-kind-icon">locked<wbr>Transactions<wbr>Check<wbr>Interval<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L48">Config.ts:48</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L48">Config.ts:48</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -336,7 +369,7 @@
 					<div class="tsd-signature tsd-kind-icon">minimum<wbr>Fee<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L71">Config.ts:71</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L71">Config.ts:71</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -351,7 +384,7 @@
 					<div class="tsd-signature tsd-kind-icon">mixin<wbr>Limits<span class="tsd-signature-symbol">:</span> <a href="../classes/_mixinlimits_.mixinlimits.html" class="tsd-signature-type">MixinLimits</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L76">Config.ts:76</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L76">Config.ts:76</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -366,7 +399,7 @@
 					<div class="tsd-signature tsd-kind-icon">request<wbr>Timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L28">Config.ts:28</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L28">Config.ts:28</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -381,7 +414,7 @@
 					<div class="tsd-signature tsd-kind-icon">scan<wbr>Coinbase<wbr>Transactions<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L66">Config.ts:66</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L66">Config.ts:66</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -397,7 +430,7 @@
 					<div class="tsd-signature tsd-kind-icon">secret<wbr>Key<wbr>ToPublic<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L125">Config.ts:125</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L125">Config.ts:125</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -412,7 +445,7 @@
 					<div class="tsd-signature tsd-kind-icon">standard<wbr>Address<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L81">Config.ts:81</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L81">Config.ts:81</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -427,7 +460,7 @@
 					<div class="tsd-signature tsd-kind-icon">sync<wbr>Thread<wbr>Interval<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L38">Config.ts:38</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L38">Config.ts:38</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -442,7 +475,7 @@
 					<div class="tsd-signature tsd-kind-icon">ticker<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L60">Config.ts:60</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L60">Config.ts:60</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -457,7 +490,7 @@
 					<div class="tsd-signature tsd-kind-icon">underive<wbr>Public<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/1ddab6f/lib/Config.ts#L95">Config.ts:95</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/10207ab/lib/Config.ts#L95">Config.ts:95</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -520,7 +553,13 @@
 								<a href="_config_.iconfig.html#addressprefix" class="tsd-kind-icon">address<wbr>Prefix</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="_config_.iconfig.html#blockstorememorylimit" class="tsd-kind-icon">block<wbr>Store<wbr>Memory<wbr>Limit</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="_config_.iconfig.html#blocktargettime" class="tsd-kind-icon">block<wbr>Target<wbr>Time</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="_config_.iconfig.html#blocksperdaemonrequest" class="tsd-kind-icon">blocks<wbr>Per<wbr>Daemon<wbr>Request</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="_config_.iconfig.html#blockspertick" class="tsd-kind-icon">blocks<wbr>Per<wbr>Tick</a>

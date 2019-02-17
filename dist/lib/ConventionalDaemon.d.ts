@@ -73,7 +73,7 @@ export declare class ConventionalDaemon implements IDaemon {
      * Gets blocks from the daemon. Blocks are returned starting from the last
      * known block hash (if higher than the startHeight/startTimestamp)
      */
-    getWalletSyncData(blockHashCheckpoints: string[], startHeight: number, startTimestamp: number): Promise<Block[]>;
+    getWalletSyncData(blockHashCheckpoints: string[], startHeight: number, startTimestamp: number, blockCount: number): Promise<Block[]>;
     /**
      * @returns Returns a mapping of transaction hashes to global indexes
      *
