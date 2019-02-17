@@ -12,7 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
-const object_sizeof_1 = require("object-sizeof");
+const sizeof = require('object-sizeof');
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const Utilities_1 = require("./Utilities");
@@ -170,7 +170,7 @@ class WalletSynchronizer {
         if (this.fetchingBlocks) {
             return false;
         }
-        const ramUsage = object_sizeof_1.default(this.storedBlocks);
+        const ramUsage = sizeof(this.storedBlocks);
         if (ramUsage * 1.5 < Config_1.Config.blockStoreMemoryLimit) {
             Logger_1.logger.log(`Approximate ram usage of stored blocks: ${Utilities_1.prettyPrintBytes(ramUsage)}, fetching more.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             return true;

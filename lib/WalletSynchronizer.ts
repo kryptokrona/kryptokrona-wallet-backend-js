@@ -3,7 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import * as _ from 'lodash';
-import sizeof from 'object-sizeof';
+const sizeof = require('object-sizeof');
 
 import { Config } from './Config';
 import { IDaemon } from './IDaemon';
