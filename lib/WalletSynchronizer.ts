@@ -95,6 +95,7 @@ export class WalletSynchronizer {
     public initAfterLoad(subWallets: SubWallets, daemon: IDaemon): void {
         this.subWallets = subWallets;
         this.daemon = daemon;
+        this.storedBlocks = [];
     }
 
     /**

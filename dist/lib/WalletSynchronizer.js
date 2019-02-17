@@ -57,6 +57,7 @@ class WalletSynchronizer {
     initAfterLoad(subWallets, daemon) {
         this.subWallets = subWallets;
         this.daemon = daemon;
+        this.storedBlocks = [];
     }
     /**
      * Convert from class to stringable type
