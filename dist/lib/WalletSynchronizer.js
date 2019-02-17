@@ -135,6 +135,7 @@ class WalletSynchronizer {
         return __awaiter(this, void 0, void 0, function* () {
             /* Fetch more blocks if we haven't got any downloaded yet */
             if (this.storedBlocks.length === 0) {
+                Logger_1.logger.log('No blocks stored, fetching more.', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 yield this.downloadBlocks();
             }
             return _.take(this.storedBlocks, blockCount);
@@ -188,6 +189,7 @@ class WalletSynchronizer {
             const localDaemonBlockCount = this.daemon.getLocalDaemonBlockCount();
             const walletBlockCount = this.getHeight();
             if (localDaemonBlockCount < walletBlockCount) {
+                this.fetchingBlocks = false;
                 return;
             }
             /* Get the checkpoints of the blocks we've got stored, so we can fetch
@@ -201,10 +203,12 @@ class WalletSynchronizer {
             }
             catch (err) {
                 Logger_1.logger.log('Failed to get blocks from daemon', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                this.fetchingBlocks = false;
                 return;
             }
             if (blocks.length === 0) {
                 Logger_1.logger.log('Zero blocks received from daemon, possibly fully synced', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                this.fetchingBlocks = false;
                 return;
             }
             /* Timestamp is transient and can change - block height is constant. */
@@ -220,6 +224,7 @@ class WalletSynchronizer {
                 if (this.startTimestamp === 0) {
                     /* The height we expect to get back from the daemon */
                     if (actualHeight !== this.startHeight) {
+                        this.fetchingBlocks = false;
                         throw new Error('Received unexpected block height from daemon. ' +
                             'Expected ' + this.startHeight + ', got ' + actualHeight + '\n');
                     }

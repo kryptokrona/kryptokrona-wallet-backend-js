@@ -205,6 +205,12 @@ export class WalletSynchronizer {
     public async fetchBlocks(blockCount: number): Promise<Block[]> {
         /* Fetch more blocks if we haven't got any downloaded yet */
         if (this.storedBlocks.length === 0) {
+            logger.log(
+                'No blocks stored, fetching more.',
+                LogLevel.DEBUG,
+                LogCategory.SYNC,
+            );
+
             await this.downloadBlocks();
         }
 
@@ -277,6 +283,7 @@ export class WalletSynchronizer {
         const walletBlockCount: number = this.getHeight();
 
         if (localDaemonBlockCount < walletBlockCount) {
+            this.fetchingBlocks = false;
             return;
         }
 
@@ -301,6 +308,8 @@ export class WalletSynchronizer {
                 LogCategory.SYNC,
             );
 
+            this.fetchingBlocks = false;
+
             return;
         }
 
@@ -310,6 +319,8 @@ export class WalletSynchronizer {
                 LogLevel.DEBUG,
                 LogCategory.SYNC,
             );
+
+            this.fetchingBlocks = false;
 
             return;
         }
@@ -332,6 +343,8 @@ export class WalletSynchronizer {
             if (this.startTimestamp === 0) {
                 /* The height we expect to get back from the daemon */
                 if (actualHeight !== this.startHeight) {
+                    this.fetchingBlocks = false;
+
                     throw new Error(
                         'Received unexpected block height from daemon. ' +
                         'Expected ' + this.startHeight + ', got ' + actualHeight + '\n',
