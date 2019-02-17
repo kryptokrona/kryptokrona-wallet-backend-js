@@ -15,6 +15,7 @@ const _ = require("lodash");
 const object_sizeof_1 = require("object-sizeof");
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
+const Utilities_1 = require("./Utilities");
 const SynchronizationStatus_1 = require("./SynchronizationStatus");
 const Logger_1 = require("./Logger");
 const Types_1 = require("./Types");
@@ -171,7 +172,7 @@ class WalletSynchronizer {
         }
         const ramUsage = object_sizeof_1.default(this.storedBlocks);
         if (ramUsage * 1.5 < Config_1.Config.blockStoreMemoryLimit) {
-            Logger_1.logger.log(`Approximate ram usage of stored blocks: ${ramUsage}, fetching more.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+            Logger_1.logger.log(`Approximate ram usage of stored blocks: ${Utilities_1.prettyPrintBytes(ramUsage)}, fetching more.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             return true;
         }
         return false;

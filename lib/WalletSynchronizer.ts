@@ -5,11 +5,11 @@
 import * as _ from 'lodash';
 import sizeof from 'object-sizeof';
 
-import { delay } from './Utilities';
 import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
 import { CryptoUtils} from './CnUtils';
+import { delay, prettyPrintBytes } from './Utilities';
 import { SynchronizationStatus } from './SynchronizationStatus';
 import { WalletSynchronizerJSON } from './JsonSerialization';
 import { LogCategory, logger, LogLevel } from './Logger';
@@ -253,7 +253,7 @@ export class WalletSynchronizer {
 
         if (ramUsage * 1.5 < Config.blockStoreMemoryLimit) {
             logger.log(
-                `Approximate ram usage of stored blocks: ${ramUsage}, fetching more.`,
+                `Approximate ram usage of stored blocks: ${prettyPrintBytes(ramUsage)}, fetching more.`,
                 LogLevel.DEBUG,
                 LogCategory.SYNC,
             );
