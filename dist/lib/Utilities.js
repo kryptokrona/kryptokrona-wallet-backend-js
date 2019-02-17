@@ -169,7 +169,7 @@ function prettyPrintBytes(bytes) {
     let selectedSuffix = 0;
     while (bytes >= 1024 && selectedSuffix < suffixes.length - 1) {
         selectedSuffix++;
-        bytes = Math.floor(bytes / 1024);
+        bytes /= 1024;
     }
     return bytes.toFixed(2) + ' ' + suffixes[selectedSuffix];
 }
