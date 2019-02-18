@@ -342,33 +342,25 @@ export class BlockchainCacheApi implements IDaemon {
      * Makes a post request to the given endpoint with the given body
      */
     private makePostRequest(endpoint: string, body: any): request.RequestPromise<any> {
-        /**
-         * Checks the cumulative size of the request received, and throws if
-         * exceeded.
-         */
-        const onDataLengthCheck = function(
-            this: void,
-            limit: number,
-            msg: string,
-        ): (chunk: Buffer) => void {
-
-            let bufferLength = 0;
-
-            return function(this: request.RequestPromise, chunk: Buffer) {
-                bufferLength += chunk.length;
-                if (bufferLength > limit) {
-                    this.abort();
-                    this.emit('error', new Error(msg));
-                }
-            };
-        };
-
-        return request({
+        const req = request({
             body: body,
             json: true,
             method: 'POST',
             timeout: Config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
-        }).on('data', onDataLengthCheck(Config.maxBodyResponseSize, this.bodyTooLargeMsg));
+        });
+
+        let bufferLength = 0;
+
+        req.on('data', (chunk) => {
+            bufferLength += chunk.length;
+
+            if (bufferLength > Config.maxBodyResponseSize) {
+                req.abort();
+                throw new Error(this.bodyTooLargeMsg);
+            }
+        });
+
+        return req;
     }
 }

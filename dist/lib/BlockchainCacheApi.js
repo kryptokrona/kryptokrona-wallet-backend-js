@@ -268,27 +268,22 @@ class BlockchainCacheApi {
      * Makes a post request to the given endpoint with the given body
      */
     makePostRequest(endpoint, body) {
-        /**
-         * Checks the cumulative size of the request received, and throws if
-         * exceeded.
-         */
-        const onDataLengthCheck = function (limit, msg) {
-            let bufferLength = 0;
-            return function (chunk) {
-                bufferLength += chunk.length;
-                if (bufferLength > limit) {
-                    this.abort();
-                    this.emit('error', new Error(msg));
-                }
-            };
-        };
-        return request({
+        const req = request({
             body: body,
             json: true,
             method: 'POST',
             timeout: Config_1.Config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
-        }).on('data', onDataLengthCheck(Config_1.Config.maxBodyResponseSize, this.bodyTooLargeMsg));
+        });
+        let bufferLength = 0;
+        req.on('data', (chunk) => {
+            bufferLength += chunk.length;
+            if (bufferLength > Config_1.Config.maxBodyResponseSize) {
+                req.abort();
+                throw new Error(this.bodyTooLargeMsg);
+            }
+        });
+        return req;
     }
 }
 exports.BlockchainCacheApi = BlockchainCacheApi;
