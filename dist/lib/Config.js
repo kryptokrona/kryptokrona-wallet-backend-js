@@ -122,6 +122,12 @@ class OurConfig {
          * more than 100.
          */
         this.blocksPerDaemonRequest = 100;
+        /**
+         * Max size of a post body response - 50MB
+         * Will decrease the amount of blocks requested from the daemon if this
+         * is exceeded.
+         */
+        this.maxBodyResponseSize = 1024 * 1024 * 50;
     }
 }
 /**

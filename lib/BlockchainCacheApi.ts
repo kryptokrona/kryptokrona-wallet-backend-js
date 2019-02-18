@@ -59,6 +59,11 @@ export class BlockchainCacheApi implements IDaemon {
     private lastKnownHashrate = 0;
 
     /**
+     * Emitted when body is too large
+     */
+    private bodyTooLargeMsg = 'Response body too large';
+
+    /**
      * @param cacheBaseURL  The base URL for our API. Shouldn't have a trailing '/'
      * @param ssl           Should we use https? Defaults to true.
      *
@@ -154,12 +159,32 @@ export class BlockchainCacheApi implements IDaemon {
 
         try {
             data = await this.makePostRequest('/getwalletsyncdata', {
+                blockCount,
                 blockHashCheckpoints,
                 startHeight,
                 startTimestamp,
-                blockCount,
             });
         } catch (err) {
+            if (err.toString() === this.bodyTooLargeMsg && blockCount > 1) {
+
+                logger.log(
+                    'getWalletSyncData failed, body exceeded max size of ' +
+                    `${Config.maxResponseBodySize}, decreasing block count to ` +
+                    `${Math.floor(blockCount / 2)} and retrying`,
+                    LogLevel.WARNING,
+                    [LogCategory.DAEMON, LogCategory.SYNC],
+                );
+
+                /* Body is too large, decrease the amount of blocks we're requesting
+                   and retry */
+                return this.getWalletSyncData(
+                    blockHashCheckpoints,
+                    startHeight,
+                    startTimestamp,
+                    Math.floor(blockCount / 2),
+                );
+            }
+
             logger.log(
                 'Failed to get wallet sync data: ' + err.toString(),
                 LogLevel.INFO,
@@ -317,12 +342,33 @@ export class BlockchainCacheApi implements IDaemon {
      * Makes a post request to the given endpoint with the given body
      */
     private makePostRequest(endpoint: string, body: any): request.RequestPromise<any> {
+        /**
+         * Checks the cumulative size of the request received, and throws if
+         * exceeded.
+         */
+        const onDataLengthCheck = function(
+            this: void,
+            limit: number,
+            msg: string,
+        ): (chunk: Buffer) => void {
+
+            let bufferLength = 0;
+
+            return function(this: request.RequestPromise, chunk: Buffer) {
+                bufferLength += chunk.length;
+                if (bufferLength > limit) {
+                    this.abort();
+                    this.emit('error', new Error(msg));
+                }
+            };
+        };
+
         return request({
             body: body,
             json: true,
             method: 'POST',
             timeout: Config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
-        });
+        }).on('data', onDataLengthCheck(Config.maxResponseBodySize, this.bodyTooLargeMsg));
     }
 }

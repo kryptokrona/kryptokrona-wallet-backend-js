@@ -111,6 +111,11 @@ export interface IConfig {
      * more than 100.
      */
     blocksPerDaemonRequest?: number;
+    /**
+     * Max size of a post body response. Will decrease amount of blocks requested
+     * from daemon if this is exceeded.
+     */
+    maxBodyResponseSize?: number;
     [key: string]: any;
 }
 /**
@@ -218,6 +223,12 @@ declare class OurConfig implements IConfig {
      * more than 100.
      */
     blocksPerDaemonRequest: number;
+    /**
+     * Max size of a post body response - 50MB
+     * Will decrease the amount of blocks requested from the daemon if this
+     * is exceeded.
+     */
+    maxBodyResponseSize: number;
     [key: string]: any;
 }
 /**

@@ -64,6 +64,10 @@ class BlockchainCacheApi {
          * The hashrate of the last known local block
          */
         this.lastKnownHashrate = 0;
+        /**
+         * Emitted when body is too large
+         */
+        this.bodyTooLargeMsg = 'Response body too large';
         this.cacheBaseURL = cacheBaseURL;
         this.ssl = ssl;
     }
@@ -134,13 +138,21 @@ class BlockchainCacheApi {
             let data;
             try {
                 data = yield this.makePostRequest('/getwalletsyncdata', {
+                    blockCount,
                     blockHashCheckpoints,
                     startHeight,
                     startTimestamp,
-                    blockCount,
                 });
             }
             catch (err) {
+                if (err.toString() === this.bodyTooLargeMsg && blockCount > 1) {
+                    Logger_1.logger.log('getWalletSyncData failed, body exceeded max size of ' +
+                        `${Config_1.Config.maxResponseBodySize}, decreasing block count to ` +
+                        `${Math.floor(blockCount / 2)} and retrying`, Logger_1.LogLevel.WARNING, [Logger_1.LogCategory.DAEMON, Logger_1.LogCategory.SYNC]);
+                    /* Body is too large, decrease the amount of blocks we're requesting
+                       and retry */
+                    return this.getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp, Math.floor(blockCount / 2));
+                }
                 Logger_1.logger.log('Failed to get wallet sync data: ' + err.toString(), Logger_1.LogLevel.INFO, [Logger_1.LogCategory.DAEMON]);
                 return [];
             }
@@ -256,13 +268,27 @@ class BlockchainCacheApi {
      * Makes a post request to the given endpoint with the given body
      */
     makePostRequest(endpoint, body) {
+        /**
+         * Checks the cumulative size of the request received, and throws if
+         * exceeded.
+         */
+        const onDataLengthCheck = function (limit, msg) {
+            let bufferLength = 0;
+            return function (chunk) {
+                bufferLength += chunk.length;
+                if (bufferLength > limit) {
+                    this.abort();
+                    this.emit('error', new Error(msg));
+                }
+            };
+        };
         return request({
             body: body,
             json: true,
             method: 'POST',
             timeout: Config_1.Config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
-        });
+        }).on('data', onDataLengthCheck(Config_1.Config.maxResponseBodySize, this.bodyTooLargeMsg));
     }
 }
 exports.BlockchainCacheApi = BlockchainCacheApi;
