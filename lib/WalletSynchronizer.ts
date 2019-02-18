@@ -258,7 +258,7 @@ export class WalletSynchronizer {
 
         const ramUsage = sizeof(this.storedBlocks);
 
-        if (ramUsage * 1.5 < Config.blockStoreMemoryLimit) {
+        if (ramUsage + Config.maxBodyResponseSize < Config.blockStoreMemoryLimit) {
             logger.log(
                 `Approximate ram usage of stored blocks: ${prettyPrintBytes(ramUsage)}, fetching more.`,
                 LogLevel.DEBUG,

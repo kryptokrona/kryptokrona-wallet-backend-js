@@ -173,7 +173,7 @@ class WalletSynchronizer {
             return false;
         }
         const ramUsage = sizeof(this.storedBlocks);
-        if (ramUsage * 1.5 < Config_1.Config.blockStoreMemoryLimit) {
+        if (ramUsage + Config_1.Config.maxBodyResponseSize < Config_1.Config.blockStoreMemoryLimit) {
             Logger_1.logger.log(`Approximate ram usage of stored blocks: ${Utilities_1.prettyPrintBytes(ramUsage)}, fetching more.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             return true;
         }
