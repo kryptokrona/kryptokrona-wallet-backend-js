@@ -122,10 +122,10 @@ class ConventionalDaemon {
     getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp, blockCount) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.daemon.getWalletSyncData({
+                blockCount,
                 blockHashCheckpoints,
                 startHeight,
                 startTimestamp,
-                blockCount,
             });
             return data.map(Types_1.Block.fromJSON);
         });

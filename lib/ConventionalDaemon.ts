@@ -156,10 +156,10 @@ export class ConventionalDaemon implements IDaemon {
         blockCount: number): Promise<Block[]> {
 
         const data = await this.daemon.getWalletSyncData({
+            blockCount,
             blockHashCheckpoints,
             startHeight,
             startTimestamp,
-            blockCount,
         });
 
         return data.map(Block.fromJSON);

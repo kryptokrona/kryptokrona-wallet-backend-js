@@ -326,8 +326,10 @@ class OurConfig implements IConfig {
      * Max size of a post body response - 50MB
      * Will decrease the amount of blocks requested from the daemon if this
      * is exceeded.
+     * Note - blockStoreMemoryLimit - maxBodyResponseSize should be greater
+     * than zero, or no data will get cached.
      */
-    public maxBodyResponseSize: number = 1024 * 1024 * 50;
+    public maxBodyResponseSize: number = 1024 * 1024 * 10;
 
     [key: string]: any;
 }
