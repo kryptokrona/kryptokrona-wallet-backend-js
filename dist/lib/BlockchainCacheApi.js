@@ -288,7 +288,7 @@ class BlockchainCacheApi {
             method: 'POST',
             timeout: Config_1.Config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
-        }).on('data', onDataLengthCheck(Config_1.Config.maxResponseBodySize, this.bodyTooLargeMsg));
+        }).on('data', onDataLengthCheck(Config_1.Config.maxBodyResponseSize, this.bodyTooLargeMsg));
     }
 }
 exports.BlockchainCacheApi = BlockchainCacheApi;
