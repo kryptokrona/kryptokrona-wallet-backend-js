@@ -469,6 +469,10 @@ export declare class WalletBackend extends EventEmitter {
      */
     getTransactions(): Transaction[];
     /**
+     * Gets the specified transaction, if it exists.
+     */
+    getTransaction(hash: string): Transaction | undefined;
+    /**
      * Get the number of transactions in the wallet container. Can be used
      * if you want to avoid fetching every transactions repeatedly when nothing
      * has changed.

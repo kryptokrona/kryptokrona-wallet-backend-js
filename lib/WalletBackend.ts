@@ -934,6 +934,15 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Gets the specified transaction, if it exists.
+     */
+    public getTransaction(hash: string): Transaction | undefined {
+        const txs = this.getTransactions();
+
+        return txs.find((tx) => tx.hash === hash);
+    }
+
+    /**
      * Get the number of transactions in the wallet container. Can be used
      * if you want to avoid fetching every transactions repeatedly when nothing
      * has changed.
