@@ -973,7 +973,7 @@ export class WalletBackend extends EventEmitter {
             LogCategory.DAEMON,
         );
 
-        this.daemon.updateDaemonInfo();
+        await this.daemon.updateDaemonInfo();
 
         const walletHeight: number = this.walletSynchronizer.getHeight();
         const networkHeight: number = this.daemon.getNetworkBlockCount();

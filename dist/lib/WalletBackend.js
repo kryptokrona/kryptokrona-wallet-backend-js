@@ -622,7 +622,7 @@ class WalletBackend extends events_1.EventEmitter {
     updateDaemonInfo() {
         return __awaiter(this, void 0, void 0, function* () {
             Logger_1.logger.log('Updating daemon info...', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.DAEMON);
-            this.daemon.updateDaemonInfo();
+            yield this.daemon.updateDaemonInfo();
             const walletHeight = this.walletSynchronizer.getHeight();
             const networkHeight = this.daemon.getNetworkBlockCount();
             if (walletHeight >= networkHeight) {
