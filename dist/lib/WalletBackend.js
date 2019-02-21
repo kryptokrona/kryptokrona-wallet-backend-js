@@ -590,9 +590,16 @@ class WalletBackend extends events_1.EventEmitter {
     }
     /**
      * Get all transactions in a wallet container
+     *
+     * Newer transactions are at the front of the array - Unconfirmed transactions
+     * come at the very front.
      */
     getTransactions() {
-        return this.subWallets.getUnconfirmedTransactions().concat(this.subWallets.getTransactions());
+        /* Clone the array and reverse it, newer txs first */
+        const unconfirmed = this.subWallets.getUnconfirmedTransactions().slice().reverse();
+        /* Clone the array and reverse it, newer txs first */
+        const confirmed = this.subWallets.getTransactions().slice().reverse();
+        return unconfirmed.concat(confirmed);
     }
     /**
      * Gets the specified transaction, if it exists.

@@ -466,6 +466,9 @@ export declare class WalletBackend extends EventEmitter {
     getBalance(subWalletsToTakeFrom?: string[]): [number, number];
     /**
      * Get all transactions in a wallet container
+     *
+     * Newer transactions are at the front of the array - Unconfirmed transactions
+     * come at the very front.
      */
     getTransactions(): Transaction[];
     /**
