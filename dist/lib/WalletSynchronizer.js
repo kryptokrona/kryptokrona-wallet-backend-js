@@ -95,16 +95,18 @@ class WalletSynchronizer {
      * @param keys Array of spend keys in the format [publicKey, privateKey]
      */
     processBlockOutputs(block, privateViewKey, spendKeys, isViewWallet, processCoinbaseTransactions) {
-        let inputs = [];
-        /* Process the coinbase tx if we're not skipping them for speed */
-        if (processCoinbaseTransactions) {
-            inputs = inputs.concat(this.processTransactionOutputs(block.coinbaseTransaction, block.blockHeight));
-        }
-        /* Process the normal txs */
-        for (const tx of block.transactions) {
-            inputs = inputs.concat(this.processTransactionOutputs(tx, block.blockHeight));
-        }
-        return inputs;
+        return __awaiter(this, void 0, void 0, function* () {
+            let inputs = [];
+            /* Process the coinbase tx if we're not skipping them for speed */
+            if (processCoinbaseTransactions) {
+                inputs = inputs.concat(yield this.processTransactionOutputs(block.coinbaseTransaction, block.blockHeight));
+            }
+            /* Process the normal txs */
+            for (const tx of block.transactions) {
+                inputs = inputs.concat(yield this.processTransactionOutputs(tx, block.blockHeight));
+            }
+            return inputs;
+        });
     }
     /**
      * Get the height of the sync process
@@ -239,26 +241,28 @@ class WalletSynchronizer {
      * Process the outputs of a transaction, and create inputs that are ours
      */
     processTransactionOutputs(rawTX, blockHeight) {
-        const inputs = [];
-        const derivation = CnUtils_1.CryptoUtils().generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
-        const spendKeys = this.subWallets.getPublicSpendKeys();
-        for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
-            /* Derive the spend key from the transaction, using the previous
-               derivation */
-            const derivedSpendKey = CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, output.key);
-            /* See if the derived spend key matches any of our spend keys */
-            if (!_.includes(spendKeys, derivedSpendKey)) {
-                continue;
+        return __awaiter(this, void 0, void 0, function* () {
+            const inputs = [];
+            const derivation = yield CnUtils_1.CryptoUtils().generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
+            const spendKeys = this.subWallets.getPublicSpendKeys();
+            for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
+                /* Derive the spend key from the transaction, using the previous
+                   derivation */
+                const derivedSpendKey = yield CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, output.key);
+                /* See if the derived spend key matches any of our spend keys */
+                if (!_.includes(spendKeys, derivedSpendKey)) {
+                    continue;
+                }
+                /* The public spend key of the subwallet that owns this input */
+                const ownerSpendKey = derivedSpendKey;
+                /* Not spent yet! */
+                const spendHeight = 0;
+                const keyImage = yield this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
+                const txInput = new Types_1.TransactionInput(keyImage, output.amount, blockHeight, rawTX.transactionPublicKey, outputIndex, output.globalIndex, output.key, spendHeight, rawTX.unlockTime, rawTX.hash);
+                inputs.push([ownerSpendKey, txInput]);
             }
-            /* The public spend key of the subwallet that owns this input */
-            const ownerSpendKey = derivedSpendKey;
-            /* Not spent yet! */
-            const spendHeight = 0;
-            const keyImage = this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
-            const txInput = new Types_1.TransactionInput(keyImage, output.amount, blockHeight, rawTX.transactionPublicKey, outputIndex, output.globalIndex, output.key, spendHeight, rawTX.unlockTime, rawTX.hash);
-            inputs.push([ownerSpendKey, txInput]);
-        }
-        return inputs;
+            return inputs;
+        });
     }
     processCoinbaseTransaction(block, ourInputs) {
         const rawTX = block.coinbaseTransaction;

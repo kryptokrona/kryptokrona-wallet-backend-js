@@ -150,25 +150,25 @@ export class WalletSynchronizer {
      *
      * @param keys Array of spend keys in the format [publicKey, privateKey]
      */
-    public processBlockOutputs(
+    public async processBlockOutputs(
         block: Block,
         privateViewKey: string,
         spendKeys: Array<[string, string]>,
         isViewWallet: boolean,
-        processCoinbaseTransactions: boolean): Array<[string, TransactionInput]> {
+        processCoinbaseTransactions: boolean): Promise<Array<[string, TransactionInput]>> {
 
         let inputs: Array<[string, TransactionInput]> = [];
 
         /* Process the coinbase tx if we're not skipping them for speed */
         if (processCoinbaseTransactions) {
-            inputs = inputs.concat(this.processTransactionOutputs(
+            inputs = inputs.concat(await this.processTransactionOutputs(
                 block.coinbaseTransaction, block.blockHeight,
             ));
         }
 
         /* Process the normal txs */
         for (const tx of block.transactions) {
-            inputs = inputs.concat(this.processTransactionOutputs(
+            inputs = inputs.concat(await this.processTransactionOutputs(
                 tx, block.blockHeight,
             ));
         }
@@ -362,13 +362,13 @@ export class WalletSynchronizer {
     /**
      * Process the outputs of a transaction, and create inputs that are ours
      */
-    private processTransactionOutputs(
+    private async processTransactionOutputs(
         rawTX: RawCoinbaseTransaction,
-        blockHeight: number): Array<[string, TransactionInput]> {
+        blockHeight: number): Promise<Array<[string, TransactionInput]>> {
 
         const inputs: Array<[string, TransactionInput]> = [];
 
-        const derivation: string = CryptoUtils().generateKeyDerivation(
+        const derivation: string = await CryptoUtils().generateKeyDerivation(
             rawTX.transactionPublicKey, this.privateViewKey,
         );
 
@@ -377,7 +377,7 @@ export class WalletSynchronizer {
         for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
             /* Derive the spend key from the transaction, using the previous
                derivation */
-            const derivedSpendKey = CryptoUtils().underivePublicKey(
+            const derivedSpendKey = await CryptoUtils().underivePublicKey(
                 derivation, outputIndex, output.key,
             );
 
@@ -392,7 +392,7 @@ export class WalletSynchronizer {
             /* Not spent yet! */
             const spendHeight: number = 0;
 
-            const keyImage = this.subWallets.getTxInputKeyImage(
+            const keyImage = await this.subWallets.getTxInputKeyImage(
                 ownerSpendKey, derivation, outputIndex,
             );
 

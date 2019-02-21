@@ -263,7 +263,7 @@ class SubWallets {
             throw new Error('Subwallet not found!');
         }
         if (this.isViewWallet) {
-            return '0'.repeat(64);
+            return Promise.resolve('0'.repeat(64));
         }
         return subWallet.getTxInputKeyImage(derivation, outputIndex);
     }

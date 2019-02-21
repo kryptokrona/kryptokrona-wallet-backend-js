@@ -298,10 +298,10 @@ export class SubWallet {
     /**
      * Generate the key image for this input
      */
-    public getTxInputKeyImage(
+    public async getTxInputKeyImage(
         derivation: string,
-        outputIndex: number): string {
-        const [keyImage, privateEphemeral] = CryptoUtils().generateKeyImagePrimitive(
+        outputIndex: number): Promise<string> {
+        const [keyImage, privateEphemeral] = await CryptoUtils().generateKeyImagePrimitive(
             this.publicSpendKey, this.privateSpendKey as string, outputIndex,
             derivation,
         );

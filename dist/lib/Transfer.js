@@ -115,8 +115,8 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
                 });
             }
         }
-        const ourOutputs = inputs.map((input) => {
-            const [keyImage, tmpSecretKey] = CnUtils_1.CryptoUtils().generateKeyImage(input.input.transactionPublicKey, subWallets.getPrivateViewKey(), input.publicSpendKey, input.privateSpendKey, input.input.transactionIndex);
+        const ourOutputs = yield Promise.all(inputs.map((input) => __awaiter(this, void 0, void 0, function* () {
+            const [keyImage, tmpSecretKey] = yield CnUtils_1.CryptoUtils().generateKeyImage(input.input.transactionPublicKey, subWallets.getPrivateViewKey(), input.publicSpendKey, input.privateSpendKey, input.input.transactionIndex);
             return {
                 amount: input.input.amount,
                 globalIndex: input.input.globalOutputIndex,
@@ -127,7 +127,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
                 key: input.input.key,
                 keyImage: keyImage,
             };
-        });
+        })));
         const randomOuts = yield getRingParticipants(inputs, mixin, daemon);
         if (randomOuts instanceof WalletError_1.WalletError) {
             return [undefined, randomOuts];
@@ -167,7 +167,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         /* Store the unconfirmed transaction, update our balance */
         storeSentTransaction(tx.hash, fee, paymentID, inputs, changeAddress, changeRequired, subWallets);
         /* Update our locked balanced with the incoming funds */
-        storeUnconfirmedIncomingInputs(subWallets, tx.transaction.vout, tx.transaction.transactionKeys.publicKey, tx.hash);
+        yield storeUnconfirmedIncomingInputs(subWallets, tx.transaction.vout, tx.transaction.transactionKeys.publicKey, tx.hash);
         subWallets.storeTxPrivateKey(tx.transaction.transactionKeys.privateKey, tx.hash);
         /* Lock the input for spending till confirmed/cancelled */
         for (const input of inputs) {
@@ -195,21 +195,23 @@ function storeSentTransaction(hash, fee, paymentID, ourInputs, changeAddress, ch
     subWallets.addUnconfirmedTransaction(tx);
 }
 function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txHash) {
-    const derivation = CnUtils_1.CryptoUtils().generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey());
-    const spendKeys = subWallets.getPublicSpendKeys();
-    let outputIndex = 0;
-    for (const output of keyOutputs) {
-        /* Derive the spend key from the transaction, using the previous
-           derivation */
-        const derivedSpendKey = CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, output.target.data);
-        /* See if the derived spend key matches any of our spend keys */
-        if (!_.includes(spendKeys, derivedSpendKey)) {
-            continue;
+    return __awaiter(this, void 0, void 0, function* () {
+        const derivation = yield CnUtils_1.CryptoUtils().generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey());
+        const spendKeys = subWallets.getPublicSpendKeys();
+        let outputIndex = 0;
+        for (const output of keyOutputs) {
+            /* Derive the spend key from the transaction, using the previous
+               derivation */
+            const derivedSpendKey = yield CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, output.target.data);
+            /* See if the derived spend key matches any of our spend keys */
+            if (!_.includes(spendKeys, derivedSpendKey)) {
+                continue;
+            }
+            const input = new Types_1.UnconfirmedInput(output.amount, output.target.data, txHash);
+            subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
+            outputIndex++;
         }
-        const input = new Types_1.UnconfirmedInput(output.amount, output.target.data, txHash);
-        subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
-        outputIndex++;
-    }
+    });
 }
 /**
  * Verify the transaction is small enough to fit in a block

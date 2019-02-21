@@ -94,7 +94,7 @@ export declare class SubWallet {
     /**
      * Generate the key image for this input
      */
-    getTxInputKeyImage(derivation: string, outputIndex: number): string;
+    getTxInputKeyImage(derivation: string, outputIndex: number): Promise<string>;
     /**
      * Get the unlocked/locked balance at a given height
      */

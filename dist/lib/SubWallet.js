@@ -2,6 +2,14 @@
 // Copyright (c) 2018, Zpalmtree
 //
 // Please see the included LICENSE file for more information.
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const CnUtils_1 = require("./CnUtils");
 const Types_1 = require("./Types");
@@ -212,8 +220,10 @@ class SubWallet {
      * Generate the key image for this input
      */
     getTxInputKeyImage(derivation, outputIndex) {
-        const [keyImage, privateEphemeral] = CnUtils_1.CryptoUtils().generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
-        return keyImage;
+        return __awaiter(this, void 0, void 0, function* () {
+            const [keyImage, privateEphemeral] = yield CnUtils_1.CryptoUtils().generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
+            return keyImage;
+        });
     }
     /**
      * Get the unlocked/locked balance at a given height

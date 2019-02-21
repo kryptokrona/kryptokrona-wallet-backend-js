@@ -352,7 +352,7 @@ export class SubWallets {
     public getTxInputKeyImage(
         publicSpendKey: string,
         derivation: string,
-        outputIndex: number): string {
+        outputIndex: number): Promise<string> {
 
         const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
@@ -361,7 +361,7 @@ export class SubWallets {
         }
 
         if (this.isViewWallet) {
-            return '0'.repeat(64);
+            return Promise.resolve('0'.repeat(64));
         }
 
         return subWallet.getTxInputKeyImage(derivation, outputIndex);

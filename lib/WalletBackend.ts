@@ -932,7 +932,7 @@ export class WalletBackend extends EventEmitter {
      */
     public getTransactions(): Transaction[] {
         /* Clone the array and reverse it, newer txs first */
-        const unconfirmed = this.subWallets.getUnconfirmedTransactions().slice().reverse()
+        const unconfirmed = this.subWallets.getUnconfirmedTransactions().slice().reverse();
         /* Clone the array and reverse it, newer txs first */
         const confirmed = this.subWallets.getTransactions().slice().reverse();
 

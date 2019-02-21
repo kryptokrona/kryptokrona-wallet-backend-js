@@ -173,9 +173,9 @@ export async function sendTransactionAdvanced(
         }
     }
 
-    const ourOutputs: Output[] = inputs.map((input) => {
+    const ourOutputs: Output[] = await Promise.all(inputs.map(async (input) => {
 
-        const [keyImage, tmpSecretKey] = CryptoUtils().generateKeyImage(
+        const [keyImage, tmpSecretKey] = await CryptoUtils().generateKeyImage(
             input.input.transactionPublicKey,
             subWallets.getPrivateViewKey(),
             input.publicSpendKey,
@@ -193,7 +193,7 @@ export async function sendTransactionAdvanced(
             key: input.input.key,
             keyImage: keyImage,
         };
-    });
+    }));
 
     const randomOuts: WalletError | RandomOutput[][] = await getRingParticipants(
         inputs, mixin, daemon,
@@ -260,7 +260,7 @@ export async function sendTransactionAdvanced(
     );
 
     /* Update our locked balanced with the incoming funds */
-    storeUnconfirmedIncomingInputs(
+    await storeUnconfirmedIncomingInputs(
         subWallets, tx.transaction.vout, tx.transaction.transactionKeys.publicKey, tx.hash,
     );
 
@@ -315,13 +315,13 @@ function storeSentTransaction(
     subWallets.addUnconfirmedTransaction(tx);
 }
 
-function storeUnconfirmedIncomingInputs(
+async function storeUnconfirmedIncomingInputs(
     subWallets: SubWallets,
     keyOutputs: Vout[],
     txPublicKey: string,
-    txHash: string): void {
+    txHash: string): Promise<void> {
 
-    const derivation: string = CryptoUtils().generateKeyDerivation(
+    const derivation: string = await CryptoUtils().generateKeyDerivation(
         txPublicKey, subWallets.getPrivateViewKey(),
     );
 
@@ -332,7 +332,7 @@ function storeUnconfirmedIncomingInputs(
     for (const output of keyOutputs) {
         /* Derive the spend key from the transaction, using the previous
            derivation */
-        const derivedSpendKey = CryptoUtils().underivePublicKey(
+        const derivedSpendKey = await CryptoUtils().underivePublicKey(
             derivation, outputIndex, output.target.data,
         );
 

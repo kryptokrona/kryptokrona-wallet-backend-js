@@ -55,7 +55,7 @@ export declare class WalletSynchronizer {
      *
      * @param keys Array of spend keys in the format [publicKey, privateKey]
      */
-    processBlockOutputs(block: Block, privateViewKey: string, spendKeys: Array<[string, string]>, isViewWallet: boolean, processCoinbaseTransactions: boolean): Array<[string, TransactionInput]>;
+    processBlockOutputs(block: Block, privateViewKey: string, spendKeys: Array<[string, string]>, isViewWallet: boolean, processCoinbaseTransactions: boolean): Promise<Array<[string, TransactionInput]>>;
     /**
      * Get the height of the sync process
      */

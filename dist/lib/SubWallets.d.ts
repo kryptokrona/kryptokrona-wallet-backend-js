@@ -134,7 +134,7 @@ export declare class SubWallets {
     /**
      * Generate the key image for an input
      */
-    getTxInputKeyImage(publicSpendKey: string, derivation: string, outputIndex: number): string;
+    getTxInputKeyImage(publicSpendKey: string, derivation: string, outputIndex: number): Promise<string>;
     /**
      * Returns the summed balance of the given subwallet addresses. If none are given,
      * take from all.
