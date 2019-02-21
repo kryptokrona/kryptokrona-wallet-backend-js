@@ -134,7 +134,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         }
         let tx;
         try {
-            tx = CnUtils_1.CryptoUtils().createTransaction(transfers, ourOutputs, randomOuts, mixin, fee, paymentID);
+            tx = yield CnUtils_1.CryptoUtils().createTransactionAsync(transfers, ourOutputs, randomOuts, mixin, fee, paymentID);
         }
         catch (err) {
             Logger_1.logger.log('Failed to create transaction: ' + err.toString(), Logger_1.LogLevel.ERROR, Logger_1.LogCategory.TRANSACTIONS);

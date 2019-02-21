@@ -206,7 +206,7 @@ export async function sendTransactionAdvanced(
     let tx: CreatedTransaction;
 
     try {
-        tx = CryptoUtils().createTransaction(
+        tx = await CryptoUtils().createTransactionAsync(
             transfers, ourOutputs, randomOuts as RandomOutput[][], mixin, fee,
             paymentID,
         );
