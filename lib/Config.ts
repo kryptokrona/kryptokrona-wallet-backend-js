@@ -352,9 +352,7 @@ export function MergeConfig(config?: IConfig): void {
     }
 
     for (const [key, value] of Object.entries(config)) {
-        if (finalConfig[key] !== undefined) {
-            finalConfig[key] = value;
-        }
+        finalConfig[key] = value;
     }
 
     Config = finalConfig;

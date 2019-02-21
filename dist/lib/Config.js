@@ -147,9 +147,7 @@ function MergeConfig(config) {
         return;
     }
     for (const [key, value] of Object.entries(config)) {
-        if (finalConfig[key] !== undefined) {
-            finalConfig[key] = value;
-        }
+        finalConfig[key] = value;
     }
     exports.Config = finalConfig;
 }
