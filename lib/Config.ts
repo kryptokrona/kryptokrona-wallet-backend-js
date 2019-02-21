@@ -113,11 +113,8 @@ export interface IConfig {
     /**
      * A replacement function for the JS/C++ generateKeyImage.
      */
-    generateKeyImage?: (transactionPublicKey: string,
-                        privateViewKey: string,
-                        publicSpendKey: string,
-                        privateSpendKey: string,
-                        outputIndex: number) => string;
+    generateKeyImage?: (publicKey: string,
+                        privateKey: string) => string;
 
     /**
      * A replacement function for the JS/C++ secretKeyToPublicKey.
@@ -280,11 +277,8 @@ class OurConfig implements IConfig {
     /**
      * A replacement function for the JS/C++ generateKeyImage.
      */
-    public generateKeyImage?: (transactionPublicKey: string,
-                               privateViewKey: string,
-                               publicSpendKey: string,
-                               privateSpendKey: string,
-                               outputIndex: number) => string = undefined;
+    public generateKeyImage?: (publicKey: string,
+                               privateKey: string) => string = undefined;
 
     /**
      * A replacement function for the JS/C++ secretKeyToPublicKey.

@@ -17,7 +17,12 @@ import { CryptoUtils} from './CnUtils';
 import { SubWallets } from './SubWallets';
 import { PRETTY_AMOUNTS } from './Constants';
 import { LogCategory, logger, LogLevel } from './Logger';
+
 import { Transaction as TX, TxInputAndOwner, UnconfirmedInput } from './Types';
+
+import {
+    generateKeyImage, generateKeyDerivation, underivePublicKey
+} from './CryptoWrapper';
 
 import {
     addressToKeys, getMaxTxSize, prettyPrintAmount, prettyPrintBytes,
@@ -174,8 +179,7 @@ export async function sendTransactionAdvanced(
     }
 
     const ourOutputs: Output[] = await Promise.all(inputs.map(async (input) => {
-
-        const [keyImage, tmpSecretKey] = await CryptoUtils().generateKeyImage(
+        const [keyImage, tmpSecretKey] = await generateKeyImage(
             input.input.transactionPublicKey,
             subWallets.getPrivateViewKey(),
             input.publicSpendKey,
@@ -321,7 +325,7 @@ async function storeUnconfirmedIncomingInputs(
     txPublicKey: string,
     txHash: string): Promise<void> {
 
-    const derivation: string = await CryptoUtils().generateKeyDerivation(
+    const derivation: string = await generateKeyDerivation(
         txPublicKey, subWallets.getPrivateViewKey(),
     );
 
@@ -332,7 +336,7 @@ async function storeUnconfirmedIncomingInputs(
     for (const output of keyOutputs) {
         /* Derive the spend key from the transaction, using the previous
            derivation */
-        const derivedSpendKey = await CryptoUtils().underivePublicKey(
+        const derivedSpendKey = await underivePublicKey(
             derivation, outputIndex, output.target.data,
         );
 

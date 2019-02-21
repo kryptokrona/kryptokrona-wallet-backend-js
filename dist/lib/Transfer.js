@@ -18,6 +18,7 @@ const CnUtils_1 = require("./CnUtils");
 const Constants_1 = require("./Constants");
 const Logger_1 = require("./Logger");
 const Types_1 = require("./Types");
+const CryptoWrapper_1 = require("./CryptoWrapper");
 const Utilities_1 = require("./Utilities");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletError_1 = require("./WalletError");
@@ -116,7 +117,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             }
         }
         const ourOutputs = yield Promise.all(inputs.map((input) => __awaiter(this, void 0, void 0, function* () {
-            const [keyImage, tmpSecretKey] = yield CnUtils_1.CryptoUtils().generateKeyImage(input.input.transactionPublicKey, subWallets.getPrivateViewKey(), input.publicSpendKey, input.privateSpendKey, input.input.transactionIndex);
+            const [keyImage, tmpSecretKey] = yield CryptoWrapper_1.generateKeyImage(input.input.transactionPublicKey, subWallets.getPrivateViewKey(), input.publicSpendKey, input.privateSpendKey, input.input.transactionIndex);
             return {
                 amount: input.input.amount,
                 globalIndex: input.input.globalOutputIndex,
@@ -196,13 +197,13 @@ function storeSentTransaction(hash, fee, paymentID, ourInputs, changeAddress, ch
 }
 function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txHash) {
     return __awaiter(this, void 0, void 0, function* () {
-        const derivation = yield CnUtils_1.CryptoUtils().generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey());
+        const derivation = yield CryptoWrapper_1.generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey());
         const spendKeys = subWallets.getPublicSpendKeys();
         let outputIndex = 0;
         for (const output of keyOutputs) {
             /* Derive the spend key from the transaction, using the previous
                derivation */
-            const derivedSpendKey = yield CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, output.target.data);
+            const derivedSpendKey = yield CryptoWrapper_1.underivePublicKey(derivation, outputIndex, output.target.data);
             /* See if the derived spend key matches any of our spend keys */
             if (!_.includes(spendKeys, derivedSpendKey)) {
                 continue;

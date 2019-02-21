@@ -6,6 +6,7 @@ import { CryptoUtils} from './CnUtils';
 import { SubWalletJSON } from './JsonSerialization';
 import { TransactionInput, TxInputAndOwner, UnconfirmedInput } from './Types';
 import { isInputUnlocked } from './Utilities';
+import { generateKeyImagePrimitive } from './CryptoWrapper';
 
 import * as _ from 'lodash';
 
@@ -301,12 +302,11 @@ export class SubWallet {
     public async getTxInputKeyImage(
         derivation: string,
         outputIndex: number): Promise<string> {
-        const [keyImage, privateEphemeral] = await CryptoUtils().generateKeyImagePrimitive(
+
+        return generateKeyImagePrimitive(
             this.publicSpendKey, this.privateSpendKey as string, outputIndex,
             derivation,
         );
-
-        return keyImage;
     }
 
     /**

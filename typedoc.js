@@ -6,6 +6,7 @@ module.exports = {
   exclude: [
     './lib/CnUtils.ts',
     './lib/Constants.ts',
+    './lib/CryptoWrapper.ts',
     './lib/JsonSerialization.ts',
     './lib/Metronome.ts',
     './lib/OpenWallet.ts',

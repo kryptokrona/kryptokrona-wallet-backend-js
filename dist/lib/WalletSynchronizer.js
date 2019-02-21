@@ -14,10 +14,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
 const sizeof = require('object-sizeof');
 const Config_1 = require("./Config");
-const CnUtils_1 = require("./CnUtils");
 const Utilities_1 = require("./Utilities");
 const SynchronizationStatus_1 = require("./SynchronizationStatus");
 const Logger_1 = require("./Logger");
+const CryptoWrapper_1 = require("./CryptoWrapper");
 const Types_1 = require("./Types");
 /**
  * Decrypts blocks for our transactions and inputs
@@ -243,12 +243,12 @@ class WalletSynchronizer {
     processTransactionOutputs(rawTX, blockHeight) {
         return __awaiter(this, void 0, void 0, function* () {
             const inputs = [];
-            const derivation = yield CnUtils_1.CryptoUtils().generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
+            const derivation = yield CryptoWrapper_1.generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
             const spendKeys = this.subWallets.getPublicSpendKeys();
             for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
                 /* Derive the spend key from the transaction, using the previous
                    derivation */
-                const derivedSpendKey = yield CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, output.key);
+                const derivedSpendKey = yield CryptoWrapper_1.underivePublicKey(derivation, outputIndex, output.key);
                 /* See if the derived spend key matches any of our spend keys */
                 if (!_.includes(spendKeys, derivedSpendKey)) {
                     continue;

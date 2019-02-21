@@ -11,9 +11,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const CnUtils_1 = require("./CnUtils");
 const Types_1 = require("./Types");
 const Utilities_1 = require("./Utilities");
+const CryptoWrapper_1 = require("./CryptoWrapper");
 const _ = require("lodash");
 class SubWallet {
     constructor(address, scanHeight, timestamp, publicSpendKey, privateSpendKey) {
@@ -221,8 +221,7 @@ class SubWallet {
      */
     getTxInputKeyImage(derivation, outputIndex) {
         return __awaiter(this, void 0, void 0, function* () {
-            const [keyImage, privateEphemeral] = yield CnUtils_1.CryptoUtils().generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
-            return keyImage;
+            return CryptoWrapper_1.generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
         });
     }
     /**

@@ -8,11 +8,11 @@ const sizeof = require('object-sizeof');
 import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
-import { CryptoUtils} from './CnUtils';
 import { delay, prettyPrintBytes } from './Utilities';
 import { SynchronizationStatus } from './SynchronizationStatus';
 import { WalletSynchronizerJSON } from './JsonSerialization';
 import { LogCategory, logger, LogLevel } from './Logger';
+import { underivePublicKey, generateKeyDerivation } from './CryptoWrapper';
 
 import {
     Block, KeyInput, RawCoinbaseTransaction, RawTransaction, Transaction,
@@ -368,7 +368,7 @@ export class WalletSynchronizer {
 
         const inputs: Array<[string, TransactionInput]> = [];
 
-        const derivation: string = await CryptoUtils().generateKeyDerivation(
+        const derivation: string = await generateKeyDerivation(
             rawTX.transactionPublicKey, this.privateViewKey,
         );
 
@@ -377,7 +377,7 @@ export class WalletSynchronizer {
         for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
             /* Derive the spend key from the transaction, using the previous
                derivation */
-            const derivedSpendKey = await CryptoUtils().underivePublicKey(
+            const derivedSpendKey = await underivePublicKey(
                 derivation, outputIndex, output.key,
             );
 
