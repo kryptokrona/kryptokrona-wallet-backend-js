@@ -221,7 +221,8 @@ class SubWallet {
      */
     getTxInputKeyImage(derivation, outputIndex) {
         return __awaiter(this, void 0, void 0, function* () {
-            return CryptoWrapper_1.generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
+            const [keyImage] = yield CryptoWrapper_1.generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
+            return keyImage;
         });
     }
     /**

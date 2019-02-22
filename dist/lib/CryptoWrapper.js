@@ -15,7 +15,7 @@ function generateKeyDerivation(transactionPublicKey, privateViewKey) {
         if (Config_1.Config.generateKeyDerivation) {
             return Config_1.Config.generateKeyDerivation(transactionPublicKey, privateViewKey);
         }
-        return CnUtils_1.CryptoUtils().generateKeyDerivation(transactionPublicKey, privateViewKey);
+        return Promise.resolve(CnUtils_1.CryptoUtils().generateKeyDerivation(transactionPublicKey, privateViewKey));
     });
 }
 exports.generateKeyDerivation = generateKeyDerivation;
@@ -28,16 +28,17 @@ function generateKeyImagePrimitive(publicSpendKey, privateSpendKey, outputIndex,
             const privateEphemeral = yield Config_1.Config.deriveSecretKey(derivation, outputIndex, privateSpendKey);
             /* Generate the key image */
             const keyImage = yield Config_1.Config.generateKeyImage(publicEphemeral, privateEphemeral);
-            return keyImage;
+            return [keyImage, privateEphemeral];
         }
-        return CnUtils_1.CryptoUtils().generateKeyImagePrimitive(publicSpendKey, privateSpendKey, outputIndex, derivation)[0];
+        return CnUtils_1.CryptoUtils().generateKeyImagePrimitive(publicSpendKey, privateSpendKey, outputIndex, derivation);
     });
 }
 exports.generateKeyImagePrimitive = generateKeyImagePrimitive;
 function generateKeyImage(transactionPublicKey, privateViewKey, publicSpendKey, privateSpendKey, transactionIndex) {
     return __awaiter(this, void 0, void 0, function* () {
         const derivation = yield generateKeyDerivation(transactionPublicKey, privateViewKey);
-        return generateKeyImagePrimitive(publicSpendKey, privateSpendKey, transactionIndex, derivation);
+        const [keyImage, privateEphemeral] = yield generateKeyImagePrimitive(publicSpendKey, privateSpendKey, transactionIndex, derivation);
+        return keyImage;
     });
 }
 exports.generateKeyImage = generateKeyImage;
@@ -46,7 +47,7 @@ function underivePublicKey(derivation, outputIndex, outputKey) {
         if (Config_1.Config.underivePublicKey) {
             return Config_1.Config.underivePublicKey(derivation, outputIndex, outputKey);
         }
-        return CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, outputKey);
+        return Promise.resolve(CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, outputKey));
     });
 }
 exports.underivePublicKey = underivePublicKey;

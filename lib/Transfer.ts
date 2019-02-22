@@ -21,7 +21,7 @@ import { LogCategory, logger, LogLevel } from './Logger';
 import { Transaction as TX, TxInputAndOwner, UnconfirmedInput } from './Types';
 
 import {
-    generateKeyImage, generateKeyDerivation, underivePublicKey
+    generateKeyImage, generateKeyDerivation, underivePublicKey,
 } from './CryptoWrapper';
 
 import {

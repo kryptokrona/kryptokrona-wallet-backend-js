@@ -303,10 +303,12 @@ export class SubWallet {
         derivation: string,
         outputIndex: number): Promise<string> {
 
-        return generateKeyImagePrimitive(
+        const [keyImage] = await generateKeyImagePrimitive(
             this.publicSpendKey, this.privateSpendKey as string, outputIndex,
             derivation,
         );
+
+        return keyImage;
     }
 
     /**

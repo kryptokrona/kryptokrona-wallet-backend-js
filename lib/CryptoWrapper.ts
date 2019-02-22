@@ -9,16 +9,16 @@ export async function generateKeyDerivation(
         return Config.generateKeyDerivation(transactionPublicKey, privateViewKey);
     }
 
-    return CryptoUtils().generateKeyDerivation(
+    return Promise.resolve(CryptoUtils().generateKeyDerivation(
         transactionPublicKey, privateViewKey,
-    );
+    ));
 }
 
 export async function generateKeyImagePrimitive(
     publicSpendKey: string,
     privateSpendKey: string,
     outputIndex: number,
-    derivation: string): Promise<string> {
+    derivation: string): Promise<[string, string]> {
 
     if (Config.derivePublicKey && Config.deriveSecretKey && Config.generateKeyImage) {
         /* Derive the transfer public key from the derived key, the output index, and our public spend key */
@@ -34,12 +34,12 @@ export async function generateKeyImagePrimitive(
         /* Generate the key image */
         const keyImage = await Config.generateKeyImage(publicEphemeral, privateEphemeral);
 
-        return keyImage;
+        return [keyImage, privateEphemeral];
     }
 
     return CryptoUtils().generateKeyImagePrimitive(
         publicSpendKey, privateSpendKey, outputIndex, derivation,
-    )[0];
+    );
 }
 
 export async function generateKeyImage(
@@ -51,7 +51,11 @@ export async function generateKeyImage(
 
     const derivation: string = await generateKeyDerivation(transactionPublicKey, privateViewKey);
 
-    return generateKeyImagePrimitive(publicSpendKey, privateSpendKey, transactionIndex, derivation);
+    const [keyImage, privateEphemeral] = await generateKeyImagePrimitive(
+        publicSpendKey, privateSpendKey, transactionIndex, derivation
+    );
+
+    return keyImage;
 }
 
 export async function underivePublicKey(
@@ -62,7 +66,7 @@ export async function underivePublicKey(
         return Config.underivePublicKey(derivation, outputIndex, outputKey);
     }
 
-    return CryptoUtils().underivePublicKey(
+    return Promise.resolve(CryptoUtils().underivePublicKey(
         derivation, outputIndex, outputKey,
-    );
+    ));
 }
