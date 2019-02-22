@@ -37,8 +37,7 @@ exports.generateKeyImagePrimitive = generateKeyImagePrimitive;
 function generateKeyImage(transactionPublicKey, privateViewKey, publicSpendKey, privateSpendKey, transactionIndex) {
     return __awaiter(this, void 0, void 0, function* () {
         const derivation = yield generateKeyDerivation(transactionPublicKey, privateViewKey);
-        const [keyImage, privateEphemeral] = yield generateKeyImagePrimitive(publicSpendKey, privateSpendKey, transactionIndex, derivation);
-        return keyImage;
+        return yield generateKeyImagePrimitive(publicSpendKey, privateSpendKey, transactionIndex, derivation);
     });
 }
 exports.generateKeyImage = generateKeyImage;

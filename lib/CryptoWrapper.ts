@@ -47,15 +47,13 @@ export async function generateKeyImage(
     privateViewKey: string,
     publicSpendKey: string,
     privateSpendKey: string,
-    transactionIndex: number): Promise<string> {
+    transactionIndex: number): Promise<[string, string]> {
 
     const derivation: string = await generateKeyDerivation(transactionPublicKey, privateViewKey);
 
-    const [keyImage, privateEphemeral] = await generateKeyImagePrimitive(
+    return await generateKeyImagePrimitive(
         publicSpendKey, privateSpendKey, transactionIndex, derivation
     );
-
-    return keyImage;
 }
 
 export async function underivePublicKey(
