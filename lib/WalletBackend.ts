@@ -373,7 +373,7 @@ export class WalletBackend extends EventEmitter {
             new Array(address), integratedAddressesAllowed,
         );
 
-        if (_.isEqual(err, SUCCESS)) {
+        if (!_.isEqual(err, SUCCESS)) {
             return [undefined, err];
         }
 
@@ -725,7 +725,7 @@ export class WalletBackend extends EventEmitter {
             new Array(address), integratedAddressesAllowed,
         );
 
-        if (_.isEqual(err, SUCCESS)) {
+        if (!_.isEqual(err, SUCCESS)) {
             return ['', '', err];
         }
 
@@ -733,7 +733,7 @@ export class WalletBackend extends EventEmitter {
 
         const [err2, privateSpendKey] = this.subWallets.getPrivateSpendKey(publicSpendKey);
 
-        if (_.isEqual(err2, SUCCESS)) {
+        if (!_.isEqual(err2, SUCCESS)) {
             return ['', '', err2];
         }
 

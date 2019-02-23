@@ -1,7 +1,6 @@
+import * as _ from 'lodash';
 import * as colors from 'colors';
 import * as fs from 'fs';
-
-import deepEqual = require('deep-equal');
 
 import {
     ConventionalDaemon, IDaemon, prettyPrintAmount, SUCCESS, validateAddresses,
@@ -308,7 +307,7 @@ function roundTrip(
         );
 
         /* Random address shouldn't be present in wallet */
-        const test2: boolean = deepEqual(err2, new WalletError(WalletErrorCode.ADDRESS_NOT_IN_WALLET));
+        const test2: boolean = _.isEqual(err2, new WalletError(WalletErrorCode.ADDRESS_NOT_IN_WALLET));
 
         /* Should get a seed back when we supply our address */
         const test3: boolean = wallet.getMnemonicSeedForAddress(wallet.getPrimaryAddress())[0] !== undefined;
@@ -341,7 +340,7 @@ function roundTrip(
 
         const err: WalletError = validateAddresses([address], false);
 
-        return deepEqual(err, SUCCESS);
+        return _.isEqual(err, SUCCESS);
 
     }, 'Testing getPrimaryAddress',
        'getPrimaryAddress works',
