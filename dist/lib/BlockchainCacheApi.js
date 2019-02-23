@@ -13,6 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
 const node_fetch_1 = require("node-fetch");
+const abort_controller_1 = require("abort-controller");
 const Types_1 = require("./Types");
 const Config_1 = require("./Config");
 const ValidateParameters_1 = require("./ValidateParameters");
@@ -141,7 +142,9 @@ class BlockchainCacheApi {
                 });
             }
             catch (err) {
-                if (err.type && err.type === 'max-size' && blockCount > 1) {
+                const maxSizeErr = err.msg === 'max-size'
+                    || (err.type && err.type === 'max-size');
+                if (maxSizeErr && blockCount > 1) {
                     Logger_1.logger.log('getWalletSyncData failed, body exceeded max size of ' +
                         `${Config_1.Config.maxResponseBodySize}, decreasing block count to ` +
                         `${Math.floor(blockCount / 2)} and retrying`, Logger_1.LogLevel.WARNING, [Logger_1.LogCategory.DAEMON, Logger_1.LogCategory.SYNC]);
@@ -255,9 +258,17 @@ class BlockchainCacheApi {
     makeGetRequest(endpoint) {
         return __awaiter(this, void 0, void 0, function* () {
             const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
+            const controller = new abort_controller_1.default();
+            const timeout = setTimeout(() => {
+                controller.abort();
+            }, Config_1.Config.requestTimeout);
             const res = yield node_fetch_1.default(url, {
                 timeout: Config_1.Config.requestTimeout,
             });
+            if (!res.ok) {
+                throw new Error('Request failed.');
+            }
+            clearTimeout(timeout);
             return res.json();
         });
     }
@@ -267,14 +278,41 @@ class BlockchainCacheApi {
     makePostRequest(endpoint, body) {
         return __awaiter(this, void 0, void 0, function* () {
             const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
+            const controller = new abort_controller_1.default();
+            const timeout = setTimeout(() => {
+                controller.abort();
+            }, Config_1.Config.requestTimeout);
             const res = yield node_fetch_1.default(url, {
                 body: JSON.stringify(body),
                 headers: { 'Content-Type': 'application/json' },
                 method: 'post',
+                signal: controller.signal,
                 size: Config_1.Config.maxBodyResponseSize,
                 timeout: Config_1.Config.requestTimeout,
             });
-            return res.json();
+            if (!res.ok) {
+                throw new Error('Request failed.');
+            }
+            let data = '';
+            let length = 0;
+            res.body.on('data', (chunk) => {
+                length += chunk.length;
+                if (length > Config_1.Config.maxBodyResponseSize) {
+                    controller.abort();
+                    throw new Error('max-size');
+                }
+                data += chunk;
+            });
+            const result = yield new Promise((resolve, reject) => {
+                res.body.on('end', () => {
+                    return resolve(JSON.parse(data));
+                });
+                res.body.on('error', (err) => {
+                    return reject(err);
+                });
+            });
+            clearTimeout(timeout);
+            return result;
         });
     }
 }

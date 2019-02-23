@@ -19,6 +19,7 @@
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
+    "abort-controller": "^2.0.2",
     "lodash": "^4.17.11",
     "node-fetch": "^2.3.0",
     "object-sizeof": "^1.3.0",

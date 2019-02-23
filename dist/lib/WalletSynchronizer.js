@@ -164,7 +164,7 @@ class WalletSynchronizer {
             /* Add to start of array - we want hashes in descending block height order */
             hashes.unshift(block.blockHash);
         }
-        return hashes;
+        return _.take(hashes, 100);
     }
     /**
      * Only retrieve more blocks if we're not getting close to the memory limit

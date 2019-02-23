@@ -244,7 +244,7 @@ export class WalletSynchronizer {
             hashes.unshift(block.blockHash);
         }
 
-        return hashes;
+        return _.take(hashes, 100);
     }
 
     /**

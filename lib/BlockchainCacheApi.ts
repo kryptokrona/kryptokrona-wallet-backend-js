@@ -5,6 +5,7 @@
 import * as _ from 'lodash';
 
 import fetch from 'node-fetch';
+import AbortController from 'abort-controller';
 
 import { Block } from './Types';
 import { Config } from './Config';
@@ -160,7 +161,10 @@ export class BlockchainCacheApi implements IDaemon {
                 startTimestamp,
             });
         } catch (err) {
-            if (err.type && err.type === 'max-size' && blockCount > 1) {
+            const maxSizeErr: boolean = err.msg === 'max-size'
+                                    || (err.type && err.type === 'max-size');
+
+            if (maxSizeErr && blockCount > 1) {
 
                 logger.log(
                     'getWalletSyncData failed, body exceeded max size of ' +
@@ -327,9 +331,21 @@ export class BlockchainCacheApi implements IDaemon {
     private async makeGetRequest(endpoint: string): Promise<any> {
         const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
 
+        const controller = new AbortController();
+
+        const timeout = setTimeout(() => {
+            controller.abort();
+        }, Config.requestTimeout);
+
         const res = await fetch(url, {
             timeout: Config.requestTimeout,
         });
+
+        if (!res.ok) {
+            throw new Error('Request failed.');
+        }
+
+        clearTimeout(timeout);
 
         return res.json();
     }
@@ -340,14 +356,51 @@ export class BlockchainCacheApi implements IDaemon {
     private async makePostRequest(endpoint: string, body: any): Promise<any> {
         const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
 
+        const controller = new AbortController();
+
+        const timeout = setTimeout(() => {
+            controller.abort();
+        }, Config.requestTimeout);
+
         const res = await fetch(url, {
             body: JSON.stringify(body),
             headers: { 'Content-Type': 'application/json' },
             method: 'post',
+            signal: controller.signal, // signal doesn't currently exist in the typings...
             size: Config.maxBodyResponseSize,
             timeout: Config.requestTimeout,
+        } as any);
+
+        if (!res.ok) {
+            throw new Error('Request failed.');
+        }
+
+        let data = '';
+        let length = 0;
+
+        res.body.on('data', (chunk) => {
+            length += chunk.length;
+
+            if (length > Config.maxBodyResponseSize) {
+                controller.abort();
+                throw new Error('max-size');
+            }
+
+            data += chunk;
         });
 
-        return res.json();
+        const result = await new Promise((resolve, reject) => {
+            res.body.on('end', () => {
+                return resolve(JSON.parse(data));
+            });
+
+            res.body.on('error', (err) => {
+                return reject(err);
+            });
+        });
+
+        clearTimeout(timeout);
+
+        return result;
     }
 }
