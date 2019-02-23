@@ -126,7 +126,7 @@ export async function sendTransactionAdvanced(
         changeAddress, daemon.getNetworkBlockCount(), subWallets,
     );
 
-    if (_.isEqual(error, SUCCESS)) {
+    if (!_.isEqual(error, SUCCESS)) {
         return [undefined, error];
     }
 

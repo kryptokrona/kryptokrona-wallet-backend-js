@@ -80,7 +80,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             addressesAndAmounts.push([feeAddress, feeAmount]);
         }
         const error = validateTransaction(addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress, daemon.getNetworkBlockCount(), subWallets);
-        if (_.isEqual(error, WalletError_1.SUCCESS)) {
+        if (!_.isEqual(error, WalletError_1.SUCCESS)) {
             return [undefined, error];
         }
         const totalAmount = _.sumBy(addressesAndAmounts, ([address, amount]) => amount) + fee;
