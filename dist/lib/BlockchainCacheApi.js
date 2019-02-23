@@ -293,6 +293,10 @@ class BlockchainCacheApi {
             if (!res.ok) {
                 throw new Error('Request failed.');
             }
+            /* https://github.com/bitinn/node-fetch/issues/584 */
+            if (res.body === undefined) {
+                return res.json();
+            }
             let data = '';
             let length = 0;
             res.body.on('data', (chunk) => {
