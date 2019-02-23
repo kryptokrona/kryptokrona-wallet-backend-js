@@ -375,6 +375,11 @@ export class BlockchainCacheApi implements IDaemon {
             throw new Error('Request failed.');
         }
 
+        /* https://github.com/bitinn/node-fetch/issues/584 */
+        if (res.body === undefined) {
+            return res.json();
+        }
+
         let data = '';
         let length = 0;
 
