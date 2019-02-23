@@ -12,7 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
-const request = require("request-promise-native");
+const node_fetch_1 = require("node-fetch");
 const Types_1 = require("./Types");
 const Config_1 = require("./Config");
 const ValidateParameters_1 = require("./ValidateParameters");
@@ -257,33 +257,29 @@ class BlockchainCacheApi {
      * Makes a get request to the given endpoint
      */
     makeGetRequest(endpoint) {
-        return request({
-            json: true,
-            method: 'GET',
-            timeout: Config_1.Config.requestTimeout,
-            url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
+        return __awaiter(this, void 0, void 0, function* () {
+            const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
+            const res = yield node_fetch_1.default(url, {
+                timeout: Config_1.Config.requestTimeout,
+            });
+            return res.json();
         });
     }
     /**
      * Makes a post request to the given endpoint with the given body
      */
     makePostRequest(endpoint, body) {
-        const req = request({
-            body: body,
-            json: true,
-            method: 'POST',
-            timeout: Config_1.Config.requestTimeout,
-            url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
+        return __awaiter(this, void 0, void 0, function* () {
+            const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
+            const res = yield node_fetch_1.default(url, {
+                body: JSON.stringify(body),
+                headers: { 'Content-Type': 'application/json' },
+                method: 'post',
+                size: Config_1.Config.maxBodyResponseSize,
+                timeout: Config_1.Config.requestTimeout,
+            });
+            return res.json();
         });
-        let bufferLength = 0;
-        req.on('data', (chunk) => {
-            bufferLength += chunk.length;
-            if (bufferLength > Config_1.Config.maxBodyResponseSize) {
-                req.abort();
-                throw new Error(this.bodyTooLargeMsg);
-            }
-        });
-        return req;
     }
 }
 exports.BlockchainCacheApi = BlockchainCacheApi;

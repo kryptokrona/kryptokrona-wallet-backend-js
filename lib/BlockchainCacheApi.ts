@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash';
 
-import request = require('request-promise-native');
+import fetch from 'node-fetch';
 
 import { Block } from './Types';
 import { Config } from './Config';
@@ -329,38 +329,30 @@ export class BlockchainCacheApi implements IDaemon {
     /**
      * Makes a get request to the given endpoint
      */
-    private makeGetRequest(endpoint: string): request.RequestPromise<any> {
-        return request({
-            json: true,
-            method: 'GET',
+    private async makeGetRequest(endpoint: string): Promise<any> {
+        const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
+
+        const res = await fetch(url, {
             timeout: Config.requestTimeout,
-            url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
         });
+
+        return res.json();
     }
 
     /**
      * Makes a post request to the given endpoint with the given body
      */
-    private makePostRequest(endpoint: string, body: any): request.RequestPromise<any> {
-        const req = request({
-            body: body,
-            json: true,
-            method: 'POST',
+    private async makePostRequest(endpoint: string, body: any): Promise<any> {
+        const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
+
+        const res = await fetch(url, {
+            body: JSON.stringify(body),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'post',
+            size: Config.maxBodyResponseSize,
             timeout: Config.requestTimeout,
-            url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
         });
 
-        let bufferLength = 0;
-
-        req.on('data', (chunk) => {
-            bufferLength += chunk.length;
-
-            if (bufferLength > Config.maxBodyResponseSize) {
-                req.abort();
-                throw new Error(this.bodyTooLargeMsg);
-            }
-        });
-
-        return req;
+        return res.json();
     }
 }
