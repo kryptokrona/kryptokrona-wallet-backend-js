@@ -37,10 +37,6 @@ export declare class BlockchainCacheApi implements IDaemon {
      */
     private lastKnownHashrate;
     /**
-     * Emitted when body is too large
-     */
-    private bodyTooLargeMsg;
-    /**
      * @param cacheBaseURL  The base URL for our API. Shouldn't have a trailing '/'
      * @param ssl           Should we use https? Defaults to true.
      *

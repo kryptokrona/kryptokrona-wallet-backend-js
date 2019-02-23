@@ -59,11 +59,6 @@ export class BlockchainCacheApi implements IDaemon {
     private lastKnownHashrate = 0;
 
     /**
-     * Emitted when body is too large
-     */
-    private bodyTooLargeMsg = 'Response body too large';
-
-    /**
      * @param cacheBaseURL  The base URL for our API. Shouldn't have a trailing '/'
      * @param ssl           Should we use https? Defaults to true.
      *
@@ -165,7 +160,7 @@ export class BlockchainCacheApi implements IDaemon {
                 startTimestamp,
             });
         } catch (err) {
-            if (err.toString() === this.bodyTooLargeMsg && blockCount > 1) {
+            if (err.type && err.type === 'max-size' && blockCount > 1) {
 
                 logger.log(
                     'getWalletSyncData failed, body exceeded max size of ' +

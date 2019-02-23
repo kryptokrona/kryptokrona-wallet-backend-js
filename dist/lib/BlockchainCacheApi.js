@@ -64,10 +64,6 @@ class BlockchainCacheApi {
          * The hashrate of the last known local block
          */
         this.lastKnownHashrate = 0;
-        /**
-         * Emitted when body is too large
-         */
-        this.bodyTooLargeMsg = 'Response body too large';
         this.cacheBaseURL = cacheBaseURL;
         this.ssl = ssl;
     }
@@ -145,7 +141,7 @@ class BlockchainCacheApi {
                 });
             }
             catch (err) {
-                if (err.toString() === this.bodyTooLargeMsg && blockCount > 1) {
+                if (err.type && err.type === 'max-size' && blockCount > 1) {
                     Logger_1.logger.log('getWalletSyncData failed, body exceeded max size of ' +
                         `${Config_1.Config.maxResponseBodySize}, decreasing block count to ` +
                         `${Math.floor(blockCount / 2)} and retrying`, Logger_1.LogLevel.WARNING, [Logger_1.LogCategory.DAEMON, Logger_1.LogCategory.SYNC]);
