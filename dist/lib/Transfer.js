@@ -11,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const deepEqual = require("deep-equal");
 const _ = require("lodash");
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
@@ -81,7 +80,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             addressesAndAmounts.push([feeAddress, feeAmount]);
         }
         const error = validateTransaction(addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress, daemon.getNetworkBlockCount(), subWallets);
-        if (!deepEqual(error, WalletError_1.SUCCESS)) {
+        if (_.isEqual(error, WalletError_1.SUCCESS)) {
             return [undefined, error];
         }
         const totalAmount = _.sumBy(addressesAndAmounts, ([address, amount]) => amount) + fee;
@@ -143,7 +142,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         }
         /* Check the transaction isn't too large to fit in a block */
         const tooBigErr = isTransactionPayloadTooBig(tx.rawTransaction, daemon.getNetworkBlockCount());
-        if (!deepEqual(tooBigErr, WalletError_1.SUCCESS)) {
+        if (!_.isEqual(tooBigErr, WalletError_1.SUCCESS)) {
             return [undefined, tooBigErr];
         }
         /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
@@ -325,35 +324,35 @@ function getRingParticipants(inputs, mixin, daemon) {
 function validateTransaction(destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress, currentHeight, subWallets) {
     /* Validate the destinations are valid */
     let error = ValidateParameters_1.validateDestinations(destinations);
-    if (!deepEqual(error, WalletError_1.SUCCESS)) {
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Validate stored payment ID's in integrated addresses don't conflict */
     error = ValidateParameters_1.validateIntegratedAddresses(destinations, paymentID);
-    if (!deepEqual(error, WalletError_1.SUCCESS)) {
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Verify the subwallets to take from exist */
     error = ValidateParameters_1.validateOurAddresses(subWalletsToTakeFrom, subWallets);
-    if (!deepEqual(error, WalletError_1.SUCCESS)) {
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Verify we have enough money for the transaction */
     error = ValidateParameters_1.validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight);
-    if (!deepEqual(error, WalletError_1.SUCCESS)) {
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Validate mixin is within the bounds for the current height */
     error = ValidateParameters_1.validateMixin(mixin, currentHeight);
-    if (!deepEqual(error, WalletError_1.SUCCESS)) {
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     error = ValidateParameters_1.validatePaymentID(paymentID);
-    if (!deepEqual(error, WalletError_1.SUCCESS)) {
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     error = ValidateParameters_1.validateOurAddresses([changeAddress], subWallets);
-    if (!deepEqual(error, WalletError_1.SUCCESS)) {
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     return WalletError_1.SUCCESS;

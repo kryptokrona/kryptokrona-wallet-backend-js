@@ -2,8 +2,6 @@
 //
 // Please see the included LICENSE file for more information.
 
-import deepEqual = require('deep-equal');
-
 import { EventEmitter } from 'events';
 
 import * as crypto from 'crypto';
@@ -375,7 +373,7 @@ export class WalletBackend extends EventEmitter {
             new Array(address), integratedAddressesAllowed,
         );
 
-        if (!deepEqual(err, SUCCESS)) {
+        if (_.isEqual(err, SUCCESS)) {
             return [undefined, err];
         }
 
@@ -727,7 +725,7 @@ export class WalletBackend extends EventEmitter {
             new Array(address), integratedAddressesAllowed,
         );
 
-        if (!deepEqual(err, SUCCESS)) {
+        if (_.isEqual(err, SUCCESS)) {
             return ['', '', err];
         }
 
@@ -735,7 +733,7 @@ export class WalletBackend extends EventEmitter {
 
         const [err2, privateSpendKey] = this.subWallets.getPrivateSpendKey(publicSpendKey);
 
-        if (!deepEqual(err2, SUCCESS)) {
+        if (_.isEqual(err2, SUCCESS)) {
             return ['', '', err2];
         }
 

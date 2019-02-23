@@ -2,8 +2,6 @@
 //
 // Please see the included LICENSE file for more information.
 
-import deepEqual = require('deep-equal');
-
 import * as _ from 'lodash';
 
 import {
@@ -128,7 +126,7 @@ export async function sendTransactionAdvanced(
         changeAddress, daemon.getNetworkBlockCount(), subWallets,
     );
 
-    if (!deepEqual(error, SUCCESS)) {
+    if (_.isEqual(error, SUCCESS)) {
         return [undefined, error];
     }
 
@@ -229,7 +227,7 @@ export async function sendTransactionAdvanced(
         tx.rawTransaction, daemon.getNetworkBlockCount(),
     );
 
-    if (!deepEqual(tooBigErr, SUCCESS)) {
+    if (!_.isEqual(tooBigErr, SUCCESS)) {
         return [undefined, tooBigErr];
     }
 
@@ -518,47 +516,47 @@ function validateTransaction(
     /* Validate the destinations are valid */
     let error: WalletError = validateDestinations(destinations);
 
-    if (!deepEqual(error, SUCCESS)) {
+    if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     /* Validate stored payment ID's in integrated addresses don't conflict */
     error = validateIntegratedAddresses(destinations, paymentID);
 
-    if (!deepEqual(error, SUCCESS)) {
+    if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     /* Verify the subwallets to take from exist */
     error = validateOurAddresses(subWalletsToTakeFrom, subWallets);
 
-    if (!deepEqual(error, SUCCESS)) {
+    if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     /* Verify we have enough money for the transaction */
     error = validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight);
 
-    if (!deepEqual(error, SUCCESS)) {
+    if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     /* Validate mixin is within the bounds for the current height */
     error = validateMixin(mixin, currentHeight);
 
-    if (!deepEqual(error, SUCCESS)) {
+    if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     error = validatePaymentID(paymentID);
 
-    if (!deepEqual(error, SUCCESS)) {
+    if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     error = validateOurAddresses([changeAddress], subWallets);
 
-    if (!deepEqual(error, SUCCESS)) {
+    if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 

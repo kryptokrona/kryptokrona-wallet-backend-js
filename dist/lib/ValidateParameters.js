@@ -3,7 +3,6 @@
 //
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
-const deepEqual = require("deep-equal");
 const _ = require("lodash");
 const CnUtils_1 = require("./CnUtils");
 const WalletError_1 = require("./WalletError");
@@ -109,7 +108,7 @@ exports.validateIntegratedAddresses = validateIntegratedAddresses;
  */
 function validateOurAddresses(addresses, subWallets) {
     const error = validateAddresses(addresses, false);
-    if (!deepEqual(error, WalletError_1.SUCCESS)) {
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     for (const address of addresses) {

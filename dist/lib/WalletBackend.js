@@ -11,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const deepEqual = require("deep-equal");
 const events_1 = require("events");
 const crypto = require("crypto");
 const fs = require("fs");
@@ -245,7 +244,7 @@ class WalletBackend extends events_1.EventEmitter {
         }
         const integratedAddressesAllowed = false;
         const err = ValidateParameters_1.validateAddresses(new Array(address), integratedAddressesAllowed);
-        if (!deepEqual(err, WalletError_1.SUCCESS)) {
+        if (_.isEqual(err, WalletError_1.SUCCESS)) {
             return [undefined, err];
         }
         if (scanHeight < 0) {
@@ -437,12 +436,12 @@ class WalletBackend extends events_1.EventEmitter {
     getSpendKeys(address) {
         const integratedAddressesAllowed = false;
         const err = ValidateParameters_1.validateAddresses(new Array(address), integratedAddressesAllowed);
-        if (!deepEqual(err, WalletError_1.SUCCESS)) {
+        if (_.isEqual(err, WalletError_1.SUCCESS)) {
             return ['', '', err];
         }
         const [publicViewKey, publicSpendKey] = Utilities_1.addressToKeys(address);
         const [err2, privateSpendKey] = this.subWallets.getPrivateSpendKey(publicSpendKey);
-        if (!deepEqual(err2, WalletError_1.SUCCESS)) {
+        if (_.isEqual(err2, WalletError_1.SUCCESS)) {
             return ['', '', err2];
         }
         return [publicSpendKey, privateSpendKey, undefined];

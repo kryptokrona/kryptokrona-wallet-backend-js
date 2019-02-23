@@ -2,8 +2,6 @@
 //
 // Please see the included LICENSE file for more information.
 
-import deepEqual = require('deep-equal');
-
 import * as _ from 'lodash';
 
 import { CryptoUtils} from './CnUtils';
@@ -136,7 +134,7 @@ export function validateOurAddresses(
 
     const error: WalletError = validateAddresses(addresses, false);
 
-    if (!deepEqual(error, SUCCESS)) {
+    if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
