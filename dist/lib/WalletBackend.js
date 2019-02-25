@@ -390,6 +390,7 @@ class WalletBackend extends events_1.EventEmitter {
         this.syncThread.stop();
         this.daemonUpdateThread.stop();
         this.lockedTransactionsCheckThread.stop();
+        this.started = false;
     }
     /**
      * Get the node fee the daemon you are connected to is charging for

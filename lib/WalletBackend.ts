@@ -668,6 +668,7 @@ export class WalletBackend extends EventEmitter {
         this.syncThread.stop();
         this.daemonUpdateThread.stop();
         this.lockedTransactionsCheckThread.stop();
+        this.started = false;
     }
 
     /**
