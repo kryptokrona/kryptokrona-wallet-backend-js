@@ -976,9 +976,9 @@ turtlecoin-rpc@^0.12.0:
     request "^2.88.0"
     request-promise-native "^1.0.5"
 
-"turtlecoin-utils@https://github.com/turtlecoin/turtlecoin-utils.git#development":
+"turtlecoin-utils@https://github.com/zpalmtree/turtlecoin-utils#yes-im-mad":
   version "0.0.5"
-  resolved "https://github.com/turtlecoin/turtlecoin-utils.git#7192dd86f42d5b4b667a4da16730b903a57f631a"
+  resolved "https://github.com/zpalmtree/turtlecoin-utils#01cdb2267e940433af2485827a84d915e2a36c59"
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"
