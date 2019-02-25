@@ -198,8 +198,7 @@ function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txH
     return __awaiter(this, void 0, void 0, function* () {
         const derivation = yield CryptoWrapper_1.generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey());
         const spendKeys = subWallets.getPublicSpendKeys();
-        let outputIndex = 0;
-        for (const output of keyOutputs) {
+        for (const [outputIndex, output] of keyOutputs.entries()) {
             /* Derive the spend key from the transaction, using the previous
                derivation */
             const derivedSpendKey = yield CryptoWrapper_1.underivePublicKey(derivation, outputIndex, output.target.data);
@@ -209,7 +208,6 @@ function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txH
             }
             const input = new Types_1.UnconfirmedInput(output.amount, output.target.data, txHash);
             subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
-            outputIndex++;
         }
     });
 }

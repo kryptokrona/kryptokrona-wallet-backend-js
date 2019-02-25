@@ -329,9 +329,7 @@ async function storeUnconfirmedIncomingInputs(
 
     const spendKeys: string[] = subWallets.getPublicSpendKeys();
 
-    let outputIndex: number = 0;
-
-    for (const output of keyOutputs) {
+    for (const [outputIndex, output] of keyOutputs.entries()) {
         /* Derive the spend key from the transaction, using the previous
            derivation */
         const derivedSpendKey = await underivePublicKey(
@@ -348,8 +346,6 @@ async function storeUnconfirmedIncomingInputs(
         );
 
         subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
-
-        outputIndex++;
     }
 }
 
