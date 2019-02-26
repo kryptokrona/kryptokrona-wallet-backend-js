@@ -976,9 +976,22 @@ turtlecoin-rpc@^0.12.0:
     request "^2.88.0"
     request-promise-native "^1.0.5"
 
-"turtlecoin-utils@https://github.com/zpalmtree/turtlecoin-utils#yes-im-mad":
+turtlecoin-utils@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/turtlecoin-utils/-/turtlecoin-utils-0.0.4.tgz#65d020a02bff3d07981bef60a002f65b812e2f4a"
+  integrity sha512-PBOJDTagCe5DNL1RWsBp3MFhryfXnjfZLaVmabWcp7RM2s92kE6mVI+9lAEPn+arExDbEAAMR3nsyIvpznEu/g==
+  dependencies:
+    crc "^3.8.0"
+    get-random-values "^1.2.0"
+    numeral "^2.0.6"
+    secure-random-string "^1.1.0"
+    varint-decoder "^0.1.1"
+  optionalDependencies:
+    turtlecoin-crypto "0.0.3"
+
+"turtlecoin-utils@https://github.com/turtlecoin/turtlecoin-utils.git#development":
   version "0.0.5"
-  resolved "https://github.com/zpalmtree/turtlecoin-utils#01cdb2267e940433af2485827a84d915e2a36c59"
+  resolved "https://github.com/turtlecoin/turtlecoin-utils.git#b6a0fa58c58152aa7b153b3dca9bea0c3c60507f"
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"
