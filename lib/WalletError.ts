@@ -152,10 +152,7 @@ export class WalletError {
                        'Ensure it is online and not frozen.';
             }
             case WalletErrorCode.DAEMON_ERROR: {
-                return 'An error occured whilst the daemon processed the request. ' +
-                       'Possibly our software is outdated, the daemon is faulty, ' +
-                       'or there is a programmer error. Check your daemon logs ' +
-                       'for more info. (set_log 4)';
+                return 'Something went wrong creating the transaction. Please try again.';
             }
             case WalletErrorCode.TOO_MANY_INPUTS_TO_FIT_IN_BLOCK: {
                 return 'The transaction is too large (in BYTES, not AMOUNT) to fit ' +
