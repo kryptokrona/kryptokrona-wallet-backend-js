@@ -55,7 +55,11 @@ export async function sendTransactionBasic(
     subWallets: SubWallets,
     destination: string,
     amount: number,
-    paymentID?: string): Promise<[string | undefined, WalletError | undefined]> {
+    paymentID?: string): Promise<[
+        TX          | undefined,
+        string      | undefined,
+        WalletError | undefined
+    ]> {
 
     return sendTransactionAdvanced(
         daemon,
@@ -90,7 +94,11 @@ export async function sendTransactionAdvanced(
     fee?: number,
     paymentID?: string,
     subWalletsToTakeFrom?: string[],
-    changeAddress?: string): Promise<[string | undefined, WalletError | undefined]> {
+    changeAddress?: string): Promise<[
+        TX          | undefined,
+        string      | undefined,
+        WalletError | undefined
+    ]> {
 
     if (mixin === undefined) {
         mixin = Config.mixinLimits.getDefaultMixinByHeight(
@@ -127,7 +135,7 @@ export async function sendTransactionAdvanced(
     );
 
     if (!_.isEqual(error, SUCCESS)) {
-        return [undefined, error];
+        return [undefined, undefined, error];
     }
 
     const totalAmount: number = _.sumBy(
@@ -202,7 +210,7 @@ export async function sendTransactionAdvanced(
     );
 
     if (randomOuts instanceof WalletError) {
-        return [undefined, randomOuts as WalletError];
+        return [undefined, undefined, randomOuts as WalletError];
     }
 
     let tx: CreatedTransaction;
@@ -219,7 +227,7 @@ export async function sendTransactionAdvanced(
             LogCategory.TRANSACTIONS,
         );
 
-        return [undefined, new WalletError(WalletErrorCode.UNKNOWN_ERROR, err.toString())];
+        return [undefined, undefined, new WalletError(WalletErrorCode.UNKNOWN_ERROR, err.toString())];
     }
 
     /* Check the transaction isn't too large to fit in a block */
@@ -228,17 +236,17 @@ export async function sendTransactionAdvanced(
     );
 
     if (!_.isEqual(tooBigErr, SUCCESS)) {
-        return [undefined, tooBigErr];
+        return [undefined, undefined, tooBigErr];
     }
 
     /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
        they will not be mixable */
     if (!verifyAmounts(tx.transaction.vout)) {
-        return [undefined, new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY)];
+        return [undefined, undefined, new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY)];
     }
 
     if (!verifyTransactionFee(tx.transaction, fee)) {
-        return [undefined, new WalletError(WalletErrorCode.UNEXPECTED_FEE)];
+        return [undefined, undefined, new WalletError(WalletErrorCode.UNEXPECTED_FEE)];
     }
 
     let relaySuccess: boolean;
@@ -248,15 +256,15 @@ export async function sendTransactionAdvanced(
 
     /* Timeout */
     } catch (err) {
-        return [undefined, new WalletError(WalletErrorCode.DAEMON_OFFLINE)];
+        return [undefined, undefined, new WalletError(WalletErrorCode.DAEMON_OFFLINE)];
     }
 
     if (!relaySuccess) {
-        return [undefined, new WalletError(WalletErrorCode.DAEMON_ERROR)];
+        return [undefined, undefined, new WalletError(WalletErrorCode.DAEMON_ERROR)];
     }
 
     /* Store the unconfirmed transaction, update our balance */
-    storeSentTransaction(
+    const returnTX: TX = storeSentTransaction(
         tx.hash, fee, paymentID, inputs, changeAddress, changeRequired,
         subWallets,
     );
@@ -273,7 +281,7 @@ export async function sendTransactionAdvanced(
         subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage);
     }
 
-    return [tx.hash, undefined];
+    return [returnTX, tx.hash, undefined];
 }
 
 function storeSentTransaction(
@@ -283,7 +291,7 @@ function storeSentTransaction(
     ourInputs: TxInputAndOwner[],
     changeAddress: string,
     changeRequired: number,
-    subWallets: SubWallets): void {
+    subWallets: SubWallets): TX {
 
     const transfers: Map<string, number> = new Map();
 
@@ -315,6 +323,8 @@ function storeSentTransaction(
     );
 
     subWallets.addUnconfirmedTransaction(tx);
+
+    return tx;
 }
 
 async function storeUnconfirmedIncomingInputs(

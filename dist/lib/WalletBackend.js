@@ -556,7 +556,11 @@ class WalletBackend extends events_1.EventEmitter {
      */
     sendTransactionBasic(destination, amount, paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            return Transfer_1.sendTransactionBasic(this.daemon, this.subWallets, destination, amount, paymentID);
+            const [transaction, hash, error] = yield Transfer_1.sendTransactionBasic(this.daemon, this.subWallets, destination, amount, paymentID);
+            if (transaction) {
+                this.emit('createdtx', transaction);
+            }
+            return [hash, error];
         });
     }
     /**
@@ -575,7 +579,13 @@ class WalletBackend extends events_1.EventEmitter {
      * @param changeAddress         The address to send any returned change to.
      */
     sendTransactionAdvanced(destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress) {
-        return Transfer_1.sendTransactionAdvanced(this.daemon, this.subWallets, destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress);
+        return __awaiter(this, void 0, void 0, function* () {
+            const [transaction, hash, error] = yield Transfer_1.sendTransactionAdvanced(this.daemon, this.subWallets, destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress);
+            if (transaction) {
+                this.emit('createdtx', transaction);
+            }
+            return [hash, error];
+        });
     }
     /**
      * Get the unlocked and locked balance for the wallet container.

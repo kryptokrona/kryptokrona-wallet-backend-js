@@ -81,7 +81,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         }
         const error = validateTransaction(addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress, daemon.getNetworkBlockCount(), subWallets);
         if (!_.isEqual(error, WalletError_1.SUCCESS)) {
-            return [undefined, error];
+            return [undefined, undefined, error];
         }
         const totalAmount = _.sumBy(addressesAndAmounts, ([address, amount]) => amount) + fee;
         const amounts = [];
@@ -130,7 +130,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         })));
         const randomOuts = yield getRingParticipants(inputs, mixin, daemon);
         if (randomOuts instanceof WalletError_1.WalletError) {
-            return [undefined, randomOuts];
+            return [undefined, undefined, randomOuts];
         }
         let tx;
         try {
@@ -138,20 +138,20 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         }
         catch (err) {
             Logger_1.logger.log('Failed to create transaction: ' + err.toString(), Logger_1.LogLevel.ERROR, Logger_1.LogCategory.TRANSACTIONS);
-            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNKNOWN_ERROR, err.toString())];
+            return [undefined, undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNKNOWN_ERROR, err.toString())];
         }
         /* Check the transaction isn't too large to fit in a block */
         const tooBigErr = isTransactionPayloadTooBig(tx.rawTransaction, daemon.getNetworkBlockCount());
         if (!_.isEqual(tooBigErr, WalletError_1.SUCCESS)) {
-            return [undefined, tooBigErr];
+            return [undefined, undefined, tooBigErr];
         }
         /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
            they will not be mixable */
         if (!verifyAmounts(tx.transaction.vout)) {
-            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.AMOUNTS_NOT_PRETTY)];
+            return [undefined, undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.AMOUNTS_NOT_PRETTY)];
         }
         if (!verifyTransactionFee(tx.transaction, fee)) {
-            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNEXPECTED_FEE)];
+            return [undefined, undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.UNEXPECTED_FEE)];
         }
         let relaySuccess;
         try {
@@ -159,13 +159,13 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
             /* Timeout */
         }
         catch (err) {
-            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_OFFLINE)];
+            return [undefined, undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_OFFLINE)];
         }
         if (!relaySuccess) {
-            return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_ERROR)];
+            return [undefined, undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_ERROR)];
         }
         /* Store the unconfirmed transaction, update our balance */
-        storeSentTransaction(tx.hash, fee, paymentID, inputs, changeAddress, changeRequired, subWallets);
+        const returnTX = storeSentTransaction(tx.hash, fee, paymentID, inputs, changeAddress, changeRequired, subWallets);
         /* Update our locked balanced with the incoming funds */
         yield storeUnconfirmedIncomingInputs(subWallets, tx.transaction.vout, tx.transaction.transactionKeys.publicKey, tx.hash);
         subWallets.storeTxPrivateKey(tx.transaction.transactionKeys.privateKey, tx.hash);
@@ -173,7 +173,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         for (const input of inputs) {
             subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage);
         }
-        return [tx.hash, undefined];
+        return [returnTX, tx.hash, undefined];
     });
 }
 exports.sendTransactionAdvanced = sendTransactionAdvanced;
@@ -193,6 +193,7 @@ function storeSentTransaction(hash, fee, paymentID, ourInputs, changeAddress, ch
     const isCoinbaseTransaction = false;
     const tx = new Types_1.Transaction(transfers, hash, fee, timestamp, blockHeight, paymentID, unlockTime, isCoinbaseTransaction);
     subWallets.addUnconfirmedTransaction(tx);
+    return tx;
 }
 function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txHash) {
     return __awaiter(this, void 0, void 0, function* () {

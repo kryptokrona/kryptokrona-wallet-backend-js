@@ -65,6 +65,24 @@ export declare interface WalletBackend {
      */
     on(event: 'fusiontx', callback: (transaction: Transaction) => void): this;
     /**
+     * This is emitted whenever the wallet creates and sends a transaction.
+     *
+     * This is distinct from the outgoingtx event, as this event is fired when
+     * we send a transaction, while outgoingtx is fired when the tx is included
+     * in a block, and scanned by the wallet.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('createdtx', (transaction) => {
+     *      console.log('Transaction created!');
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'createdtx', callback: (transaction: Transaction) => void): this;
+    /**
      * This is emitted whenever the wallet first syncs with the network. It will
      * also be fired if the wallet unsyncs from the network, then resyncs.
      *

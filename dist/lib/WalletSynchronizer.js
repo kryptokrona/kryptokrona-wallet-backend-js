@@ -153,7 +153,8 @@ class WalletSynchronizer {
             this.storedBlocks = _.drop(this.storedBlocks);
         }
         this.synchronizationStatus.storeBlockHash(blockHeight, blockHash);
-        if (this.shouldFetchMoreBlocks()) {
+        /* sizeof() gets a tad expensive... */
+        if (blockHeight % 10 === 0 && this.shouldFetchMoreBlocks()) {
             /* Note - not awaiting here */
             this.downloadBlocks();
         }

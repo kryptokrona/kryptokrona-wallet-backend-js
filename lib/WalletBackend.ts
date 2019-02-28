@@ -99,6 +99,25 @@ export declare interface WalletBackend {
     on(event: 'fusiontx', callback: (transaction: Transaction) => void): this;
 
     /**
+     * This is emitted whenever the wallet creates and sends a transaction.
+     *
+     * This is distinct from the outgoingtx event, as this event is fired when
+     * we send a transaction, while outgoingtx is fired when the tx is included
+     * in a block, and scanned by the wallet.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('createdtx', (transaction) => {
+     *      console.log('Transaction created!');
+     * }
+     * ```
+     *
+     * @event
+     */
+    on(event: 'createdtx', callback: (transaction: Transaction) => void): this;
+
+    /**
      * This is emitted whenever the wallet first syncs with the network. It will
      * also be fired if the wallet unsyncs from the network, then resyncs.
      *
@@ -874,9 +893,15 @@ export class WalletBackend extends EventEmitter {
         amount: number,
         paymentID?: string): Promise<[string | undefined, WalletError | undefined]> {
 
-        return sendTransactionBasic(
+        const [transaction, hash, error] = await sendTransactionBasic(
             this.daemon, this.subWallets, destination, amount, paymentID,
         );
+
+        if (transaction) {
+            this.emit('createdtx', transaction);
+        }
+
+        return [hash, error];
     }
 
     /**
@@ -894,7 +919,7 @@ export class WalletBackend extends EventEmitter {
      * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
      * @param changeAddress         The address to send any returned change to.
      */
-    public sendTransactionAdvanced(
+    public async sendTransactionAdvanced(
         destinations: Array<[string, number]>,
         mixin?: number,
         fee?: number,
@@ -902,10 +927,16 @@ export class WalletBackend extends EventEmitter {
         subWalletsToTakeFrom?: string[],
         changeAddress?: string): Promise<[string | undefined, WalletError | undefined]> {
 
-        return sendTransactionAdvanced(
+        const [transaction, hash, error] = await sendTransactionAdvanced(
             this.daemon, this.subWallets, destinations, mixin, fee, paymentID,
             subWalletsToTakeFrom, changeAddress,
         );
+
+        if (transaction) {
+            this.emit('createdtx', transaction);
+        }
+
+        return [hash, error];
     }
 
     /**
