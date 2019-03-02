@@ -1,4 +1,10 @@
 /**
+ * Creates an integrated address from a standard address, and a payment ID.
+ *
+ * Throws if either address or payment ID is invalid.
+ */
+export declare function createIntegratedAddress(address: string, paymentID: string): string;
+/**
  * Verifies if a key or payment ID is valid (64 char hex)
  */
 export declare function isHex64(val: string): boolean;

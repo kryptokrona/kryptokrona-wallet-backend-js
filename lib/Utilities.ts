@@ -2,6 +2,8 @@
 //
 // Please see the included LICENSE file for more information.
 
+import * as _ from 'lodash';
+
 import { Config } from './Config';
 import { CryptoUtils} from './CnUtils';
 
@@ -11,7 +13,37 @@ import {
     MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR, MAX_BLOCK_SIZE_INITIAL,
 } from './Constants';
 
+import { validateAddresses, validatePaymentID } from './ValidateParameters';
+
+import { SUCCESS } from './WalletError';
+
 import { English } from './WordList';
+
+/**
+ * Creates an integrated address from a standard address, and a payment ID.
+ *
+ * Throws if either address or payment ID is invalid.
+ */
+export function createIntegratedAddress(address: string, paymentID: string): string {
+    let error = validateAddresses([address], false);
+
+    if (!_.isEqual(error, SUCCESS)) {
+        throw error;
+    }
+
+    error = validatePaymentID(paymentID);
+
+    if (!_.isEqual(error, SUCCESS)) {
+        throw error;
+    }
+
+    /* Validate payment ID allows empty payment ID's */
+    if (paymentID === '') {
+        throw new Error('Payment ID is empty string!');
+    }
+
+    return CryptoUtils().createIntegratedAddress(address, paymentID);
+}
 
 /**
  * Verifies if a key or payment ID is valid (64 char hex)

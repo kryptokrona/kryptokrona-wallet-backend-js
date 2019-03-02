@@ -18,6 +18,7 @@ exports.prettyPrintAmount = Utilities_1.prettyPrintAmount;
 exports.isHex64 = Utilities_1.isHex64;
 exports.isValidMnemonic = Utilities_1.isValidMnemonic;
 exports.isValidMnemonicWord = Utilities_1.isValidMnemonicWord;
+exports.createIntegratedAddress = Utilities_1.createIntegratedAddress;
 var Logger_1 = require("./Logger");
 exports.LogLevel = Logger_1.LogLevel;
 exports.LogCategory = Logger_1.LogCategory;

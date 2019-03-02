@@ -3,10 +3,34 @@
 //
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
+const _ = require("lodash");
 const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const Constants_1 = require("./Constants");
+const ValidateParameters_1 = require("./ValidateParameters");
+const WalletError_1 = require("./WalletError");
 const WordList_1 = require("./WordList");
+/**
+ * Creates an integrated address from a standard address, and a payment ID.
+ *
+ * Throws if either address or payment ID is invalid.
+ */
+function createIntegratedAddress(address, paymentID) {
+    let error = ValidateParameters_1.validateAddresses([address], false);
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
+        throw error;
+    }
+    error = ValidateParameters_1.validatePaymentID(paymentID);
+    if (!_.isEqual(error, WalletError_1.SUCCESS)) {
+        throw error;
+    }
+    /* Validate payment ID allows empty payment ID's */
+    if (paymentID === '') {
+        throw new Error('Payment ID is empty string!');
+    }
+    return CnUtils_1.CryptoUtils().createIntegratedAddress(address, paymentID);
+}
+exports.createIntegratedAddress = createIntegratedAddress;
 /**
  * Verifies if a key or payment ID is valid (64 char hex)
  */

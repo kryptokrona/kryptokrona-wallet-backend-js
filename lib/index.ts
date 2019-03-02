@@ -7,7 +7,12 @@ export { WalletBackend } from './WalletBackend';
 export { BlockchainCacheApi } from './BlockchainCacheApi';
 export { ConventionalDaemon } from './ConventionalDaemon';
 export { IDaemon } from './IDaemon';
-export { prettyPrintAmount, isHex64, isValidMnemonic, isValidMnemonicWord } from './Utilities';
+
+export {
+    prettyPrintAmount, isHex64, isValidMnemonic, isValidMnemonicWord,
+    createIntegratedAddress,
+} from './Utilities';
+
 export { LogLevel, LogCategory } from './Logger';
 export { validateAddresses, validatePaymentID } from './ValidateParameters';
 export { TransactionInput } from './Types';

@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import {
     ConventionalDaemon, IDaemon, prettyPrintAmount, SUCCESS, validateAddresses,
     WalletBackend, WalletError, WalletErrorCode, BlockchainCacheApi, LogLevel,
-    isValidMnemonic, isValidMnemonicWord
+    isValidMnemonic, isValidMnemonicWord, createIntegratedAddress,
 } from '../lib/index';
 
 import { CryptoUtils } from '../lib/CnUtils';
@@ -381,6 +381,41 @@ function roundTrip(
        'getSpendKeys doesn\'t work!');
 
     await tester.test(async () => {
+        let address;
+        try {
+        address = createIntegratedAddress(
+            'TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW',
+            'b23df6e84c1dd619d3601a28e5948d92a0d096aea1621969c591a90e986794a0',
+        );
+        } catch (err) {
+            console.log(JSON.stringify(err));
+        }
+
+        const test1: boolean = address === 'TRTLuyzDT8wJ6bAmnmBLyRHmBNrRrafuR9G3bJTNzPiTAS4xKDQKHd9Aa2sF2q22DF9EXi5HNpZGcHGBwqgVAqc2AZxUBMMSegm8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyhJk2yR';
+
+        let test2: boolean = false;
+
+        try {
+            createIntegratedAddress('TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW', '');
+        } catch(err) {
+            test2 = true;
+        }
+
+        let test3: boolean = false;
+
+        try {
+            createIntegratedAddress('', 'b23df6e84c1dd619d3601a28e5948d92a0d096aea1621969c591a90e986794a0');
+        } catch (err) {
+            test3 = true;
+        }
+
+        return test1 && test2 && test3;
+
+    }, 'Testing createIntegratedAddress',
+       'createIntegratedAddress works',
+       'createIntegratedAddress doesn\'t work!');
+
+    await tester.test(async () => {
         const [keyWallet, error] = WalletBackend.importWalletFromKeys(
             daemon, 0,
             '1f3f6c220dd9f97619dbf44d967f79f3041b9b1c63da2c895f980f1411d5d704',
@@ -409,8 +444,8 @@ function roundTrip(
 
     }, 'Testing isValidMnemonic',
        'isValidMnemonic works',
-       'isValidMnemonic doesnt\' work!');
-
+       'isValidMnemonic doesn\'t work!');
+    
     if (doPerformanceTests) {
         /* TODO: Maybe use a remote node? */
         await tester.test(async () => {
