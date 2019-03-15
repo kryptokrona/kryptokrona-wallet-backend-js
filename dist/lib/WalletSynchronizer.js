@@ -15,6 +15,7 @@ const _ = require("lodash");
 const sizeof = require('object-sizeof');
 const Config_1 = require("./Config");
 const Utilities_1 = require("./Utilities");
+const Constants_1 = require("./Constants");
 const SynchronizationStatus_1 = require("./SynchronizationStatus");
 const Logger_1 = require("./Logger");
 const CryptoWrapper_1 = require("./CryptoWrapper");
@@ -165,7 +166,7 @@ class WalletSynchronizer {
             /* Add to start of array - we want hashes in descending block height order */
             hashes.unshift(block.blockHash);
         }
-        return _.take(hashes, 100);
+        return _.take(hashes, Constants_1.LAST_KNOWN_BLOCK_HASHES_SIZE);
     }
     /**
      * Only retrieve more blocks if we're not getting close to the memory limit
@@ -181,6 +182,16 @@ class WalletSynchronizer {
             return true;
         }
         return false;
+    }
+    getBlockCheckpoints() {
+        const unprocessedBlockHashes = this.getStoredBlockCheckpoints();
+        const recentProcessedBlockHashes = this.synchronizationStatus.getRecentBlockHashes();
+        const blockHashCheckpoints = this.synchronizationStatus.getBlockCheckpoints();
+        const combined = unprocessedBlockHashes.concat(recentProcessedBlockHashes);
+        /* Take the 50 most recent block hashes, along with the infrequent
+           checkpoints, to handle deep forks. */
+        return _.take(combined, Constants_1.LAST_KNOWN_BLOCK_HASHES_SIZE)
+            .concat(blockHashCheckpoints);
     }
     downloadBlocks() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -198,8 +209,7 @@ class WalletSynchronizer {
             /* Get the checkpoints of the blocks we've got stored, so we can fetch
                later ones. Also use the checkpoints of the previously processed
                ones, in case we don't have any blocks yet. */
-            const blockCheckpoints = this.getStoredBlockCheckpoints()
-                .concat(this.synchronizationStatus.getProcessedBlockHashCheckpoints());
+            const blockCheckpoints = this.getBlockCheckpoints();
             let blocks = [];
             try {
                 blocks = yield this.daemon.getWalletSyncData(blockCheckpoints, this.startHeight, this.startTimestamp, Config_1.Config.blocksPerDaemonRequest);

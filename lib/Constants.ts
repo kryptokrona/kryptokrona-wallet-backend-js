@@ -45,7 +45,7 @@ export const IS_CORRECT_PASSWORD_IDENTIFIER: Buffer = Buffer.from([
 /**
  * How large should the lastKnownBlockHashes container be
  */
-export const LAST_KNOWN_BLOCK_HASHES_SIZE: number = 100;
+export const LAST_KNOWN_BLOCK_HASHES_SIZE: number = 50;
 
 /**
  * Save a block hash checkpoint every BLOCK_HASH_CHECKPOINTS_INTERVAL

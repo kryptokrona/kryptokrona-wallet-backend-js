@@ -50,8 +50,11 @@ class SynchronizationStatus {
             this.lastKnownBlockHashes.pop();
         }
     }
-    getProcessedBlockHashCheckpoints() {
-        return this.lastKnownBlockHashes.concat(this.blockHashCheckpoints);
+    getBlockCheckpoints() {
+        return this.blockHashCheckpoints;
+    }
+    getRecentBlockHashes() {
+        return this.lastKnownBlockHashes;
     }
 }
 exports.SynchronizationStatus = SynchronizationStatus;

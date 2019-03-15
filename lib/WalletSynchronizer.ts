@@ -9,6 +9,7 @@ import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
 import { delay, prettyPrintBytes } from './Utilities';
+import { LAST_KNOWN_BLOCK_HASHES_SIZE } from './Constants';
 import { SynchronizationStatus } from './SynchronizationStatus';
 import { WalletSynchronizerJSON } from './JsonSerialization';
 import { LogCategory, logger, LogLevel } from './Logger';
@@ -245,7 +246,7 @@ export class WalletSynchronizer {
             hashes.unshift(block.blockHash);
         }
 
-        return _.take(hashes, 100);
+        return _.take(hashes, LAST_KNOWN_BLOCK_HASHES_SIZE);
     }
 
     /**
@@ -272,6 +273,21 @@ export class WalletSynchronizer {
         return false;
     }
 
+    private getBlockCheckpoints(): string[] {
+        const unprocessedBlockHashes: string[] = this.getStoredBlockCheckpoints();
+
+        const recentProcessedBlockHashes: string[] = this.synchronizationStatus.getRecentBlockHashes();
+
+        const blockHashCheckpoints: string[] = this.synchronizationStatus.getBlockCheckpoints();
+
+        const combined = unprocessedBlockHashes.concat(recentProcessedBlockHashes);
+
+        /* Take the 50 most recent block hashes, along with the infrequent
+           checkpoints, to handle deep forks. */
+        return _.take(combined, LAST_KNOWN_BLOCK_HASHES_SIZE)
+                .concat(blockHashCheckpoints);
+    }
+
     private async downloadBlocks(): Promise<void> {
         /* Don't make more than one fetch request at once */
         if (this.fetchingBlocks) {
@@ -291,9 +307,7 @@ export class WalletSynchronizer {
         /* Get the checkpoints of the blocks we've got stored, so we can fetch
            later ones. Also use the checkpoints of the previously processed
            ones, in case we don't have any blocks yet. */
-        const blockCheckpoints: string[]
-            = this.getStoredBlockCheckpoints()
-                  .concat(this.synchronizationStatus.getProcessedBlockHashCheckpoints());
+        const blockCheckpoints: string[] = this.getBlockCheckpoints();
 
         let blocks: Block[] = [];
 

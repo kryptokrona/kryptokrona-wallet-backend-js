@@ -77,6 +77,7 @@ export declare class WalletSynchronizer {
      * Only retrieve more blocks if we're not getting close to the memory limit
      */
     private shouldFetchMoreBlocks;
+    private getBlockCheckpoints;
     private downloadBlocks;
     /**
      * Process the outputs of a transaction, and create inputs that are ours

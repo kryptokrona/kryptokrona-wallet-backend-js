@@ -41,7 +41,7 @@ exports.IS_CORRECT_PASSWORD_IDENTIFIER = Buffer.from([
 /**
  * How large should the lastKnownBlockHashes container be
  */
-exports.LAST_KNOWN_BLOCK_HASHES_SIZE = 100;
+exports.LAST_KNOWN_BLOCK_HASHES_SIZE = 50;
 /**
  * Save a block hash checkpoint every BLOCK_HASH_CHECKPOINTS_INTERVAL
  * blocks
