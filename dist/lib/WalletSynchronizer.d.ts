@@ -39,6 +39,11 @@ export declare class WalletSynchronizer {
      * Stored blocks for later processing
      */
     private storedBlocks;
+    /**
+     * Transactions that have disappeared from the pool and not appeared in a
+     * block, and the amount of times they have failed this check.
+     */
+    private cancelledTransactionsFailCount;
     constructor(daemon: IDaemon, subWallets: SubWallets, startTimestamp: number, startHeight: number, privateViewKey: string);
     /**
      * Initialize things we can't initialize from the JSON

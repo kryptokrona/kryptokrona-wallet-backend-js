@@ -76,6 +76,12 @@ export class WalletSynchronizer {
      */
     private storedBlocks: Block[] = [];
 
+    /**
+     * Transactions that have disappeared from the pool and not appeared in a
+     * block, and the amount of times they have failed this check.
+     */
+    private cancelledTransactionsFailCount: Map<string, number> = new Map<string, number>();
+
     constructor(
         daemon: IDaemon,
         subWallets: SubWallets,
@@ -196,7 +202,34 @@ export class WalletSynchronizer {
             return [];
         }
 
-        return this.daemon.getCancelledTransactions(transactionHashes);
+        const cancelled: string[] = await this.daemon.getCancelledTransactions(transactionHashes);
+
+        const toRemove: string[] = [];
+
+        for (const [hash, failCount] of this.cancelledTransactionsFailCount.entries()) {
+            /* Hash still not found, increment fail count */
+            if (cancelled.includes(hash)) {
+                /* Failed too many times, cancel transaction, return funds to wallet */
+                if (failCount === 10) {
+                    toRemove.push(hash);
+                    this.cancelledTransactionsFailCount.delete(hash);
+                } else {
+                    this.cancelledTransactionsFailCount.set(hash, failCount + 1);
+                }
+            /* Hash has since been found, remove from fail count array */
+            } else {
+                this.cancelledTransactionsFailCount.delete(hash);
+            }
+        }
+
+        for (const hash of cancelled) {
+            /* Transaction with no history, first fail, add to map. */
+            if (!this.cancelledTransactionsFailCount.has(hash)) {
+                this.cancelledTransactionsFailCount.set(hash, 1);
+            }
+        }
+
+        return toRemove;
     }
 
     /**
