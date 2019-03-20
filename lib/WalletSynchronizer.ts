@@ -80,7 +80,7 @@ export class WalletSynchronizer {
      * Transactions that have disappeared from the pool and not appeared in a
      * block, and the amount of times they have failed this check.
      */
-    private cancelledTransactionsFailCount: Map<string, number> = new Map<string, number>();
+    private cancelledTransactionsFailCount: Map<string, number> = new Map();
 
     constructor(
         daemon: IDaemon,
@@ -217,7 +217,7 @@ export class WalletSynchronizer {
 
         const toRemove: string[] = [];
 
-        for (const [hash, failCount] of this.cancelledTransactionsFailCount.entries()) {
+        for (const [hash, failCount] of this.cancelledTransactionsFailCount) {
             /* Hash still not found, increment fail count */
             if (cancelled.includes(hash)) {
                 /* Failed too many times, cancel transaction, return funds to wallet */

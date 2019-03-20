@@ -143,7 +143,7 @@ class WalletSynchronizer {
             }
             const cancelled = yield this.daemon.getCancelledTransactions(transactionHashes);
             const toRemove = [];
-            for (const [hash, failCount] of this.cancelledTransactionsFailCount.entries()) {
+            for (const [hash, failCount] of this.cancelledTransactionsFailCount) {
                 /* Hash still not found, increment fail count */
                 if (cancelled.includes(hash)) {
                     /* Failed too many times, cancel transaction, return funds to wallet */
