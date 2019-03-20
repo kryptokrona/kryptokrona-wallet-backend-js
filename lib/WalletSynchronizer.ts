@@ -96,6 +96,10 @@ export class WalletSynchronizer {
         this.subWallets = subWallets;
     }
 
+    public getScanHeights(): [number, number] {
+        return [this.startHeight, this.startTimestamp];
+    }
+
     /**
      * Initialize things we can't initialize from the JSON
      */
@@ -188,6 +192,13 @@ export class WalletSynchronizer {
      */
     public getHeight(): number {
         return this.synchronizationStatus.getHeight();
+    }
+
+    public reset(scanHeight: number, scanTimestamp: number) {
+        this.startHeight = scanHeight;
+        this.startTimestamp = scanTimestamp;
+        /* Discard sync status */
+        this.synchronizationStatus = new SynchronizationStatus();
     }
 
     /**

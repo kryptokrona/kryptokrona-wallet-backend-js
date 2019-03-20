@@ -57,6 +57,9 @@ class WalletSynchronizer {
             synchronizationStatus: SynchronizationStatus_1.SynchronizationStatus.fromJSON(json.transactionSynchronizerStatus),
         });
     }
+    getScanHeights() {
+        return [this.startHeight, this.startTimestamp];
+    }
     /**
      * Initialize things we can't initialize from the JSON
      */
@@ -119,6 +122,12 @@ class WalletSynchronizer {
      */
     getHeight() {
         return this.synchronizationStatus.getHeight();
+    }
+    reset(scanHeight, scanTimestamp) {
+        this.startHeight = scanHeight;
+        this.startTimestamp = scanTimestamp;
+        /* Discard sync status */
+        this.synchronizationStatus = new SynchronizationStatus_1.SynchronizationStatus();
     }
     /**
      * Takes in hashes that we have previously sent. Returns transactions which

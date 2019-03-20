@@ -83,6 +83,14 @@ class SubWallet {
             isPrimaryAddress: this.primaryAddress,
         };
     }
+    reset(scanHeight, scanTimestamp) {
+        this.syncStartHeight = scanHeight;
+        this.syncStartTimestamp = scanTimestamp;
+        this.spentInputs = [];
+        this.lockedInputs = [];
+        this.unconfirmedIncomingAmounts = [];
+        this.unspentInputs = [];
+    }
     /**
      * Get the private spend key, or null key if view wallet
      */

@@ -45,6 +45,7 @@ export declare class WalletSynchronizer {
      */
     private cancelledTransactionsFailCount;
     constructor(daemon: IDaemon, subWallets: SubWallets, startTimestamp: number, startHeight: number, privateViewKey: string);
+    getScanHeights(): [number, number];
     /**
      * Initialize things we can't initialize from the JSON
      */
@@ -65,6 +66,7 @@ export declare class WalletSynchronizer {
      * Get the height of the sync process
      */
     getHeight(): number;
+    reset(scanHeight: number, scanTimestamp: number): void;
     /**
      * Takes in hashes that we have previously sent. Returns transactions which
      * are no longer in the pool, and not in a block, and therefore have

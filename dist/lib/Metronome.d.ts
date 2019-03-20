@@ -13,6 +13,14 @@ export declare class Metronome {
     private timer;
     private shouldStop;
     /**
+     * Is code currently executing
+     */
+    private inTick;
+    /**
+     * Function to run when stopping, and tick func has completed
+     */
+    private finishedFunc;
+    /**
      * @param func      The function to run
      * @param interval  How often to run the function
      */
@@ -24,7 +32,7 @@ export declare class Metronome {
     /**
      * Stop running the function
      */
-    stop(): void;
+    stop(): Promise<void>;
     /**
      * Run the function, then recurse
      */

@@ -115,6 +115,16 @@ export class SubWallets {
         this.subWallets.set(publicKeys.publicSpendKey, subWallet);
     }
 
+    public reset(scanHeight: number, scanTimestamp: number) {
+        this.transactions = [];
+        this.lockedTransactions = [];
+        this.transactionPrivateKeys = new Map();
+
+        for (const [publicKey, subWallet] of this.subWallets) {
+            subWallet.reset(scanHeight, scanTimestamp);
+        }
+    }
+
     /**
      * Convert SubWallets to something we can JSON.stringify
      */

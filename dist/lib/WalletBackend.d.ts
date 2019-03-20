@@ -291,6 +291,18 @@ export declare class WalletBackend extends EventEmitter {
      */
     private constructor();
     /**
+     * Performs the same operation as reset(), but uses the initial scan height
+     * or timestamp. For example, if you created your wallet at block 800,000,
+     * this method would start rescanning from then.
+     */
+    rescan(): void;
+    /**
+     * Discard all transaction data, and begin scanning the wallet again
+     * from the scanHeight or timestamp given. Defaults to a height of zero,
+     * if not given.
+     */
+    reset(scanHeight?: number, scanTimestamp?: number): Promise<void>;
+    /**
      * Gets the wallet, local daemon, and network block count
      *
      * Usage:

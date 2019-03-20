@@ -19,6 +19,14 @@ class Metronome {
      */
     constructor(func, interval) {
         this.shouldStop = true;
+        /**
+         * Is code currently executing
+         */
+        this.inTick = false;
+        /**
+         * Function to run when stopping, and tick func has completed
+         */
+        this.finishedFunc = undefined;
         this.func = func;
         this.interval = interval;
     }
@@ -35,14 +43,26 @@ class Metronome {
      * Stop running the function
      */
     stop() {
-        this.shouldStop = true;
-        clearTimeout(this.timer);
+        return new Promise((resolve) => {
+            this.shouldStop = true;
+            clearTimeout(this.timer);
+            if (this.inTick) {
+                this.finishedFunc = () => {
+                    resolve();
+                    this.finishedFunc = undefined;
+                };
+            }
+            else {
+                resolve();
+            }
+        });
     }
     /**
      * Run the function, then recurse
      */
     tick() {
         return __awaiter(this, void 0, void 0, function* () {
+            this.inTick = true;
             try {
                 yield this.func();
             }
@@ -52,6 +72,12 @@ class Metronome {
             if (!this.shouldStop) {
                 this.timer = setTimeout(this.tick.bind(this), this.interval);
             }
+            else {
+                if (this.finishedFunc) {
+                    this.finishedFunc();
+                }
+            }
+            this.inTick = false;
         });
     }
 }
