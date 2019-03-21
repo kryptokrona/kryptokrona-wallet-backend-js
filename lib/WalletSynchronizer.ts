@@ -271,9 +271,9 @@ export class WalletSynchronizer {
             this.storedBlocks[0].blockHash === blockHash) {
 
             this.storedBlocks = _.drop(this.storedBlocks);
-        }
 
-        this.synchronizationStatus.storeBlockHash(blockHeight, blockHash);
+            this.synchronizationStatus.storeBlockHash(blockHeight, blockHash);
+        }
 
         /* sizeof() gets a tad expensive... */
         if (blockHeight % 10 === 0 && this.shouldFetchMoreBlocks()) {

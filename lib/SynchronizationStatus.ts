@@ -8,6 +8,8 @@ import {
 
 import { SynchronizationStatusJSON } from './JsonSerialization';
 
+import { LogCategory, LogLevel, logger } from './Logger';
+
 export class SynchronizationStatus {
     public static fromJSON(json: SynchronizationStatusJSON): SynchronizationStatus {
         const synchronizationStatus = Object.create(SynchronizationStatus.prototype);
@@ -42,10 +44,12 @@ export class SynchronizationStatus {
         if (blockHeight > this.lastKnownBlockHeight && this.lastKnownBlockHeight !== 0) {
             /* Height should be one more than previous height */
             if (blockHeight !== this.lastKnownBlockHeight + 1) {
-                throw new Error(
+                logger.log(
                     'Blocks were missed in syncing process! Expected: ' +
                     (this.lastKnownBlockHeight + 1) +
                     ', Received: ' + blockHeight + '.\nPossibly malicious daemon.',
+                    LogLevel.ERROR,
+                    [LogCategory.DAEMON, LogCategory.SYNC],
                 );
             }
         }

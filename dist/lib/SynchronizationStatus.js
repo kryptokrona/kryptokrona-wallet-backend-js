@@ -4,6 +4,7 @@
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
 const Constants_1 = require("./Constants");
+const Logger_1 = require("./Logger");
 class SynchronizationStatus {
     constructor() {
         this.blockHashCheckpoints = [];
@@ -33,9 +34,9 @@ class SynchronizationStatus {
         if (blockHeight > this.lastKnownBlockHeight && this.lastKnownBlockHeight !== 0) {
             /* Height should be one more than previous height */
             if (blockHeight !== this.lastKnownBlockHeight + 1) {
-                throw new Error('Blocks were missed in syncing process! Expected: ' +
+                Logger_1.logger.log('Blocks were missed in syncing process! Expected: ' +
                     (this.lastKnownBlockHeight + 1) +
-                    ', Received: ' + blockHeight + '.\nPossibly malicious daemon.');
+                    ', Received: ' + blockHeight + '.\nPossibly malicious daemon.', Logger_1.LogLevel.ERROR, [Logger_1.LogCategory.DAEMON, Logger_1.LogCategory.SYNC]);
             }
         }
         this.lastKnownBlockHeight = blockHeight;
