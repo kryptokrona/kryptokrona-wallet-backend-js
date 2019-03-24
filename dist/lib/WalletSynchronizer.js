@@ -130,18 +130,22 @@ class WalletSynchronizer {
     }
     reset(scanHeight, scanTimestamp) {
         return new Promise((resolve) => {
-            this.startHeight = scanHeight;
-            this.startTimestamp = scanTimestamp;
-            /* Discard sync status */
-            this.synchronizationStatus = new SynchronizationStatus_1.SynchronizationStatus();
-            this.storedBlocks = [];
+            const f = () => {
+                this.startHeight = scanHeight;
+                this.startTimestamp = scanTimestamp;
+                /* Discard sync status */
+                this.synchronizationStatus = new SynchronizationStatus_1.SynchronizationStatus();
+                this.storedBlocks = [];
+            };
             if (this.fetchingBlocks) {
                 this.finishedFunc = () => {
+                    f();
                     resolve();
                     this.finishedFunc = undefined;
                 };
             }
             else {
+                f();
                 resolve();
             }
         });
