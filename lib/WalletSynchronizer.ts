@@ -82,6 +82,12 @@ export class WalletSynchronizer {
      */
     private cancelledTransactionsFailCount: Map<string, number> = new Map();
 
+    /**
+     * Function to run on block download completion to ensure reset() works
+     * correctly without blocks being stored after wiping them.
+     */
+    private finishedFunc: (() => void) | undefined = undefined;
+
     constructor(
         daemon: IDaemon,
         subWallets: SubWallets,
@@ -194,11 +200,23 @@ export class WalletSynchronizer {
         return this.synchronizationStatus.getHeight();
     }
 
-    public reset(scanHeight: number, scanTimestamp: number) {
-        this.startHeight = scanHeight;
-        this.startTimestamp = scanTimestamp;
-        /* Discard sync status */
-        this.synchronizationStatus = new SynchronizationStatus();
+    public reset(scanHeight: number, scanTimestamp: number): Promise<void> {
+        return new Promise((resolve) => {
+            this.startHeight = scanHeight;
+            this.startTimestamp = scanTimestamp;
+            /* Discard sync status */
+            this.synchronizationStatus = new SynchronizationStatus();
+            this.storedBlocks = [];
+
+            if (this.fetchingBlocks) {
+                this.finishedFunc = () => {
+                    resolve();
+                    this.finishedFunc = undefined;
+                };
+            } else {
+                resolve();
+            }
+        });
     }
 
     /**
@@ -367,6 +385,10 @@ export class WalletSynchronizer {
                 LogCategory.SYNC,
             );
 
+            if (this.finishedFunc) {
+                this.finishedFunc();
+            }
+
             this.fetchingBlocks = false;
 
             return;
@@ -378,6 +400,10 @@ export class WalletSynchronizer {
                 LogLevel.DEBUG,
                 LogCategory.SYNC,
             );
+
+            if (this.finishedFunc) {
+                this.finishedFunc();
+            }
 
             this.fetchingBlocks = false;
 
@@ -414,6 +440,10 @@ export class WalletSynchronizer {
 
         /* Add the new blocks to the store */
         this.storedBlocks = this.storedBlocks.concat(blocks);
+
+        if (this.finishedFunc) {
+            this.finishedFunc();
+        }
 
         this.fetchingBlocks = false;
     }

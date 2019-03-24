@@ -44,6 +44,11 @@ export declare class WalletSynchronizer {
      * block, and the amount of times they have failed this check.
      */
     private cancelledTransactionsFailCount;
+    /**
+     * Function to run on block download completion to ensure reset() works
+     * correctly without blocks being stored after wiping them.
+     */
+    private finishedFunc;
     constructor(daemon: IDaemon, subWallets: SubWallets, startTimestamp: number, startHeight: number, privateViewKey: string);
     getScanHeights(): [number, number];
     /**
@@ -66,7 +71,7 @@ export declare class WalletSynchronizer {
      * Get the height of the sync process
      */
     getHeight(): number;
-    reset(scanHeight: number, scanTimestamp: number): void;
+    reset(scanHeight: number, scanTimestamp: number): Promise<void>;
     /**
      * Takes in hashes that we have previously sent. Returns transactions which
      * are no longer in the pool, and not in a block, and therefore have

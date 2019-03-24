@@ -588,8 +588,9 @@ export class WalletBackend extends EventEmitter {
 
         await this.stop();
 
-        this.walletSynchronizer.reset(scanHeight, scanTimestamp);
-        this.subWallets.reset(scanHeight, scanTimestamp);
+        await this.walletSynchronizer.reset(scanHeight, scanTimestamp);
+
+        await this.subWallets.reset(scanHeight, scanTimestamp);
 
         if (shouldRestart) {
             this.start();

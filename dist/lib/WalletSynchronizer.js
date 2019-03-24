@@ -42,6 +42,11 @@ class WalletSynchronizer {
          * block, and the amount of times they have failed this check.
          */
         this.cancelledTransactionsFailCount = new Map();
+        /**
+         * Function to run on block download completion to ensure reset() works
+         * correctly without blocks being stored after wiping them.
+         */
+        this.finishedFunc = undefined;
         this.daemon = daemon;
         this.startTimestamp = startTimestamp;
         this.startHeight = startHeight;
@@ -124,10 +129,22 @@ class WalletSynchronizer {
         return this.synchronizationStatus.getHeight();
     }
     reset(scanHeight, scanTimestamp) {
-        this.startHeight = scanHeight;
-        this.startTimestamp = scanTimestamp;
-        /* Discard sync status */
-        this.synchronizationStatus = new SynchronizationStatus_1.SynchronizationStatus();
+        return new Promise((resolve) => {
+            this.startHeight = scanHeight;
+            this.startTimestamp = scanTimestamp;
+            /* Discard sync status */
+            this.synchronizationStatus = new SynchronizationStatus_1.SynchronizationStatus();
+            this.storedBlocks = [];
+            if (this.fetchingBlocks) {
+                this.finishedFunc = () => {
+                    resolve();
+                    this.finishedFunc = undefined;
+                };
+            }
+            else {
+                resolve();
+            }
+        });
     }
     /**
      * Takes in hashes that we have previously sent. Returns transactions which
@@ -255,11 +272,17 @@ class WalletSynchronizer {
             }
             catch (err) {
                 Logger_1.logger.log('Failed to get blocks from daemon', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                if (this.finishedFunc) {
+                    this.finishedFunc();
+                }
                 this.fetchingBlocks = false;
                 return;
             }
             if (blocks.length === 0) {
                 Logger_1.logger.log('Zero blocks received from daemon, possibly fully synced', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                if (this.finishedFunc) {
+                    this.finishedFunc();
+                }
                 this.fetchingBlocks = false;
                 return;
             }
@@ -284,6 +307,9 @@ class WalletSynchronizer {
             }
             /* Add the new blocks to the store */
             this.storedBlocks = this.storedBlocks.concat(blocks);
+            if (this.finishedFunc) {
+                this.finishedFunc();
+            }
             this.fetchingBlocks = false;
         });
     }

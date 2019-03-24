@@ -306,8 +306,8 @@ class WalletBackend extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             const shouldRestart = this.started;
             yield this.stop();
-            this.walletSynchronizer.reset(scanHeight, scanTimestamp);
-            this.subWallets.reset(scanHeight, scanTimestamp);
+            yield this.walletSynchronizer.reset(scanHeight, scanTimestamp);
+            yield this.subWallets.reset(scanHeight, scanTimestamp);
             if (shouldRestart) {
                 this.start();
             }
