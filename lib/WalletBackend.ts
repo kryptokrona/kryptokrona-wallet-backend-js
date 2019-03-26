@@ -1170,6 +1170,10 @@ export class WalletBackend extends EventEmitter {
                 this.subWallets.removeForkedTransactions(block.blockHeight);
             }
 
+            if (block.blockHeight % 5000 === 0 && block.blockHeight !== 0) {
+                this.subWallets.pruneSpentInputs(block.blockHeight - 5000);
+            }
+
             /* User can supply us a function to do the processing, possibly
                utilizing native code for moar speed */
             const processFunction = this.externalBlockProcessFunction

@@ -4,6 +4,7 @@
 
 import { CryptoUtils} from './CnUtils';
 import { SubWalletJSON } from './JsonSerialization';
+import { logger, LogLevel, LogCategory } from './Logger';
 import { TransactionInput, TxInputAndOwner, UnconfirmedInput } from './Types';
 import { isInputUnlocked } from './Utilities';
 import { generateKeyImagePrimitive } from './CryptoWrapper';
@@ -134,6 +135,27 @@ export class SubWallet {
 
             isPrimaryAddress: this.primaryAddress,
         };
+    }
+
+    public pruneSpentInputs(pruneHeight: number) {
+        const lenBeforePrune: number = this.spentInputs.length;
+
+        /* Remove all spent inputs that are older than 5000 blocks old.
+           It is assumed the blockchain cannot fork more than this, and this
+           frees up a lot of disk space with large, old wallets. */
+        this.spentInputs = this.spentInputs.filter((input) => input.blockHeight > pruneHeight);
+
+        const lenAfterPrune: number = this.spentInputs.length;
+
+        const difference: number = lenBeforePrune - lenAfterPrune;
+
+        if (difference !== 0) {
+            logger.log(
+                'Pruned ' + difference + ' spent inputs',
+                LogLevel.DEBUG,
+                LogCategory.SYNC,
+            );
+        }
     }
 
     public reset(scanHeight: number, scanTimestamp: number) {

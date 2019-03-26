@@ -44,6 +44,7 @@ export declare class SubWallets {
      * @param privateSpendKey Private spend key is optional if it's a view wallet
      */
     constructor(address: string, scanHeight: number, newWallet: boolean, privateViewKey: string, privateSpendKey?: string);
+    pruneSpentInputs(pruneHeight: number): void;
     reset(scanHeight: number, scanTimestamp: number): void;
     /**
      * Convert SubWallets to something we can JSON.stringify

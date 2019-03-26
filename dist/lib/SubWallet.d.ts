@@ -50,6 +50,7 @@ export declare class SubWallet {
     private readonly primaryAddress;
     constructor(address: string, scanHeight: number, timestamp: number, publicSpendKey: string, privateSpendKey?: string);
     toJSON(): SubWalletJSON;
+    pruneSpentInputs(pruneHeight: number): void;
     reset(scanHeight: number, scanTimestamp: number): void;
     /**
      * Get the private spend key, or null key if view wallet

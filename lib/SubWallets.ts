@@ -115,6 +115,12 @@ export class SubWallets {
         this.subWallets.set(publicKeys.publicSpendKey, subWallet);
     }
 
+    public pruneSpentInputs(pruneHeight: number) {
+        for (const [publicKey, subWallet] of this.subWallets) {
+            subWallet.pruneSpentInputs(pruneHeight);
+        }
+    }
+
     public reset(scanHeight: number, scanTimestamp: number) {
         this.transactions = [];
         this.lockedTransactions = [];

@@ -758,6 +758,9 @@ class WalletBackend extends events_1.EventEmitter {
                     Logger_1.logger.log('Removing forked transactions', Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
                     this.subWallets.removeForkedTransactions(block.blockHeight);
                 }
+                if (block.blockHeight % 5000 === 0 && block.blockHeight !== 0) {
+                    this.subWallets.pruneSpentInputs(block.blockHeight - 5000);
+                }
                 /* User can supply us a function to do the processing, possibly
                    utilizing native code for moar speed */
                 const processFunction = this.externalBlockProcessFunction

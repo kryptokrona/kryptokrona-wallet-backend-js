@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const Logger_1 = require("./Logger");
 const Types_1 = require("./Types");
 const Utilities_1 = require("./Utilities");
 const CryptoWrapper_1 = require("./CryptoWrapper");
@@ -82,6 +83,18 @@ class SubWallet {
             address: this.address,
             isPrimaryAddress: this.primaryAddress,
         };
+    }
+    pruneSpentInputs(pruneHeight) {
+        const lenBeforePrune = this.spentInputs.length;
+        /* Remove all spent inputs that are older than 5000 blocks old.
+           It is assumed the blockchain cannot fork more than this, and this
+           frees up a lot of disk space with large, old wallets. */
+        this.spentInputs = this.spentInputs.filter((input) => input.blockHeight > pruneHeight);
+        const lenAfterPrune = this.spentInputs.length;
+        const difference = lenBeforePrune - lenAfterPrune;
+        if (difference !== 0) {
+            Logger_1.logger.log('Pruned ' + difference + ' spent inputs', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+        }
     }
     reset(scanHeight, scanTimestamp) {
         this.syncStartHeight = scanHeight;

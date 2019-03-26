@@ -65,6 +65,11 @@ class SubWallets {
             transactionPrivateKeys: new Map(json.txPrivateKeys.map((x) => [x.transactionHash, x.txPrivateKey])),
         });
     }
+    pruneSpentInputs(pruneHeight) {
+        for (const [publicKey, subWallet] of this.subWallets) {
+            subWallet.pruneSpentInputs(pruneHeight);
+        }
+    }
     reset(scanHeight, scanTimestamp) {
         this.transactions = [];
         this.lockedTransactions = [];
