@@ -742,7 +742,7 @@ export class WalletBackend extends EventEmitter {
      * Exposes some internal functions for those who know what they're doing...
      */
     public internal(): {
-        sync: (sleep: boolean) => Promise<void>;
+        sync: (sleep: boolean) => Promise<boolean>;
         updateDaemonInfo: () => Promise<void>;
     } {
         return {
@@ -1138,7 +1138,7 @@ export class WalletBackend extends EventEmitter {
      * Process Config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
-    private async processBlocks(sleep: boolean): Promise<void> {
+    private async processBlocks(sleep: boolean): Promise<boolean> {
         /* Take the blocks to process for this tick */
         const blocks: Block[] = await this.walletSynchronizer.fetchBlocks(Config.blocksPerTick);
 
@@ -1147,7 +1147,7 @@ export class WalletBackend extends EventEmitter {
                 await delay(1000);
             }
 
-            return;
+            return false;
         }
 
         for (const block of blocks) {
@@ -1231,14 +1231,16 @@ export class WalletBackend extends EventEmitter {
                 LogCategory.SYNC,
             );
         }
+
+        return true;
     }
 
     /**
      * Main loop. Download blocks, process them.
      */
-    private async sync(sleep: boolean): Promise<void> {
+    private async sync(sleep: boolean): Promise<boolean> {
         try {
-            await this.processBlocks(sleep);
+            return await this.processBlocks(sleep);
         } catch (err) {
             logger.log(
                 'Error processing blocks: ' + err.toString(),
@@ -1246,6 +1248,8 @@ export class WalletBackend extends EventEmitter {
                 LogCategory.SYNC,
             );
         }
+
+        return false;
     }
 
     /**

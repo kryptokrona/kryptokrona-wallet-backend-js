@@ -749,7 +749,7 @@ class WalletBackend extends events_1.EventEmitter {
                 if (sleep) {
                     yield Utilities_1.delay(1000);
                 }
-                return;
+                return false;
             }
             for (const block of blocks) {
                 Logger_1.logger.log('Processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
@@ -794,6 +794,7 @@ class WalletBackend extends events_1.EventEmitter {
                 this.walletSynchronizer.dropBlock(block.blockHeight, block.blockHash);
                 Logger_1.logger.log('Finished processing block ' + block.blockHeight, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             }
+            return true;
         });
     }
     /**
@@ -802,11 +803,12 @@ class WalletBackend extends events_1.EventEmitter {
     sync(sleep) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield this.processBlocks(sleep);
+                return yield this.processBlocks(sleep);
             }
             catch (err) {
                 Logger_1.logger.log('Error processing blocks: ' + err.toString(), Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
             }
+            return false;
         });
     }
     /**
