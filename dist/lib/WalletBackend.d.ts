@@ -499,8 +499,11 @@ export declare class WalletBackend extends EventEmitter {
      *
      * Newer transactions are at the front of the array - Unconfirmed transactions
      * come at the very front.
+     *
+     * @param startIndex Index to start taking transactions from
+     * @param numTransactions Number of transactions to take
      */
-    getTransactions(): Transaction[];
+    getTransactions(startIndex?: number, numTransactions?: number): Transaction[];
     /**
      * Gets the specified transaction, if it exists.
      */

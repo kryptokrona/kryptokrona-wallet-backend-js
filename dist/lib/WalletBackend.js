@@ -628,13 +628,26 @@ class WalletBackend extends events_1.EventEmitter {
      *
      * Newer transactions are at the front of the array - Unconfirmed transactions
      * come at the very front.
+     *
+     * @param startIndex Index to start taking transactions from
+     * @param numTransactions Number of transactions to take
      */
-    getTransactions() {
+    getTransactions(startIndex, numTransactions) {
         /* Clone the array and reverse it, newer txs first */
         const unconfirmed = this.subWallets.getUnconfirmedTransactions().slice().reverse();
         /* Clone the array and reverse it, newer txs first */
         const confirmed = this.subWallets.getTransactions().slice().reverse();
-        return unconfirmed.concat(confirmed);
+        const allTransactions = unconfirmed.concat(confirmed);
+        if (startIndex === undefined) {
+            startIndex = 0;
+        }
+        if (startIndex >= allTransactions.length) {
+            return [];
+        }
+        if (numTransactions === undefined || numTransactions + startIndex > allTransactions.length) {
+            numTransactions = allTransactions.length - startIndex;
+        }
+        return allTransactions.slice(startIndex, startIndex + numTransactions);
     }
     /**
      * Gets the specified transaction, if it exists.
