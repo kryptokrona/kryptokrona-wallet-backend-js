@@ -502,8 +502,9 @@ export declare class WalletBackend extends EventEmitter {
      *
      * @param startIndex Index to start taking transactions from
      * @param numTransactions Number of transactions to take
+     * @param includeFusions Should we include fusion transactions?
      */
-    getTransactions(startIndex?: number, numTransactions?: number): Transaction[];
+    getTransactions(startIndex?: number, numTransactions?: number, includeFusions?: boolean): Transaction[];
     /**
      * Gets the specified transaction, if it exists.
      */

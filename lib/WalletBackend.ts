@@ -992,14 +992,15 @@ export class WalletBackend extends EventEmitter {
      *
      * @param startIndex Index to start taking transactions from
      * @param numTransactions Number of transactions to take
+     * @param includeFusions Should we include fusion transactions?
      */
-    public getTransactions(startIndex?: number, numTransactions?: number): Transaction[] {
+    public getTransactions(startIndex?: number, numTransactions?: number, includeFusions = true): Transaction[] {
         /* Clone the array and reverse it, newer txs first */
         const unconfirmed = this.subWallets.getUnconfirmedTransactions().slice().reverse();
         /* Clone the array and reverse it, newer txs first */
         const confirmed = this.subWallets.getTransactions().slice().reverse();
 
-        const allTransactions: Transaction[] = unconfirmed.concat(confirmed);
+        const allTransactions: Transaction[] = unconfirmed.concat(confirmed).filter((x) => includeFusions ? true : x.totalAmount() !== 0);
 
         if (startIndex === undefined) {
             startIndex = 0;
