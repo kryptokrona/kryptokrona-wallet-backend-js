@@ -79,7 +79,7 @@ const WB = require('turtlecoin-wallet-backend');
 ### Typescript
 
 ```typescript
-import { WalletBackend, ConventionalDaemon, BlockchainCacheAPI } from 'turtlecoin-wallet-backend';
+import { WalletBackend, ConventionalDaemon, BlockchainCacheApi } from 'turtlecoin-wallet-backend';
 
 (async () => {
     const daemon: ConventionalDaemon = new ConventionalDaemon('127.0.0.1', 11898);
