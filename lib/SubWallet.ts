@@ -143,7 +143,7 @@ export class SubWallet {
         /* Remove all spent inputs that are older than 5000 blocks old.
            It is assumed the blockchain cannot fork more than this, and this
            frees up a lot of disk space with large, old wallets. */
-        this.spentInputs = this.spentInputs.filter((input) => input.blockHeight > pruneHeight);
+        this.spentInputs = this.spentInputs.filter((input) => input.spendHeight > pruneHeight);
 
         const lenAfterPrune: number = this.spentInputs.length;
 
