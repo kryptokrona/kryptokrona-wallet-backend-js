@@ -350,8 +350,17 @@ async function makeTransaction(
     subWallets: SubWallets,
     daemon: IDaemon): Promise<([CreatedTransaction, undefined]) | ([undefined, WalletError])> {
 
+    const amounts: Array<[string, number]> = [];
+
+    /* Split amounts into denominations */
+    addressesAndAmounts.map(([address, amount]) => {
+        for (const denomination of splitAmountIntoDenominations(amount)) {
+            amounts.push([address, denomination]);
+        }
+    });
+
     /* Prepare destinations keys */
-    const transfers: TxDestination[] = addressesAndAmounts.map(([address, amount]) => {
+    const transfers: TxDestination[] = amounts.map(([address, amount]) => {
         const decoded: DecodedAddress = CryptoUtils().decodeAddress(address);
 
         /* Assign payment ID from integrated address if present */

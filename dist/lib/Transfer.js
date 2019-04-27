@@ -199,8 +199,15 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
 exports.sendTransactionAdvanced = sendTransactionAdvanced;
 function makeTransaction(mixin, fee, paymentID, ourInputs, addressesAndAmounts, subWallets, daemon) {
     return __awaiter(this, void 0, void 0, function* () {
+        const amounts = [];
+        /* Split amounts into denominations */
+        addressesAndAmounts.map(([address, amount]) => {
+            for (const denomination of Utilities_1.splitAmountIntoDenominations(amount)) {
+                amounts.push([address, denomination]);
+            }
+        });
         /* Prepare destinations keys */
-        const transfers = addressesAndAmounts.map(([address, amount]) => {
+        const transfers = amounts.map(([address, amount]) => {
             const decoded = CnUtils_1.CryptoUtils().decodeAddress(address);
             /* Assign payment ID from integrated address if present */
             if (decoded.paymentId !== '') {
