@@ -565,6 +565,75 @@ class WalletBackend extends events_1.EventEmitter {
         }
     }
     /**
+     * Sends a fusion transaction, if possible.
+     * Fusion transactions are zero fee, and optimize your wallet
+     * for sending larger amounts. You may (probably will) need to perform
+     * multiple fusion transactions.
+     *
+     * Usage:
+     * ```
+     * const [hash, error] = await sendFusionTransactionBasic()
+     * if (error) {
+     *     // etc
+     * }
+     * ```
+     *
+     * @return Returns either an error, or the transaction hash.
+     */
+    sendFusionTransactionBasic() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionBasic(this.daemon, this.subWallets);
+            if (transaction) {
+                this.emit('createdtx', transaction);
+            }
+            /* Typescript is too dumb for return [hash, error] to work.. */
+            if (hash) {
+                return [hash, undefined];
+            }
+            else {
+                return [undefined, error];
+            }
+        });
+    }
+    /**
+     * Sends a fusion transaction, if possible.
+     * Fusion transactions are zero fee, and optimize your wallet
+     * for sending larger amounts. You may (probably will) need to perform
+     * multiple fusion transactions.
+     *
+     * All parameters are optional.
+     *
+     * Usage:
+     * ```
+     * const [hash, error] = await sendFusionTransactionAdvanced(3, undefined, 'TRTLxyz..')
+     * if (error) {
+     *     // etc
+     * }
+     * ```
+     * @param mixin                 The amount of input keys to hide your input with.
+     *                              Your network may enforce a static mixin.
+     * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
+     * @param destination           The destination for the fusion transaction to be sent to.
+     * @param                       Must be a subwallet in this container.
+     *
+     * @return Returns either an error, or the transaction hash.
+     */
+    sendFusionTransactionAdvanced(mixin, subWalletsToTakeFrom, destination) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionAdvanced(this.daemon, this.subWallets, mixin, subWalletsToTakeFrom, destination);
+            if (transaction) {
+                this.emit('createdtx', transaction);
+            }
+            /* Typescript is too dumb for return [hash, error] to work.. */
+            if (hash) {
+                return [hash, undefined];
+            }
+            else {
+                return [undefined, error];
+            }
+        });
+    }
+    /**
      * Sends a transaction of amount to the address destination, using the
      * given payment ID, if specified.
      *
@@ -585,7 +654,13 @@ class WalletBackend extends events_1.EventEmitter {
             if (transaction) {
                 this.emit('createdtx', transaction);
             }
-            return [hash, error];
+            /* Typescript is too dumb for return [hash, error] to work.. */
+            if (hash) {
+                return [hash, undefined];
+            }
+            else {
+                return [undefined, error];
+            }
         });
     }
     /**
@@ -609,7 +684,13 @@ class WalletBackend extends events_1.EventEmitter {
             if (transaction) {
                 this.emit('createdtx', transaction);
             }
-            return [hash, error];
+            /* Typescript is too dumb for return [hash, error] to work.. */
+            if (hash) {
+                return [hash, undefined];
+            }
+            else {
+                return [undefined, error];
+            }
         });
     }
     /**

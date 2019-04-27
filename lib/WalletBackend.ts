@@ -20,8 +20,12 @@ import { WalletSynchronizer } from './WalletSynchronizer';
 import { Config, MergeConfig, IConfig } from './Config';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
-import { sendTransactionAdvanced, sendTransactionBasic } from './Transfer';
 import { Block, Transaction, TransactionData, TransactionInput } from './Types';
+
+import {
+    sendTransactionAdvanced, sendTransactionBasic,
+    sendFusionTransactionAdvanced, sendFusionTransactionBasic,
+} from './Transfer';
 
 import {
     IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER,
@@ -904,6 +908,84 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Sends a fusion transaction, if possible.
+     * Fusion transactions are zero fee, and optimize your wallet
+     * for sending larger amounts. You may (probably will) need to perform
+     * multiple fusion transactions.
+     *
+     * Usage:
+     * ```
+     * const [hash, error] = await sendFusionTransactionBasic()
+     * if (error) {
+     *     // etc
+     * }
+     * ```
+     *
+     * @return Returns either an error, or the transaction hash.
+     */
+    public async sendFusionTransactionBasic(): Promise<([string, undefined]) | ([undefined, WalletError])> {
+        const [transaction, hash, error] = await sendFusionTransactionBasic(
+            this.daemon, this.subWallets,
+        );
+
+        if (transaction) {
+            this.emit('createdtx', transaction);
+        }
+
+        /* Typescript is too dumb for return [hash, error] to work.. */
+        if (hash) {
+            return [hash as string, undefined];
+        } else {
+            return [undefined, error as WalletError];
+        }
+    }
+
+    /**
+     * Sends a fusion transaction, if possible.
+     * Fusion transactions are zero fee, and optimize your wallet
+     * for sending larger amounts. You may (probably will) need to perform
+     * multiple fusion transactions.
+     *
+     * All parameters are optional.
+     *
+     * Usage:
+     * ```
+     * const [hash, error] = await sendFusionTransactionAdvanced(3, undefined, 'TRTLxyz..')
+     * if (error) {
+     *     // etc
+     * }
+     * ```
+     * @param mixin                 The amount of input keys to hide your input with.
+     *                              Your network may enforce a static mixin.
+     * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
+     * @param destination           The destination for the fusion transaction to be sent to.
+     * @param                       Must be a subwallet in this container.
+     *
+     * @return Returns either an error, or the transaction hash.
+     */
+    public async sendFusionTransactionAdvanced(
+        mixin?: number,
+        subWalletsToTakeFrom?: string[],
+        destination?: string): Promise<([string, undefined]) | ([undefined, WalletError])> {
+
+        const [transaction, hash, error] = await sendFusionTransactionAdvanced(
+            this.daemon, this.subWallets, mixin, subWalletsToTakeFrom,
+            destination,
+        );
+
+        if (transaction) {
+            this.emit('createdtx', transaction);
+        }
+
+        /* Typescript is too dumb for return [hash, error] to work.. */
+        if (hash) {
+            return [hash as string, undefined];
+        } else {
+            return [undefined, error as WalletError];
+        }
+    }
+
+    /**
      * Sends a transaction of amount to the address destination, using the
      * given payment ID, if specified.
      *
@@ -921,7 +1003,10 @@ export class WalletBackend extends EventEmitter {
     public async sendTransactionBasic(
         destination: string,
         amount: number,
-        paymentID?: string): Promise<[string | undefined, WalletError | undefined]> {
+        paymentID?: string): Promise<
+            ([string, undefined]) |
+            ([undefined, WalletError])
+        > {
 
         const [transaction, hash, error] = await sendTransactionBasic(
             this.daemon, this.subWallets, destination, amount, paymentID,
@@ -931,7 +1016,12 @@ export class WalletBackend extends EventEmitter {
             this.emit('createdtx', transaction);
         }
 
-        return [hash, error];
+        /* Typescript is too dumb for return [hash, error] to work.. */
+        if (hash) {
+            return [hash as string, undefined];
+        } else {
+            return [undefined, error as WalletError];
+        }
     }
 
     /**
@@ -955,7 +1045,7 @@ export class WalletBackend extends EventEmitter {
         fee?: number,
         paymentID?: string,
         subWalletsToTakeFrom?: string[],
-        changeAddress?: string): Promise<[string | undefined, WalletError | undefined]> {
+        changeAddress?: string): Promise<([string, undefined]) | ([undefined, WalletError])> {
 
         const [transaction, hash, error] = await sendTransactionAdvanced(
             this.daemon, this.subWallets, destinations, mixin, fee, paymentID,
@@ -966,7 +1056,12 @@ export class WalletBackend extends EventEmitter {
             this.emit('createdtx', transaction);
         }
 
-        return [hash, error];
+        /* Typescript is too dumb for return [hash, error] to work.. */
+        if (hash) {
+            return [hash as string, undefined];
+        } else {
+            return [undefined, error as WalletError];
+        }
     }
 
     /**
