@@ -157,6 +157,7 @@ export declare class SubWallets {
      * @returns Returns the inputs and their owners, and the sum of their money
      */
     getTransactionInputsForAmount(amount: number, subWalletsToTakeFrom: string[], currentHeight: number): [TxInputAndOwner[], number];
+    getFusionTransactionInputs(subWalletsToTakeFrom: string[], mixin: number, currentHeight: number): [TxInputAndOwner[], number];
     /**
      * Store the private key for a given transaction
      */

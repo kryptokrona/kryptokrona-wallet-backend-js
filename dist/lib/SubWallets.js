@@ -7,6 +7,7 @@ const CnUtils_1 = require("./CnUtils");
 const JsonSerialization_1 = require("./JsonSerialization");
 const SubWallet_1 = require("./SubWallet");
 const Types_1 = require("./Types");
+const Constants_1 = require("./Constants");
 const Utilities_1 = require("./Utilities");
 const WalletError_1 = require("./WalletError");
 const _ = require("lodash");
@@ -352,6 +353,74 @@ class SubWallets {
             }
         }
         throw new Error(`Failed to find enough money! Needed: ${amount}, found: ${foundMoney}`);
+    }
+    getFusionTransactionInputs(subWalletsToTakeFrom, mixin, currentHeight) {
+        let availableInputs = [];
+        /* Loop through each subwallet we can take from */
+        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(Utilities_1.addressToKeys)) {
+            const subWallet = this.subWallets.get(publicSpendKey);
+            if (!subWallet) {
+                throw new Error('Subwallet not found!');
+            }
+            /* Fetch the spendable inputs */
+            availableInputs = availableInputs.concat(subWallet.getSpendableInputs(currentHeight));
+        }
+        /* Shuffle the inputs */
+        availableInputs = _.shuffle(availableInputs);
+        /* Split the inputs into buckets based on what power of ten they are in
+           (For example, [1, 2, 5, 7], [20, 50, 80, 80], [100, 600, 700]) */
+        const buckets = new Map();
+        for (const walletAmount of availableInputs) {
+            /* Find out how many digits the amount has, i.e. 1337 has 4 digits,
+               420 has 3 digits */
+            const numberOfDigits = Math.ceil(Math.log10(walletAmount.input.amount + 1));
+            const tmp = buckets.get(numberOfDigits) || [];
+            tmp.push(walletAmount);
+            /* Insert the amount into the correct bucket */
+            buckets.set(numberOfDigits, tmp);
+        }
+        let fullBuckets = [];
+        for (const [amount, bucket] of buckets) {
+            /* Skip the buckets with not enough items */
+            if (bucket.length >= Constants_1.FUSION_TX_MIN_INPUT_COUNT) {
+                fullBuckets.push(bucket);
+            }
+        }
+        /* Shuffle the full buckets */
+        fullBuckets = _.shuffle(fullBuckets);
+        let bucketsToTakeFrom = [];
+        /* We have full buckets, take the first full bucket */
+        if (fullBuckets.length > 0) {
+            bucketsToTakeFrom = [
+                fullBuckets[0],
+            ];
+            /* Otherwise just use all buckets */
+        }
+        else {
+            for (const [amount, bucket] of buckets) {
+                bucketsToTakeFrom.push(bucket);
+            }
+        }
+        const inputsToUse = [];
+        /* See https://github.com/turtlecoin/turtlecoin/blob/153c08c3a046434522f7ac3ddd043037888b2bf5/src/CryptoNoteCore/Currency.cpp#L629 */
+        /* With 3 mixin == 314 bytes. */
+        const inputSize = 1 + (6 + 2) + 32 + 64 + 1 + 4 + mixin * (4 + 64);
+        /* Probably about 100 inputs max. This ignores other size constraints,
+           since it is a max, after all. */
+        const maxInputsToTake = Constants_1.MAX_FUSION_TX_SIZE / inputSize;
+        let foundMoney = 0;
+        /* Loop through each bucket (Remember we're only looping through one if
+           we've got a full bucket) */
+        for (const bucket of bucketsToTakeFrom) {
+            for (const walletAmount of bucket) {
+                inputsToUse.push(walletAmount);
+                foundMoney += walletAmount.input.amount;
+                if (inputsToUse.length >= maxInputsToTake) {
+                    return [inputsToUse, foundMoney];
+                }
+            }
+        }
+        return [inputsToUse, foundMoney];
     }
     /**
      * Store the private key for a given transaction

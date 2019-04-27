@@ -124,3 +124,15 @@ exports.MAX_BLOCK_SIZE_INITIAL = 100000;
  * Reserved space for miner transaction in block
  */
 exports.CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE = 600;
+/**
+ * Minimum number of inputs a fusion transaction must have
+ */
+exports.FUSION_TX_MIN_INPUT_COUNT = 12;
+/**
+ * Max size in bytes a fusion transaction can be
+ */
+exports.MAX_FUSION_TX_SIZE = 30000;
+/**
+ * Required ratio of inputs to outputs in fusion transactions
+ */
+exports.FUSION_TX_MIN_IN_OUT_COUNT_RATIO = 4;
