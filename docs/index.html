@@ -70,24 +70,14 @@
 					<li>Processes blocks, decrypting transactions that belong to the user</li>
 					<li>Sends and receives transactions</li>
 				</ul>
-				<h2 id="building">Building</h2>
-				<p><code>git clone https://github.com/zpalmtree/turtlecoin-wallet-backend.git</code></p>
-				<p><code>cd turtlecoin-wallet-backend</code></p>
-				<p><code>npm install -g yarn</code> (Skip this if you already have yarn installed)</p>
-				<p><code>yarn build</code></p>
-				<p>Generated javascript files will be written to the dist/lib/ folder.</p>
-				<h2 id="running-tests">Running tests</h2>
-				<p><code>yarn test</code> - This will run the basic tests</p>
-				<p><code>yarn test-all</code> - This will run all tests, including performance tests.
-				You need a daemon running on 127.0.0.1:11898 for these to work.</p>
-				<h2 id="building-documentation">Building documentation</h2>
-				<p><code>yarn docs</code></p>
-				<h2 id="contributing">Contributing</h2>
-				<p>Please run <code>yarn style</code> to ensure your changes adhere to the tslint rules before committing.</p>
-				<p>You can try running <code>yarn style --fix</code> to automatically fix issues.</p>
+				<h2 id="installation">Installation</h2>
+				<p>NPM:</p>
+				<p><code>npm install git+https://git@github.com/turtlecoin/turtlecoin-wallet-backend-js.git --save</code></p>
+				<p>Yarn:</p>
+				<p><code>yarn add https://github.com/turtlecoin/turtlecoin-wallet-backend-js</code></p>
+				<p>Note: Currently this library only works with Node 10 or lower. We&#39;re working to get this fixed.</p>
 				<h2 id="documentation">Documentation</h2>
-				<p>You can view the documentation here: <a href="https://turtlecoin.github.io/turtlecoin-wallet-backend-js/">https://turtlecoin.github.io/turtlecoin-wallet-backend-js/</a></p>
-				<p>Alternatively, open up docs/index.html in your web browser.</p>
+				<p>You can view the documentation here:  <a href="https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html">https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html</a></p>
 				<h2 id="quick-start">Quick Start</h2>
 				<h3 id="javascript">Javascript</h3>
 				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
@@ -95,7 +85,7 @@
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
     <span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
     <span class="hljs-comment">/* OR
-    const daemon = new WB.BlockchainCacheApi('blockapi.turtlepay.io, true);
+    const daemon = new WB.BlockchainCacheApi('blockapi.turtlepay.io', true);
     */</span>
 
     <span class="hljs-keyword">const</span> wallet = WB.WalletBackend.createWallet(daemon);
@@ -114,13 +104,13 @@
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Caught promise rejection: '</span> + err);
 });</code></pre>
 				<h3 id="typescript">Typescript</h3>
-				<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { WalletBackend, ConventionalDaemon, BlockchainCacheAPI } <span class="hljs-keyword">from</span> <span class="hljs-string">'turtlecoin-wallet-backend'</span>;
+				<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { WalletBackend, ConventionalDaemon, BlockchainCacheApi } <span class="hljs-keyword">from</span> <span class="hljs-string">'turtlecoin-wallet-backend'</span>;
 
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; {
     <span class="hljs-keyword">const</span> daemon: ConventionalDaemon = <span class="hljs-keyword">new</span> ConventionalDaemon(<span class="hljs-params">'127.0.0.1', 11898</span>);
 
     <span class="hljs-comment">/* OR
-    const daemon: BlockchainCacheApi = new BlockchainCacheApi('blockapi.turtlepay.io, true);
+    const daemon: BlockchainCacheApi = new BlockchainCacheApi('blockapi.turtlepay.io', true);
     */</span>
 
     <span class="hljs-keyword">const</span> wallet: WalletBackend = WalletBackend.createWallet(<span class="hljs-params">daemon</span>);
@@ -152,11 +142,24 @@
 				<p>In this example, we only print messages that fall into the SYNC category.</p>
 				<p>You can view available categories and log levels in the documentation below.</p>
 				<h3 id="things-to-note">Things To Note</h3>
-				<p>By default, coinbase transactions are not scanned. This is due to the sync
-					process taking quite a long time with the less efficient JavaScript crypto
-				code, and the majority of people not having solo mined any blocks.</p>
+				<p>By default, coinbase transactions are not scanned. This is due to the majority of people not having solo mined any blocks.</p>
 				<p>If you wish to enable coinbase transaction scanning, run this line of code:</p>
 				<pre><code class="language-javascript">wallet.scanCoinbaseTransactions(<span class="hljs-literal">true</span>);</code></pre>
+				<h2 id="building-for-developers-">Building (For Developers)</h2>
+				<p><code>git clone https://github.com/zpalmtree/turtlecoin-wallet-backend.git</code></p>
+				<p><code>cd turtlecoin-wallet-backend</code></p>
+				<p><code>npm install -g yarn</code> (Skip this if you already have yarn installed)</p>
+				<p><code>yarn build</code></p>
+				<p>Generated javascript files will be written to the dist/lib/ folder.</p>
+				<h2 id="running-tests">Running tests</h2>
+				<p><code>yarn test</code> - This will run the basic tests</p>
+				<p><code>yarn test-all</code> - This will run all tests, including performance tests.
+				You need a daemon running on 127.0.0.1:11898 for these to work.</p>
+				<h2 id="building-documentation">Building documentation</h2>
+				<p><code>yarn docs</code></p>
+				<h2 id="contributing">Contributing</h2>
+				<p>Please run <code>yarn style</code> to ensure your changes adhere to the tslint rules before committing.</p>
+				<p>You can try running <code>yarn style --fix</code> to automatically fix issues.</p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">

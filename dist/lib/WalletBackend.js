@@ -85,7 +85,9 @@ class WalletBackend extends events_1.EventEmitter {
      *
      * Usage:
      * ```
-     * const [wallet, error] = WalletBackend.openWalletFromFile('mywallet.wallet', 'hunter2');
+     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     *
+     * const [wallet, error] = WalletBackend.openWalletFromFile(daemon, 'mywallet.wallet', 'hunter2');
      *
      * if (error) {
      *      console.log('Failed to open wallet: ' + error.toString());
@@ -236,6 +238,20 @@ class WalletBackend extends events_1.EventEmitter {
      * may appear incorrect.
      * This is useful for viewing your balance whilst not risking your funds
      * or private keys being stolen.
+     *
+     * Usage:
+     * ```
+     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     *
+     * const privateViewKey = 'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01';
+     * const address = 'TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW';
+     *
+     * const [wallet, error] = WalletBackend.importViewWallet(daemon, 100000, privateViewKey, address);
+     *
+     * if (error) {
+     *      console.log('Failed to load wallet: ' + error.toString());
+     * }
+     * ```
      */
     static importViewWallet(daemon, scanHeight, privateViewKey, address, config) {
         Config_1.MergeConfig(config);
@@ -263,6 +279,12 @@ class WalletBackend extends events_1.EventEmitter {
      *
      * The created addresses view key will be derived in terms of the spend key,
      * i.e. it will have a mnemonic seed.
+     *
+     * Usage:
+     * ```
+     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     * const wallet = WalletBackend.createWallet(daemon);
+     * ```
      */
     static createWallet(daemon, config) {
         Config_1.MergeConfig(config);
