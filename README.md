@@ -111,16 +111,13 @@ You can view available categories and log levels in the documentation below.
 
 ### Things To Note
 
-By default, coinbase transactions are not scanned. This is due to the sync
-process taking quite a long time with the less efficient JavaScript crypto
-code, and the majority of people not having solo mined any blocks.
+By default, coinbase transactions are not scanned. This is due to the majority of people not having solo mined any blocks.
 
 If you wish to enable coinbase transaction scanning, run this line of code:
 
 ```javascript
 wallet.scanCoinbaseTransactions(true);
 ```
-
 
 ## Building (For Developers)
 
