@@ -24,8 +24,6 @@ Yarn:
 
 `yarn add turtlecoin-wallet-backend`
 
-Note: Currently this library only works with Node 10 or lower. We're working to get this fixed.
-
 ## Documentation
 
 You can view the documentation here:  https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html
