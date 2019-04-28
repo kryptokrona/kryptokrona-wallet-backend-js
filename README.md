@@ -23,7 +23,7 @@ Yarn:
 
 ## Documentation
 
-You can view the documentation here: https://turtlecoin.github.io/turtlecoin-wallet-backend-js/
+You can view the documentation here:  https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html
 
 ## Quick Start
 
