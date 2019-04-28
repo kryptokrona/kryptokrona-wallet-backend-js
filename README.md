@@ -3,6 +3,9 @@
 #### Master Build Status
 [![Build Status](https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js.svg?branch=master)](https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js)
 
+#### NPM
+[![NPM](https://nodei.co/npm/turtlecoin-wallet-backend.png?compact=true)](https://npmjs.org/package/turtlecoin-wallet-backend)
+
 # turtlecoin-wallet-backend
 
 Provides an interface to the TurtleCoin network, allowing wallet applications to be built.
