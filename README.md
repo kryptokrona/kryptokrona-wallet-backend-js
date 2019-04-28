@@ -18,11 +18,11 @@ Provides an interface to the TurtleCoin network, allowing wallet applications to
 
 NPM:
 
-`npm install git+https://git@github.com/turtlecoin/turtlecoin-wallet-backend-js.git --save`
+`npm install turtlecoin-wallet-backend --save`
 
 Yarn:
 
-`yarn add https://github.com/turtlecoin/turtlecoin-wallet-backend-js`
+`yarn add turtlecoin-wallet-backend`
 
 Note: Currently this library only works with Node 10 or lower. We're working to get this fixed.
 
