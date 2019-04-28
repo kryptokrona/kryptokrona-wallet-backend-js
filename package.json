@@ -5,7 +5,7 @@
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
-    "prepublish": "yarn build",
+    "prepublishOnly": "yarn build && yarn docs",
     "build": "./node_modules/.bin/tsc",
     "test": "yarn install && node dist/tests/tests.js",
     "test-all": "yarn install && node dist/tests/tests.js --do-performance-tests",
