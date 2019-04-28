@@ -71,3 +71,15 @@ export declare const MAX_BLOCK_SIZE_INITIAL: number;
  * Reserved space for miner transaction in block
  */
 export declare const CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE: number;
+/**
+ * Minimum number of inputs a fusion transaction must have
+ */
+export declare const FUSION_TX_MIN_INPUT_COUNT = 12;
+/**
+ * Max size in bytes a fusion transaction can be
+ */
+export declare const MAX_FUSION_TX_SIZE = 30000;
+/**
+ * Required ratio of inputs to outputs in fusion transactions
+ */
+export declare const FUSION_TX_MIN_IN_OUT_COUNT_RATIO = 4;

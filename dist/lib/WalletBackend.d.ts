@@ -454,6 +454,47 @@ export declare class WalletBackend extends EventEmitter {
      */
     saveWalletToFile(filename: string, password: string): boolean;
     /**
+     * Sends a fusion transaction, if possible.
+     * Fusion transactions are zero fee, and optimize your wallet
+     * for sending larger amounts. You may (probably will) need to perform
+     * multiple fusion transactions.
+     *
+     * Usage:
+     * ```
+     * const [hash, error] = await sendFusionTransactionBasic()
+     * if (error) {
+     *     // etc
+     * }
+     * ```
+     *
+     * @return Returns either an error, or the transaction hash.
+     */
+    sendFusionTransactionBasic(): Promise<([string, undefined]) | ([undefined, WalletError])>;
+    /**
+     * Sends a fusion transaction, if possible.
+     * Fusion transactions are zero fee, and optimize your wallet
+     * for sending larger amounts. You may (probably will) need to perform
+     * multiple fusion transactions.
+     *
+     * All parameters are optional.
+     *
+     * Usage:
+     * ```
+     * const [hash, error] = await sendFusionTransactionAdvanced(3, undefined, 'TRTLxyz..')
+     * if (error) {
+     *     // etc
+     * }
+     * ```
+     * @param mixin                 The amount of input keys to hide your input with.
+     *                              Your network may enforce a static mixin.
+     * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
+     * @param destination           The destination for the fusion transaction to be sent to.
+     * @param                       Must be a subwallet in this container.
+     *
+     * @return Returns either an error, or the transaction hash.
+     */
+    sendFusionTransactionAdvanced(mixin?: number, subWalletsToTakeFrom?: string[], destination?: string): Promise<([string, undefined]) | ([undefined, WalletError])>;
+    /**
      * Sends a transaction of amount to the address destination, using the
      * given payment ID, if specified.
      *
@@ -468,7 +509,7 @@ export declare class WalletBackend extends EventEmitter {
      *
      * @return Returns either an error, or the transaction hash.
      */
-    sendTransactionBasic(destination: string, amount: number, paymentID?: string): Promise<[string | undefined, WalletError | undefined]>;
+    sendTransactionBasic(destination: string, amount: number, paymentID?: string): Promise<([string, undefined]) | ([undefined, WalletError])>;
     /**
      * Sends a transaction, which permits multiple amounts to different destinations,
      * specifying the mixin, fee, subwallets to draw funds from, and change address.
@@ -484,7 +525,7 @@ export declare class WalletBackend extends EventEmitter {
      * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
      * @param changeAddress         The address to send any returned change to.
      */
-    sendTransactionAdvanced(destinations: Array<[string, number]>, mixin?: number, fee?: number, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string): Promise<[string | undefined, WalletError | undefined]>;
+    sendTransactionAdvanced(destinations: Array<[string, number]>, mixin?: number, fee?: number, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string): Promise<([string, undefined]) | ([undefined, WalletError])>;
     /**
      * Get the unlocked and locked balance for the wallet container.
      *
