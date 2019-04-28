@@ -35,7 +35,7 @@ const WB = require('turtlecoin-wallet-backend');
 (async () => {
     const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
     /* OR
-    const daemon = new WB.BlockchainCacheApi('blockapi.turtlepay.io, true);
+    const daemon = new WB.BlockchainCacheApi('blockapi.turtlepay.io, true');
     */
     
     const wallet = WB.WalletBackend.createWallet(daemon);
