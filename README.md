@@ -11,44 +11,19 @@ Provides an interface to the TurtleCoin network, allowing wallet applications to
 * Processes blocks, decrypting transactions that belong to the user
 * Sends and receives transactions
 
-## Building
+## Installation
 
-`git clone https://github.com/zpalmtree/turtlecoin-wallet-backend.git`
-
-`cd turtlecoin-wallet-backend`
-
-`npm install -g yarn` (Skip this if you already have yarn installed)
-
-`yarn build`
-
-Generated javascript files will be written to the dist/lib/ folder.
-
-### Installing using NPM
+NPM:
 
 `npm install git+https://git@github.com/turtlecoin/turtlecoin-wallet-backend-js.git --save`
 
-## Running tests
+Yarn:
 
-`yarn test` - This will run the basic tests
-
-`yarn test-all` - This will run all tests, including performance tests.
-You need a daemon running on 127.0.0.1:11898 for these to work.
-
-## Building documentation
-
-`yarn docs`
-
-## Contributing
-
-Please run `yarn style` to ensure your changes adhere to the tslint rules before committing.
-
-You can try running `yarn style --fix` to automatically fix issues.
+`yarn add https://github.com/turtlecoin/turtlecoin-wallet-backend-js`
 
 ## Documentation
 
 You can view the documentation here: https://turtlecoin.github.io/turtlecoin-wallet-backend-js/
-
-Alternatively, open up docs/index.html in your web browser.
 
 ## Quick Start
 
@@ -145,3 +120,33 @@ If you wish to enable coinbase transaction scanning, run this line of code:
 ```javascript
 wallet.scanCoinbaseTransactions(true);
 ```
+
+
+## Building (For Developers)
+
+`git clone https://github.com/zpalmtree/turtlecoin-wallet-backend.git`
+
+`cd turtlecoin-wallet-backend`
+
+`npm install -g yarn` (Skip this if you already have yarn installed)
+
+`yarn build`
+
+Generated javascript files will be written to the dist/lib/ folder.
+
+## Running tests
+
+`yarn test` - This will run the basic tests
+
+`yarn test-all` - This will run all tests, including performance tests.
+You need a daemon running on 127.0.0.1:11898 for these to work.
+
+## Building documentation
+
+`yarn docs`
+
+## Contributing
+
+Please run `yarn style` to ensure your changes adhere to the tslint rules before committing.
+
+You can try running `yarn style --fix` to automatically fix issues.
