@@ -23,6 +23,10 @@ Provides an interface to the TurtleCoin network, allowing wallet applications to
 
 Generated javascript files will be written to the dist/lib/ folder.
 
+### Installing using NPM
+
+`npm install git+https://git@github.com/turtlecoin/turtlecoin-wallet-backend-js.git --save`
+
 ## Running tests
 
 `yarn test` - This will run the basic tests
