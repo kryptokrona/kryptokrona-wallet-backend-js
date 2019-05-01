@@ -63,7 +63,14 @@ class WalletBackend extends events_1.EventEmitter {
          * Whether we should automatically keep the wallet optimized
          */
         this.autoOptimize = true;
+        /**
+         * Are we in the middle of an optimization?
+         */
         this.currentlyOptimizing = false;
+        /**
+         * Are we in the middle of a transaction?
+         */
+        this.currentlyTransacting = false;
         this.subWallets = new SubWallets_1.SubWallets(address, scanHeight, newWallet, privateViewKey, privateSpendKey);
         let timestamp = 0;
         if (newWallet) {
@@ -663,18 +670,24 @@ class WalletBackend extends events_1.EventEmitter {
      */
     sendFusionTransactionBasic() {
         return __awaiter(this, void 0, void 0, function* () {
-            const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionBasic(this.daemon, this.subWallets);
-            if (transaction) {
-                this.emit('createdfusiontx', transaction);
-            }
-            /* Typescript is too dumb for return [hash, error] to work.. */
-            if (hash) {
-                Logger_1.logger.log('Sent fusion transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
-                return [hash, undefined];
-            }
-            else {
-                return [undefined, error];
-            }
+            this.currentlyTransacting = true;
+            const f = () => __awaiter(this, void 0, void 0, function* () {
+                const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionBasic(this.daemon, this.subWallets);
+                if (transaction) {
+                    this.emit('createdfusiontx', transaction);
+                }
+                /* Typescript is too dumb for return [hash, error] to work.. */
+                if (hash) {
+                    Logger_1.logger.log('Sent fusion transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
+                    return [hash, undefined];
+                }
+                else {
+                    return [undefined, error];
+                }
+            });
+            const result = yield f();
+            this.currentlyTransacting = false;
+            return result;
         });
     }
     /**
@@ -702,18 +715,24 @@ class WalletBackend extends events_1.EventEmitter {
      */
     sendFusionTransactionAdvanced(mixin, subWalletsToTakeFrom, destination) {
         return __awaiter(this, void 0, void 0, function* () {
-            const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionAdvanced(this.daemon, this.subWallets, mixin, subWalletsToTakeFrom, destination);
-            if (transaction) {
-                this.emit('createdfusiontx', transaction);
-            }
-            /* Typescript is too dumb for return [hash, error] to work.. */
-            if (hash) {
-                Logger_1.logger.log('Sent fusion transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
-                return [hash, undefined];
-            }
-            else {
-                return [undefined, error];
-            }
+            this.currentlyTransacting = true;
+            const f = () => __awaiter(this, void 0, void 0, function* () {
+                const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionAdvanced(this.daemon, this.subWallets, mixin, subWalletsToTakeFrom, destination);
+                if (transaction) {
+                    this.emit('createdfusiontx', transaction);
+                }
+                /* Typescript is too dumb for return [hash, error] to work.. */
+                if (hash) {
+                    Logger_1.logger.log('Sent fusion transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
+                    return [hash, undefined];
+                }
+                else {
+                    return [undefined, error];
+                }
+            });
+            const result = yield f();
+            this.currentlyTransacting = false;
+            return result;
         });
     }
     /**
@@ -733,18 +752,24 @@ class WalletBackend extends events_1.EventEmitter {
      */
     sendTransactionBasic(destination, amount, paymentID) {
         return __awaiter(this, void 0, void 0, function* () {
-            const [transaction, hash, error] = yield Transfer_1.sendTransactionBasic(this.daemon, this.subWallets, destination, amount, paymentID);
-            if (transaction) {
-                this.emit('createdtx', transaction);
-            }
-            /* Typescript is too dumb for return [hash, error] to work.. */
-            if (hash) {
-                Logger_1.logger.log('Sent transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
-                return [hash, undefined];
-            }
-            else {
-                return [undefined, error];
-            }
+            this.currentlyTransacting = true;
+            const f = () => __awaiter(this, void 0, void 0, function* () {
+                const [transaction, hash, error] = yield Transfer_1.sendTransactionBasic(this.daemon, this.subWallets, destination, amount, paymentID);
+                if (transaction) {
+                    this.emit('createdtx', transaction);
+                }
+                /* Typescript is too dumb for return [hash, error] to work.. */
+                if (hash) {
+                    Logger_1.logger.log('Sent transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
+                    return [hash, undefined];
+                }
+                else {
+                    return [undefined, error];
+                }
+            });
+            const result = yield f();
+            this.currentlyTransacting = false;
+            return result;
         });
     }
     /**
@@ -764,18 +789,24 @@ class WalletBackend extends events_1.EventEmitter {
      */
     sendTransactionAdvanced(destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress) {
         return __awaiter(this, void 0, void 0, function* () {
-            const [transaction, hash, error] = yield Transfer_1.sendTransactionAdvanced(this.daemon, this.subWallets, destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress);
-            if (transaction) {
-                this.emit('createdtx', transaction);
-            }
-            /* Typescript is too dumb for return [hash, error] to work.. */
-            if (hash) {
-                Logger_1.logger.log('Sent transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
-                return [hash, undefined];
-            }
-            else {
-                return [undefined, error];
-            }
+            this.currentlyTransacting = true;
+            const f = () => __awaiter(this, void 0, void 0, function* () {
+                const [transaction, hash, error] = yield Transfer_1.sendTransactionAdvanced(this.daemon, this.subWallets, destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress);
+                if (transaction) {
+                    this.emit('createdtx', transaction);
+                }
+                /* Typescript is too dumb for return [hash, error] to work.. */
+                if (hash) {
+                    Logger_1.logger.log('Sent transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
+                    return [hash, undefined];
+                }
+                else {
+                    return [undefined, error];
+                }
+            });
+            const result = yield f();
+            this.currentlyTransacting = false;
+            return result;
         });
     }
     /**
@@ -1053,19 +1084,26 @@ class WalletBackend extends events_1.EventEmitter {
             if (this.currentlyOptimizing) {
                 return;
             }
-            /* make sure no code comes between these two lines to be safe */
-            this.currentlyOptimizing = true;
-            const walletHeight = this.walletSynchronizer.getHeight();
-            const networkHeight = this.daemon.getNetworkBlockCount();
-            /* We're not close to synced, don't bother optimizing yet */
-            if (walletHeight + 100 < networkHeight) {
-                this.currentlyOptimizing = false;
-                return;
+            else {
+                this.currentlyOptimizing = true;
             }
-            Logger_1.logger.log('Performing auto optimization', Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
-            /* Do the optimize! */
-            yield this.optimize();
-            Logger_1.logger.log('Auto optimization complete', Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
+            const f = () => __awaiter(this, void 0, void 0, function* () {
+                /* In a transaction, don't optimize as it may possible break things */
+                if (this.currentlyTransacting) {
+                    return;
+                }
+                const walletHeight = this.walletSynchronizer.getHeight();
+                const networkHeight = this.daemon.getNetworkBlockCount();
+                /* We're not close to synced, don't bother optimizing yet */
+                if (walletHeight + 100 < networkHeight) {
+                    return;
+                }
+                Logger_1.logger.log('Performing auto optimization', Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
+                /* Do the optimize! */
+                yield this.optimize();
+                Logger_1.logger.log('Auto optimization complete', Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
+            });
+            yield f();
             /* We're done. */
             this.currentlyOptimizing = false;
         });

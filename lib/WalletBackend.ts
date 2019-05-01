@@ -560,7 +560,15 @@ export class WalletBackend extends EventEmitter {
      */
     private autoOptimize: boolean = true;
 
+    /**
+     * Are we in the middle of an optimization?
+     */
     private currentlyOptimizing: boolean = false;
+
+    /**
+     * Are we in the middle of a transaction?
+     */
+    private currentlyTransacting: boolean = false;
 
     /**
      * @param newWallet Are we creating a new wallet? If so, it will start
@@ -1025,26 +1033,37 @@ export class WalletBackend extends EventEmitter {
      * @return Returns either an error, or the transaction hash.
      */
     public async sendFusionTransactionBasic(): Promise<([string, undefined]) | ([undefined, WalletError])> {
-        const [transaction, hash, error] = await sendFusionTransactionBasic(
-            this.daemon, this.subWallets,
-        );
 
-        if (transaction) {
-            this.emit('createdfusiontx', transaction);
-        }
+        this.currentlyTransacting = true;
 
-        /* Typescript is too dumb for return [hash, error] to work.. */
-        if (hash) {
-            logger.log(
-                'Sent fusion transaction ' + hash,
-                LogLevel.INFO,
-                LogCategory.TRANSACTIONS,
+        const f = async (): Promise<([string, undefined]) | ([undefined, WalletError])> => {
+            const [transaction, hash, error] = await sendFusionTransactionBasic(
+                this.daemon, this.subWallets,
             );
 
-            return [hash as string, undefined];
-        } else {
-            return [undefined, error as WalletError];
-        }
+            if (transaction) {
+                this.emit('createdfusiontx', transaction);
+            }
+
+            /* Typescript is too dumb for return [hash, error] to work.. */
+            if (hash) {
+                logger.log(
+                    'Sent fusion transaction ' + hash,
+                    LogLevel.INFO,
+                    LogCategory.TRANSACTIONS,
+                );
+
+                return [hash as string, undefined];
+            } else {
+                return [undefined, error as WalletError];
+            }
+        };
+
+        const result = await f();
+
+        this.currentlyTransacting = false;
+
+        return result;
     }
 
     /**
@@ -1075,27 +1094,37 @@ export class WalletBackend extends EventEmitter {
         subWalletsToTakeFrom?: string[],
         destination?: string): Promise<([string, undefined]) | ([undefined, WalletError])> {
 
-        const [transaction, hash, error] = await sendFusionTransactionAdvanced(
-            this.daemon, this.subWallets, mixin, subWalletsToTakeFrom,
-            destination,
-        );
+        this.currentlyTransacting = true;
 
-        if (transaction) {
-            this.emit('createdfusiontx', transaction);
-        }
-
-        /* Typescript is too dumb for return [hash, error] to work.. */
-        if (hash) {
-            logger.log(
-                'Sent fusion transaction ' + hash,
-                LogLevel.INFO,
-                LogCategory.TRANSACTIONS,
+        const f = async (): Promise<([string, undefined]) | ([undefined, WalletError])> => {
+            const [transaction, hash, error] = await sendFusionTransactionAdvanced(
+                this.daemon, this.subWallets, mixin, subWalletsToTakeFrom,
+                destination,
             );
 
-            return [hash as string, undefined];
-        } else {
-            return [undefined, error as WalletError];
-        }
+            if (transaction) {
+                this.emit('createdfusiontx', transaction);
+            }
+
+            /* Typescript is too dumb for return [hash, error] to work.. */
+            if (hash) {
+                logger.log(
+                    'Sent fusion transaction ' + hash,
+                    LogLevel.INFO,
+                    LogCategory.TRANSACTIONS,
+                );
+
+                return [hash as string, undefined];
+            } else {
+                return [undefined, error as WalletError];
+            }
+        };
+
+        const result = await f();
+
+        this.currentlyTransacting = false;
+
+        return result;
     }
 
     /**
@@ -1121,26 +1150,36 @@ export class WalletBackend extends EventEmitter {
             ([undefined, WalletError])
         > {
 
-        const [transaction, hash, error] = await sendTransactionBasic(
-            this.daemon, this.subWallets, destination, amount, paymentID,
-        );
+        this.currentlyTransacting = true;
 
-        if (transaction) {
-            this.emit('createdtx', transaction);
-        }
-
-        /* Typescript is too dumb for return [hash, error] to work.. */
-        if (hash) {
-            logger.log(
-                'Sent transaction ' + hash,
-                LogLevel.INFO,
-                LogCategory.TRANSACTIONS,
+        const f = async (): Promise<([string, undefined]) | ([undefined, WalletError])> => {
+            const [transaction, hash, error] = await sendTransactionBasic(
+                this.daemon, this.subWallets, destination, amount, paymentID,
             );
 
-            return [hash as string, undefined];
-        } else {
-            return [undefined, error as WalletError];
-        }
+            if (transaction) {
+                this.emit('createdtx', transaction);
+            }
+
+            /* Typescript is too dumb for return [hash, error] to work.. */
+            if (hash) {
+                logger.log(
+                    'Sent transaction ' + hash,
+                    LogLevel.INFO,
+                    LogCategory.TRANSACTIONS,
+                );
+
+                return [hash as string, undefined];
+            } else {
+                return [undefined, error as WalletError];
+            }
+        };
+
+        const result = await f();
+
+        this.currentlyTransacting = false;
+
+        return result;
     }
 
     /**
@@ -1166,26 +1205,36 @@ export class WalletBackend extends EventEmitter {
         subWalletsToTakeFrom?: string[],
         changeAddress?: string): Promise<([string, undefined]) | ([undefined, WalletError])> {
 
-        const [transaction, hash, error] = await sendTransactionAdvanced(
-            this.daemon, this.subWallets, destinations, mixin, fee, paymentID,
-            subWalletsToTakeFrom, changeAddress,
-        );
+        this.currentlyTransacting = true;
 
-        if (transaction) {
-            this.emit('createdtx', transaction);
-        }
-
-        /* Typescript is too dumb for return [hash, error] to work.. */
-        if (hash) {
-            logger.log(
-                'Sent transaction ' + hash,
-                LogLevel.INFO,
-                LogCategory.TRANSACTIONS,
+        const f = async (): Promise<([string, undefined]) | ([undefined, WalletError])> => {
+            const [transaction, hash, error] = await sendTransactionAdvanced(
+                this.daemon, this.subWallets, destinations, mixin, fee, paymentID,
+                subWalletsToTakeFrom, changeAddress,
             );
-            return [hash as string, undefined];
-        } else {
-            return [undefined, error as WalletError];
-        }
+
+            if (transaction) {
+                this.emit('createdtx', transaction);
+            }
+
+            /* Typescript is too dumb for return [hash, error] to work.. */
+            if (hash) {
+                logger.log(
+                    'Sent transaction ' + hash,
+                    LogLevel.INFO,
+                    LogCategory.TRANSACTIONS,
+                );
+                return [hash as string, undefined];
+            } else {
+                return [undefined, error as WalletError];
+            }
+        };
+
+        const result = await f();
+
+        this.currentlyTransacting = false;
+
+        return result;
     }
 
     /**
@@ -1570,35 +1619,41 @@ export class WalletBackend extends EventEmitter {
         /* Already optimizing, don't optimize again */
         if (this.currentlyOptimizing) {
             return;
+        } else {
+            this.currentlyOptimizing = true;
         }
 
-        /* make sure no code comes between these two lines to be safe */
+        const f = async () => {
+            /* In a transaction, don't optimize as it may possibly break things */
+            if (this.currentlyTransacting) {
+                return;
+            }
 
-        this.currentlyOptimizing = true;
+            const walletHeight: number = this.walletSynchronizer.getHeight();
+            const networkHeight: number = this.daemon.getNetworkBlockCount();
 
-        const walletHeight: number = this.walletSynchronizer.getHeight();
-        const networkHeight: number = this.daemon.getNetworkBlockCount();
+            /* We're not close to synced, don't bother optimizing yet */
+            if (walletHeight + 100 < networkHeight) {
+                return;
+            }
 
-        /* We're not close to synced, don't bother optimizing yet */
-        if (walletHeight + 100 < networkHeight) {
-            this.currentlyOptimizing = false;
-            return;
-        }
+            logger.log(
+                'Performing auto optimization',
+                LogLevel.INFO,
+                LogCategory.TRANSACTIONS,
+            );
 
-        logger.log(
-            'Performing auto optimization',
-            LogLevel.INFO,
-            LogCategory.TRANSACTIONS,
-        );
+            /* Do the optimize! */
+            await this.optimize();
 
-        /* Do the optimize! */
-        await this.optimize();
+            logger.log(
+                'Auto optimization complete',
+                LogLevel.INFO,
+                LogCategory.TRANSACTIONS,
+            );
+        };
 
-        logger.log(
-            'Auto optimization complete',
-            LogLevel.INFO,
-            LogCategory.TRANSACTIONS,
-        );
+        await f();
 
         /* We're done. */
         this.currentlyOptimizing = false;

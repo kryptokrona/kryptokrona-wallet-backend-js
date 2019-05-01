@@ -318,7 +318,14 @@ export declare class WalletBackend extends EventEmitter {
      * Whether we should automatically keep the wallet optimized
      */
     private autoOptimize;
+    /**
+     * Are we in the middle of an optimization?
+     */
     private currentlyOptimizing;
+    /**
+     * Are we in the middle of a transaction?
+     */
+    private currentlyTransacting;
     /**
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
