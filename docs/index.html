@@ -65,6 +65,8 @@
 				<p><a href="https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js"><img src="https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js.svg?branch=master" alt="Build Status"></a></p>
 				<h4 id="npm">NPM</h4>
 				<p><a href="https://npmjs.org/package/turtlecoin-wallet-backend"><img src="https://nodei.co/npm/turtlecoin-wallet-backend.png?compact=true" alt="NPM"></a></p>
+				<h4 id="github">Github</h4>
+				<p><a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js">https://github.com/turtlecoin/turtlecoin-wallet-backend-js</a></p>
 				<h1 id="turtlecoin-wallet-backend">turtlecoin-wallet-backend</h1>
 				<p>Provides an interface to the TurtleCoin network, allowing wallet applications to be built.</p>
 				<ul>
@@ -129,6 +131,17 @@
 }</span>)<span class="hljs-params">()</span>.<span class="hljs-params">catch</span>(<span class="hljs-params">err =&gt; {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-params">'Caught promise rejection: ' + err</span>);
 }</span>);</span></code></pre>
+				<h2 id="configuration">Configuration</h2>
+				<p>There are a few features which you may wish to configure that are worth mentioning.</p>
+				<h3 id="auto-optimize">Auto Optimize</h3>
+				<p>Auto optimization is enabled by default. This makes the wallet automatically send fusion transactions when needed to keep the wallet permanently optimized.</p>
+				<p>To enable/disable this feature, use the following code:</p>
+				<pre><code class="language-javascript">wallet.enableAutoOptimization(<span class="hljs-literal">false</span>); <span class="hljs-comment">// disables auto optimization</span></code></pre>
+				<h3 id="coinbase-transaction-scanning">Coinbase Transaction Scanning</h3>
+				<p>By default, coinbase transactions are not scanned.
+				This is due to the majority of people not having solo mined any blocks.</p>
+				<p>If you wish to enable coinbase transaction scanning, run this line of code:</p>
+				<pre><code class="language-javascript">wallet.scanCoinbaseTransactions(<span class="hljs-literal">true</span>)</code></pre>
 				<h3 id="logging">Logging</h3>
 				<p>By default, the logger is disabled. You can enable it like so:</p>
 				<pre><code class="language-javascript">wallet.setLogLevel(LogLevel.DEBUG);</code></pre>
@@ -142,10 +155,6 @@
 });</code></pre>
 				<p>In this example, we only print messages that fall into the SYNC category.</p>
 				<p>You can view available categories and log levels in the documentation below.</p>
-				<h3 id="things-to-note">Things To Note</h3>
-				<p>By default, coinbase transactions are not scanned. This is due to the majority of people not having solo mined any blocks.</p>
-				<p>If you wish to enable coinbase transaction scanning, run this line of code:</p>
-				<pre><code class="language-javascript">wallet.scanCoinbaseTransactions(<span class="hljs-literal">true</span>);</code></pre>
 				<h2 id="building-for-developers-">Building (For Developers)</h2>
 				<p><code>git clone https://github.com/zpalmtree/turtlecoin-wallet-backend.git</code></p>
 				<p><code>cd turtlecoin-wallet-backend</code></p>
