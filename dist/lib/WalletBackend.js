@@ -59,6 +59,11 @@ class WalletBackend extends events_1.EventEmitter {
          * Have we started the mainloop
          */
         this.started = false;
+        /**
+         * Whether we should automatically keep the wallet optimized
+         */
+        this.autoOptimize = true;
+        this.currentlyOptimizing = false;
         this.subWallets = new SubWallets_1.SubWallets(address, scanHeight, newWallet, privateViewKey, privateSpendKey);
         let timestamp = 0;
         if (newWallet) {
@@ -352,13 +357,6 @@ class WalletBackend extends events_1.EventEmitter {
         ];
     }
     /**
-     * Most people don't mine blocks, so by default we don't scan them. If
-     * you want to scan them, flip it on/off here.
-     */
-    scanCoinbaseTransactions(shouldScan) {
-        Config_1.Config.scanCoinbaseTransactions = shouldScan;
-    }
-    /**
      * Converts the wallet into a JSON string. This can be used to later restore
      * the wallet with `loadWalletFromJSON`.
      */
@@ -366,10 +364,32 @@ class WalletBackend extends events_1.EventEmitter {
         return JSON.stringify(this, null, 4);
     }
     /**
+     * Most people don't mine blocks, so by default we don't scan them. If
+     * you want to scan them, flip it on/off here.
+     */
+    scanCoinbaseTransactions(shouldScan) {
+        Config_1.Config.scanCoinbaseTransactions = shouldScan;
+    }
+    /**
      * Sets the log level. Log messages below this level are not shown.
      */
     setLogLevel(logLevel) {
         Logger_1.logger.setLogLevel(logLevel);
+    }
+    /**
+     * This flag will automatically send fusion transactions when needed
+     * to keep your wallet permanently optimized.
+     *
+     * The downsides are that sometimes your wallet will 'unexpectedly' have
+     * locked funds.
+     *
+     * The upside is that when you come to sending a large transaction, it
+     * should nearly always succeed.
+     *
+     * This flag is ENABLED by default.
+     */
+    enableAutoOptimization(shouldAutoOptimize) {
+        this.autoOptimize = shouldAutoOptimize;
     }
     /**
      * @param callback The callback to use for log messages
@@ -587,6 +607,45 @@ class WalletBackend extends events_1.EventEmitter {
         }
     }
     /**
+     * Gets the address of every subwallet in this container.
+     */
+    getAddresses() {
+        return this.subWallets.getAddresses();
+    }
+    /**
+     * Optimizes your wallet as much as possible. It will optimize every single
+     * subwallet correctly, if you have multiple subwallets. Note that this
+     * method does not wait for the funds to return to your wallet before
+     * returning, so, it is likely balances will remain locked.
+     *
+     * Note that if you want to alert the user in real time of the hashes or
+     * number of transactions sent, you can subscribe to the `createdfusiontx`
+     * event. This will be fired every time a fusion transaction is sent.
+     *
+     * This method may take a *very long time* if your wallet is not optimized
+     * at all. It is suggested to not block the UI/mainloop of your program
+     * when using this method.
+     *
+     * Usage:
+     * ```js
+     * const [numberOfTransactionsSent, hashesOfSentFusionTransactions] = await wallet.optimize();
+     * ```
+     *
+     * @return Returns [numberOfTransactionsSent, hashesOfSentFusionTransactions]
+     */
+    optimize() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let numTransactionsSent = 0;
+            let hashes = [];
+            for (const address of this.getAddresses()) {
+                const [numSent, newHashes] = yield this.optimizeAddress(address);
+                numTransactionsSent += numSent;
+                hashes = hashes.concat(newHashes);
+            }
+            return [numTransactionsSent, hashes];
+        });
+    }
+    /**
      * Sends a fusion transaction, if possible.
      * Fusion transactions are zero fee, and optimize your wallet
      * for sending larger amounts. You may (probably will) need to perform
@@ -606,10 +665,11 @@ class WalletBackend extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionBasic(this.daemon, this.subWallets);
             if (transaction) {
-                this.emit('createdtx', transaction);
+                this.emit('createdfusiontx', transaction);
             }
             /* Typescript is too dumb for return [hash, error] to work.. */
             if (hash) {
+                Logger_1.logger.log('Sent fusion transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
                 return [hash, undefined];
             }
             else {
@@ -644,10 +704,11 @@ class WalletBackend extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionAdvanced(this.daemon, this.subWallets, mixin, subWalletsToTakeFrom, destination);
             if (transaction) {
-                this.emit('createdtx', transaction);
+                this.emit('createdfusiontx', transaction);
             }
             /* Typescript is too dumb for return [hash, error] to work.. */
             if (hash) {
+                Logger_1.logger.log('Sent fusion transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
                 return [hash, undefined];
             }
             else {
@@ -678,6 +739,7 @@ class WalletBackend extends events_1.EventEmitter {
             }
             /* Typescript is too dumb for return [hash, error] to work.. */
             if (hash) {
+                Logger_1.logger.log('Sent transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
                 return [hash, undefined];
             }
             else {
@@ -708,6 +770,7 @@ class WalletBackend extends events_1.EventEmitter {
             }
             /* Typescript is too dumb for return [hash, error] to work.. */
             if (hash) {
+                Logger_1.logger.log('Sent transaction ' + hash, Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
                 return [hash, undefined];
             }
             else {
@@ -817,6 +880,9 @@ class WalletBackend extends events_1.EventEmitter {
             this.subWallets.addTransaction(transaction);
             /* Alert listeners we've got a transaction */
             this.emit('transaction', transaction);
+            if (this.autoOptimize) {
+                this.performAutoOptimize();
+            }
             if (transaction.totalAmount() > 0) {
                 this.emit('incomingtx', transaction);
             }
@@ -952,6 +1018,57 @@ class WalletBackend extends events_1.EventEmitter {
         this.syncThread = new Metronome_1.Metronome(() => this.sync(true), Config_1.Config.syncThreadInterval);
         this.daemonUpdateThread = new Metronome_1.Metronome(() => this.updateDaemonInfo(), Config_1.Config.daemonUpdateInterval);
         this.lockedTransactionsCheckThread = new Metronome_1.Metronome(() => this.checkLockedTransactions(), Config_1.Config.lockedTransactionsCheckInterval);
+    }
+    /**
+     * Since we're going to use optimize() with auto optimizing, and auto
+     * optimizing is enabled by default, we have to ensure we only optimize
+     * a single wallet at once. Otherwise, we'll end up with everyones balance
+     * in the primary wallet.
+     */
+    optimizeAddress(address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let failCount = 0;
+            let sentTransactions = 0;
+            const hashes = [];
+            /* Since input selection is random, lets let it fail a few times before
+               stopping */
+            while (failCount < 5) {
+                /* Draw from address, and return funds to address */
+                const [hash, error] = yield this.sendFusionTransactionAdvanced(undefined, [address], address);
+                if (error) {
+                    failCount++;
+                }
+                else if (hash) {
+                    failCount = 0;
+                    sentTransactions++;
+                    hashes.push(hash);
+                }
+            }
+            return [sentTransactions, hashes];
+        });
+    }
+    performAutoOptimize() {
+        return __awaiter(this, void 0, void 0, function* () {
+            /* Already optimizing, don't optimize again */
+            if (this.currentlyOptimizing) {
+                return;
+            }
+            /* make sure no code comes between these two lines to be safe */
+            this.currentlyOptimizing = true;
+            const walletHeight = this.walletSynchronizer.getHeight();
+            const networkHeight = this.daemon.getNetworkBlockCount();
+            /* We're not close to synced, don't bother optimizing yet */
+            if (walletHeight + 100 < networkHeight) {
+                this.currentlyOptimizing = false;
+                return;
+            }
+            Logger_1.logger.log('Performing auto optimization', Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
+            /* Do the optimize! */
+            yield this.optimize();
+            Logger_1.logger.log('Auto optimization complete', Logger_1.LogLevel.INFO, Logger_1.LogCategory.TRANSACTIONS);
+            /* We're done. */
+            this.currentlyOptimizing = false;
+        });
     }
 }
 exports.WalletBackend = WalletBackend;

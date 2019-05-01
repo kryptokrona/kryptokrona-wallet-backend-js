@@ -6,6 +6,10 @@
 #### NPM
 [![NPM](https://nodei.co/npm/turtlecoin-wallet-backend.png?compact=true)](https://npmjs.org/package/turtlecoin-wallet-backend)
 
+#### Github
+
+https://github.com/turtlecoin/turtlecoin-wallet-backend-js
+
 # turtlecoin-wallet-backend
 
 Provides an interface to the TurtleCoin network, allowing wallet applications to be built.
@@ -87,6 +91,31 @@ import { WalletBackend, ConventionalDaemon, BlockchainCacheApi } from 'turtlecoi
 });
 ```
 
+## Configuration
+
+There are a few features which you may wish to configure that are worth mentioning.
+
+### Auto Optimize
+
+Auto optimization is enabled by default. This makes the wallet automatically send fusion transactions when needed to keep the wallet permanently optimized.
+
+To enable/disable this feature, use the following code:
+
+```javascript
+wallet.enableAutoOptimization(false); // disables auto optimization
+```
+
+### Coinbase Transaction Scanning
+
+By default, coinbase transactions are not scanned.
+This is due to the majority of people not having solo mined any blocks.
+
+If you wish to enable coinbase transaction scanning, run this line of code:
+
+```javascript
+wallet.scanCoinbaseTransactions(true)
+```
+
 ### Logging
 
 By default, the logger is disabled. You can enable it like so:
@@ -111,16 +140,6 @@ wallet.setLoggerCallback((prettyMessage, message, level, categories) => {
 In this example, we only print messages that fall into the SYNC category.
 
 You can view available categories and log levels in the documentation below.
-
-### Things To Note
-
-By default, coinbase transactions are not scanned. This is due to the majority of people not having solo mined any blocks.
-
-If you wish to enable coinbase transaction scanning, run this line of code:
-
-```javascript
-wallet.scanCoinbaseTransactions(true);
-```
 
 ## Building (For Developers)
 

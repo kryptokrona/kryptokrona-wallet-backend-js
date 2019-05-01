@@ -16,7 +16,7 @@ export declare interface WalletBackend {
      * ```
      * wallet.on('transaction', (transaction) => {
      *     console.log(`Transaction of ${transaction.totalAmount()} received!`);
-     * }
+     * });
      * ```
      *
      * @event
@@ -30,7 +30,7 @@ export declare interface WalletBackend {
      * ```
      * wallet.on('incomingtx', (transaction) => {
      *     console.log(`Incoming transaction of ${transaction.totalAmount()} received!`);
-     * }
+     * });
      * ```
      *
      * @event
@@ -44,7 +44,7 @@ export declare interface WalletBackend {
      * ```
      * wallet.on('outgoingtx', (transaction) => {
      *     console.log(`Outgoing transaction of ${transaction.totalAmount()} received!`);
-     * }
+     * });
      * ```
      *
      * @event
@@ -58,7 +58,7 @@ export declare interface WalletBackend {
      * ```
      * wallet.on('fusiontx', (transaction) => {
      *     console.log('Fusion transaction found!');
-     * }
+     * });
      * ```
      *
      * @event
@@ -76,12 +76,26 @@ export declare interface WalletBackend {
      * ```
      * wallet.on('createdtx', (transaction) => {
      *      console.log('Transaction created!');
-     * }
+     * });
      * ```
      *
      * @event
      */
     on(event: 'createdtx', callback: (transaction: Transaction) => void): this;
+    /**
+     * This is emitted whenever the wallet creates and sends a fusion transaction.
+     *
+     * Usage:
+     *
+     * ```
+     * wallet.on('createdfusiontx', (transaction) => {
+     *      console.log('Fusion transaction created!');
+     * });
+     * ```
+     *
+     * @event
+     */
+    on(event: 'createdfusiontx', callback: (transaction: Transaction) => void): this;
     /**
      * This is emitted whenever the wallet first syncs with the network. It will
      * also be fired if the wallet unsyncs from the network, then resyncs.
@@ -91,7 +105,7 @@ export declare interface WalletBackend {
      * ```
      * wallet.on('sync', (walletHeight, networkHeight) => {
      *     console.log(`Wallet synced! Wallet height: ${walletHeight}, Network height: ${networkHeight}`);
-     * }
+     * });
      * ```
      *
      * @event
@@ -106,7 +120,7 @@ export declare interface WalletBackend {
      * ```
      * wallet.on('desync', (walletHeight, networkHeight) => {
      *     console.log(`Wallet is no longer synced! Wallet height: ${walletHeight}, Network height: ${networkHeight}`);
-     * }
+     * });
      * ```
      *
      * @event
@@ -301,6 +315,11 @@ export declare class WalletBackend extends EventEmitter {
      */
     private externalBlockProcessFunction?;
     /**
+     * Whether we should automatically keep the wallet optimized
+     */
+    private autoOptimize;
+    private currentlyOptimizing;
+    /**
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
      *
@@ -335,19 +354,32 @@ export declare class WalletBackend extends EventEmitter {
      */
     getSyncStatus(): [number, number, number];
     /**
-     * Most people don't mine blocks, so by default we don't scan them. If
-     * you want to scan them, flip it on/off here.
-     */
-    scanCoinbaseTransactions(shouldScan: boolean): void;
-    /**
      * Converts the wallet into a JSON string. This can be used to later restore
      * the wallet with `loadWalletFromJSON`.
      */
     toJSONString(): string;
     /**
+     * Most people don't mine blocks, so by default we don't scan them. If
+     * you want to scan them, flip it on/off here.
+     */
+    scanCoinbaseTransactions(shouldScan: boolean): void;
+    /**
      * Sets the log level. Log messages below this level are not shown.
      */
     setLogLevel(logLevel: LogLevel): void;
+    /**
+     * This flag will automatically send fusion transactions when needed
+     * to keep your wallet permanently optimized.
+     *
+     * The downsides are that sometimes your wallet will 'unexpectedly' have
+     * locked funds.
+     *
+     * The upside is that when you come to sending a large transaction, it
+     * should nearly always succeed.
+     *
+     * This flag is ENABLED by default.
+     */
+    enableAutoOptimization(shouldAutoOptimize: boolean): void;
     /**
      * @param callback The callback to use for log messages
      * @param callback.prettyMessage A nicely formatted log message, with timestamp, levels, and categories
@@ -475,6 +507,32 @@ export declare class WalletBackend extends EventEmitter {
      * @return Returns a boolean indicating success.
      */
     saveWalletToFile(filename: string, password: string): boolean;
+    /**
+     * Gets the address of every subwallet in this container.
+     */
+    getAddresses(): string[];
+    /**
+     * Optimizes your wallet as much as possible. It will optimize every single
+     * subwallet correctly, if you have multiple subwallets. Note that this
+     * method does not wait for the funds to return to your wallet before
+     * returning, so, it is likely balances will remain locked.
+     *
+     * Note that if you want to alert the user in real time of the hashes or
+     * number of transactions sent, you can subscribe to the `createdfusiontx`
+     * event. This will be fired every time a fusion transaction is sent.
+     *
+     * This method may take a *very long time* if your wallet is not optimized
+     * at all. It is suggested to not block the UI/mainloop of your program
+     * when using this method.
+     *
+     * Usage:
+     * ```js
+     * const [numberOfTransactionsSent, hashesOfSentFusionTransactions] = await wallet.optimize();
+     * ```
+     *
+     * @return Returns [numberOfTransactionsSent, hashesOfSentFusionTransactions]
+     */
+    optimize(): Promise<[number, string[]]>;
     /**
      * Sends a fusion transaction, if possible.
      * Fusion transactions are zero fee, and optimize your wallet
@@ -623,4 +681,12 @@ export declare class WalletBackend extends EventEmitter {
      * Initialize stuff not stored in the JSON.
      */
     private initAfterLoad;
+    /**
+     * Since we're going to use optimize() with auto optimizing, and auto
+     * optimizing is enabled by default, we have to ensure we only optimize
+     * a single wallet at once. Otherwise, we'll end up with everyones balance
+     * in the primary wallet.
+     */
+    private optimizeAddress;
+    private performAutoOptimize;
 }
