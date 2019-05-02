@@ -32,7 +32,12 @@ Yarn:
 
 You can view the documentation here:  https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html
 
+You can see a list of all the other classes on the right side of the screen.
+Note that you will need to prefix them all with `WB.` to access them, if you are not using typescript style imports.
+
 ## Quick Start
+
+You can find an example project in the [examples](examples/) folder.
 
 ### Javascript
 
@@ -53,10 +58,10 @@ const WB = require('turtlecoin-wallet-backend');
 
     console.log('Started wallet');
 
-    /* After some time...
-    wallet.stop();
-    */
+    wallet.saveWalletToFile('mywallet.wallet', 'hunter2');
 
+    /* Make sure to call stop to let the node process exit */
+    wallet.stop();
 })().catch(err => {
     console.log('Caught promise rejection: ' + err);
 });
@@ -82,10 +87,10 @@ import { WalletBackend, ConventionalDaemon, BlockchainCacheApi } from 'turtlecoi
 
     console.log('Started wallet');
 
-    /* After some time...
-    wallet.stop();
-    */
+    wallet.saveWalletToFile('mywallet.wallet', 'hunter2');
 
+    /* Make sure to call stop to let the node process exit */
+    wallet.stop();
 })().catch(err => {
     console.log('Caught promise rejection: ' + err);
 });
@@ -121,6 +126,12 @@ wallet.scanCoinbaseTransactions(true)
 By default, the logger is disabled. You can enable it like so:
 
 ```javascript
+wallet.setLogLevel(WB.LogLevel.DEBUG);
+```
+
+and in typescript:
+
+```typescript
 wallet.setLogLevel(LogLevel.DEBUG);
 ```
 
@@ -130,6 +141,16 @@ If you want to change this, or want more control over what messages are logged,
 you can provide a callback for the logger to call.
 
 ```javascript
+wallet.setLoggerCallback((prettyMessage, message, level, categories) => {
+    if (categories.includes(WB.LogCategory.SYNC)) {
+        console.log(prettyMessage);
+    }
+});
+```
+
+and in typescript:
+
+```typescript
 wallet.setLoggerCallback((prettyMessage, message, level, categories) => {
     if (categories.includes(LogCategory.SYNC)) {
         console.log(prettyMessage);
