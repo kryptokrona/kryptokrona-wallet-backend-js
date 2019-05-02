@@ -56,6 +56,7 @@ function sleep(ms) {
     await wallet.start();
 
     console.log('Started wallet');
+    console.log('Address: ' + wallet.getPrimaryAddress());
 
     await sleep(1000 * 10);
 

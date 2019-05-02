@@ -550,10 +550,10 @@ turtlecoin-utils@^0.0.11:
   optionalDependencies:
     turtlecoin-crypto "0.0.11"
 
-turtlecoin-wallet-backend@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/turtlecoin-wallet-backend/-/turtlecoin-wallet-backend-1.1.1.tgz#1c68538b69d65f48c91f5d8c797d387adb93d27c"
-  integrity sha512-A/slAGP2mT0ytF8igUxdq3quBRMeqEoteytrKGRzucISO15oN/+A8VBKianxFAspZ8PnPB9cn3RX+phjConWXg==
+turtlecoin-wallet-backend@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/turtlecoin-wallet-backend/-/turtlecoin-wallet-backend-1.1.2.tgz#84ef4cb1a645cb9ccb038bbed3eefc1b27c78972"
+  integrity sha512-0mtHrUF5IeCgGXyNWiR3mj9frzoqHH2ahaBtR6GC1fdOQXMIqiqqUyYV3j9MU8WZuhD64uA4EU3A1wS9sb0Siw==
   dependencies:
     abort-controller "^2.0.2"
     lodash "^4.17.11"

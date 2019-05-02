@@ -1088,7 +1088,7 @@ class WalletBackend extends events_1.EventEmitter {
                 this.currentlyOptimizing = true;
             }
             const f = () => __awaiter(this, void 0, void 0, function* () {
-                /* In a transaction, don't optimize as it may possible break things */
+                /* In a transaction, don't optimize as it may possibly break things */
                 if (this.currentlyTransacting) {
                     return;
                 }
