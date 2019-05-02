@@ -81,7 +81,10 @@
 				<p><code>yarn add turtlecoin-wallet-backend</code></p>
 				<h2 id="documentation">Documentation</h2>
 				<p>You can view the documentation here:  <a href="https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html">https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html</a></p>
+				<p>You can see a list of all the other classes on the right side of the screen.
+				Note that you will need to prefix them all with <code>WB.</code> to access them, if you are not using typescript style imports.</p>
 				<h2 id="quick-start">Quick Start</h2>
+				<p>You can find an example project in the <a href="examples/">examples</a> folder.</p>
 				<h3 id="javascript">Javascript</h3>
 				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
 
@@ -99,10 +102,10 @@
 
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Started wallet'</span>);
 
-    <span class="hljs-comment">/* After some time...
-    wallet.stop();
-    */</span>
+    wallet.saveWalletToFile(<span class="hljs-string">'mywallet.wallet'</span>, <span class="hljs-string">'hunter2'</span>);
 
+    <span class="hljs-comment">/* Make sure to call stop to let the node process exit */</span>
+    wallet.stop();
 })().catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Caught promise rejection: '</span> + err);
 });</code></pre>
@@ -124,10 +127,10 @@
 
     <span class="hljs-built_in">console</span>.log(<span class="hljs-params">'Started wallet'</span>);
 
-    <span class="hljs-comment">/* After some time...
-    wallet.stop();
-    */</span>
+    wallet.saveWalletToFile(<span class="hljs-params">'mywallet.wallet', 'hunter2'</span>);
 
+    <span class="hljs-comment">/* Make sure to call stop to let the node process exit */</span>
+    wallet.stop(<span class="hljs-params"></span>);
 }</span>)<span class="hljs-params">()</span>.<span class="hljs-params">catch</span>(<span class="hljs-params">err =&gt; {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-params">'Caught promise rejection: ' + err</span>);
 }</span>);</span></code></pre>
@@ -144,11 +147,19 @@
 				<pre><code class="language-javascript">wallet.scanCoinbaseTransactions(<span class="hljs-literal">true</span>)</code></pre>
 				<h3 id="logging">Logging</h3>
 				<p>By default, the logger is disabled. You can enable it like so:</p>
-				<pre><code class="language-javascript">wallet.setLogLevel(LogLevel.DEBUG);</code></pre>
+				<pre><code class="language-javascript">wallet.setLogLevel(WB.LogLevel.DEBUG);</code></pre>
+				<p>and in typescript:</p>
+				<pre><code class="language-typescript">wallet.setLogLevel(LogLevel.DEBUG);</code></pre>
 				<p>The logger uses console.log, i.e. it outputs to stdout.</p>
 				<p>If you want to change this, or want more control over what messages are logged,
 				you can provide a callback for the logger to call.</p>
 				<pre><code class="language-javascript">wallet.setLoggerCallback(<span class="hljs-function">(<span class="hljs-params">prettyMessage, message, level, categories</span>) =&gt;</span> {
+    <span class="hljs-keyword">if</span> (categories.includes(WB.LogCategory.SYNC)) {
+        <span class="hljs-built_in">console</span>.log(prettyMessage);
+    }
+});</code></pre>
+				<p>and in typescript:</p>
+				<pre><code class="language-typescript">wallet.setLoggerCallback(<span class="hljs-function">(<span class="hljs-params">prettyMessage, message, level, categories</span>) =&gt;</span> {
     <span class="hljs-keyword">if</span> (categories.includes(LogCategory.SYNC)) {
         <span class="hljs-built_in">console</span>.log(prettyMessage);
     }

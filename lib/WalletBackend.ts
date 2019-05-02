@@ -1374,10 +1374,6 @@ export class WalletBackend extends EventEmitter {
             /* Alert listeners we've got a transaction */
             this.emit('transaction', transaction);
 
-            if (this.autoOptimize) {
-                this.performAutoOptimize();
-            }
-
             if (transaction.totalAmount() > 0) {
                 this.emit('incomingtx', transaction);
             } else if (transaction.totalAmount() < 0) {
@@ -1402,6 +1398,10 @@ export class WalletBackend extends EventEmitter {
         /* Mark any spent key images */
         for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
             this.subWallets.markInputAsSpent(publicKey, keyImage, blockHeight);
+        }
+
+        if (txData.transactionsToAdd.length > 0 && this.autoOptimize) {
+            this.performAutoOptimize();
         }
     }
 

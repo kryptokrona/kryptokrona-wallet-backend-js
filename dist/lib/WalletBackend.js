@@ -911,9 +911,6 @@ class WalletBackend extends events_1.EventEmitter {
             this.subWallets.addTransaction(transaction);
             /* Alert listeners we've got a transaction */
             this.emit('transaction', transaction);
-            if (this.autoOptimize) {
-                this.performAutoOptimize();
-            }
             if (transaction.totalAmount() > 0) {
                 this.emit('incomingtx', transaction);
             }
@@ -932,6 +929,9 @@ class WalletBackend extends events_1.EventEmitter {
         /* Mark any spent key images */
         for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
             this.subWallets.markInputAsSpent(publicKey, keyImage, blockHeight);
+        }
+        if (txData.transactionsToAdd.length > 0 && this.autoOptimize) {
+            this.performAutoOptimize();
         }
     }
     /**
