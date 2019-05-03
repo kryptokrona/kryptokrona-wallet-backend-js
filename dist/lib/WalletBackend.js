@@ -905,6 +905,15 @@ class WalletBackend extends events_1.EventEmitter {
      * Stores any transactions, inputs, and spend keys images
      */
     storeTxData(txData, blockHeight) {
+        /* Store any corresponding inputs */
+        for (const [publicKey, input] of txData.inputsToAdd) {
+            Logger_1.logger.log('Adding input ' + input.key, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+            this.subWallets.storeTransactionInput(publicKey, input);
+        }
+        /* Mark any spent key images */
+        for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
+            this.subWallets.markInputAsSpent(publicKey, keyImage, blockHeight);
+        }
         /* Store any transactions */
         for (const transaction of txData.transactionsToAdd) {
             Logger_1.logger.log('Adding transaction ' + transaction.hash, Logger_1.LogLevel.INFO, [Logger_1.LogCategory.SYNC, Logger_1.LogCategory.TRANSACTIONS]);
@@ -920,15 +929,6 @@ class WalletBackend extends events_1.EventEmitter {
             else {
                 this.emit('fusiontx', transaction);
             }
-        }
-        /* Store any corresponding inputs */
-        for (const [publicKey, input] of txData.inputsToAdd) {
-            Logger_1.logger.log('Adding input ' + input.key, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
-            this.subWallets.storeTransactionInput(publicKey, input);
-        }
-        /* Mark any spent key images */
-        for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
-            this.subWallets.markInputAsSpent(publicKey, keyImage, blockHeight);
         }
         if (txData.transactionsToAdd.length > 0 && this.autoOptimize) {
             this.performAutoOptimize();

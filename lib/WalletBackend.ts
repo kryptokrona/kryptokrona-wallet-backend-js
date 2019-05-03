@@ -1360,6 +1360,23 @@ export class WalletBackend extends EventEmitter {
      * Stores any transactions, inputs, and spend keys images
      */
     private storeTxData(txData: TransactionData, blockHeight: number): void {
+        /* Store any corresponding inputs */
+        for (const [publicKey, input] of txData.inputsToAdd) {
+
+            logger.log(
+                'Adding input ' + input.key,
+                LogLevel.DEBUG,
+                LogCategory.SYNC,
+            );
+
+            this.subWallets.storeTransactionInput(publicKey, input);
+        }
+
+        /* Mark any spent key images */
+        for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
+            this.subWallets.markInputAsSpent(publicKey, keyImage, blockHeight);
+        }
+
         /* Store any transactions */
         for (const transaction of txData.transactionsToAdd) {
 
@@ -1382,24 +1399,7 @@ export class WalletBackend extends EventEmitter {
                 this.emit('fusiontx', transaction);
             }
         }
-
-        /* Store any corresponding inputs */
-        for (const [publicKey, input] of txData.inputsToAdd) {
-
-            logger.log(
-                'Adding input ' + input.key,
-                LogLevel.DEBUG,
-                LogCategory.SYNC,
-            );
-
-            this.subWallets.storeTransactionInput(publicKey, input);
-        }
-
-        /* Mark any spent key images */
-        for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
-            this.subWallets.markInputAsSpent(publicKey, keyImage, blockHeight);
-        }
-
+        
         if (txData.transactionsToAdd.length > 0 && this.autoOptimize) {
             this.performAutoOptimize();
         }
