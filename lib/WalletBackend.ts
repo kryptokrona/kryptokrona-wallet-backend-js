@@ -264,6 +264,7 @@ export class WalletBackend extends EventEmitter {
             wallet.initAfterLoad(daemon);
             return [wallet, undefined];
         } catch (err) {
+            console.log(err);
             return [undefined, new WalletError(WalletErrorCode.WALLET_FILE_CORRUPTED)];
         }
     }

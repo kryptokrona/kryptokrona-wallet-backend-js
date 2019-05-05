@@ -149,6 +149,7 @@ class WalletBackend extends events_1.EventEmitter {
             return [wallet, undefined];
         }
         catch (err) {
+            console.log(err);
             return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.WALLET_FILE_CORRUPTED)];
         }
     }

@@ -90,9 +90,9 @@ export declare class SubWallet {
      */
     convertSyncTimestampToHeight(startTimestamp: number, startHeight: number): void;
     /**
-     * Whether the container includes this key image
+     * Gets every stored key image
      */
-    hasKeyImage(keyImage: string): boolean;
+    getKeyImages(): string[];
     /**
      * Generate the key image for this input
      */

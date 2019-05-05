@@ -41,9 +41,14 @@ export declare class SubWallets {
      */
     private transactionPrivateKeys;
     /**
+     * A mapping of key images to the subwallet public spend key that owns them
+     */
+    private keyImageOwners;
+    /**
      * @param privateSpendKey Private spend key is optional if it's a view wallet
      */
     constructor(address: string, scanHeight: number, newWallet: boolean, privateViewKey: string, privateSpendKey?: string);
+    initKeyImageMap(): void;
     pruneSpentInputs(pruneHeight: number): void;
     reset(scanHeight: number, scanTimestamp: number): void;
     /**

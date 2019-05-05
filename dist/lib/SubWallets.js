@@ -40,6 +40,10 @@ class SubWallets {
          * A mapping of transaction hashes, to transaction private keys
          */
         this.transactionPrivateKeys = new Map();
+        /**
+         * A mapping of key images to the subwallet public spend key that owns them
+         */
+        this.keyImageOwners = new Map();
         this.isViewWallet = privateSpendKey === undefined;
         this.privateViewKey = privateViewKey;
         let timestamp = 0;
@@ -56,7 +60,7 @@ class SubWallets {
      */
     static fromJSON(json) {
         const subWallets = Object.create(SubWallets.prototype);
-        return Object.assign(subWallets, {
+        const newSubWallets = Object.assign(subWallets, {
             publicSpendKeys: json.publicSpendKeys,
             subWallets: new Map(json.subWallet.map((x) => [x.publicSpendKey, SubWallet_1.SubWallet.fromJSON(x)])),
             transactions: json.transactions.map((x) => Types_1.Transaction.fromJSON(x)),
@@ -64,7 +68,17 @@ class SubWallets {
             privateViewKey: json.privateViewKey,
             isViewWallet: json.isViewWallet,
             transactionPrivateKeys: new Map(json.txPrivateKeys.map((x) => [x.transactionHash, x.txPrivateKey])),
+            keyImageOwners: new Map(),
         });
+        newSubWallets.initKeyImageMap();
+        return newSubWallets;
+    }
+    initKeyImageMap() {
+        for (const [publicKey, subWallet] of this.subWallets) {
+            for (const keyImage of subWallet.getKeyImages()) {
+                this.keyImageOwners.set(keyImage, publicKey);
+            }
+        }
     }
     pruneSpentInputs(pruneHeight) {
         for (const [publicKey, subWallet] of this.subWallets) {
@@ -75,6 +89,7 @@ class SubWallets {
         this.transactions = [];
         this.lockedTransactions = [];
         this.transactionPrivateKeys = new Map();
+        this.keyImageOwners = new Map();
         for (const [publicKey, subWallet] of this.subWallets) {
             subWallet.reset(scanHeight, scanTimestamp);
         }
@@ -174,6 +189,9 @@ class SubWallets {
         if (!subWallet) {
             throw new Error('Subwallet not found!');
         }
+        if (!this.isViewWallet) {
+            this.keyImageOwners.set(input.keyImage, publicSpendKey);
+        }
         subWallet.storeTransactionInput(input, this.isViewWallet);
     }
     /**
@@ -245,10 +263,9 @@ class SubWallets {
         if (this.isViewWallet) {
             return [false, ''];
         }
-        for (const [publicKey, subWallet] of this.subWallets) {
-            if (subWallet.hasKeyImage(keyImage)) {
-                return [true, publicKey];
-            }
+        const owner = this.keyImageOwners.get(keyImage);
+        if (owner) {
+            return [true, owner];
         }
         return [false, ''];
     }

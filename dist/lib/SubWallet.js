@@ -226,16 +226,14 @@ class SubWallet {
         }
     }
     /**
-     * Whether the container includes this key image
+     * Gets every stored key image
      */
-    hasKeyImage(keyImage) {
-        if (this.unspentInputs.some((input) => input.keyImage === keyImage)) {
-            return true;
-        }
-        if (this.lockedInputs.some((input) => input.keyImage === keyImage)) {
-            return true;
-        }
-        return false;
+    getKeyImages() {
+        let keyImages = [];
+        keyImages = keyImages.concat(this.unspentInputs.map((x) => x.keyImage));
+        keyImages = keyImages.concat(this.lockedInputs.map((x) => x.keyImage));
+        keyImages = keyImages.concat(this.spentInputs.map((x) => x.keyImage));
+        return keyImages;
     }
     /**
      * Generate the key image for this input

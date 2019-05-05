@@ -129,6 +129,8 @@ function roundTrip(
             daemon, './tests/test.wallet', 'password',
         );
 
+        console.log(error);
+
         return error === undefined;
 
     }, 'Loading test wallet file',
