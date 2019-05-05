@@ -162,7 +162,9 @@ In this example, we only print messages that fall into the SYNC category.
 
 You can view available categories and log levels in the documentation below.
 
-## Building (For Developers)
+## Contributing
+
+### Building (For Developers)
 
 `git clone https://github.com/zpalmtree/turtlecoin-wallet-backend.git`
 
@@ -174,19 +176,21 @@ You can view available categories and log levels in the documentation below.
 
 Generated javascript files will be written to the dist/lib/ folder.
 
-## Running tests
+### Running tests
 
 `yarn test` - This will run the basic tests
 
 `yarn test-all` - This will run all tests, including performance tests.
+
 You need a daemon running on 127.0.0.1:11898 for these to work.
 
-## Building documentation
+### Before making a PR
 
-`yarn docs`
-
-## Contributing
-
-Please run `yarn style` to ensure your changes adhere to the tslint rules before committing.
+* Ensure you are editing the TypeScript code, and not the JavaScript code (You should be in the `lib/` folder)
+* Ensure you have built the JavaScript code from the TypeScript code: `yarn build`
+* Ensure you have updated the documentation if necessary - Documentation is generated from inline comments, jsdoc style.
+* Ensure you have rebuilt the documentation, if you have changed it: `yarn docs`
+* Ensure the tests all still pass: `yarn test`, or `yarn test-all` if you have a local daemon running.
+* Ensure your code adheres to the style requirements: `yarn style`
 
 You can try running `yarn style --fix` to automatically fix issues.
