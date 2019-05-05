@@ -166,20 +166,26 @@
 });</code></pre>
 				<p>In this example, we only print messages that fall into the SYNC category.</p>
 				<p>You can view available categories and log levels in the documentation below.</p>
-				<h2 id="building-for-developers-">Building (For Developers)</h2>
+				<h2 id="contributing">Contributing</h2>
+				<h3 id="building-for-developers-">Building (For Developers)</h3>
 				<p><code>git clone https://github.com/zpalmtree/turtlecoin-wallet-backend.git</code></p>
 				<p><code>cd turtlecoin-wallet-backend</code></p>
 				<p><code>npm install -g yarn</code> (Skip this if you already have yarn installed)</p>
 				<p><code>yarn build</code></p>
 				<p>Generated javascript files will be written to the dist/lib/ folder.</p>
-				<h2 id="running-tests">Running tests</h2>
+				<h3 id="running-tests">Running tests</h3>
 				<p><code>yarn test</code> - This will run the basic tests</p>
-				<p><code>yarn test-all</code> - This will run all tests, including performance tests.
-				You need a daemon running on 127.0.0.1:11898 for these to work.</p>
-				<h2 id="building-documentation">Building documentation</h2>
-				<p><code>yarn docs</code></p>
-				<h2 id="contributing">Contributing</h2>
-				<p>Please run <code>yarn style</code> to ensure your changes adhere to the tslint rules before committing.</p>
+				<p><code>yarn test-all</code> - This will run all tests, including performance tests.</p>
+				<p>You need a daemon running on 127.0.0.1:11898 for these to work.</p>
+				<h3 id="before-making-a-pr">Before making a PR</h3>
+				<ul>
+					<li>Ensure you are editing the TypeScript code, and not the JavaScript code (You should be in the <code>lib/</code> folder)</li>
+					<li>Ensure you have built the JavaScript code from the TypeScript code: <code>yarn build</code></li>
+					<li>Ensure you have updated the documentation if necessary - Documentation is generated from inline comments, jsdoc style.</li>
+					<li>Ensure you have rebuilt the documentation, if you have changed it: <code>yarn docs</code></li>
+					<li>Ensure the tests all still pass: <code>yarn test</code>, or <code>yarn test-all</code> if you have a local daemon running.</li>
+					<li>Ensure your code adheres to the style requirements: <code>yarn style</code></li>
+				</ul>
 				<p>You can try running <code>yarn style --fix</code> to automatically fix issues.</p>
 			</div>
 		</div>

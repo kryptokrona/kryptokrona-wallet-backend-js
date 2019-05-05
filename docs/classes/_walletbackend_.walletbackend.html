@@ -163,7 +163,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.on</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L58">WalletBackend.ts:58</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L63">WalletBackend.ts:63</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -171,9 +171,9 @@
 									<p>This is emitted whenever the wallet finds a new transaction.</p>
 								</div>
 								<p>See the incomingtx and outgoingtx events if you need more fine grained control.</p>
-								<p>Usage:</p>
-								<pre><code>wallet.<span class="hljs-literal">on</span>(<span class="hljs-string">'transaction'</span>, <span class="hljs-function"><span class="hljs-params">(transaction)</span> =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(`<span class="javascript">Transaction <span class="hljs-keyword">of</span> ${transaction.totalAmount()} received!</span>`);
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.on(<span class="hljs-string">'transaction'</span>, (transaction) =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Transaction of <span class="hljs-subst">${transaction.totalAmount()}</span> received!`</span>);
 });</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -209,16 +209,16 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.on</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L73">WalletBackend.ts:73</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L78">WalletBackend.ts:78</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>This is emitted whenever the wallet finds an incoming transaction.</p>
 								</div>
-								<p>Usage:</p>
-								<pre><code>wallet.<span class="hljs-literal">on</span>(<span class="hljs-string">'incomingtx'</span>, <span class="hljs-function"><span class="hljs-params">(transaction)</span> =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(`<span class="javascript">Incoming transaction <span class="hljs-keyword">of</span> ${transaction.totalAmount()} received!</span>`);
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.on(<span class="hljs-string">'incomingtx'</span>, (transaction) =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Incoming transaction of <span class="hljs-subst">${transaction.totalAmount()}</span> received!`</span>);
 });</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -254,16 +254,16 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.on</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L88">WalletBackend.ts:88</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L93">WalletBackend.ts:93</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>This is emitted whenever the wallet finds an outgoing transaction.</p>
 								</div>
-								<p>Usage:</p>
-								<pre><code>wallet.<span class="hljs-literal">on</span>(<span class="hljs-string">'outgoingtx'</span>, <span class="hljs-function"><span class="hljs-params">(transaction)</span> =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(`<span class="javascript">Outgoing transaction <span class="hljs-keyword">of</span> ${transaction.totalAmount()} received!</span>`);
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.on(<span class="hljs-string">'outgoingtx'</span>, (transaction) =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Outgoing transaction of <span class="hljs-subst">${transaction.totalAmount()}</span> received!`</span>);
 });</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -299,15 +299,15 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.on</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L103">WalletBackend.ts:103</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L108">WalletBackend.ts:108</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>This is emitted whenever the wallet finds a fusion transaction.</p>
 								</div>
-								<p>Usage:</p>
-								<pre><code>wallet.<span class="hljs-literal">on</span>(<span class="hljs-string">'fusiontx'</span>, <span class="hljs-function"><span class="hljs-params">(transaction)</span> =&gt;</span> {
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.on(<span class="hljs-string">'fusiontx'</span>, (transaction) =&gt; {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Fusion transaction found!'</span>);
 });</code></pre>
 							</div>
@@ -344,7 +344,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.on</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L122">WalletBackend.ts:122</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L127">WalletBackend.ts:127</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -354,8 +354,8 @@
 								<p>This is distinct from the outgoingtx event, as this event is fired when
 									we send a transaction, while outgoingtx is fired when the tx is included
 								in a block, and scanned by the wallet.</p>
-								<p>Usage:</p>
-								<pre><code>wallet.<span class="hljs-literal">on</span>(<span class="hljs-string">'createdtx'</span>, <span class="hljs-function"><span class="hljs-params">(transaction)</span> =&gt;</span> {
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.on(<span class="hljs-string">'createdtx'</span>, (transaction) =&gt; {
      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Transaction created!'</span>);
 });</code></pre>
 							</div>
@@ -392,15 +392,15 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.on</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L137">WalletBackend.ts:137</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L142">WalletBackend.ts:142</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>This is emitted whenever the wallet creates and sends a fusion transaction.</p>
 								</div>
-								<p>Usage:</p>
-								<pre><code>wallet.<span class="hljs-literal">on</span>(<span class="hljs-string">'createdfusiontx'</span>, <span class="hljs-function"><span class="hljs-params">(transaction)</span> =&gt;</span> {
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.on(<span class="hljs-string">'createdfusiontx'</span>, (transaction) =&gt; {
      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Fusion transaction created!'</span>);
 });</code></pre>
 							</div>
@@ -437,7 +437,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.on</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L153">WalletBackend.ts:153</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L158">WalletBackend.ts:158</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -445,8 +445,8 @@
 									<p>This is emitted whenever the wallet first syncs with the network. It will
 									also be fired if the wallet unsyncs from the network, then resyncs.</p>
 								</div>
-								<p>Usage:</p>
-								<pre><code>wallet.on(<span class="hljs-string">'sync'</span>, <span class="hljs-function">(<span class="hljs-params">walletHeight, networkHeight</span>) =&gt;</span> {
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.on(<span class="hljs-string">'sync'</span>, (walletHeight, networkHeight) =&gt; {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Wallet synced! Wallet height: <span class="hljs-subst">${walletHeight}</span>, Network height: <span class="hljs-subst">${networkHeight}</span>`</span>);
 });</code></pre>
 							</div>
@@ -486,7 +486,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.on</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L169">WalletBackend.ts:169</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L174">WalletBackend.ts:174</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -494,8 +494,8 @@
 									<p>This is emitted whenever the wallet first desyncs with the network. It will
 									only be fired after the wallet has initially fired the sync event.</p>
 								</div>
-								<p>Usage:</p>
-								<pre><code>wallet.on(<span class="hljs-string">'desync'</span>, <span class="hljs-function">(<span class="hljs-params">walletHeight, networkHeight</span>) =&gt;</span> {
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.on(<span class="hljs-string">'desync'</span>, (walletHeight, networkHeight) =&gt; {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Wallet is no longer synced! Wallet height: <span class="hljs-subst">${walletHeight}</span>, Network height: <span class="hljs-subst">${networkHeight}</span>`</span>);
 });</code></pre>
 							</div>
@@ -546,7 +546,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L708">WalletBackend.ts:708</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L791">WalletBackend.ts:791</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -559,11 +559,16 @@
 								<p>The upside is that when you come to sending a large transaction, it
 								should nearly always succeed.</p>
 								<p>This flag is ENABLED by default.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.enableAutoOptimization(<span class="hljs-literal">false</span>);</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>shouldAutoOptimize: <span class="tsd-signature-type">boolean</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Should we automatically keep the wallet optimized?</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -580,13 +585,20 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L981">WalletBackend.ts:981</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1163">WalletBackend.ts:1163</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Gets the address of every subwallet in this container.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>;
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> address <span class="hljs-keyword">of</span> wallet.getAddresses()) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Address [<span class="hljs-subst">${i}</span>]: <span class="hljs-subst">${address}</span>`</span>);
+     i++;
+}</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4>
 						</li>
@@ -602,13 +614,15 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L1248">WalletBackend.ts:1248</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1461">WalletBackend.ts:1461</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Get the unlocked and locked balance for the wallet container.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [unlockedBalance, lockedBalance] = wallet.getBalance();</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -621,7 +635,6 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span></h4>
-							<p>Returns [unlockedBalance, lockedBalance]</p>
 						</li>
 					</ul>
 				</section>
@@ -629,13 +642,13 @@
 					<a name="getmnemonicseed" class="tsd-anchor"></a>
 					<h3>get<wbr>Mnemonic<wbr>Seed</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Mnemonic<wbr>Seed<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Mnemonic<wbr>Seed<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L888">WalletBackend.ts:888</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1028">WalletBackend.ts:1028</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -643,13 +656,17 @@
 									<p>Get the primary address mnemonic seed. If the primary address isn&#39;t
 									a deterministic wallet, it will return a WalletError.</p>
 								</div>
-								<p>Usage:</p>
-								<pre><code><span class="hljs-keyword">const</span> [<span class="hljs-built_in">seed</span>, <span class="hljs-built_in">error</span>] = wallet.getMnemonicSeed();
-<span class="hljs-keyword">if</span> (<span class="hljs-built_in">error</span>) {
-     console.<span class="hljs-built_in">log</span>(<span class="hljs-comment">'Wallet is not a deterministic wallet');</span>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [seed, err] = wallet.getMnemonicSeed();
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Wallet is not a deterministic wallet: '</span> + err.toString());
 }</code></pre>
 							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span>
+							</h4>
 						</li>
 					</ul>
 				</section>
@@ -657,13 +674,13 @@
 					<a name="getmnemonicseedforaddress" class="tsd-anchor"></a>
 					<h3>get<wbr>Mnemonic<wbr>Seed<wbr>For<wbr>Address</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Mnemonic<wbr>Seed<wbr>For<wbr>Address<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Mnemonic<wbr>Seed<wbr>For<wbr>Address<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L897">WalletBackend.ts:897</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1048">WalletBackend.ts:1048</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -672,14 +689,26 @@
 										is invalid or the address isn&#39;t a deterministic wallet, it will return
 									a WalletError.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [seed, err] = wallet.getMnemonicSeedForAddress(<span class="hljs-string">'TRTLxyz...'</span>);
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Address does not belong to a deterministic wallet: '</span> + err.toString());
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>address: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A valid address that exists in this container</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span>
+							</h4>
 						</li>
 					</ul>
 				</section>
@@ -693,7 +722,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L802">WalletBackend.ts:802</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L926">WalletBackend.ts:926</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -701,10 +730,14 @@
 									<p>Get the node fee the daemon you are connected to is charging for
 									transactions. If the daemon charges no fee, this will return <code>[&#39;&#39;, 0]</code></p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [nodeFeeAddress, nodeFeeAmount] = wallet.getNodeFee();
+
+<span class="hljs-keyword">if</span> (nodeFeeAmount === <span class="hljs-number">0</span>) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Yay, no fees!'</span>);
+}</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span></h4>
-							<p>Returns the node fee address, and the node fee amount, in
-							atomic units</p>
 						</li>
 					</ul>
 				</section>
@@ -718,15 +751,29 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L1302">WalletBackend.ts:1302</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1553">WalletBackend.ts:1553</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Get the number of transactions in the wallet container. Can be used
-										if you want to avoid fetching every transactions repeatedly when nothing
+										if you want to avoid fetching all transactions repeatedly when nothing
 									has changed.</p>
 								</div>
+								<p>Note that it probably is more effective to subscribe to the transaction
+									related events to update your UI, rather than polling for the number
+								of transactions.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">let</span> numTransactions = <span class="hljs-number">0</span>;
+
+<span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) {
+     <span class="hljs-keyword">const</span> tmpNumTransactions = wallet.getNumTransactions();
+
+     <span class="hljs-keyword">if</span> (numTransactions != tmpNumTransactions) {
+         <span class="hljs-built_in">console</span>.log(tmpNumTransactions - numTransactions + <span class="hljs-string">' new transactions found!'</span>);
+         numTransactions = tmpNumTransactions;
+     }
+}</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 						</li>
@@ -742,7 +789,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L920">WalletBackend.ts:920</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1078">WalletBackend.ts:1078</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -751,6 +798,8 @@
 										The primary address is the address that was created first in the wallet
 									container.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> address = wallet.getPrimaryAddress();</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
 						</li>
@@ -766,17 +815,18 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L871">WalletBackend.ts:871</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1011">WalletBackend.ts:1011</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Get the private spend and private view for the primary address.
+									<p>Gets the private spend and private view for the primary address.
 									The primary address is the first created wallet in the container.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [privateSpendKey, privateViewKey] = wallet.getPrimaryAddressPrivateKeys();</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]</span></h4>
-							<p>Returns [privateSpendKey, privateViewKey]</p>
 						</li>
 					</ul>
 				</section>
@@ -790,13 +840,15 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L809">WalletBackend.ts:809</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L938">WalletBackend.ts:938</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Gets the shared private view key for this wallet container.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> privateViewKey = wallet.getPrivateViewKey();</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
 						</li>
@@ -806,13 +858,13 @@
 					<a name="getspendkeys" class="tsd-anchor"></a>
 					<h3>get<wbr>Spend<wbr>Keys</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Spend<wbr>Keys<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Spend<wbr>Keys<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L843">WalletBackend.ts:843</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L980">WalletBackend.ts:980</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -820,22 +872,27 @@
 									<p>Gets the publicSpendKey and privateSpendKey for the given address, if
 									possible.</p>
 								</div>
-								<p>Note: secret key will be 00000... (64 zeros) if view wallet.</p>
-								<p>Usage:</p>
-								<pre><code><span class="hljs-keyword">const</span> [publicSpendKey, privateSpendKey, <span class="hljs-keyword">error</span>] = getSpendKeys(<span class="hljs-string">'TRTLxyz...'</span>);
-<span class="hljs-keyword">if</span> (<span class="hljs-keyword">error</span>) {
-     console.log(<span class="hljs-keyword">error</span>);
+								<p>Note: secret key will be 00000... (64 zeros) if this wallet is a view only wallet.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [publicSpendKey, privateSpendKey, err] = wallet.getSpendKeys(<span class="hljs-string">'TRTLxyz...'</span>);
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to get spend keys for address: '</span> + err.toString());
 }</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>address: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A valid address in this container, to get the spend keys of</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></h4>
-							<p>Returns either the public and private spend key, or a WalletError
-							if the address doesn&#39;t exist or is invalid</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span>
+							</h4>
 						</li>
 					</ul>
 				</section>
@@ -849,16 +906,16 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L665">WalletBackend.ts:665</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L718">WalletBackend.ts:718</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Gets the wallet, local daemon, and network block count</p>
 								</div>
-								<p>Usage:</p>
-								<pre><code><span class="hljs-keyword">let</span> <span class="hljs-literal">[<span class="hljs-identifier">walletBlockCount</span>, <span class="hljs-identifier">localDaemonBlockCount</span>, <span class="hljs-identifier">networkBlockCount</span>]</span> =
-     wallet.get<span class="hljs-constructor">SyncStatus()</span>;</code></pre>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [walletBlockCount, localDaemonBlockCount, networkBlockCount] =
+     wallet.getSyncStatus();</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span></h4>
 						</li>
@@ -874,18 +931,29 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L1291">WalletBackend.ts:1291</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1524">WalletBackend.ts:1524</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Gets the specified transaction, if it exists.</p>
+									<p>Gets the specified transaction, if it exists in this wallet container.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> tx = wallet.getTransaction(<span class="hljs-string">'693950eeec41dc36cfc5109eba15807ce3d63eff21f1eec20a7d1bda99563b1c'</span>);
+
+<span class="hljs-keyword">if</span> (tx) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Tx <span class="hljs-subst">${tx.hash}</span> is worth <span class="hljs-subst">${WB.prettyPrintAmount(tx.totalAmount())}</span>`</span>);
+} <span class="hljs-keyword">else</span> {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Couldn't find transaction! Is your wallet synced?"</span>);
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>hash: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The hash of the transaction to get</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="_types_.transaction.html" class="tsd-signature-type">Transaction</a>
@@ -905,15 +973,19 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L1265">WalletBackend.ts:1265</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1485">WalletBackend.ts:1485</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Get all transactions in a wallet container</p>
+									<p>Gets all the transactions in the wallet container.</p>
 								</div>
 								<p>Newer transactions are at the front of the array - Unconfirmed transactions
 								come at the very front.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> tx <span class="hljs-keyword">of</span> wallet.getTransactions()) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Transaction <span class="hljs-subst">${tx.hash}</span> - <span class="hljs-subst">${WB.prettyPrintAmount(tx.totalAmount())}</span> - <span class="hljs-subst">${tx.timestamp}</span>`</span>);
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -950,15 +1022,19 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L816">WalletBackend.ts:816</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L953">WalletBackend.ts:953</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Exposes some internal functions for those who know what they&#39;re doing...</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> syncFunc = wallet.internal().sync;
+<span class="hljs-keyword">await</span> syncFunc(<span class="hljs-literal">true</span>);</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
+							<p>Returns an object with two members, sync(), and updateDaemonInfo().</p>
 							<ul class="tsd-parameters">
 							</ul>
 						</li>
@@ -974,7 +1050,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L1006">WalletBackend.ts:1006</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1191">WalletBackend.ts:1191</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -987,14 +1063,17 @@
 								<p>Note that if you want to alert the user in real time of the hashes or
 									number of transactions sent, you can subscribe to the <code>createdfusiontx</code>
 								event. This will be fired every time a fusion transaction is sent.</p>
+								<p>You may also want to consider manually creating individual transactions
+								if you want more control over the process. See <a href="_walletbackend_.walletbackend.html#sendfusiontransactionbasic">sendFusionTransactionBasic</a>.</p>
 								<p>This method may take a <em>very long time</em> if your wallet is not optimized
 									at all. It is suggested to not block the UI/mainloop of your program
 								when using this method.</p>
-								<p>Usage:</p>
-								<pre><code class="language-js"><span class="hljs-keyword">const</span> [numberOfTransactionsSent, hashesOfSentFusionTransactions] = <span class="hljs-keyword">await</span> wallet.optimize();</code></pre>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [numberOfTransactionsSent, hashesOfSentFusionTransactions] = <span class="hljs-keyword">await</span> wallet.optimize();
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Sent <span class="hljs-subst">${numberOfTransactionsSent}</span> fusion transactions, hashes: <span class="hljs-subst">${hashesOfSentFusionTransactions.join(<span class="hljs-string">', '</span>)}</span>`</span>);</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>Returns [numberOfTransactionsSent, hashesOfSentFusionTransactions]</p>
 						</li>
 					</ul>
 				</section>
@@ -1002,13 +1081,13 @@
 					<a name="rescan" class="tsd-anchor"></a>
 					<h3>rescan</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">rescan<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">rescan<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L631">WalletBackend.ts:631</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L672">WalletBackend.ts:672</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1017,8 +1096,12 @@
 										or timestamp. For example, if you created your wallet at block 800,000,
 									this method would start rescanning from then.</p>
 								</div>
+								<p>This function will return once the wallet has been successfully reset,
+								and syncing has began again.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">await</span> wallet.rescan();</code></pre>
 							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1032,7 +1115,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L642">WalletBackend.ts:642</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L695">WalletBackend.ts:695</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1041,11 +1124,18 @@
 										from the scanHeight or timestamp given. Defaults to a height of zero,
 									if not given.</p>
 								</div>
+								<p>This function will return once the wallet has been successfully reset,
+								and syncing has began again.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">await</span> wallet.reset(<span class="hljs-number">123456</span>);</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> scanHeight: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The scan height to begin scanning transactions from</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> scanTimestamp: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></h5>
@@ -1065,23 +1155,36 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L931">WalletBackend.ts:931</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1103">WalletBackend.ts:1103</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Save the wallet to the given filename. Password may be empty, but
-										filename must not be.
-									This will take some time - it runs 500,000 iterations of pbkdf2.</p>
+										filename must not be. Note that an empty password does not mean an
+									unencrypted wallet - simply a wallet encrypted with the empty string.</p>
 								</div>
+								<p>This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> saved = wallet.saveWalletToFile(<span class="hljs-string">'test.wallet'</span>, <span class="hljs-string">'hunter2'</span>);
+
+<span class="hljs-keyword">if</span> (!saved) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to save wallet!'</span>);
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>filename: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The file location to save the wallet to.</p>
+									</div>
 								</li>
 								<li>
 									<h5>password: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The password to encrypt the wallet with</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -1099,7 +1202,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L685">WalletBackend.ts:685</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L751">WalletBackend.ts:751</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1107,11 +1210,16 @@
 									<p>Most people don&#39;t mine blocks, so by default we don&#39;t scan them. If
 									you want to scan them, flip it on/off here.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.scanCoinbaseTransactions(<span class="hljs-literal">true</span>);</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>shouldScan: <span class="tsd-signature-type">boolean</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Should we scan coinbase transactions?</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -1122,13 +1230,13 @@
 					<a name="sendfusiontransactionadvanced" class="tsd-anchor"></a>
 					<h3>send<wbr>Fusion<wbr>Transaction<wbr>Advanced</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">send<wbr>Fusion<wbr>Transaction<wbr>Advanced<span class="tsd-signature-symbol">(</span>mixin<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span>, subWalletsToTakeFrom<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, destination<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">send<wbr>Fusion<wbr>Transaction<wbr>Advanced<span class="tsd-signature-symbol">(</span>mixin<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span>, subWalletsToTakeFrom<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, destination<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L1092">WalletBackend.ts:1092</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1282">WalletBackend.ts:1282</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1138,11 +1246,14 @@
 										for sending larger amounts. You may (probably will) need to perform
 									multiple fusion transactions.</p>
 								</div>
+								<p>If you want to ensure your wallet gets fully optimized, consider using
+								<a href="_walletbackend_.walletbackend.html#optimize">optimize</a>.</p>
 								<p>All parameters are optional.</p>
-								<p>Usage:</p>
-								<pre><code><span class="hljs-keyword">const</span> [hash, <span class="hljs-keyword">error</span>] = await sendFusionTransactionAdvanced(<span class="hljs-number">3</span>, undefined, <span class="hljs-string">'TRTLxyz..'</span>)
-<span class="hljs-keyword">if</span> (<span class="hljs-keyword">error</span>) {
-    <span class="hljs-comment">// etc</span>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [hash, err] = <span class="hljs-keyword">await</span> wallet.sendFusionTransactionAdvanced(<span class="hljs-number">3</span>, <span class="hljs-literal">undefined</span>, <span class="hljs-string">'TRTLxyz..'</span>);
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to send transaction: '</span> + err.toString());
 }</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1163,12 +1274,12 @@
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> destination: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The destination for the fusion transaction to be sent to.</p>
+										<p>The destination for the fusion transaction to be sent to.
+										Must be an address existing in this container.</p>
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>Returns either an error, or the transaction hash.</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1176,13 +1287,13 @@
 					<a name="sendfusiontransactionbasic" class="tsd-anchor"></a>
 					<h3>send<wbr>Fusion<wbr>Transaction<wbr>Basic</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">send<wbr>Fusion<wbr>Transaction<wbr>Basic<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">send<wbr>Fusion<wbr>Transaction<wbr>Basic<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L1035">WalletBackend.ts:1035</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1222">WalletBackend.ts:1222</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1192,14 +1303,16 @@
 										for sending larger amounts. You may (probably will) need to perform
 									multiple fusion transactions.</p>
 								</div>
-								<p>Usage:</p>
-								<pre><code><span class="hljs-keyword">const</span> [hash, <span class="hljs-keyword">error</span>] = await sendFusionTransactionBasic()
-<span class="hljs-keyword">if</span> (<span class="hljs-keyword">error</span>) {
-    <span class="hljs-comment">// etc</span>
+								<p>If you want to ensure your wallet gets fully optimized, consider using
+								<a href="_walletbackend_.walletbackend.html#optimize">optimize</a>.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [hash, err] = <span class="hljs-keyword">await</span> wallet.sendFusionTransactionBasic();
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to send fusion transaction: '</span> + err.toString());
 }</code></pre>
 							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>Returns either an error, or the transaction hash.</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1207,13 +1320,13 @@
 					<a name="sendtransactionadvanced" class="tsd-anchor"></a>
 					<h3>send<wbr>Transaction<wbr>Advanced</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">send<wbr>Transaction<wbr>Advanced<span class="tsd-signature-symbol">(</span>destinations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span>, mixin<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span>, fee<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span>, paymentID<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span>, subWalletsToTakeFrom<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, changeAddress<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">send<wbr>Transaction<wbr>Advanced<span class="tsd-signature-symbol">(</span>destinations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span>, mixin<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span>, fee<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span>, paymentID<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span>, subWalletsToTakeFrom<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, changeAddress<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L1200">WalletBackend.ts:1200</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1410">WalletBackend.ts:1410</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1222,6 +1335,17 @@
 									specifying the mixin, fee, subwallets to draw funds from, and change address.</p>
 								</div>
 								<p>All parameters are optional aside from destinations.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> destinations = [
+     [<span class="hljs-string">'TRTLxyz...'</span>, <span class="hljs-number">1000</span>],
+     [<span class="hljs-string">'TRTLzyx...'</span>, <span class="hljs-number">10000</span>],
+];
+
+<span class="hljs-keyword">const</span> [hash, err] = <span class="hljs-keyword">await</span> wallet.sendTransactionAdvanced(destinations, <span class="hljs-literal">undefined</span>, <span class="hljs-number">100</span>, <span class="hljs-string">'c59d157d1d96f280ece0816a8925cae8232432b7235d1fa92c70faf3064434b3'</span>);
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to send transaction: '</span> + err.toString());
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -1229,7 +1353,7 @@
 									<h5>destinations: <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>An array of destinations, and amounts to send to that
-										destination.</p>
+										destination. Amounts are in ATOMIC units.</p>
 									</div>
 								</li>
 								<li>
@@ -1248,23 +1372,23 @@
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> paymentID: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The payment ID to include with this transaction.</p>
+										<p>The payment ID to include with this transaction. Defaults to none.</p>
 									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> subWalletsToTakeFrom: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The addresses of the subwallets to draw funds from.</p>
+										<p>The addresses of the subwallets to draw funds from. Defaults to all addresses.</p>
 									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> changeAddress: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The address to send any returned change to.</p>
+										<p>The address to send any returned change to. Defaults to the primary address.</p>
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1272,13 +1396,13 @@
 					<a name="sendtransactionbasic" class="tsd-anchor"></a>
 					<h3>send<wbr>Transaction<wbr>Basic</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">send<wbr>Transaction<wbr>Basic<span class="tsd-signature-symbol">(</span>destination<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, paymentID<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">send<wbr>Transaction<wbr>Basic<span class="tsd-signature-symbol">(</span>destination<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, amount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, paymentID<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L1145">WalletBackend.ts:1145</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L1344">WalletBackend.ts:1344</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1288,7 +1412,13 @@
 								</div>
 								<p>Network fee is set to default, mixin is set to default, all subwallets
 								are taken from, primary address is used as change address.</p>
-								<p>If you need more control, use <code>sendTransactionAdvanced()</code></p>
+								<p>If you need more control, use <a href="_walletbackend_.walletbackend.html#sendtransactionadvanced">sendTransactionAdvanced</a>.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> [hash, err] = <span class="hljs-keyword">await</span> wallet.sendTransactionBasic(<span class="hljs-string">'TRTLxyz...'</span>, <span class="hljs-number">1234</span>);
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to send transaction: '</span> + err.toString());
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -1311,7 +1441,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>Returns either an error, or the transaction hash.</p>
 						</li>
 					</ul>
@@ -1326,7 +1456,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L757">WalletBackend.ts:757</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L861">WalletBackend.ts:861</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1335,16 +1465,29 @@
 										only use for this is to leverage native code to provide quicker
 									cryptography functions - the default JavaScript is not that speedy.</p>
 								</div>
+								<p>Note that if you&#39;re in a node environment, this library will use
+									C++ code with node-gyp, so it will be nearly as fast as C++ implementations.
+									You only need to worry about this in less conventional environments,
+								like react-native, or possibly the web.</p>
 								<p>If you don&#39;t know what you&#39;re doing,
 								DO NOT TOUCH THIS - YOU WILL BREAK WALLET SYNCING</p>
 								<p>Note you don&#39;t have to set the globalIndex properties on returned inputs.
 									We will fetch them from the daemon if needed. However, if you have them,
 								return them, to save us a daemon call.</p>
+								<p>Your function should return an array of <code>[publicSpendKey, TransactionInput]</code>.
+									The public spend key is the corresponding subwallet that the transaction input
+								belongs to.</p>
+								<p>Return an empty array if no inputs are found that belong to the user.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.setBlockOutputProcessFunc(mySuperSpeedyFunction);</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>func: <span class="tsd-signature-type">function</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The function to process block outputs.</p>
+									</div>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
@@ -1356,18 +1499,33 @@
 													<ul class="tsd-parameters">
 														<li>
 															<h5>block: <span class="tsd-signature-type">Block</span></h5>
+															<div class="tsd-comment tsd-typography">
+																<p>The block to be processed.</p>
+															</div>
 														</li>
 														<li>
 															<h5>privateViewKey: <span class="tsd-signature-type">string</span></h5>
+															<div class="tsd-comment tsd-typography">
+																<p>The private view key of this wallet container.</p>
+															</div>
 														</li>
 														<li>
 															<h5>spendKeys: <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<div class="tsd-comment tsd-typography">
+																<p>An array of [publicSpendKey, privateSpendKey]. These are the spend keys of each subwallet.</p>
+															</div>
 														</li>
 														<li>
 															<h5>isViewWallet: <span class="tsd-signature-type">boolean</span></h5>
+															<div class="tsd-comment tsd-typography">
+																<p>Whether this wallet is a view only wallet or not.</p>
+															</div>
 														</li>
 														<li>
 															<h5>processCoinbaseTransactions: <span class="tsd-signature-type">boolean</span></h5>
+															<div class="tsd-comment tsd-typography">
+																<p>Whether you should process coinbase transactions or not.</p>
+															</div>
 														</li>
 													</ul>
 													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TransactionInput</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -1391,18 +1549,25 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L692">WalletBackend.ts:692</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L768">WalletBackend.ts:768</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Sets the log level. Log messages below this level are not shown.</p>
 								</div>
+								<p>Logging by default occurs to stdout. See <a href="_walletbackend_.walletbackend.html#setloggercallback">setLoggerCallback</a> to modify this,
+								or gain more control over what is logged.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.setLogLevel(WB.LogLevel.DEBUG);</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>logLevel: <a href="../enums/_logger_.loglevel.html" class="tsd-signature-type">LogLevel</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The level to log messages at.</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -1419,10 +1584,22 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L732">WalletBackend.ts:732</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L817">WalletBackend.ts:817</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets a callback to be used instead of console.log for more fined control
+									of the logging output.</p>
+								</div>
+								<p>Ensure that you have enabled logging for this function to take effect.
+								See <a href="_walletbackend_.walletbackend.html#setloglevel">setLogLevel</a> for more details.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.setLoggerCallback(<span class="hljs-function">(<span class="hljs-params">prettyMessage, message, level, categories</span>) =&gt;</span> {
+      <span class="hljs-keyword">if</span> (categories.includes(WB.LogCategory.SYNC)) {
+          <span class="hljs-built_in">console</span>.log(prettyMessage);
+      }
+  });</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -1462,14 +1639,6 @@
 															<h5>categories: <a href="../enums/_logger_.logcategory.html" class="tsd-signature-type">LogCategory</a><span class="tsd-signature-symbol">[]</span></h5>
 															<div class="tsd-comment tsd-typography">
 																<p>The categories this log message falls into</p>
-																<p>Sets a callback to be used instead of console.log for more fined control
-																of the logging output.</p>
-																<p>Usage:</p>
-																<pre><code>wallet.set<span class="hljs-constructor">LoggerCallback((<span class="hljs-params">prettyMessage</span>, <span class="hljs-params">message</span>, <span class="hljs-params">level</span>, <span class="hljs-params">categories</span>)</span> =&gt; {
-      <span class="hljs-keyword">if</span> (categories.includes(LogCategory.SYNC)) {
-          console.log(prettyMessage);
-      }
-  });</code></pre>
 															</div>
 														</li>
 													</ul>
@@ -1494,7 +1663,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L772">WalletBackend.ts:772</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L881">WalletBackend.ts:881</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1503,6 +1672,8 @@
 										function before enquiring about daemon info or fee info. The wallet will
 									not process blocks until you call this method.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">await</span> wallet.start();</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
@@ -1518,14 +1689,19 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L788">WalletBackend.ts:788</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L906">WalletBackend.ts:906</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>The inverse of the start() method, this pauses the blockchain sync
+									<p>The inverse of the <a href="_walletbackend_.walletbackend.html#start">start</a> method, this pauses the blockchain sync
 									process.</p>
 								</div>
+								<p>If you want the node process to close cleanly (i.e, without using <code>process.exit()</code>),
+									you need to call this function. Otherwise, the library will keep firing
+								callbacks, and so your script will hang.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript">wallet.stop();</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
@@ -1541,14 +1717,16 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L677">WalletBackend.ts:677</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L735">WalletBackend.ts:735</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Converts the wallet into a JSON string. This can be used to later restore
-									the wallet with <code>loadWalletFromJSON</code>.</p>
+									the wallet with <a href="_walletbackend_.walletbackend.html#loadwalletfromjson">loadWalletFromJSON</a>.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> walletData = wallet.toJSONString();</code></pre>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
 						</li>
@@ -1564,23 +1742,28 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L465">WalletBackend.ts:465</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L498">WalletBackend.ts:498</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>This method creates a new wallet instance with a random key pair.</p>
 								</div>
-								<p>The created addresses view key will be derived in terms of the spend key,
-								i.e. it will have a mnemonic seed.</p>
-								<p>Usage:</p>
-								<pre><code>const daemon = <span class="hljs-keyword">new</span> <span class="hljs-constructor">ConventionalDaemon('127.0.0.1', 11898)</span>;
-const wallet = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">WalletBackend</span>.</span></span>create<span class="hljs-constructor">Wallet(<span class="hljs-params">daemon</span>)</span>;</code></pre>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
+
+<span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
+
+<span class="hljs-keyword">const</span> wallet = WB.WalletBackend.createWallet(daemon);</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>daemon: <a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An implementation of the IDaemon interface. Either
+										a conventional daemon, or a blockchain cache API.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a></h5>
@@ -1594,24 +1777,50 @@ const wallet = <span class="hljs-module-access"><span class="hljs-module"><span 
 					<a name="importviewwallet" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> import<wbr>View<wbr>Wallet</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">import<wbr>View<wbr>Wallet<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, scanHeight<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, privateViewKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
+						<li class="tsd-signature tsd-kind-icon">import<wbr>View<wbr>Wallet<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, scanHeight<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, privateViewKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L411">WalletBackend.ts:411</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L441">WalletBackend.ts:441</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This method imports a wallet you have previously created, in a &#39;watch only&#39;
+										state. This wallet can view incoming transactions, but cannot send
+										transactions. It also cannot view outgoing transactions, so balances
+										may appear incorrect.
+										This is useful for viewing your balance whilst not risking your funds
+									or private keys being stolen.</p>
+								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
+
+<span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
+
+<span class="hljs-keyword">const</span> privateViewKey = <span class="hljs-string">'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01'</span>;
+
+<span class="hljs-keyword">const</span> address = <span class="hljs-string">'TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW'</span>;
+
+<span class="hljs-keyword">const</span> [wallet, err] = WB.WalletBackend.importViewWallet(daemon, <span class="hljs-number">100000</span>, privateViewKey, address);
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to load wallet: '</span> + err.toString());
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>daemon: <a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An implementation of the IDaemon interface. Either
+										a conventional daemon, or a blockchain cache API.</p>
+									</div>
 								</li>
 								<li>
-									<h5>scanHeight: <span class="tsd-signature-type">number</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> scanHeight: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>The height to begin scanning the blockchain from.
 											This can greatly increase sync speeds if given.
@@ -1620,35 +1829,24 @@ const wallet = <span class="hljs-module-access"><span class="hljs-module"><span 
 								</li>
 								<li>
 									<h5>privateViewKey: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The private view key of this view wallet. Should be a 64 char hex string.</p>
+									</div>
 								</li>
 								<li>
 									<h5>address: <span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The public address of this view wallet</p>
-										<p>This method imports a wallet you have previously created, in a &#39;watch only&#39;
-											state. This wallet can view incoming transactions, but cannot send
-											transactions. It also cannot view outgoing transactions, so balances
-											may appear incorrect.
-											This is useful for viewing your balance whilst not risking your funds
-										or private keys being stolen.</p>
-										<p>Usage:</p>
-										<pre><code><span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
-
-<span class="hljs-keyword">const</span> privateViewKey = <span class="hljs-string">'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01'</span>;
-<span class="hljs-keyword">const</span> address = <span class="hljs-string">'TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW'</span>;
-
-<span class="hljs-keyword">const</span> [wallet, <span class="hljs-keyword">error</span>] = WalletBackend.importViewWallet(daemon, <span class="hljs-number">100000</span>, privateViewKey, address);
-
-<span class="hljs-keyword">if</span> (<span class="hljs-keyword">error</span>) {
-     console.log(<span class="hljs-string">'Failed to load wallet: '</span> + <span class="hljs-keyword">error</span>.toString());
-}</code></pre>
+										<p>The public address of this view wallet.</p>
 									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span>
+							</h4>
 						</li>
 					</ul>
 				</section>
@@ -1656,24 +1854,44 @@ const wallet = <span class="hljs-module-access"><span class="hljs-module"><span 
 					<a name="importwalletfromkeys" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> import<wbr>Wallet<wbr>From<wbr>Keys</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">import<wbr>Wallet<wbr>From<wbr>Keys<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, scanHeight<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, privateViewKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, privateSpendKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
+						<li class="tsd-signature tsd-kind-icon">import<wbr>Wallet<wbr>From<wbr>Keys<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, scanHeight<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, privateViewKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, privateSpendKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L344">WalletBackend.ts:344</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L366">WalletBackend.ts:366</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Imports a wallet from a pair of private keys.</p>
+								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
+
+<span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
+
+<span class="hljs-keyword">const</span> privateViewKey = <span class="hljs-string">'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01'</span>;
+<span class="hljs-keyword">const</span> privateSpendKey = <span class="hljs-string">'f1b1e9a6f56241594ddabb243cdb39355a8b4a1a1c0343dde36f3b57835fe607'</span>;
+
+<span class="hljs-keyword">const</span> [wallet, err] = WB.WalletBackend.importWalletFromSeed(daemon, <span class="hljs-number">100000</span>, privateViewKey, privateSpendKey);
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to load wallet: '</span> + err.toString());
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>daemon: <a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An implementation of the IDaemon interface. Either
+										a conventional daemon, or a blockchain cache API.</p>
+									</div>
 								</li>
 								<li>
-									<h5>scanHeight: <span class="tsd-signature-type">number</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> scanHeight: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>The height to begin scanning the blockchain from.
 											This can greatly increase sync speeds if given.
@@ -1682,29 +1900,24 @@ const wallet = <span class="hljs-module-access"><span class="hljs-module"><span 
 								</li>
 								<li>
 									<h5>privateViewKey: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The private view key to import. Should be a 64 char hex string.</p>
+									</div>
 								</li>
 								<li>
 									<h5>privateSpendKey: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The private spend key to import. Should be a 64 char hex string.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></h4>
-							<p>Returns a WalletBackend, or a WalletError if the
-							keys are invalid or the scan height is invalid.</p>
-							<p>Imports a wallet from a pair of private keys.</p>
-							<p>Usage:</p>
-							<pre><code><span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
-
-<span class="hljs-keyword">const</span> privateViewKey = <span class="hljs-string">'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01'</span>;
-<span class="hljs-keyword">const</span> privateSpendKey = <span class="hljs-string">'f1b1e9a6f56241594ddabb243cdb39355a8b4a1a1c0343dde36f3b57835fe607'</span>;
-
-<span class="hljs-keyword">const</span> [wallet, <span class="hljs-keyword">error</span>] = WalletBackend.importWalletFromSeed(daemon, <span class="hljs-number">100000</span>, privateViewKey, privateSpendKey);
-
-<span class="hljs-keyword">if</span> (<span class="hljs-keyword">error</span>) {
-     console.log(<span class="hljs-string">'Failed to load wallet: '</span> + <span class="hljs-keyword">error</span>.toString());
-}</code></pre>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span>
+							</h4>
 						</li>
 					</ul>
 				</section>
@@ -1712,54 +1925,66 @@ const wallet = <span class="hljs-module-access"><span class="hljs-module"><span 
 					<a name="importwalletfromseed" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> import<wbr>Wallet<wbr>From<wbr>Seed</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">import<wbr>Wallet<wbr>From<wbr>Seed<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, scanHeight<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, mnemonicSeed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
+						<li class="tsd-signature tsd-kind-icon">import<wbr>Wallet<wbr>From<wbr>Seed<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, scanHeight<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, mnemonicSeed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L284">WalletBackend.ts:284</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L301">WalletBackend.ts:301</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>daemon: <a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a></h5>
-								</li>
-								<li>
-									<h5>scanHeight: <span class="tsd-signature-type">number</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The height to begin scanning the blockchain from.
-											This can greatly increase sync speeds if given.
-										Defaults to zero.</p>
-									</div>
-								</li>
-								<li>
-									<h5>mnemonicSeed: <span class="tsd-signature-type">string</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></h4>
-							<p>Returns a WalletBackend, or a WalletError if the
-							mnemonic is invalid or the scan height is invalid.</p>
-							<p>Imports a wallet from a 25 word mnemonic seed.</p>
-							<p>Usage:</p>
-							<pre><code><span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
+								<div class="lead">
+									<p>Imports a wallet from a 25 word mnemonic seed.</p>
+								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
+
+<span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
 
 <span class="hljs-keyword">const</span> seed = <span class="hljs-string">'necklace went vials phone both haunted either eskimos '</span> +
              <span class="hljs-string">'dialect civilian western dabbing snout rustled balding '</span> +
              <span class="hljs-string">'puddle looking orbit rest agenda jukebox opened sarcasm '</span> +
              <span class="hljs-string">'solved eskimos'</span>;
 
-<span class="hljs-keyword">const</span> [wallet, <span class="hljs-keyword">error</span>] = WalletBackend.importWalletFromSeed(daemon, <span class="hljs-number">100000</span>, seed);
+<span class="hljs-keyword">const</span> [wallet, err] = WB.WalletBackend.importWalletFromSeed(daemon, <span class="hljs-number">100000</span>, seed);
 
-<span class="hljs-keyword">if</span> (<span class="hljs-keyword">error</span>) {
-     console.log(<span class="hljs-string">'Failed to load wallet: '</span> + <span class="hljs-keyword">error</span>.toString());
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to load wallet: '</span> + err.toString());
 }</code></pre>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>daemon: <a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An implementation of the IDaemon interface. Either
+										a conventional daemon, or a blockchain cache API.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> scanHeight: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The height to begin scanning the blockchain from.
+											This can greatly increase sync speeds if given.
+										Defaults to zero if not given.</p>
+									</div>
+								</li>
+								<li>
+									<h5>mnemonicSeed: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The mnemonic seed to import. Should be a 25 word string.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span>
+							</h4>
 						</li>
 					</ul>
 				</section>
@@ -1767,42 +1992,58 @@ const wallet = <span class="hljs-module-access"><span class="hljs-module"><span 
 					<a name="loadwalletfromjson" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> load<wbr>Wallet<wbr>FromJSON</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">load<wbr>Wallet<wbr>FromJSON<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, json<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
+						<li class="tsd-signature tsd-kind-icon">load<wbr>Wallet<wbr>FromJSON<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, json<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L242">WalletBackend.ts:242</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L255">WalletBackend.ts:255</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Loads a wallet from a JSON encoded string. For the correct format for
+									the JSON to use, see <a href="https://github.com/turtlecoin/wallet-file-interaction">https://github.com/turtlecoin/wallet-file-interaction</a></p>
+								</div>
+								<p>You can obtain this JSON using <a href="_walletbackend_.walletbackend.html#tojsonstring">toJSONString</a>.</p>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
+
+<span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
+
+<span class="hljs-keyword">const</span> [wallet, err] = WB.WalletBackend.loadWalletFromJSON(daemon, json);
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to load wallet: '</span> + err.toString());
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>daemon: <a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>An implementation of the IDaemon interface. Either
+										a conventional daemon, or a blockchain cache API.</p>
+									</div>
 								</li>
 								<li>
 									<h5>json: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Wallet info encoded as a JSON encoded string. Note
+											that this should be a <em>string</em>, NOT a JSON object.
+											This function will call <code>JSON.parse()</code>, so you should
+										not do that yourself.</p>
+									</div>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></h4>
-							<p>Returns a WalletBackend, or a WalletError if the JSON is
-							an invalid format</p>
-							<p>Loads a wallet from a JSON encoded string. For the correct format for
-							the JSON to use, see <a href="https://github.com/turtlecoin/wallet-file-interaction">https://github.com/turtlecoin/wallet-file-interaction</a></p>
-							<p>Usage:</p>
-							<pre><code>const daemon = <span class="hljs-keyword">new</span> <span class="hljs-constructor">ConventionalDaemon('127.0.0.1', 11898)</span>;
-
-const <span class="hljs-literal">[<span class="hljs-identifier">wallet</span>, <span class="hljs-identifier">error</span>]</span> = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">WalletBackend</span>.</span></span>load<span class="hljs-constructor">WalletFromJSON(<span class="hljs-params">daemon</span>, <span class="hljs-params">json</span>)</span>;
-
-<span class="hljs-keyword">if</span> (error) {
-     console.log('Failed <span class="hljs-keyword">to</span> load wallet: ' + error.<span class="hljs-keyword">to</span><span class="hljs-constructor">String()</span>);
-}</code></pre>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span>
+							</h4>
 						</li>
 					</ul>
 				</section>
@@ -1810,16 +2051,33 @@ const <span class="hljs-literal">[<span class="hljs-identifier">wallet</span>, <
 					<a name="openwalletfromfile" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> open<wbr>Wallet<wbr>From<wbr>File</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">open<wbr>Wallet<wbr>From<wbr>File<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, filename<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, password<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></li>
+						<li class="tsd-signature tsd-kind-icon">open<wbr>Wallet<wbr>From<wbr>File<span class="tsd-signature-symbol">(</span>daemon<span class="tsd-signature-symbol">: </span><a href="../interfaces/_idaemon_.idaemon.html" class="tsd-signature-type">IDaemon</a>, filename<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, password<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f20e4c7/lib/WalletBackend.ts#L206">WalletBackend.ts:206</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/ae3fa04/lib/WalletBackend.ts#L211">WalletBackend.ts:211</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This method opens a password protected wallet from a filepath.
+										The password protection follows the same format as wallet-api,
+										zedwallet-beta, and WalletBackend. It does NOT follow the same format
+										as turtle-service or zedwallet, and will be unable to open wallets
+									created with this program.</p>
+								</div>
+								<p>Example:</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
+
+<span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
+
+<span class="hljs-keyword">const</span> [wallet, error] = WB.WalletBackend.openWalletFromFile(daemon, <span class="hljs-string">'mywallet.wallet'</span>, <span class="hljs-string">'hunter2'</span>);
+
+<span class="hljs-keyword">if</span> (err) {
+     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Failed to open wallet: '</span> + err.toString());
+}</code></pre>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -1842,23 +2100,10 @@ const <span class="hljs-literal">[<span class="hljs-identifier">wallet</span>, <
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span></h4>
-							<p>Returns either a WalletBackend, or a WalletError if the
-								password was wrong, the file didn&#39;t exist, the JSON was
-							invalid, etc.</p>
-							<p>This method opens a password protected wallet from a filepath.
-								The password protection follows the same format as wallet-api,
-								zedwallet-beta, and WalletBackend. It does NOT follow the same format
-								as turtle-service or zedwallet, and will be unable to open wallets
-							created with this program.</p>
-							<p>Usage:</p>
-							<pre><code>const daemon = <span class="hljs-keyword">new</span> <span class="hljs-constructor">ConventionalDaemon('127.0.0.1', 11898)</span>;
-
-const <span class="hljs-literal">[<span class="hljs-identifier">wallet</span>, <span class="hljs-identifier">error</span>]</span> = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">WalletBackend</span>.</span></span><span class="hljs-keyword">open</span><span class="hljs-constructor">WalletFromFile(<span class="hljs-params">daemon</span>, '<span class="hljs-params">mywallet</span>.<span class="hljs-params">wallet</span>', '<span class="hljs-params">hunter2</span>')</span>;
-
-<span class="hljs-keyword">if</span> (error) {
-     console.log('Failed <span class="hljs-keyword">to</span> <span class="hljs-keyword">open</span> wallet: ' + error.<span class="hljs-keyword">to</span><span class="hljs-constructor">String()</span>);
-}</code></pre>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><a href="_walletbackend_.walletbackend.html" class="tsd-signature-type">WalletBackend</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">]</span>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">, </span><a href="_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a><span class="tsd-signature-symbol">]</span>
+							</h4>
 						</li>
 					</ul>
 				</section>

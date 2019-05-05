@@ -38,6 +38,11 @@ import {
     getLowerBound, getUpperBound,
 } from './Utilities';
 
+/* Typedoc is stupid and can't work out our sendTransaction??? types - using
+   these aliases helps it figure it out */
+type TransactionHash = [string, undefined];
+type TransactionError = [undefined, WalletError];
+
 export declare interface WalletBackend {
 
     /**
@@ -45,9 +50,9 @@ export declare interface WalletBackend {
      *
      * See the incomingtx and outgoingtx events if you need more fine grained control.
      *
-     * Usage:
+     * Example:
      *
-     * ```
+     * ```javascript
      * wallet.on('transaction', (transaction) => {
      *     console.log(`Transaction of ${transaction.totalAmount()} received!`);
      * });
@@ -60,9 +65,9 @@ export declare interface WalletBackend {
     /**
      * This is emitted whenever the wallet finds an incoming transaction.
      *
-     * Usage:
+     * Example:
      *
-     * ```
+     * ```javascript
      * wallet.on('incomingtx', (transaction) => {
      *     console.log(`Incoming transaction of ${transaction.totalAmount()} received!`);
      * });
@@ -75,9 +80,9 @@ export declare interface WalletBackend {
     /**
      * This is emitted whenever the wallet finds an outgoing transaction.
      *
-     * Usage:
+     * Example:
      *
-     * ```
+     * ```javascript
      * wallet.on('outgoingtx', (transaction) => {
      *     console.log(`Outgoing transaction of ${transaction.totalAmount()} received!`);
      * });
@@ -90,9 +95,9 @@ export declare interface WalletBackend {
     /**
      * This is emitted whenever the wallet finds a fusion transaction.
      *
-     * Usage:
+     * Example:
      *
-     * ```
+     * ```javascript
      * wallet.on('fusiontx', (transaction) => {
      *     console.log('Fusion transaction found!');
      * });
@@ -109,9 +114,9 @@ export declare interface WalletBackend {
      * we send a transaction, while outgoingtx is fired when the tx is included
      * in a block, and scanned by the wallet.
      *
-     * Usage:
+     * Example:
      *
-     * ```
+     * ```javascript
      * wallet.on('createdtx', (transaction) => {
      *      console.log('Transaction created!');
      * });
@@ -124,9 +129,9 @@ export declare interface WalletBackend {
     /**
      * This is emitted whenever the wallet creates and sends a fusion transaction.
      *
-     * Usage:
+     * Example:
      *
-     * ```
+     * ```javascript
      * wallet.on('createdfusiontx', (transaction) => {
      *      console.log('Fusion transaction created!');
      * });
@@ -140,9 +145,9 @@ export declare interface WalletBackend {
      * This is emitted whenever the wallet first syncs with the network. It will
      * also be fired if the wallet unsyncs from the network, then resyncs.
      *
-     * Usage:
+     * Example:
      *
-     * ```
+     * ```javascript
      * wallet.on('sync', (walletHeight, networkHeight) => {
      *     console.log(`Wallet synced! Wallet height: ${walletHeight}, Network height: ${networkHeight}`);
      * });
@@ -156,9 +161,9 @@ export declare interface WalletBackend {
      * This is emitted whenever the wallet first desyncs with the network. It will
      * only be fired after the wallet has initially fired the sync event.
      *
-     * Usage:
+     * Example:
      *
-     * ```
+     * ```javascript
      * wallet.on('desync', (walletHeight, networkHeight) => {
      *     console.log(`Wallet is no longer synced! Wallet height: ${walletHeight}, Network height: ${networkHeight}`);
      * });
@@ -180,11 +185,6 @@ export declare interface WalletBackend {
 export class WalletBackend extends EventEmitter {
 
     /**
-     * @param filename  The location of the wallet file on disk
-     * @param password  The password to use to decrypt the wallet. May be blank.
-     * @returns         Returns either a WalletBackend, or a WalletError if the
-     *                  password was wrong, the file didn't exist, the JSON was
-     *                  invalid, etc.
      *
      * This method opens a password protected wallet from a filepath.
      * The password protection follows the same format as wallet-api,
@@ -192,22 +192,27 @@ export class WalletBackend extends EventEmitter {
      * as turtle-service or zedwallet, and will be unable to open wallets
      * created with this program.
      *
-     * Usage:
-     * ```
-     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     * Example:
+     * ```javascript
+     * const WB = require('turtlecoin-wallet-backend');
      *
-     * const [wallet, error] = WalletBackend.openWalletFromFile(daemon, 'mywallet.wallet', 'hunter2');
+     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
      *
-     * if (error) {
-     *      console.log('Failed to open wallet: ' + error.toString());
+     * const [wallet, error] = WB.WalletBackend.openWalletFromFile(daemon, 'mywallet.wallet', 'hunter2');
+     *
+     * if (err) {
+     *      console.log('Failed to open wallet: ' + err.toString());
      * }
      * ```
+     * @param filename  The location of the wallet file on disk
+     *
+     * @param password  The password to use to decrypt the wallet. May be blank.
      */
     public static openWalletFromFile(
         daemon: IDaemon,
         filename: string,
         password: string,
-        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         MergeConfig(config);
 
@@ -221,28 +226,36 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * @returns     Returns a WalletBackend, or a WalletError if the JSON is
-     *              an invalid format
-     *
      * Loads a wallet from a JSON encoded string. For the correct format for
      * the JSON to use, see https://github.com/turtlecoin/wallet-file-interaction
      *
-     * Usage:
-     * ```
-     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     * You can obtain this JSON using [[toJSONString]].
      *
-     * const [wallet, error] = WalletBackend.loadWalletFromJSON(daemon, json);
+     * Example:
+     * ```javascript
+     * const WB = require('turtlecoin-wallet-backend');
      *
-     * if (error) {
-     *      console.log('Failed to load wallet: ' + error.toString());
+     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     *
+     * const [wallet, err] = WB.WalletBackend.loadWalletFromJSON(daemon, json);
+     *
+     * if (err) {
+     *      console.log('Failed to load wallet: ' + err.toString());
      * }
      * ```
      *
+     * @param daemon        An implementation of the IDaemon interface. Either
+     *                      a conventional daemon, or a blockchain cache API.
+     *
+     * @param json          Wallet info encoded as a JSON encoded string. Note
+     *                      that this should be a *string*, NOT a JSON object.
+     *                      This function will call `JSON.parse()`, so you should
+     *                      not do that yourself.
      */
     public static loadWalletFromJSON(
         daemon: IDaemon,
         json: string,
-        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         MergeConfig(config);
 
@@ -256,36 +269,40 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * @param scanHeight    The height to begin scanning the blockchain from.
-     *                      This can greatly increase sync speeds if given.
-     *                      Defaults to zero.
-     *
-     * @returns             Returns a WalletBackend, or a WalletError if the
-     *                      mnemonic is invalid or the scan height is invalid.
-     *
      * Imports a wallet from a 25 word mnemonic seed.
      *
-     * Usage:
-     * ```
-     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     * Example:
+     * ```javascript
+     * const WB = require('turtlecoin-wallet-backend');
+     *
+     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
      *
      * const seed = 'necklace went vials phone both haunted either eskimos ' +
      *              'dialect civilian western dabbing snout rustled balding ' +
      *              'puddle looking orbit rest agenda jukebox opened sarcasm ' +
      *              'solved eskimos';
      *
-     * const [wallet, error] = WalletBackend.importWalletFromSeed(daemon, 100000, seed);
+     * const [wallet, err] = WB.WalletBackend.importWalletFromSeed(daemon, 100000, seed);
      *
-     * if (error) {
-     *      console.log('Failed to load wallet: ' + error.toString());
+     * if (err) {
+     *      console.log('Failed to load wallet: ' + err.toString());
      * }
      * ```
+     *
+     * @param daemon        An implementation of the IDaemon interface. Either
+     *                      a conventional daemon, or a blockchain cache API.
+     *
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Defaults to zero if not given.
+     *
+     * @param mnemonicSeed  The mnemonic seed to import. Should be a 25 word string.
      */
     public static importWalletFromSeed(
         daemon: IDaemon,
-        scanHeight: number,
+        scanHeight: number = 0,
         mnemonicSeed: string,
-        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         MergeConfig(config);
 
@@ -317,36 +334,41 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * @param scanHeight    The height to begin scanning the blockchain from.
-     *                      This can greatly increase sync speeds if given.
-     *                      Defaults to zero.
-     *
-     * @returns             Returns a WalletBackend, or a WalletError if the
-     *                      keys are invalid or the scan height is invalid.
-     *
      * Imports a wallet from a pair of private keys.
      *
-     * Usage:
-     * ```
-     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     * Example:
+     * ```javascript
+     * const WB = require('turtlecoin-wallet-backend');
+     *
+     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
      *
      * const privateViewKey = 'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01';
      * const privateSpendKey = 'f1b1e9a6f56241594ddabb243cdb39355a8b4a1a1c0343dde36f3b57835fe607';
      *
-     * const [wallet, error] = WalletBackend.importWalletFromSeed(daemon, 100000, privateViewKey, privateSpendKey);
+     * const [wallet, err] = WB.WalletBackend.importWalletFromSeed(daemon, 100000, privateViewKey, privateSpendKey);
      *
-     * if (error) {
-     *      console.log('Failed to load wallet: ' + error.toString());
+     * if (err) {
+     *      console.log('Failed to load wallet: ' + err.toString());
      * }
      * ```
      *
+     * @param daemon        An implementation of the IDaemon interface. Either
+     *                      a conventional daemon, or a blockchain cache API.
+     *
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Defaults to zero.
+     *
+     * @param privateViewKey    The private view key to import. Should be a 64 char hex string.
+     *
+     * @param privateSpendKey   The private spend key to import. Should be a 64 char hex string.
      */
     public static importWalletFromKeys(
         daemon: IDaemon,
-        scanHeight: number,
+        scanHeight: number = 0,
         privateViewKey: string,
         privateSpendKey: string,
-        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         MergeConfig(config);
 
@@ -382,11 +404,6 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * @param scanHeight    The height to begin scanning the blockchain from.
-     *                      This can greatly increase sync speeds if given.
-     *                      Defaults to zero.
-     * @param address       The public address of this view wallet
-     *
      * This method imports a wallet you have previously created, in a 'watch only'
      * state. This wallet can view incoming transactions, but cannot send
      * transactions. It also cannot view outgoing transactions, so balances
@@ -394,26 +411,39 @@ export class WalletBackend extends EventEmitter {
      * This is useful for viewing your balance whilst not risking your funds
      * or private keys being stolen.
      *
-     * Usage:
-     * ```
-     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
+     * Example:
+     * ```javascript
+     * const WB = require('turtlecoin-wallet-backend');
+     *
+     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
      *
      * const privateViewKey = 'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01';
+     *
      * const address = 'TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW';
      *
-     * const [wallet, error] = WalletBackend.importViewWallet(daemon, 100000, privateViewKey, address);
+     * const [wallet, err] = WB.WalletBackend.importViewWallet(daemon, 100000, privateViewKey, address);
      *
-     * if (error) {
-     *      console.log('Failed to load wallet: ' + error.toString());
+     * if (err) {
+     *      console.log('Failed to load wallet: ' + err.toString());
      * }
      * ```
+     *
+     * @param daemon        An implementation of the IDaemon interface. Either
+     *                      a conventional daemon, or a blockchain cache API.
+     *
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Defaults to zero.
+     * @param privateViewKey    The private view key of this view wallet. Should be a 64 char hex string.
+     *
+     * @param address       The public address of this view wallet.
      */
     public static importViewWallet(
         daemon: IDaemon,
-        scanHeight: number,
+        scanHeight: number = 0,
         privateViewKey: string,
         address: string,
-        config?: IConfig): [WalletBackend | undefined, WalletError | undefined] {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         MergeConfig(config);
 
@@ -453,14 +483,17 @@ export class WalletBackend extends EventEmitter {
     /**
      * This method creates a new wallet instance with a random key pair.
      *
-     * The created addresses view key will be derived in terms of the spend key,
-     * i.e. it will have a mnemonic seed.
+     * Example:
+     * ```javascript
+     * const WB = require('turtlecoin-wallet-backend');
      *
-     * Usage:
+     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     *
+     * const wallet = WB.WalletBackend.createWallet(daemon);
      * ```
-     * const daemon = new ConventionalDaemon('127.0.0.1', 11898);
-     * const wallet = WalletBackend.createWallet(daemon);
-     * ```
+     *
+     * @param daemon        An implementation of the IDaemon interface. Either
+     *                      a conventional daemon, or a blockchain cache API.
      */
     public static createWallet(
         daemon: IDaemon,
@@ -627,19 +660,39 @@ export class WalletBackend extends EventEmitter {
      * Performs the same operation as reset(), but uses the initial scan height
      * or timestamp. For example, if you created your wallet at block 800,000,
      * this method would start rescanning from then.
+     *
+     * This function will return once the wallet has been successfully reset,
+     * and syncing has began again.
+     *
+     * Example:
+     * ```javascript
+     * await wallet.rescan();
+     * ```
      */
-    public rescan() {
+    public rescan(): Promise<void> {
         const [scanHeight, scanTimestamp] = this.walletSynchronizer.getScanHeights();
 
-        this.reset(scanHeight, scanTimestamp);
+        return this.reset(scanHeight, scanTimestamp);
     }
 
     /**
+     *
      * Discard all transaction data, and begin scanning the wallet again
      * from the scanHeight or timestamp given. Defaults to a height of zero,
      * if not given.
+     *
+     * This function will return once the wallet has been successfully reset,
+     * and syncing has began again.
+     *
+     * Example:
+     * ```javascript
+     * await wallet.reset(123456);
+     * ```
+     *
+     * @param scanHeight The scan height to begin scanning transactions from
+     * @param timestamp The timestamp to being scanning transactions from
      */
-    public async reset(scanHeight: number = 0, scanTimestamp: number = 0) {
+    public async reset(scanHeight: number = 0, scanTimestamp: number = 0): Promise<void> {
         const shouldRestart: boolean = this.started;
 
         await this.stop();
@@ -649,16 +702,16 @@ export class WalletBackend extends EventEmitter {
         await this.subWallets.reset(scanHeight, scanTimestamp);
 
         if (shouldRestart) {
-            this.start();
+            await this.start();
         }
     }
 
     /**
      * Gets the wallet, local daemon, and network block count
      *
-     * Usage:
-     * ```
-     * let [walletBlockCount, localDaemonBlockCount, networkBlockCount] =
+     * Example:
+     * ```javascript
+     * const [walletBlockCount, localDaemonBlockCount, networkBlockCount] =
      *      wallet.getSyncStatus();
      * ```
      */
@@ -672,22 +725,45 @@ export class WalletBackend extends EventEmitter {
 
     /**
      * Converts the wallet into a JSON string. This can be used to later restore
-     * the wallet with `loadWalletFromJSON`.
+     * the wallet with [[loadWalletFromJSON]].
+     *
+     * Example:
+     * ```javascript
+     * const walletData = wallet.toJSONString();
+     * ```
      */
     public toJSONString(): string {
         return JSON.stringify(this, null, 4);
     }
 
     /**
+     *
      * Most people don't mine blocks, so by default we don't scan them. If
      * you want to scan them, flip it on/off here.
+     *
+     * Example:
+     * ```javascript
+     * wallet.scanCoinbaseTransactions(true);
+     * ```
+     *
+     * @param shouldScan Should we scan coinbase transactions?
      */
-    public scanCoinbaseTransactions(shouldScan: boolean) {
+    public scanCoinbaseTransactions(shouldScan: boolean): void {
         Config.scanCoinbaseTransactions = shouldScan;
     }
 
     /**
      * Sets the log level. Log messages below this level are not shown.
+     *
+     * Logging by default occurs to stdout. See [[setLoggerCallback]] to modify this,
+     * or gain more control over what is logged.
+     *
+     * Example:
+     * ```javascript
+     * wallet.setLogLevel(WB.LogLevel.DEBUG);
+     * ```
+     *
+     * @param logLevel The level to log messages at.
      */
     public setLogLevel(logLevel: LogLevel): void {
         logger.setLogLevel(logLevel);
@@ -704,30 +780,39 @@ export class WalletBackend extends EventEmitter {
      * should nearly always succeed.
      *
      * This flag is ENABLED by default.
+     *
+     * Example:
+     * ```javascript
+     * wallet.enableAutoOptimization(false);
+     * ```
+     *
+     * @param shouldAutoOptimize Should we automatically keep the wallet optimized?
      */
-    public enableAutoOptimization(shouldAutoOptimize: boolean) {
+    public enableAutoOptimization(shouldAutoOptimize: boolean): void {
         this.autoOptimize = shouldAutoOptimize;
     }
 
     /**
-     * @param callback The callback to use for log messages
-     * @param callback.prettyMessage A nicely formatted log message, with timestamp, levels, and categories
-     * @param callback.message       The raw log message
-     * @param callback.level         The level at which the message was logged at
-     * @param callback.categories    The categories this log message falls into
-     *
      * Sets a callback to be used instead of console.log for more fined control
      * of the logging output.
      *
-     * Usage:
-     * ```
+     * Ensure that you have enabled logging for this function to take effect.
+     * See [[setLogLevel]] for more details.
+     *
+     * Example:
+     * ```javascript
      * wallet.setLoggerCallback((prettyMessage, message, level, categories) => {
-     *       if (categories.includes(LogCategory.SYNC)) {
+     *       if (categories.includes(WB.LogCategory.SYNC)) {
      *           console.log(prettyMessage);
      *       }
      *   });
      * ```
      *
+     * @param callback The callback to use for log messages
+     * @param callback.prettyMessage A nicely formatted log message, with timestamp, levels, and categories
+     * @param callback.message       The raw log message
+     * @param callback.level         The level at which the message was logged at
+     * @param callback.categories    The categories this log message falls into
      */
     public setLoggerCallback(
         callback: (prettyMessage: string,
@@ -743,6 +828,11 @@ export class WalletBackend extends EventEmitter {
      * only use for this is to leverage native code to provide quicker
      * cryptography functions - the default JavaScript is not that speedy.
      *
+     * Note that if you're in a node environment, this library will use
+     * C++ code with node-gyp, so it will be nearly as fast as C++ implementations.
+     * You only need to worry about this in less conventional environments,
+     * like react-native, or possibly the web.
+     *
      * If you don't know what you're doing,
      * DO NOT TOUCH THIS - YOU WILL BREAK WALLET SYNCING
      *
@@ -750,9 +840,23 @@ export class WalletBackend extends EventEmitter {
      * We will fetch them from the daemon if needed. However, if you have them,
      * return them, to save us a daemon call.
      *
-     * @param spendKeys An array of [publicSpendKey, privateSpendKey]
-     * @param processCoinbaseTransactions Whether you should process coinbase transactions or not
+     * Your function should return an array of `[publicSpendKey, TransactionInput]`.
+     * The public spend key is the corresponding subwallet that the transaction input
+     * belongs to.
      *
+     * Return an empty array if no inputs are found that belong to the user.
+     *
+     * Example:
+     * ```javascript
+     * wallet.setBlockOutputProcessFunc(mySuperSpeedyFunction);
+     * ```
+     *
+     * @param func The function to process block outputs.
+     * @param func.block The block to be processed.
+     * @param func.privateViewKey The private view key of this wallet container.
+     * @param func.spendKeys An array of [publicSpendKey, privateSpendKey]. These are the spend keys of each subwallet.
+     * @param func.isViewWallet Whether this wallet is a view only wallet or not.
+     * @param func.processCoinbaseTransactions Whether you should process coinbase transactions or not.
      */
     public setBlockOutputProcessFunc(func: (
             block: Block,
@@ -760,7 +864,7 @@ export class WalletBackend extends EventEmitter {
             spendKeys: Array<[string, string]>,
             isViewWallet: boolean,
             processCoinbaseTransactions: boolean,
-        ) => Array<[string, TransactionInput]>) {
+        ) => Array<[string, TransactionInput]>): void {
         this.externalBlockProcessFunction = func;
     }
 
@@ -768,6 +872,11 @@ export class WalletBackend extends EventEmitter {
      * Initializes and starts the wallet sync process. You should call this
      * function before enquiring about daemon info or fee info. The wallet will
      * not process blocks until you call this method.
+     *
+     * Example:
+     * ```javascript
+     * await wallet.start();
+     * ```
      */
     public async start(): Promise<void> {
         if (!this.started) {
@@ -782,8 +891,17 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * The inverse of the start() method, this pauses the blockchain sync
+     * The inverse of the [[start]] method, this pauses the blockchain sync
      * process.
+     *
+     * If you want the node process to close cleanly (i.e, without using `process.exit()`),
+     * you need to call this function. Otherwise, the library will keep firing
+     * callbacks, and so your script will hang.
+     *
+     * Example:
+     * ```javascript
+     * wallet.stop();
+     * ```
      */
     public stop(): void {
         this.syncThread.stop();
@@ -796,8 +914,14 @@ export class WalletBackend extends EventEmitter {
      * Get the node fee the daemon you are connected to is charging for
      * transactions. If the daemon charges no fee, this will return `['', 0]`
      *
-     * @returns Returns the node fee address, and the node fee amount, in
-     *          atomic units
+     * Example:
+     * ```javascript
+     * const [nodeFeeAddress, nodeFeeAmount] = wallet.getNodeFee();
+     *
+     * if (nodeFeeAmount === 0) {
+     *      console.log('Yay, no fees!');
+     * }
+     * ```
      */
     public getNodeFee(): [string, number] {
         return this.daemon.nodeFee();
@@ -805,6 +929,11 @@ export class WalletBackend extends EventEmitter {
 
     /**
      * Gets the shared private view key for this wallet container.
+     *
+     * Example:
+     * ```javascript
+     * const privateViewKey = wallet.getPrivateViewKey();
+     * ```
      */
     public getPrivateViewKey(): string {
         return this.subWallets.getPrivateViewKey();
@@ -812,6 +941,14 @@ export class WalletBackend extends EventEmitter {
 
     /**
      * Exposes some internal functions for those who know what they're doing...
+     *
+     * Example:
+     * ```javascript
+     * const syncFunc = wallet.internal().sync;
+     * await syncFunc(true);
+     * ```
+     *
+     * @returns Returns an object with two members, sync(), and updateDaemonInfo().
      */
     public internal(): {
         sync: (sleep: boolean) => Promise<boolean>;
@@ -827,20 +964,20 @@ export class WalletBackend extends EventEmitter {
      * Gets the publicSpendKey and privateSpendKey for the given address, if
      * possible.
      *
-     * Note: secret key will be 00000... (64 zeros) if view wallet.
+     * Note: secret key will be 00000... (64 zeros) if this wallet is a view only wallet.
      *
-     * Usage:
-     * ```
-     * const [publicSpendKey, privateSpendKey, error] = getSpendKeys('TRTLxyz...');
-     * if (error) {
-     *      console.log(error);
+     * Example:
+     * ```javascript
+     * const [publicSpendKey, privateSpendKey, err] = wallet.getSpendKeys('TRTLxyz...');
+     *
+     * if (err) {
+     *      console.log('Failed to get spend keys for address: ' + err.toString());
      * }
      * ```
      *
-     * @return Returns either the public and private spend key, or a WalletError
-     *         if the address doesn't exist or is invalid
+     * @param address A valid address in this container, to get the spend keys of
      */
-    public getSpendKeys(address: string): [string, string, WalletError | undefined] {
+    public getSpendKeys(address: string): ([string, string, undefined] | [undefined, undefined, WalletError]) {
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletError = validateAddresses(
@@ -848,7 +985,7 @@ export class WalletBackend extends EventEmitter {
         );
 
         if (!_.isEqual(err, SUCCESS)) {
-            return ['', '', err];
+            return [undefined, undefined, err];
         }
 
         const [publicViewKey, publicSpendKey] = addressToKeys(address);
@@ -856,17 +993,20 @@ export class WalletBackend extends EventEmitter {
         const [err2, privateSpendKey] = this.subWallets.getPrivateSpendKey(publicSpendKey);
 
         if (!_.isEqual(err2, SUCCESS)) {
-            return ['', '', err2];
+            return [undefined, undefined, err2];
         }
 
         return [publicSpendKey, privateSpendKey, undefined];
     }
 
     /**
-     * Get the private spend and private view for the primary address.
+     * Gets the private spend and private view for the primary address.
      * The primary address is the first created wallet in the container.
      *
-     * @return Returns [privateSpendKey, privateViewKey]
+     * Example:
+     * ```javascript
+     * const [privateSpendKey, privateViewKey] = wallet.getPrimaryAddressPrivateKeys();
+     * ```
      */
     public getPrimaryAddressPrivateKeys(): [string, string] {
         return [this.subWallets.getPrimaryPrivateSpendKey(), this.getPrivateViewKey()];
@@ -876,16 +1016,16 @@ export class WalletBackend extends EventEmitter {
      * Get the primary address mnemonic seed. If the primary address isn't
      * a deterministic wallet, it will return a WalletError.
      *
-     * Usage:
-     * ```
-     * const [seed, error] = wallet.getMnemonicSeed();
-     * if (error) {
-     *      console.log('Wallet is not a deterministic wallet');
+     * Example:
+     * ```javascript
+     * const [seed, err] = wallet.getMnemonicSeed();
+     *
+     * if (err) {
+     *      console.log('Wallet is not a deterministic wallet: ' + err.toString());
      * }
      * ```
-     *
      */
-    public getMnemonicSeed(): [string | undefined, WalletError | undefined] {
+    public getMnemonicSeed(): ([string, undefined] | [undefined, WalletError]) {
         return this.getMnemonicSeedForAddress(this.subWallets.getPrimaryAddress());
     }
 
@@ -893,8 +1033,19 @@ export class WalletBackend extends EventEmitter {
      * Get the mnemonic seed for the specified address. If the specified address
      * is invalid or the address isn't a deterministic wallet, it will return
      * a WalletError.
+     *
+     * Example:
+     * ```javascript
+     * const [seed, err] = wallet.getMnemonicSeedForAddress('TRTLxyz...');
+     *
+     * if (err) {
+     *      console.log('Address does not belong to a deterministic wallet: ' + err.toString());
+     * }
+     * ```
+     *
+     * @param address A valid address that exists in this container
      */
-    public getMnemonicSeedForAddress(address: string): [string | undefined, WalletError | undefined] {
+    public getMnemonicSeedForAddress(address: string): ([string, undefined] | [undefined, WalletError]) {
         const privateViewKey: string = this.getPrivateViewKey();
 
         const [publicSpendKey, privateSpendKey, error] = this.getSpendKeys(address);
@@ -903,7 +1054,9 @@ export class WalletBackend extends EventEmitter {
             return [undefined, error];
         }
 
-        const parsedAddr = CryptoUtils().createAddressFromKeys(privateSpendKey, privateViewKey);
+        const parsedAddr = CryptoUtils().createAddressFromKeys(
+            privateSpendKey as string, privateViewKey as string,
+        );
 
         if (!parsedAddr.mnemonic) {
             return [undefined, new WalletError(WalletErrorCode.KEYS_NOT_DETERMINISTIC)];
@@ -916,6 +1069,11 @@ export class WalletBackend extends EventEmitter {
      * Gets the primary address of a wallet container.
      * The primary address is the address that was created first in the wallet
      * container.
+     *
+     * Example:
+     * ```javascript
+     * const address = wallet.getPrimaryAddress();
+     * ```
      */
     public getPrimaryAddress(): string {
         return this.subWallets.getPrimaryAddress();
@@ -923,8 +1081,22 @@ export class WalletBackend extends EventEmitter {
 
     /**
      * Save the wallet to the given filename. Password may be empty, but
-     * filename must not be.
-     * This will take some time - it runs 500,000 iterations of pbkdf2.
+     * filename must not be. Note that an empty password does not mean an
+     * unencrypted wallet - simply a wallet encrypted with the empty string.
+     *
+     * This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.
+     *
+     * Example:
+     * ```javascript
+     * const saved = wallet.saveWalletToFile('test.wallet', 'hunter2');
+     *
+     * if (!saved) {
+     *      console.log('Failed to save wallet!');
+     * }
+     * ```
+     *
+     * @param filename The file location to save the wallet to.
+     * @param password The password to encrypt the wallet with
      *
      * @return Returns a boolean indicating success.
      */
@@ -977,6 +1149,16 @@ export class WalletBackend extends EventEmitter {
 
     /**
      * Gets the address of every subwallet in this container.
+     *
+     * Example:
+     * ```javascript
+     * let i = 1;
+     *
+     * for (const address of wallet.getAddresses()) {
+     *      console.log(`Address [${i}]: ${address}`);
+     *      i++;
+     * }
+     * ```
      */
     public getAddresses(): string[] {
         return this.subWallets.getAddresses();
@@ -992,16 +1174,19 @@ export class WalletBackend extends EventEmitter {
      * number of transactions sent, you can subscribe to the `createdfusiontx`
      * event. This will be fired every time a fusion transaction is sent.
      *
+     * You may also want to consider manually creating individual transactions
+     * if you want more control over the process. See [[sendFusionTransactionBasic]].
+     *
      * This method may take a *very long time* if your wallet is not optimized
      * at all. It is suggested to not block the UI/mainloop of your program
      * when using this method.
      *
-     * Usage:
-     * ```js
+     * Example:
+     * ```javascript
      * const [numberOfTransactionsSent, hashesOfSentFusionTransactions] = await wallet.optimize();
-     * ```
      *
-     * @return Returns [numberOfTransactionsSent, hashesOfSentFusionTransactions]
+     * console.log(`Sent ${numberOfTransactionsSent} fusion transactions, hashes: ${hashesOfSentFusionTransactions.join(', ')}`);
+     * ```
      */
     public async optimize(): Promise<[number, string[]]> {
         let numTransactionsSent: number = 0;
@@ -1022,21 +1207,23 @@ export class WalletBackend extends EventEmitter {
      * for sending larger amounts. You may (probably will) need to perform
      * multiple fusion transactions.
      *
-     * Usage:
-     * ```
-     * const [hash, error] = await sendFusionTransactionBasic()
-     * if (error) {
-     *     // etc
+     * If you want to ensure your wallet gets fully optimized, consider using
+     * [[optimize]].
+     *
+     * Example:
+     * ```javascript
+     * const [hash, err] = await wallet.sendFusionTransactionBasic();
+     *
+     * if (err) {
+     *      console.log('Failed to send fusion transaction: ' + err.toString());
      * }
      * ```
-     *
-     * @return Returns either an error, or the transaction hash.
      */
-    public async sendFusionTransactionBasic(): Promise<([string, undefined]) | ([undefined, WalletError])> {
+    public async sendFusionTransactionBasic(): Promise<(TransactionHash | TransactionError)> {
 
         this.currentlyTransacting = true;
 
-        const f = async (): Promise<([string, undefined]) | ([undefined, WalletError])> => {
+        const f = async (): Promise<(TransactionHash | TransactionError)> => {
             const [transaction, hash, error] = await sendFusionTransactionBasic(
                 this.daemon, this.subWallets,
             );
@@ -1072,31 +1259,34 @@ export class WalletBackend extends EventEmitter {
      * for sending larger amounts. You may (probably will) need to perform
      * multiple fusion transactions.
      *
+     * If you want to ensure your wallet gets fully optimized, consider using
+     * [[optimize]].
+     *
      * All parameters are optional.
      *
-     * Usage:
-     * ```
-     * const [hash, error] = await sendFusionTransactionAdvanced(3, undefined, 'TRTLxyz..')
-     * if (error) {
-     *     // etc
+     * Example:
+     * ```javascript
+     * const [hash, err] = await wallet.sendFusionTransactionAdvanced(3, undefined, 'TRTLxyz..');
+     *
+     * if (err) {
+     *      console.log('Failed to send transaction: ' + err.toString());
      * }
      * ```
+     *
      * @param mixin                 The amount of input keys to hide your input with.
      *                              Your network may enforce a static mixin.
      * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
      * @param destination           The destination for the fusion transaction to be sent to.
-     * @param                       Must be a subwallet in this container.
-     *
-     * @return Returns either an error, or the transaction hash.
+     *                              Must be an address existing in this container.
      */
     public async sendFusionTransactionAdvanced(
         mixin?: number,
         subWalletsToTakeFrom?: string[],
-        destination?: string): Promise<([string, undefined]) | ([undefined, WalletError])> {
+        destination?: string): Promise<(TransactionHash | TransactionError)> {
 
         this.currentlyTransacting = true;
 
-        const f = async (): Promise<([string, undefined]) | ([undefined, WalletError])> => {
+        const f = async (): Promise<(TransactionHash | TransactionError)> => {
             const [transaction, hash, error] = await sendFusionTransactionAdvanced(
                 this.daemon, this.subWallets, mixin, subWalletsToTakeFrom,
                 destination,
@@ -1134,7 +1324,16 @@ export class WalletBackend extends EventEmitter {
      * Network fee is set to default, mixin is set to default, all subwallets
      * are taken from, primary address is used as change address.
      *
-     * If you need more control, use `sendTransactionAdvanced()`
+     * If you need more control, use [[sendTransactionAdvanced]].
+     *
+     * Example:
+     * ```javascript
+     * const [hash, err] = await wallet.sendTransactionBasic('TRTLxyz...', 1234);
+     *
+     * if (err) {
+     *      console.log('Failed to send transaction: ' + err.toString());
+     * }
+     * ```
      *
      * @param destination   The address to send the funds to
      * @param amount        The amount to send, in ATOMIC units
@@ -1145,10 +1344,7 @@ export class WalletBackend extends EventEmitter {
     public async sendTransactionBasic(
         destination: string,
         amount: number,
-        paymentID?: string): Promise<
-            ([string, undefined]) |
-            ([undefined, WalletError])
-        > {
+        paymentID?: string): Promise<(TransactionHash | TransactionError)> {
 
         this.currentlyTransacting = true;
 
@@ -1188,14 +1384,28 @@ export class WalletBackend extends EventEmitter {
      *
      * All parameters are optional aside from destinations.
      *
+     * Example:
+     * ```javascript
+     * const destinations = [
+     *      ['TRTLxyz...', 1000],
+     *      ['TRTLzyx...', 10000],
+     * ];
+     *
+     * const [hash, err] = await wallet.sendTransactionAdvanced(destinations, undefined, 100, 'c59d157d1d96f280ece0816a8925cae8232432b7235d1fa92c70faf3064434b3');
+     *
+     * if (err) {
+     *      console.log('Failed to send transaction: ' + err.toString());
+     * }
+     * ```
+     *
      * @param destinations          An array of destinations, and amounts to send to that
-     *                              destination.
+     *                              destination. Amounts are in ATOMIC units.
      * @param mixin                 The amount of input keys to hide your input with.
      *                              Your network may enforce a static mixin.
      * @param fee                   The network fee to use with this transaction. In ATOMIC units.
-     * @param paymentID             The payment ID to include with this transaction.
-     * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
-     * @param changeAddress         The address to send any returned change to.
+     * @param paymentID             The payment ID to include with this transaction. Defaults to none.
+     * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from. Defaults to all addresses.
+     * @param changeAddress         The address to send any returned change to. Defaults to the primary address.
      */
     public async sendTransactionAdvanced(
         destinations: Array<[string, number]>,
@@ -1203,11 +1413,11 @@ export class WalletBackend extends EventEmitter {
         fee?: number,
         paymentID?: string,
         subWalletsToTakeFrom?: string[],
-        changeAddress?: string): Promise<([string, undefined]) | ([undefined, WalletError])> {
+        changeAddress?: string): Promise<(TransactionHash | TransactionError)> {
 
         this.currentlyTransacting = true;
 
-        const f = async (): Promise<([string, undefined]) | ([undefined, WalletError])> => {
+        const f = async (): Promise<(TransactionHash | TransactionError)> => {
             const [transaction, hash, error] = await sendTransactionAdvanced(
                 this.daemon, this.subWallets, destinations, mixin, fee, paymentID,
                 subWalletsToTakeFrom, changeAddress,
@@ -1240,10 +1450,13 @@ export class WalletBackend extends EventEmitter {
     /**
      * Get the unlocked and locked balance for the wallet container.
      *
+     * Example:
+     * ```javascript
+     * const [unlockedBalance, lockedBalance] = wallet.getBalance();
+     * ```
+     *
      * @param subWalletsToTakeFrom The addresses to check the balance of. If
      *                             not given, defaults to all addresses.
-     *
-     * @return Returns [unlockedBalance, lockedBalance]
      */
     public getBalance(subWalletsToTakeFrom?: string[]): [number, number] {
         return this.subWallets.getBalance(
@@ -1253,10 +1466,17 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Get all transactions in a wallet container
+     * Gets all the transactions in the wallet container.
      *
      * Newer transactions are at the front of the array - Unconfirmed transactions
      * come at the very front.
+     *
+     * Example:
+     * ```javascript
+     * for (const tx of wallet.getTransactions()) {
+     *      console.log(`Transaction ${tx.hash} - ${WB.prettyPrintAmount(tx.totalAmount())} - ${tx.timestamp}`);
+     * }
+     * ```
      *
      * @param startIndex Index to start taking transactions from
      * @param numTransactions Number of transactions to take
@@ -1286,7 +1506,20 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Gets the specified transaction, if it exists.
+     * Gets the specified transaction, if it exists in this wallet container.
+     *
+     * Example:
+     * ```javascript
+     * const tx = wallet.getTransaction('693950eeec41dc36cfc5109eba15807ce3d63eff21f1eec20a7d1bda99563b1c');
+     *
+     * if (tx) {
+     *      console.log(`Tx ${tx.hash} is worth ${WB.prettyPrintAmount(tx.totalAmount())}`);
+     * } else {
+     *      console.log("Couldn't find transaction! Is your wallet synced?");
+     * }
+     * ```
+     *
+     * @param hash The hash of the transaction to get
      */
     public getTransaction(hash: string): Transaction | undefined {
         const txs = this.getTransactions();
@@ -1296,8 +1529,26 @@ export class WalletBackend extends EventEmitter {
 
     /**
      * Get the number of transactions in the wallet container. Can be used
-     * if you want to avoid fetching every transactions repeatedly when nothing
+     * if you want to avoid fetching all transactions repeatedly when nothing
      * has changed.
+     *
+     * Note that it probably is more effective to subscribe to the transaction
+     * related events to update your UI, rather than polling for the number
+     * of transactions.
+     *
+     * Example:
+     * ```javascript
+     * let numTransactions = 0;
+     *
+     * while (true) {
+     *      const tmpNumTransactions = wallet.getNumTransactions();
+     *
+     *      if (numTransactions != tmpNumTransactions) {
+     *          console.log(tmpNumTransactions - numTransactions + ' new transactions found!');
+     *          numTransactions = tmpNumTransactions;
+     *      }
+     * }
+     * ```
      */
     public getNumTransactions(): number {
         return this.subWallets.getNumTransactions()
@@ -1399,7 +1650,7 @@ export class WalletBackend extends EventEmitter {
                 this.emit('fusiontx', transaction);
             }
         }
-        
+
         if (txData.transactionsToAdd.length > 0 && this.autoOptimize) {
             this.performAutoOptimize();
         }
@@ -1544,7 +1795,7 @@ export class WalletBackend extends EventEmitter {
 
     /**
      * Converts recursively to JSON. Should be used in conjuction with JSON.stringify.
-     * Usage:
+     * Example:
      *
      * ```
      * JSON.stringify(wallet, null, 4);
