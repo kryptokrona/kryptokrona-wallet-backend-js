@@ -10,12 +10,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const CnUtils_1 = require("./CnUtils");
 const Config_1 = require("./Config");
+const nullKey = '0'.repeat(64);
 function generateKeyDerivation(transactionPublicKey, privateViewKey) {
     return __awaiter(this, void 0, void 0, function* () {
         if (Config_1.Config.generateKeyDerivation) {
             return Config_1.Config.generateKeyDerivation(transactionPublicKey, privateViewKey);
         }
-        return Promise.resolve(CnUtils_1.CryptoUtils().generateKeyDerivation(transactionPublicKey, privateViewKey));
+        try {
+            const key = yield CnUtils_1.CryptoUtils().generateKeyDerivation(transactionPublicKey, privateViewKey);
+            return key;
+        }
+        catch (err) {
+            return nullKey;
+        }
     });
 }
 exports.generateKeyDerivation = generateKeyDerivation;
@@ -30,14 +37,20 @@ function generateKeyImagePrimitive(publicSpendKey, privateSpendKey, outputIndex,
             const keyImage = yield Config_1.Config.generateKeyImage(publicEphemeral, privateEphemeral);
             return [keyImage, privateEphemeral];
         }
-        return CnUtils_1.CryptoUtils().generateKeyImagePrimitive(publicSpendKey, privateSpendKey, outputIndex, derivation);
+        try {
+            const keys = yield CnUtils_1.CryptoUtils().generateKeyImagePrimitive(publicSpendKey, privateSpendKey, outputIndex, derivation);
+            return keys;
+        }
+        catch (err) {
+            return [nullKey, nullKey];
+        }
     });
 }
 exports.generateKeyImagePrimitive = generateKeyImagePrimitive;
 function generateKeyImage(transactionPublicKey, privateViewKey, publicSpendKey, privateSpendKey, transactionIndex) {
     return __awaiter(this, void 0, void 0, function* () {
         const derivation = yield generateKeyDerivation(transactionPublicKey, privateViewKey);
-        return yield generateKeyImagePrimitive(publicSpendKey, privateSpendKey, transactionIndex, derivation);
+        return generateKeyImagePrimitive(publicSpendKey, privateSpendKey, transactionIndex, derivation);
     });
 }
 exports.generateKeyImage = generateKeyImage;
@@ -46,7 +59,13 @@ function underivePublicKey(derivation, outputIndex, outputKey) {
         if (Config_1.Config.underivePublicKey) {
             return Config_1.Config.underivePublicKey(derivation, outputIndex, outputKey);
         }
-        return Promise.resolve(CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, outputKey));
+        try {
+            const key = yield CnUtils_1.CryptoUtils().underivePublicKey(derivation, outputIndex, outputKey);
+            return key;
+        }
+        catch (err) {
+            return nullKey;
+        }
     });
 }
 exports.underivePublicKey = underivePublicKey;

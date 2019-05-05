@@ -465,13 +465,6 @@ export class WalletSynchronizer {
             rawTX.transactionPublicKey, this.privateViewKey,
         );
 
-        /* If the transaction public key is invalid (for example,
-           https://explorer.turtlecoin.lol/transaction.html?hash=824a716ea0384bb3f69043457869e333ac9c6f17f1c54fe9a1c9564004879e0e)
-           then the Nan bindings will return undefined. */
-        if (derivation === undefined) {
-            return [];
-        }
-
         const spendKeys: string[] = this.subWallets.getPublicSpendKeys();
 
         for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {

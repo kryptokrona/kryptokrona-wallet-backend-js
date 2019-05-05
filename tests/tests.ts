@@ -129,8 +129,6 @@ function roundTrip(
             daemon, './tests/test.wallet', 'password',
         );
 
-        console.log(error);
-
         return error === undefined;
 
     }, 'Loading test wallet file',
@@ -399,7 +397,7 @@ function roundTrip(
 
         try {
             createIntegratedAddress('TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW', '');
-        } catch(err) {
+        } catch (err) {
             test2 = true;
         }
 
@@ -447,7 +445,7 @@ function roundTrip(
     }, 'Testing isValidMnemonic',
        'isValidMnemonic works',
        'isValidMnemonic doesn\'t work!');
-    
+
     if (doPerformanceTests) {
         /* TODO: Maybe use a remote node? */
         await tester.test(async () => {

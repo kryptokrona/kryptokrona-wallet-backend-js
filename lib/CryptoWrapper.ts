@@ -1,6 +1,8 @@
 import { CryptoUtils } from './CnUtils';
 import { Config } from './Config';
 
+const nullKey = '0'.repeat(64);
+
 export async function generateKeyDerivation(
     transactionPublicKey: string,
     privateViewKey: string): Promise<string> {
@@ -9,9 +11,12 @@ export async function generateKeyDerivation(
         return Config.generateKeyDerivation(transactionPublicKey, privateViewKey);
     }
 
-    return Promise.resolve(CryptoUtils().generateKeyDerivation(
-        transactionPublicKey, privateViewKey,
-    ));
+    try {
+        const key = await CryptoUtils().generateKeyDerivation(transactionPublicKey, privateViewKey);
+        return key;
+    } catch (err) {
+        return nullKey;
+    }
 }
 
 export async function generateKeyImagePrimitive(
@@ -37,9 +42,15 @@ export async function generateKeyImagePrimitive(
         return [keyImage, privateEphemeral];
     }
 
-    return CryptoUtils().generateKeyImagePrimitive(
-        publicSpendKey, privateSpendKey, outputIndex, derivation,
-    );
+    try {
+        const keys = await CryptoUtils().generateKeyImagePrimitive(
+            publicSpendKey, privateSpendKey, outputIndex, derivation,
+        );
+
+        return keys;
+    } catch (err) {
+        return [nullKey, nullKey];
+    }
 }
 
 export async function generateKeyImage(
@@ -51,8 +62,8 @@ export async function generateKeyImage(
 
     const derivation: string = await generateKeyDerivation(transactionPublicKey, privateViewKey);
 
-    return await generateKeyImagePrimitive(
-        publicSpendKey, privateSpendKey, transactionIndex, derivation
+    return generateKeyImagePrimitive(
+        publicSpendKey, privateSpendKey, transactionIndex, derivation,
     );
 }
 
@@ -64,7 +75,13 @@ export async function underivePublicKey(
         return Config.underivePublicKey(derivation, outputIndex, outputKey);
     }
 
-    return Promise.resolve(CryptoUtils().underivePublicKey(
-        derivation, outputIndex, outputKey,
-    ));
+    try {
+        const key = await CryptoUtils().underivePublicKey(
+            derivation, outputIndex, outputKey,
+        );
+
+        return key;
+    } catch (err) {
+        return nullKey;
+    }
 }
