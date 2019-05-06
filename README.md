@@ -30,14 +30,14 @@ Yarn:
 
 ## Documentation
 
-You can view the documentation [here](https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html)
+[You can view the documentation here](https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html)
 
 You can see a list of all the other classes on the right side of the screen.
-Note that you will need to prefix them all with `WB.` to access them, if you are not using typescript style imports.
+Note that you will need to prefix them all with `WB.` to access them, if you are not using typescript style imports, assuming you imported with `const WB = require('turtlecoin-wallet-backend')`.
 
 ## Quick Start
 
-You can find an example project in the [examples](https://github.com/turtlecoin/turtlecoin-wallet-backend-js/tree/master/examples/example1) folder.
+You can find an [example project in the examples](https://github.com/turtlecoin/turtlecoin-wallet-backend-js/tree/master/examples/example1) folder.
 
 ### Javascript
 
@@ -166,7 +166,7 @@ You can view available categories and log levels in the documentation below.
 
 ### Building (For Developers)
 
-`git clone https://github.com/zpalmtree/turtlecoin-wallet-backend.git`
+`git clone https://github.com/turtlecoin/turtlecoin-wallet-backend-js.git`
 
 `cd turtlecoin-wallet-backend`
 
@@ -181,8 +181,6 @@ Generated javascript files will be written to the dist/lib/ folder.
 `yarn test` - This will run the basic tests
 
 `yarn test-all` - This will run all tests, including performance tests.
-
-You need a daemon running on 127.0.0.1:11898 for these to work.
 
 ### Before making a PR
 
