@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-abort-controller@^2.0.2:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/abort-controller/-/abort-controller-2.0.3.tgz#b174827a732efadff81227ed4b8d1cc569baf20a"
-  integrity sha512-EPSq5wr2aFyAZ1PejJB32IX9Qd4Nwus+adnp7STYFM5/23nLPBazqZ1oor6ZqbH+4otaaGXTlC8RN5hq3C8w9Q==
+abort-controller@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/abort-controller/-/abort-controller-3.0.0.tgz#eaf54d53b62bae4138e809ca225c8439a6efb392"
+  integrity sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==
   dependencies:
     event-target-shim "^5.0.0"
 
@@ -342,7 +342,7 @@ nan@^2.13.2:
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.13.2.tgz#f51dc7ae66ba7d5d55e1e6d4d8092e802c9aefe7"
   integrity sha512-TghvYc72wlMGMVMluVo9WRJc0mB8KxxF/gZ4YYFy7V2ZQX9l7rgbPg7vjS9mt6U5HXODVFVI2bOduCzwOMv/lw==
 
-node-fetch@^2.3.0:
+node-fetch@^2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.5.0.tgz#8028c49fc1191bba56a07adc6e2a954644a48501"
   integrity sha512-YuZKluhWGJwCcUu4RlZstdAxr8bFfOVHakc1mplwHkk8J+tqM1Y5yraYvIUpeX8aY7+crCwiELJq7Vl0o0LWXw==
@@ -521,10 +521,10 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-turtlecoin-crypto@0.0.12:
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/turtlecoin-crypto/-/turtlecoin-crypto-0.0.12.tgz#87bea2256fde7cea218b0fbfdbbe164766ea03c0"
-  integrity sha512-m2/YWipRdDnnqRMmbdtWEn1GtWaJ7v7WL4KpDpH2hlsOD3uJl0T9PFxt2Xwv0he2BCQXYp2C/aoAQeC9essYxQ==
+turtlecoin-crypto@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/turtlecoin-crypto/-/turtlecoin-crypto-1.0.0.tgz#97aae984b66d5d94f91e985185c201218bf31d30"
+  integrity sha512-qNieKsrWjMjpR56QkErO1KtD89IudSm/DX+GKf3aBQJ5ylnr9CR0U5+dTPjz9SNpXHPwDLC/pp4VNp+B4aj1fg==
   dependencies:
     bindings "^1.5.0"
     nan "^2.13.2"
@@ -537,10 +537,10 @@ turtlecoin-rpc@^0.12.0:
     request "^2.88.0"
     request-promise-native "^1.0.5"
 
-turtlecoin-utils@^0.0.12:
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/turtlecoin-utils/-/turtlecoin-utils-0.0.12.tgz#79250b2bfc01f6728310bd39c90201b39a08cd5e"
-  integrity sha512-hNGrcYyDAXSEogj2SwVm02+W2eA70VZh7lvHiNgphHPv/+ouatyvwrdUO5Y4Gre81ind3IY+8sJhKGzuWYmSEA==
+turtlecoin-utils@^0.0.13:
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/turtlecoin-utils/-/turtlecoin-utils-0.0.13.tgz#f799e809ad5b76fe9ac8586e6a7269233466d8fc"
+  integrity sha512-A6Cy7MrNUiQVpEi/meZGD5Mh7M5byczYQhEilWuJVuC1KEjwoxLsb6mYf4Mq4xqwgeFT4Ik7cYH+2qzKgp3iwA==
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"
@@ -548,20 +548,20 @@ turtlecoin-utils@^0.0.12:
     secure-random-string "^1.1.0"
     varint "^5.0.0"
   optionalDependencies:
-    turtlecoin-crypto "0.0.12"
+    turtlecoin-crypto "^1.0.0"
 
-turtlecoin-wallet-backend@^1.1.8:
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/turtlecoin-wallet-backend/-/turtlecoin-wallet-backend-1.1.8.tgz#b9a02f085da1f3164a2986221f926dd160fbac8f"
-  integrity sha512-OaY+TBuvb2/DoKNtKW61+UpQTymHO85gtZos60P08G9VbRCB+N8wJ+JSEjkGzxlk5nxrN4jnE8q8RKv6Eazf0g==
+turtlecoin-wallet-backend@^1.1.9:
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/turtlecoin-wallet-backend/-/turtlecoin-wallet-backend-1.1.9.tgz#c7d5437678b21d814d456c118436b4802f0393f1"
+  integrity sha512-UxVWr4EoeM0hh8fHfzhHR9vqKL8p6LKQdygJD8HIRqRFvxPZgSHcTF8AYHpwv311tCVHPWRgn/A143wtPnfmdA==
   dependencies:
-    abort-controller "^2.0.2"
+    abort-controller "^3.0.0"
     lodash "^4.17.11"
-    node-fetch "^2.3.0"
+    node-fetch "^2.5.0"
     object-sizeof "^1.3.0"
     pbkdf2 "^3.0.17"
     turtlecoin-rpc "^0.12.0"
-    turtlecoin-utils "^0.0.12"
+    turtlecoin-utils "^0.0.13"
 
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
