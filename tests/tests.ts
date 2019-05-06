@@ -3,7 +3,7 @@ import * as colors from 'colors';
 import * as fs from 'fs';
 
 import {
-    ConventionalDaemon, IDaemon, prettyPrintAmount, SUCCESS, validateAddresses,
+    IDaemon, prettyPrintAmount, SUCCESS, validateAddresses,
     WalletBackend, WalletError, WalletErrorCode, BlockchainCacheApi, LogLevel,
     isValidMnemonic, isValidMnemonicWord, createIntegratedAddress,
 } from '../lib/index';
