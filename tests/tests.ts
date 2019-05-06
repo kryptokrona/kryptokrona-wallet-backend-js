@@ -493,7 +493,7 @@ function roundTrip(
                 /* Use i as output index to prevent optimization */
                 const derivedOutputKey = CryptoUtils().underivePublicKey(
                     derivation, i,
-                    '4a078e76cd41a3d3b534b83dc6f2ea2de500b653ca82273b7bfad8045d85a400',
+                    '14897efad619205256d9170192e50e2fbd7959633e274d1b6f94b1087d680451',
                 );
             }
 
