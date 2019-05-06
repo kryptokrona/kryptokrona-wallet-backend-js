@@ -30,14 +30,14 @@ Yarn:
 
 ## Documentation
 
-You can view the documentation here:  https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html
+You can view the documentation [here](https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html)
 
 You can see a list of all the other classes on the right side of the screen.
 Note that you will need to prefix them all with `WB.` to access them, if you are not using typescript style imports.
 
 ## Quick Start
 
-You can find an example project in the [examples](examples/) folder.
+You can find an example project in the [examples](https://github.com/turtlecoin/turtlecoin-wallet-backend-js/tree/master/examples/example1) folder.
 
 ### Javascript
 
