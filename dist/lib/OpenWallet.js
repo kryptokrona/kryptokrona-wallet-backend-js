@@ -5,7 +5,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const WalletError_1 = require("./WalletError");
-const DecryptWallet_1 = require("./DecryptWallet");
+const WalletEncryption_1 = require("./WalletEncryption");
 /**
  * Open the wallet from the given filename with the given password and return
  * a JSON string. Uses pbkdf2 encryption, not the same as turtle-service
@@ -21,6 +21,6 @@ function openWallet(filename, password) {
     catch (err) {
         return ['', new WalletError_1.WalletError(WalletError_1.WalletErrorCode.FILENAME_NON_EXISTENT, err.toString())];
     }
-    return DecryptWallet_1.decryptWalletFromBuffer(data, password);
+    return WalletEncryption_1.WalletEncryption.decryptWalletFromBuffer(data, password);
 }
 exports.openWallet = openWallet;

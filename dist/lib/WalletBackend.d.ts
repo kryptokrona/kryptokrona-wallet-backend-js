@@ -190,23 +190,6 @@ export declare class WalletBackend extends EventEmitter {
      */
     static openWalletFromEncryptedString(deamon: IDaemon, data: string, password: string, config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError];
     /**
-     * Encrypt the wallet using the given password. Note that an empty password does not mean an
-     * unencrypted wallet - simply a wallet encrypted with the empty string.
-     *
-     * This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.
-     *
-     * Example:
-     * ```javascript
-     * const dataJson = wallet.encryptWallet('hunter2');
-     *
-     * ```
-     *
-     * @param password The password to encrypt the wallet with
-     *
-     * @return Returns a JSON string containing the encrypted fileData.
-     */
-    static encryptWallet(walletJson: string, password: string): Buffer;
-    /**
      * Loads a wallet from a JSON encoded string. For the correct format for
      * the JSON to use, see https://github.com/turtlecoin/wallet-file-interaction
      *
@@ -702,6 +685,23 @@ export declare class WalletBackend extends EventEmitter {
      * ```
      */
     getPrimaryAddress(): string;
+    /**
+     * encrypt the wallet using the given password. Password may be empty. Note that an empty password does not mean an
+     * unencrypted wallet - simply a wallet encrypted with the empty string.
+     *
+     * This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.
+     *
+     * Example:
+     * ```javascript
+     * const saved = wallet.encryptWalletToString('hunter2');
+     *
+     * ```
+     *
+     * @param password The password to encrypt the wallet with
+     *
+     * @return Returns the encrypted wallet as astring.
+     */
+    encryptWalletToString(password: string): string;
     /**
      * Save the wallet to the given filename. Password may be empty, but
      * filename must not be. Note that an empty password does not mean an

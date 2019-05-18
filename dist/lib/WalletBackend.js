@@ -12,14 +12,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
-const crypto = require("crypto");
 const fs = require("fs");
 const _ = require("lodash");
-const pbkdf2 = require("pbkdf2");
 const Metronome_1 = require("./Metronome");
 const SubWallets_1 = require("./SubWallets");
 const OpenWallet_1 = require("./OpenWallet");
-const DecryptWallet_1 = require("./DecryptWallet");
+const WalletEncryption_1 = require("./WalletEncryption");
 const CnUtils_1 = require("./CnUtils");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletSynchronizer_1 = require("./WalletSynchronizer");
@@ -142,54 +140,11 @@ class WalletBackend extends events_1.EventEmitter {
      */
     static openWalletFromEncryptedString(deamon, data, password, config) {
         Config_1.MergeConfig(config);
-        const [walletJSON, error] = DecryptWallet_1.decryptWalletFromString(data, password);
+        const [walletJSON, error] = WalletEncryption_1.WalletEncryption.decryptWalletFromString(data, password);
         if (error) {
             return [undefined, error];
         }
         return WalletBackend.loadWalletFromJSON(deamon, walletJSON);
-    }
-    /**
-     * Encrypt the wallet using the given password. Note that an empty password does not mean an
-     * unencrypted wallet - simply a wallet encrypted with the empty string.
-     *
-     * This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.
-     *
-     * Example:
-     * ```javascript
-     * const dataJson = wallet.encryptWallet('hunter2');
-     *
-     * ```
-     *
-     * @param password The password to encrypt the wallet with
-     *
-     * @return Returns a JSON string containing the encrypted fileData.
-     */
-    static encryptWallet(walletJson, password) {
-        /* Append the identifier so we can verify the password is correct */
-        const data = Buffer.concat([
-            Constants_1.IS_CORRECT_PASSWORD_IDENTIFIER,
-            Buffer.from(walletJson),
-        ]);
-        /* Random salt */
-        const salt = crypto.randomBytes(16);
-        /* PBKDF2 key for our encryption */
-        const key = pbkdf2.pbkdf2Sync(password, salt, Constants_1.PBKDF2_ITERATIONS, 16, 'sha256');
-        /* Encrypt with AES */
-        const cipher = crypto.createCipheriv('aes-128-cbc', key, salt);
-        /* Perform the encryption */
-        const encryptedData = Buffer.concat([
-            cipher.update(data),
-            cipher.final(),
-        ]);
-        /* Write the wallet identifier to the file so we know it's a wallet file.
-           Write the salt so it can be decrypted again */
-        const fileData = Buffer.concat([
-            Constants_1.IS_A_WALLET_IDENTIFIER,
-            salt,
-            encryptedData,
-        ]);
-        return fileData;
-        // return JSON.stringify(fileData);
     }
     /**
      * Loads a wallet from a JSON encoded string. For the correct format for
@@ -801,6 +756,26 @@ class WalletBackend extends events_1.EventEmitter {
         return this.subWallets.getPrimaryAddress();
     }
     /**
+     * encrypt the wallet using the given password. Password may be empty. Note that an empty password does not mean an
+     * unencrypted wallet - simply a wallet encrypted with the empty string.
+     *
+     * This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.
+     *
+     * Example:
+     * ```javascript
+     * const saved = wallet.encryptWalletToString('hunter2');
+     *
+     * ```
+     *
+     * @param password The password to encrypt the wallet with
+     *
+     * @return Returns the encrypted wallet as astring.
+     */
+    encryptWalletToString(password) {
+        const walletJson = JSON.stringify(this);
+        return WalletEncryption_1.WalletEncryption.encryptWalletToString(walletJson, password);
+    }
+    /**
      * Save the wallet to the given filename. Password may be empty, but
      * filename must not be. Note that an empty password does not mean an
      * unencrypted wallet - simply a wallet encrypted with the empty string.
@@ -823,7 +798,7 @@ class WalletBackend extends events_1.EventEmitter {
      */
     saveWalletToFile(filename, password) {
         const walletJson = JSON.stringify(this);
-        const fileData = WalletBackend.encryptWallet(walletJson, password);
+        const fileData = WalletEncryption_1.WalletEncryption.encryptWalletToBuffer(walletJson, password);
         try {
             fs.writeFileSync(filename, fileData);
             return true;

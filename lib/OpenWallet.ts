@@ -4,7 +4,7 @@
 
 import * as fs from 'fs';
 import { WalletError, WalletErrorCode } from './WalletError';
-import { decryptWalletFromBuffer } from './DecryptWallet';
+import { WalletEncryption } from './WalletEncryption';
 
 /**
  * Open the wallet from the given filename with the given password and return
@@ -22,5 +22,5 @@ export function openWallet(filename: string, password: string): [string, WalletE
         return ['', new WalletError(WalletErrorCode.FILENAME_NON_EXISTENT, err.toString())];
     }
 
-    return decryptWalletFromBuffer(data, password);
+    return WalletEncryption.decryptWalletFromBuffer(data, password);
 }
