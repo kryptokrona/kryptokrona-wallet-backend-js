@@ -52,7 +52,6 @@ export function decryptWalletFromBuffer(data: Buffer, password: string): [string
         /* Perform the decryption */
         decrypted = Buffer.concat([decipher.update(data), decipher.final()]);
     } catch (err) {
-        console.log('wrong password 1!!!')
         return ['', new WalletError(WalletErrorCode.WRONG_PASSWORD)];
     }
 
@@ -61,12 +60,10 @@ export function decryptWalletFromBuffer(data: Buffer, password: string): [string
 
     /* Verify the magic bytes are present */
     if (magicBytes2.compare(IS_CORRECT_PASSWORD_IDENTIFIER) !== 0) {
-        console.log('wrong password 2!!!')
         return ['', new WalletError(WalletErrorCode.WRONG_PASSWORD)];
     }
 
     /* Remove the magic bytes */
     decrypted = decrypted.slice(IS_CORRECT_PASSWORD_IDENTIFIER.length, decrypted.length);
-    console.log(`decrypted wallet => ${decrypted.toString()}`);
     return [decrypted.toString(), undefined];
 }
