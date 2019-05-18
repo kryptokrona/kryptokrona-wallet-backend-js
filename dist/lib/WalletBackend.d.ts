@@ -686,7 +686,7 @@ export declare class WalletBackend extends EventEmitter {
      */
     getPrimaryAddress(): string;
     /**
-     * encrypt the wallet using the given password. Password may be empty. Note that an empty password does not mean an
+     * Encrypt the wallet using the given password. Password may be empty. Note that an empty password does not mean an
      * unencrypted wallet - simply a wallet encrypted with the empty string.
      *
      * This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.

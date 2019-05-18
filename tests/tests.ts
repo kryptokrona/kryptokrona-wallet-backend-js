@@ -48,7 +48,7 @@ class Tester {
     public summary(): void {
         console.log(colors.yellow('=== Testing complete! ==='));
 
-        console.log(colors.white(' 📰 ')
+        console.log(colors.white(' 📰  ')
                   + colors.white('Total tests:  ')
                   + colors.white(this.totalTests.toString()));
 
@@ -56,7 +56,7 @@ class Tester {
                   + colors.white('Tests passed: ')
                   + colors.green(this.testsPassed.toString()));
 
-        console.log(colors.red(' ❌ ')
+        console.log(colors.red(' ❌  ')
                   + colors.white('Tests failed: ')
                   + colors.red(this.testsFailed.toString()));
     }

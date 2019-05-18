@@ -1133,7 +1133,7 @@ export class WalletBackend extends EventEmitter {
      *
      * @return Returns the encrypted wallet as astring.
      */
-    public encryptWalletToString(password: string) {
+    public encryptWalletToString(password: string): string {
         const walletJson: string = JSON.stringify(this);
 
         return WalletEncryption.encryptWalletToString(walletJson, password);
