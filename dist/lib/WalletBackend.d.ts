@@ -164,6 +164,49 @@ export declare class WalletBackend extends EventEmitter {
      */
     static openWalletFromFile(daemon: IDaemon, filename: string, password: string, config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError];
     /**
+     *
+     * This method opens a password protected wallet from an encrypted string.
+     * The password protection follows the same format as wallet-api,
+     * zedwallet-beta, and WalletBackend. It does NOT follow the same format
+     * as turtle-service or zedwallet, and will be unable to open wallets
+     * created with this program.
+     *
+     * Example:
+     * ```javascript
+     * const WB = require('turtlecoin-wallet-backend');
+     *
+     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const data = 'ENCRYPTED_WALLET_STRING';
+     *
+     * const [wallet, error] = WB.WalletBackend.openWalletFromEncryptedString(daemon, data, 'hunter2');
+     *
+     * if (err) {
+     *      console.log('Failed to open wallet: ' + err.toString());
+     * }
+     * ```
+     * @param data  The encrypted string representing the wallet data
+     *
+     * @param password  The password to use to decrypt the wallet. May be blank.
+     */
+    static openWalletFromEncryptedString(deamon: IDaemon, data: string, password: string, config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError];
+    /**
+     * Encrypt the wallet using the given password. Note that an empty password does not mean an
+     * unencrypted wallet - simply a wallet encrypted with the empty string.
+     *
+     * This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.
+     *
+     * Example:
+     * ```javascript
+     * const dataJson = wallet.encryptWallet('hunter2');
+     *
+     * ```
+     *
+     * @param password The password to encrypt the wallet with
+     *
+     * @return Returns a JSON string containing the encrypted fileData.
+     */
+    static encryptWallet(password: string): Buffer;
+    /**
      * Loads a wallet from a JSON encoded string. For the correct format for
      * the JSON to use, see https://github.com/turtlecoin/wallet-file-interaction
      *

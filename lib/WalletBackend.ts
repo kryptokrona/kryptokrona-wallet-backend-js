@@ -13,6 +13,7 @@ import { IDaemon } from './IDaemon';
 import { Metronome } from './Metronome';
 import { SubWallets } from './SubWallets';
 import { openWallet } from './OpenWallet';
+import { decryptWalletFromString } from './DecryptWallet';
 import { CryptoUtils} from './CnUtils';
 import { WalletBackendJSON } from './JsonSerialization';
 import { validateAddresses } from './ValidateParameters';
@@ -223,6 +224,101 @@ export class WalletBackend extends EventEmitter {
         }
 
         return WalletBackend.loadWalletFromJSON(daemon, walletJSON);
+    }
+
+    /**
+     *
+     * This method opens a password protected wallet from an encrypted string.
+     * The password protection follows the same format as wallet-api,
+     * zedwallet-beta, and WalletBackend. It does NOT follow the same format
+     * as turtle-service or zedwallet, and will be unable to open wallets
+     * created with this program.
+     *
+     * Example:
+     * ```javascript
+     * const WB = require('turtlecoin-wallet-backend');
+     *
+     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const data = 'ENCRYPTED_WALLET_STRING';
+     *
+     * const [wallet, error] = WB.WalletBackend.openWalletFromEncryptedString(daemon, data, 'hunter2');
+     *
+     * if (err) {
+     *      console.log('Failed to open wallet: ' + err.toString());
+     * }
+     * ```
+     * @param data  The encrypted string representing the wallet data
+     *
+     * @param password  The password to use to decrypt the wallet. May be blank.
+     */
+    public static openWalletFromEncryptedString(
+        deamon: IDaemon,
+        data: string,
+        password: string,
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
+
+        MergeConfig(config);
+
+        const [walletJSON, error] = decryptWalletFromString(data, password);
+
+        if (error) {
+            return [undefined, error];
+        }
+
+        return WalletBackend.loadWalletFromJSON(deamon, walletJSON);
+    }
+
+    /**
+     * Encrypt the wallet using the given password. Note that an empty password does not mean an
+     * unencrypted wallet - simply a wallet encrypted with the empty string.
+     *
+     * This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.
+     *
+     * Example:
+     * ```javascript
+     * const dataJson = wallet.encryptWallet('hunter2');
+     *
+     * ```
+     *
+     * @param password The password to encrypt the wallet with
+     *
+     * @return Returns a JSON string containing the encrypted fileData.
+     */
+    public static encryptWallet(password: string): Buffer {
+        /* Serialize wallet to JSON */
+        const walletJson: string = JSON.stringify(this);
+
+        /* Append the identifier so we can verify the password is correct */
+        const data: Buffer = Buffer.concat([
+            IS_CORRECT_PASSWORD_IDENTIFIER,
+            Buffer.from(walletJson),
+        ]);
+
+        /* Random salt */
+        const salt: Buffer = crypto.randomBytes(16);
+
+        /* PBKDF2 key for our encryption */
+        const key: Buffer = pbkdf2.pbkdf2Sync(password, salt, PBKDF2_ITERATIONS, 16, 'sha256');
+
+        /* Encrypt with AES */
+        const cipher = crypto.createCipheriv('aes-128-cbc', key, salt);
+
+        /* Perform the encryption */
+        const encryptedData: Buffer = Buffer.concat([
+            cipher.update(data),
+            cipher.final(),
+        ]);
+
+        /* Write the wallet identifier to the file so we know it's a wallet file.
+           Write the salt so it can be decrypted again */
+        const fileData: Buffer = Buffer.concat([
+            IS_A_WALLET_IDENTIFIER,
+            salt,
+            encryptedData,
+        ]);
+
+        return fileData;
+        // return JSON.stringify(fileData);
     }
 
     /**
@@ -1102,37 +1198,7 @@ export class WalletBackend extends EventEmitter {
      * @return Returns a boolean indicating success.
      */
     public saveWalletToFile(filename: string, password: string): boolean {
-        /* Serialize wallet to JSON */
-        const walletJson: string = JSON.stringify(this);
-
-        /* Append the identifier so we can verify the password is correct */
-        const data: Buffer = Buffer.concat([
-            IS_CORRECT_PASSWORD_IDENTIFIER,
-            Buffer.from(walletJson),
-        ]);
-
-        /* Random salt */
-        const salt: Buffer = crypto.randomBytes(16);
-
-        /* PBKDF2 key for our encryption */
-        const key: Buffer = pbkdf2.pbkdf2Sync(password, salt, PBKDF2_ITERATIONS, 16, 'sha256');
-
-        /* Encrypt with AES */
-        const cipher = crypto.createCipheriv('aes-128-cbc', key, salt);
-
-        /* Perform the encryption */
-        const encryptedData: Buffer = Buffer.concat([
-            cipher.update(data),
-            cipher.final(),
-        ]);
-
-        /* Write the wallet identifier to the file so we know it's a wallet file.
-           Write the salt so it can be decrypted again */
-        const fileData: Buffer = Buffer.concat([
-            IS_A_WALLET_IDENTIFIER,
-            salt,
-            encryptedData,
-        ]);
+        const fileData = WalletBackend.encryptWallet(password);
 
         try {
             fs.writeFileSync(filename, fileData);
