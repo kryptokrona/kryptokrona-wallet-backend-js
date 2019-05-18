@@ -22,10 +22,10 @@ export function openWallet(filename: string, password: string): [string, WalletE
         return ['', new WalletError(WalletErrorCode.FILENAME_NON_EXISTENT, err.toString())];
     }
 
-    const [walletJson, err] = decryptWalletFromBuffer(data, password);
+    const [walletJson, error] = decryptWalletFromBuffer(data, password);
 
-    if (err) {
-        return ['', err];
+    if (error) {
+        return ['', error];
     }
 
     return [walletJson, undefined];

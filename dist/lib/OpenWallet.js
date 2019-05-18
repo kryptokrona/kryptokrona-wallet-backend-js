@@ -21,9 +21,9 @@ function openWallet(filename, password) {
     catch (err) {
         return ['', new WalletError_1.WalletError(WalletError_1.WalletErrorCode.FILENAME_NON_EXISTENT, err.toString())];
     }
-    const [walletJson, err] = DecryptWallet_1.decryptWalletFromBuffer(data, password);
-    if (err) {
-        return ['', err];
+    const [walletJson, error] = DecryptWallet_1.decryptWalletFromBuffer(data, password);
+    if (error) {
+        return ['', error];
     }
     return [walletJson, undefined];
 }

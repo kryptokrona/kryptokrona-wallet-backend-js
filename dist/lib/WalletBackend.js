@@ -164,9 +164,7 @@ class WalletBackend extends events_1.EventEmitter {
      *
      * @return Returns a JSON string containing the encrypted fileData.
      */
-    static encryptWallet(password) {
-        /* Serialize wallet to JSON */
-        const walletJson = JSON.stringify(this);
+    static encryptWallet(walletJson, password) {
         /* Append the identifier so we can verify the password is correct */
         const data = Buffer.concat([
             Constants_1.IS_CORRECT_PASSWORD_IDENTIFIER,
@@ -824,7 +822,8 @@ class WalletBackend extends events_1.EventEmitter {
      * @return Returns a boolean indicating success.
      */
     saveWalletToFile(filename, password) {
-        const fileData = WalletBackend.encryptWallet(password);
+        const walletJson = JSON.stringify(this);
+        const fileData = WalletBackend.encryptWallet(walletJson, password);
         try {
             fs.writeFileSync(filename, fileData);
             return true;

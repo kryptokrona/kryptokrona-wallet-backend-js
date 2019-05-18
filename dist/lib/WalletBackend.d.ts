@@ -205,7 +205,7 @@ export declare class WalletBackend extends EventEmitter {
      *
      * @return Returns a JSON string containing the encrypted fileData.
      */
-    static encryptWallet(password: string): Buffer;
+    static encryptWallet(walletJson: string, password: string): Buffer;
     /**
      * Loads a wallet from a JSON encoded string. For the correct format for
      * the JSON to use, see https://github.com/turtlecoin/wallet-file-interaction

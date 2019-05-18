@@ -45,16 +45,19 @@ function decryptWalletFromBuffer(data, password) {
         decrypted = Buffer.concat([decipher.update(data), decipher.final()]);
     }
     catch (err) {
+        console.log('wrong password 1!!!');
         return ['', new WalletError_1.WalletError(WalletError_1.WalletErrorCode.WRONG_PASSWORD)];
     }
     /* Grab the second set of magic bytes */
     const magicBytes2 = decrypted.slice(0, Constants_1.IS_CORRECT_PASSWORD_IDENTIFIER.length);
     /* Verify the magic bytes are present */
     if (magicBytes2.compare(Constants_1.IS_CORRECT_PASSWORD_IDENTIFIER) !== 0) {
+        console.log('wrong password 2!!!');
         return ['', new WalletError_1.WalletError(WalletError_1.WalletErrorCode.WRONG_PASSWORD)];
     }
     /* Remove the magic bytes */
     decrypted = decrypted.slice(Constants_1.IS_CORRECT_PASSWORD_IDENTIFIER.length, decrypted.length);
+    console.log(`decrypted wallet => ${decrypted.toString()}`);
     return [decrypted.toString(), undefined];
 }
 exports.decryptWalletFromBuffer = decryptWalletFromBuffer;
