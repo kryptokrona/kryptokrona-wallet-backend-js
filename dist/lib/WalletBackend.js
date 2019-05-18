@@ -12,13 +12,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
-const crypto = require("crypto");
 const fs = require("fs");
 const _ = require("lodash");
-const pbkdf2 = require("pbkdf2");
 const Metronome_1 = require("./Metronome");
 const SubWallets_1 = require("./SubWallets");
 const OpenWallet_1 = require("./OpenWallet");
+const WalletEncryption_1 = require("./WalletEncryption");
 const CnUtils_1 = require("./CnUtils");
 const ValidateParameters_1 = require("./ValidateParameters");
 const WalletSynchronizer_1 = require("./WalletSynchronizer");
@@ -113,6 +112,39 @@ class WalletBackend extends events_1.EventEmitter {
             return [undefined, error];
         }
         return WalletBackend.loadWalletFromJSON(daemon, walletJSON);
+    }
+    /**
+     *
+     * This method opens a password protected wallet from an encrypted string.
+     * The password protection follows the same format as wallet-api,
+     * zedwallet-beta, and WalletBackend. It does NOT follow the same format
+     * as turtle-service or zedwallet, and will be unable to open wallets
+     * created with this program.
+     *
+     * Example:
+     * ```javascript
+     * const WB = require('turtlecoin-wallet-backend');
+     *
+     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const data = 'ENCRYPTED_WALLET_STRING';
+     *
+     * const [wallet, error] = WB.WalletBackend.openWalletFromEncryptedString(daemon, data, 'hunter2');
+     *
+     * if (err) {
+     *      console.log('Failed to open wallet: ' + err.toString());
+     * }
+     * ```
+     * @param data  The encrypted string representing the wallet data
+     *
+     * @param password  The password to use to decrypt the wallet. May be blank.
+     */
+    static openWalletFromEncryptedString(deamon, data, password, config) {
+        Config_1.MergeConfig(config);
+        const [walletJSON, error] = WalletEncryption_1.WalletEncryption.decryptWalletFromString(data, password);
+        if (error) {
+            return [undefined, error];
+        }
+        return WalletBackend.loadWalletFromJSON(deamon, walletJSON);
     }
     /**
      * Loads a wallet from a JSON encoded string. For the correct format for
@@ -724,6 +756,26 @@ class WalletBackend extends events_1.EventEmitter {
         return this.subWallets.getPrimaryAddress();
     }
     /**
+     * Encrypt the wallet using the given password. Password may be empty. Note that an empty password does not mean an
+     * unencrypted wallet - simply a wallet encrypted with the empty string.
+     *
+     * This will take some time (Roughly a second on a modern PC) - it runs 500,000 iterations of pbkdf2.
+     *
+     * Example:
+     * ```javascript
+     * const saved = wallet.encryptWalletToString('hunter2');
+     *
+     * ```
+     *
+     * @param password The password to encrypt the wallet with
+     *
+     * @return Returns the encrypted wallet as astring.
+     */
+    encryptWalletToString(password) {
+        const walletJson = JSON.stringify(this);
+        return WalletEncryption_1.WalletEncryption.encryptWalletToString(walletJson, password);
+    }
+    /**
      * Save the wallet to the given filename. Password may be empty, but
      * filename must not be. Note that an empty password does not mean an
      * unencrypted wallet - simply a wallet encrypted with the empty string.
@@ -745,31 +797,8 @@ class WalletBackend extends events_1.EventEmitter {
      * @return Returns a boolean indicating success.
      */
     saveWalletToFile(filename, password) {
-        /* Serialize wallet to JSON */
         const walletJson = JSON.stringify(this);
-        /* Append the identifier so we can verify the password is correct */
-        const data = Buffer.concat([
-            Constants_1.IS_CORRECT_PASSWORD_IDENTIFIER,
-            Buffer.from(walletJson),
-        ]);
-        /* Random salt */
-        const salt = crypto.randomBytes(16);
-        /* PBKDF2 key for our encryption */
-        const key = pbkdf2.pbkdf2Sync(password, salt, Constants_1.PBKDF2_ITERATIONS, 16, 'sha256');
-        /* Encrypt with AES */
-        const cipher = crypto.createCipheriv('aes-128-cbc', key, salt);
-        /* Perform the encryption */
-        const encryptedData = Buffer.concat([
-            cipher.update(data),
-            cipher.final(),
-        ]);
-        /* Write the wallet identifier to the file so we know it's a wallet file.
-           Write the salt so it can be decrypted again */
-        const fileData = Buffer.concat([
-            Constants_1.IS_A_WALLET_IDENTIFIER,
-            salt,
-            encryptedData,
-        ]);
+        const fileData = WalletEncryption_1.WalletEncryption.encryptWalletToBuffer(walletJson, password);
         try {
             fs.writeFileSync(filename, fileData);
             return true;
