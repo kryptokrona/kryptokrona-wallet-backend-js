@@ -70,6 +70,20 @@ function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function encryptDecryptWallet(
+    wallet: WalletBackend,
+    daemon: IDaemon,
+    password: string): boolean {
+        const encryptedString = wallet.encryptWalletToString(password);
+        const [newWallet, error] = WalletBackend.openWalletFromEncryptedString(daemon, encryptedString, password);
+
+        if (error) {
+            return false;
+        }
+
+        return true;
+    }
+
 function roundTrip(
     wallet: WalletBackend,
     daemon: IDaemon,
@@ -198,6 +212,14 @@ function roundTrip(
     }, 'Verifying special passwords work as expected',
        'Special passwords work as expected',
        'Special passwords do not work as expected!');
+
+    await tester.test(async () => {
+        const wallet = WalletBackend.createWallet(daemon);
+
+        return encryptDecryptWallet(wallet, daemon, 'password');
+    },  'Verifying wallet encryption and decryption work as expected',
+        'Encrypt/Decrypt wallet works as expected',
+        'Encrypt/Decrypt wallet does not work as expected!');
 
     await tester.test(async () => {
         const [seedWallet, error] = WalletBackend.importWalletFromSeed(
