@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
 const node_fetch_1 = require("node-fetch");
-const abort_controller_1 = require("abort-controller");
+const AbortController = require('abort-controller');
 const Types_1 = require("./Types");
 const Config_1 = require("./Config");
 const ValidateParameters_1 = require("./ValidateParameters");
@@ -258,13 +258,19 @@ class BlockchainCacheApi {
     makeGetRequest(endpoint) {
         return __awaiter(this, void 0, void 0, function* () {
             const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
-            const controller = new abort_controller_1.default();
+            let controller;
+            try {
+                controller = new AbortController();
+            }
+            catch (err) {
+                /* In some environments, the controller doesn't get imported/work correctly. */
+            }
             const timeout = setTimeout(() => {
-                controller.abort();
+                if (controller !== undefined) {
+                    controller.abort();
+                }
             }, Config_1.Config.requestTimeout);
-            const res = yield node_fetch_1.default(url, {
-                timeout: Config_1.Config.requestTimeout,
-            });
+            const res = yield node_fetch_1.default(url, Object.assign({ timeout: Config_1.Config.requestTimeout }, (controller !== undefined && { signal: controller.signal })));
             if (!res.ok) {
                 throw new Error('Request failed.');
             }
@@ -278,18 +284,19 @@ class BlockchainCacheApi {
     makePostRequest(endpoint, body) {
         return __awaiter(this, void 0, void 0, function* () {
             const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
-            const controller = new abort_controller_1.default();
+            let controller;
+            try {
+                controller = new AbortController();
+            }
+            catch (err) {
+                /* In some environments, the controller doesn't get imported/work correctly. */
+            }
             const timeout = setTimeout(() => {
-                controller.abort();
+                if (controller !== undefined) {
+                    controller.abort();
+                }
             }, Config_1.Config.requestTimeout);
-            const res = yield node_fetch_1.default(url, {
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' },
-                method: 'post',
-                signal: controller.signal,
-                size: Config_1.Config.maxBodyResponseSize,
-                timeout: Config_1.Config.requestTimeout,
-            });
+            const res = yield node_fetch_1.default(url, Object.assign({ body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' }, method: 'post' }, (controller !== undefined && { signal: controller.signal }), { size: Config_1.Config.maxBodyResponseSize, timeout: Config_1.Config.requestTimeout }));
             if (!res.ok) {
                 throw new Error('Request failed.');
             }
@@ -302,7 +309,9 @@ class BlockchainCacheApi {
             res.body.on('data', (chunk) => {
                 length += chunk.length;
                 if (length > Config_1.Config.maxBodyResponseSize) {
-                    controller.abort();
+                    if (controller !== undefined) {
+                        controller.abort();
+                    }
                     throw new Error('max-size');
                 }
                 data += chunk;

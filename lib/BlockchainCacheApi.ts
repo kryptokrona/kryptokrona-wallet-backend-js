@@ -5,7 +5,8 @@
 import * as _ from 'lodash';
 
 import fetch from 'node-fetch';
-import AbortController from 'abort-controller';
+
+const AbortController = require('abort-controller');
 
 import { Block } from './Types';
 import { Config } from './Config';
@@ -331,14 +332,23 @@ export class BlockchainCacheApi implements IDaemon {
     private async makeGetRequest(endpoint: string): Promise<any> {
         const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
 
-        const controller = new AbortController();
+        let controller: undefined | AbortController;
+
+        try {
+            controller = new AbortController();
+        } catch (err) {
+            /* In some environments, the controller doesn't get imported/work correctly. */
+        }
 
         const timeout = setTimeout(() => {
-            controller.abort();
+            if (controller !== undefined) {
+                controller.abort();
+            }
         }, Config.requestTimeout);
 
         const res = await fetch(url, {
             timeout: Config.requestTimeout,
+            ...(controller !== undefined && { signal: controller.signal }),
         });
 
         if (!res.ok) {
@@ -356,17 +366,25 @@ export class BlockchainCacheApi implements IDaemon {
     private async makePostRequest(endpoint: string, body: any): Promise<any> {
         const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
 
-        const controller = new AbortController();
+        let controller: undefined | AbortController;
+
+        try {
+            controller = new AbortController();
+        } catch (err) {
+            /* In some environments, the controller doesn't get imported/work correctly. */
+        }
 
         const timeout = setTimeout(() => {
-            controller.abort();
+            if (controller !== undefined) {
+                controller.abort();
+            }
         }, Config.requestTimeout);
 
         const res = await fetch(url, {
             body: JSON.stringify(body),
             headers: { 'Content-Type': 'application/json' },
             method: 'post',
-            signal: controller.signal, // signal doesn't currently exist in the typings...
+            ...(controller !== undefined && { signal: controller.signal }),
             size: Config.maxBodyResponseSize,
             timeout: Config.requestTimeout,
         } as any);
@@ -387,7 +405,10 @@ export class BlockchainCacheApi implements IDaemon {
             length += chunk.length;
 
             if (length > Config.maxBodyResponseSize) {
-                controller.abort();
+                if (controller !== undefined) {
+                    controller.abort();
+                }
+
                 throw new Error('max-size');
             }
 
