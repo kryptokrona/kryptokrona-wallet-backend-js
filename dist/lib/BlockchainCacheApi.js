@@ -13,7 +13,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
 const node_fetch_1 = require("node-fetch");
-const AbortController = require('abort-controller');
+let AbortController;
+/* This require doesn't work in react native. dunno why. */
+if (!(typeof navigator !== 'undefined'
+    && typeof navigator.product === 'string'
+    && navigator.product.toLowerCase() === 'reactnative')) {
+    AbortController = require('abort-controller');
+}
 const Types_1 = require("./Types");
 const Config_1 = require("./Config");
 const ValidateParameters_1 = require("./ValidateParameters");

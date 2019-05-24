@@ -6,7 +6,14 @@ import * as _ from 'lodash';
 
 import fetch from 'node-fetch';
 
-const AbortController = require('abort-controller');
+let AbortController: any;
+
+/* This require doesn't work in react native. dunno why. */
+if (!(typeof navigator !== 'undefined'
+   && typeof navigator.product === 'string'
+   && navigator.product.toLowerCase() === 'reactnative')) {
+    AbortController = require('abort-controller');
+}
 
 import { Block } from './Types';
 import { Config } from './Config';
