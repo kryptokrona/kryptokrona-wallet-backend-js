@@ -202,6 +202,12 @@ export class SubWallet {
             });
         }
 
+        const existingInput = this.unspentInputs.find((x) => x.key === input.key);
+
+        if (existingInput !== undefined) {
+            throw new Error(`Input ${input.key} was added to the wallet twice!`);
+        }
+
         this.unspentInputs.push(input);
     }
 
