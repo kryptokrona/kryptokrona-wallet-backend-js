@@ -167,6 +167,7 @@ export class BlockchainCacheApi implements IDaemon {
                 blockHashCheckpoints,
                 startHeight,
                 startTimestamp,
+                skipEmptyBlocks: !Config.scanCoinbaseTransactions
             });
         } catch (err) {
             const maxSizeErr: boolean = err.msg === 'max-size'

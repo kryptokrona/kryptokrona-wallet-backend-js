@@ -145,6 +145,7 @@ class BlockchainCacheApi {
                     blockHashCheckpoints,
                     startHeight,
                     startTimestamp,
+                    skipEmptyBlocks: !Config_1.Config.scanCoinbaseTransactions
                 });
             }
             catch (err) {

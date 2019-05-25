@@ -124,6 +124,7 @@ class ConventionalDaemon {
             const data = yield this.daemon.getWalletSyncData({
                 blockCount,
                 blockHashCheckpoints,
+                skipEmptyBlocks: !Config_1.Config.scanCoinbaseTransactions,
                 startHeight,
                 startTimestamp,
             });

@@ -296,19 +296,6 @@ class WalletSynchronizer {
                 this.startHeight = blocks[0].blockHeight;
                 this.subWallets.convertSyncTimestampToHeight(this.startTimestamp, this.startHeight);
             }
-            /* If checkpoints are empty, this is the first sync request. */
-            if (_.isEmpty(blockCheckpoints)) {
-                const actualHeight = blocks[0].blockHeight;
-                /* Only check if a timestamp isn't given */
-                if (this.startTimestamp === 0) {
-                    /* The height we expect to get back from the daemon */
-                    if (actualHeight !== this.startHeight) {
-                        this.fetchingBlocks = false;
-                        throw new Error('Received unexpected block height from daemon. ' +
-                            'Expected ' + this.startHeight + ', got ' + actualHeight + '\n');
-                    }
-                }
-            }
             /* Add the new blocks to the store */
             this.storedBlocks = this.storedBlocks.concat(blocks);
             if (this.finishedFunc) {

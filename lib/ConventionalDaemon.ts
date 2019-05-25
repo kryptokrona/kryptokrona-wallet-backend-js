@@ -158,6 +158,7 @@ export class ConventionalDaemon implements IDaemon {
         const data = await this.daemon.getWalletSyncData({
             blockCount,
             blockHashCheckpoints,
+            skipEmptyBlocks: !Config.scanCoinbaseTransactions,
             startHeight,
             startTimestamp,
         });
