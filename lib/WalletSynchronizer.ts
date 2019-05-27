@@ -17,7 +17,7 @@ import { underivePublicKey, generateKeyDerivation } from './CryptoWrapper';
 
 import {
     Block, KeyInput, RawCoinbaseTransaction, RawTransaction, Transaction,
-    TransactionData, TransactionInput,
+    TransactionData, TransactionInput, TopBlock,
 } from './Types';
 
 /**
@@ -177,7 +177,7 @@ export class WalletSynchronizer {
         let inputs: Array<[string, TransactionInput]> = [];
 
         /* Process the coinbase tx if we're not skipping them for speed */
-        if (processCoinbaseTransactions) {
+        if (processCoinbaseTransactions && block.coinbaseTransaction) {
             inputs = inputs.concat(await this.processTransactionOutputs(
                 block.coinbaseTransaction, block.blockHeight,
             ));
@@ -376,9 +376,10 @@ export class WalletSynchronizer {
         const blockCheckpoints: string[] = this.getBlockCheckpoints();
 
         let blocks: Block[] = [];
+        let topBlock: TopBlock | undefined;
 
         try {
-            blocks = await this.daemon.getWalletSyncData(
+            [blocks, topBlock] = await this.daemon.getWalletSyncData(
                 blockCheckpoints, this.startHeight, this.startTimestamp,
                 Config.blocksPerDaemonRequest,
             );
@@ -392,6 +393,20 @@ export class WalletSynchronizer {
             if (this.finishedFunc) {
                 this.finishedFunc();
             }
+
+            this.fetchingBlocks = false;
+
+            return;
+        }
+
+        /* Synced, store the top block so sync status displayes correctly if
+           we are not scanning coinbase tx only blocks */
+        if (topBlock && blocks.length === 0) {
+            if (this.finishedFunc) {
+                this.finishedFunc();
+            }
+
+            this.synchronizationStatus.storeBlockHash(topBlock.height, topBlock.hash);
 
             this.fetchingBlocks = false;
 
@@ -487,13 +502,14 @@ export class WalletSynchronizer {
         block: Block,
         ourInputs: Array<[string, TransactionInput]>): Transaction | undefined {
 
-        const rawTX: RawCoinbaseTransaction = block.coinbaseTransaction;
+        /* Should be guaranteed to be defined here */
+        const rawTX: RawCoinbaseTransaction = block.coinbaseTransaction as RawCoinbaseTransaction;
 
         const transfers: Map<string, number> = new Map();
 
         const relevantInputs: Array<[string, TransactionInput]>
             = _.filter(ourInputs, ([key, input]) => {
-            return input.parentTransactionHash === block.coinbaseTransaction.hash;
+            return input.parentTransactionHash === rawTX.hash;
         });
 
         for (const [publicSpendKey, input] of relevantInputs) {

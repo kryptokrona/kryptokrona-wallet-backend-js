@@ -143,9 +143,9 @@ class BlockchainCacheApi {
                 data = yield this.makePostRequest('/getwalletsyncdata', {
                     blockCount,
                     blockHashCheckpoints,
+                    skipCoinbaseTransactions: !Config_1.Config.scanCoinbaseTransactions,
                     startHeight,
                     startTimestamp,
-                    skipEmptyBlocks: !Config_1.Config.scanCoinbaseTransactions
                 });
             }
             catch (err) {
@@ -160,9 +160,12 @@ class BlockchainCacheApi {
                     return this.getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp, Math.floor(blockCount / 2));
                 }
                 Logger_1.logger.log('Failed to get wallet sync data: ' + err.toString(), Logger_1.LogLevel.INFO, [Logger_1.LogCategory.DAEMON]);
-                return [];
+                return [[], undefined];
             }
-            return data.items.map(Types_1.Block.fromJSON);
+            if (data.synced && data.topBlock && data.topBlock.height && data.topBlock.hash) {
+                return [data.items.map(Types_1.Block.fromJSON), data.topBlock];
+            }
+            return [data.items.map(Types_1.Block.fromJSON), undefined];
         });
     }
     /**

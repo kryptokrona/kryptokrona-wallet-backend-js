@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { LogCategory, logger, LogLevel } from './Logger';
-import { Block } from './Types';
+import { Block, TopBlock } from './Types';
 import { validateAddresses } from './ValidateParameters';
 import { WalletError, WalletErrorCode } from './WalletError';
 
@@ -153,17 +153,17 @@ export class ConventionalDaemon implements IDaemon {
         blockHashCheckpoints: string[],
         startHeight: number,
         startTimestamp: number,
-        blockCount: number): Promise<Block[]> {
+        blockCount: number): Promise<[Block[], TopBlock | undefined]> {
 
-        const data = await this.daemon.getWalletSyncData({
+        const { items, topBlock } = await this.daemon.getWalletSyncData({
             blockCount,
             blockHashCheckpoints,
-            skipEmptyBlocks: !Config.scanCoinbaseTransactions,
+            skipCoinbaseTransactions: !Config.scanCoinbaseTransactions,
             startHeight,
             startTimestamp,
         });
 
-        return data.map(Block.fromJSON);
+        return [items.map(Block.fromJSON), topBlock];
     }
 
     /**

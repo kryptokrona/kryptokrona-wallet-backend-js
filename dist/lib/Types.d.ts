@@ -4,7 +4,7 @@ import { TransactionInputJSON, TransactionJSON, UnconfirmedInputJSON } from './J
  */
 export declare class Block {
     static fromJSON(json: any): Block;
-    readonly coinbaseTransaction: RawCoinbaseTransaction;
+    readonly coinbaseTransaction?: RawCoinbaseTransaction;
     readonly transactions: RawTransaction[];
     readonly blockHeight: number;
     readonly blockHash: string;
@@ -114,4 +114,9 @@ export declare class TxInputAndOwner {
     readonly privateSpendKey: string;
     readonly publicSpendKey: string;
     constructor(input: TransactionInput, privateSpendKey: string, publicSpendKey: string);
+}
+export declare class TopBlock {
+    readonly hash: string;
+    readonly height: number;
+    constructor(hash: string, height: number);
 }

@@ -121,14 +121,14 @@ class ConventionalDaemon {
      */
     getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp, blockCount) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield this.daemon.getWalletSyncData({
+            const { items, topBlock } = yield this.daemon.getWalletSyncData({
                 blockCount,
                 blockHashCheckpoints,
-                skipEmptyBlocks: !Config_1.Config.scanCoinbaseTransactions,
+                skipCoinbaseTransactions: !Config_1.Config.scanCoinbaseTransactions,
                 startHeight,
                 startTimestamp,
             });
-            return data.map(Types_1.Block.fromJSON);
+            return [items.map(Types_1.Block.fromJSON), topBlock];
         });
     }
     /**

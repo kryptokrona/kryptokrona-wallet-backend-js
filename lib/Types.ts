@@ -15,7 +15,7 @@ export class Block {
         const block = Object.create(Block.prototype);
 
         return Object.assign(block, {
-            coinbaseTransaction: RawCoinbaseTransaction.fromJSON(json.coinbaseTX),
+            coinbaseTransaction: json.coinbaseTX ? RawCoinbaseTransaction.fromJSON(json.coinbaseTX) : undefined,
 
             transactions: json.transactions.map(RawTransaction.fromJSON),
 
@@ -27,8 +27,9 @@ export class Block {
         });
     }
 
-    /* The coinbase transaction contained in this block */
-    public readonly coinbaseTransaction: RawCoinbaseTransaction;
+    /* The coinbase transaction contained in this block. May not be present,
+       if using skipCoinbseTransactions option. */
+    public readonly coinbaseTransaction?: RawCoinbaseTransaction;
 
     /* The standard transactions contain in this block (may be empty) */
     public readonly transactions: RawTransaction[];
@@ -518,5 +519,18 @@ export class TxInputAndOwner {
         this.input = input;
         this.privateSpendKey = privateSpendKey;
         this.publicSpendKey = publicSpendKey;
+    }
+}
+
+export class TopBlock {
+    public readonly hash: string;
+    public readonly height: number;
+
+    constructor(
+        hash: string,
+        height: number) {
+
+        this.hash = hash;
+        this.height = height;
     }
 }

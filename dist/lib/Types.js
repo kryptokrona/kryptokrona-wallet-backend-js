@@ -11,7 +11,7 @@ class Block {
     static fromJSON(json) {
         const block = Object.create(Block.prototype);
         return Object.assign(block, {
-            coinbaseTransaction: RawCoinbaseTransaction.fromJSON(json.coinbaseTX),
+            coinbaseTransaction: json.coinbaseTX ? RawCoinbaseTransaction.fromJSON(json.coinbaseTX) : undefined,
             transactions: json.transactions.map(RawTransaction.fromJSON),
             blockHeight: Number(json.blockHeight),
             blockHash: json.blockHash,
@@ -258,3 +258,10 @@ class TxInputAndOwner {
     }
 }
 exports.TxInputAndOwner = TxInputAndOwner;
+class TopBlock {
+    constructor(hash, height) {
+        this.hash = hash;
+        this.height = height;
+    }
+}
+exports.TopBlock = TopBlock;

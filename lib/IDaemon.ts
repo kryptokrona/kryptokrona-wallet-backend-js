@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { Block } from './Types';
+import { Block, TopBlock } from './Types';
 
 /**
  * Provides an interface to a daemon or similar, such as a blockchain cache
@@ -18,12 +18,15 @@ export interface IDaemon {
      *
      * Gets blocks from the daemon. Blocks are returned starting from the last
      * known block hash (if higher than the startHeight/startTimestamp)
+     *
+     * Returns TopBlock data if daemon is synced, and daemon supports this
+     * feature.
      */
     getWalletSyncData(
         blockHashCheckpoints: string[],
         startHeight: number,
         startTimestamp: number,
-        blockCount: number): Promise<Block[]>;
+        blockCount: number): Promise<[Block[], TopBlock | undefined]>;
 
     /**
      * Gets the node fee address and amount. Will be `['', 0]` if none/invalid

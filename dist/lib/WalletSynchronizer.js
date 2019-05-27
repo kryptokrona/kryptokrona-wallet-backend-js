@@ -112,7 +112,7 @@ class WalletSynchronizer {
         return __awaiter(this, void 0, void 0, function* () {
             let inputs = [];
             /* Process the coinbase tx if we're not skipping them for speed */
-            if (processCoinbaseTransactions) {
+            if (processCoinbaseTransactions && block.coinbaseTransaction) {
                 inputs = inputs.concat(yield this.processTransactionOutputs(block.coinbaseTransaction, block.blockHeight));
             }
             /* Process the normal txs */
@@ -271,14 +271,25 @@ class WalletSynchronizer {
                ones, in case we don't have any blocks yet. */
             const blockCheckpoints = this.getBlockCheckpoints();
             let blocks = [];
+            let topBlock;
             try {
-                blocks = yield this.daemon.getWalletSyncData(blockCheckpoints, this.startHeight, this.startTimestamp, Config_1.Config.blocksPerDaemonRequest);
+                [blocks, topBlock] = yield this.daemon.getWalletSyncData(blockCheckpoints, this.startHeight, this.startTimestamp, Config_1.Config.blocksPerDaemonRequest);
             }
             catch (err) {
                 Logger_1.logger.log('Failed to get blocks from daemon', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
                 if (this.finishedFunc) {
                     this.finishedFunc();
                 }
+                this.fetchingBlocks = false;
+                return;
+            }
+            /* Synced, store the top block so sync status displayes correctly if
+               we are not scanning coinbase tx only blocks */
+            if (topBlock && blocks.length === 0) {
+                if (this.finishedFunc) {
+                    this.finishedFunc();
+                }
+                this.synchronizationStatus.storeBlockHash(topBlock.height, topBlock.hash);
                 this.fetchingBlocks = false;
                 return;
             }
@@ -332,10 +343,11 @@ class WalletSynchronizer {
         });
     }
     processCoinbaseTransaction(block, ourInputs) {
+        /* Should be guaranteed to be defined here */
         const rawTX = block.coinbaseTransaction;
         const transfers = new Map();
         const relevantInputs = _.filter(ourInputs, ([key, input]) => {
-            return input.parentTransactionHash === block.coinbaseTransaction.hash;
+            return input.parentTransactionHash === rawTX.hash;
         });
         for (const [publicSpendKey, input] of relevantInputs) {
             transfers.set(publicSpendKey, input.amount + (transfers.get(publicSpendKey) || 0));

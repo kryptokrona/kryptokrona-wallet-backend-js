@@ -4,6 +4,7 @@ export declare class SynchronizationStatus {
     private blockHashCheckpoints;
     private lastKnownBlockHashes;
     private lastKnownBlockHeight;
+    private lastSavedCheckpointAt;
     toJSON(): SynchronizationStatusJSON;
     getHeight(): number;
     storeBlockHash(blockHeight: number, blockHash: string): void;

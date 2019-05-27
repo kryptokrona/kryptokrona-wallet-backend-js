@@ -15,7 +15,7 @@ if (!(typeof navigator !== 'undefined'
     AbortController = require('abort-controller');
 }
 
-import { Block } from './Types';
+import { Block, TopBlock } from './Types';
 import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { validateAddresses } from './ValidateParameters';
@@ -157,7 +157,7 @@ export class BlockchainCacheApi implements IDaemon {
         blockHashCheckpoints: string[],
         startHeight: number,
         startTimestamp: number,
-        blockCount: number): Promise<Block[]> {
+        blockCount: number): Promise<[Block[], TopBlock | undefined]> {
 
         let data;
 
@@ -165,9 +165,9 @@ export class BlockchainCacheApi implements IDaemon {
             data = await this.makePostRequest('/getwalletsyncdata', {
                 blockCount,
                 blockHashCheckpoints,
+                skipCoinbaseTransactions: !Config.scanCoinbaseTransactions,
                 startHeight,
                 startTimestamp,
-                skipEmptyBlocks: !Config.scanCoinbaseTransactions
             });
         } catch (err) {
             const maxSizeErr: boolean = err.msg === 'max-size'
@@ -199,10 +199,14 @@ export class BlockchainCacheApi implements IDaemon {
                 [LogCategory.DAEMON],
             );
 
-            return [];
+            return [[], undefined];
         }
 
-        return data.items.map(Block.fromJSON);
+        if (data.synced && data.topBlock && data.topBlock.height && data.topBlock.hash) {
+            return [data.items.map(Block.fromJSON), data.topBlock];
+        }
+
+        return [data.items.map(Block.fromJSON), undefined];
     }
 
     /**

@@ -4,12 +4,12 @@
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
 const Constants_1 = require("./Constants");
-const Logger_1 = require("./Logger");
 class SynchronizationStatus {
     constructor() {
         this.blockHashCheckpoints = [];
         this.lastKnownBlockHashes = [];
         this.lastKnownBlockHeight = 0;
+        this.lastSavedCheckpointAt = 0;
     }
     static fromJSON(json) {
         const synchronizationStatus = Object.create(SynchronizationStatus.prototype);
@@ -30,19 +30,15 @@ class SynchronizationStatus {
         return this.lastKnownBlockHeight;
     }
     storeBlockHash(blockHeight, blockHash) {
-        /* If it's not a fork and not the very first block */
-        if (blockHeight > this.lastKnownBlockHeight && this.lastKnownBlockHeight !== 0) {
-            /* Height should be one more than previous height */
-            if (blockHeight !== this.lastKnownBlockHeight + 1) {
-                Logger_1.logger.log('Blocks were missed in syncing process! Expected: ' +
-                    (this.lastKnownBlockHeight + 1) +
-                    ', Received: ' + blockHeight + '.\nPossibly malicious daemon.', Logger_1.LogLevel.ERROR, [Logger_1.LogCategory.DAEMON, Logger_1.LogCategory.SYNC]);
-            }
-        }
         this.lastKnownBlockHeight = blockHeight;
+        /* Hash already exists */
+        if (this.lastKnownBlockHashes.length > 0 && this.lastKnownBlockHashes[0] === blockHash) {
+            return;
+        }
         /* If we're at a checkpoint height, add the hash to the infrequent
            checkpoints (at the beginning of the queue) */
-        if (blockHeight % Constants_1.BLOCK_HASH_CHECKPOINTS_INTERVAL === 0) {
+        if (this.lastSavedCheckpointAt + Constants_1.BLOCK_HASH_CHECKPOINTS_INTERVAL < blockHeight) {
+            this.lastSavedCheckpointAt = blockHeight;
             this.blockHashCheckpoints.unshift(blockHash);
         }
         this.lastKnownBlockHashes.unshift(blockHash);
