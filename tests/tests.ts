@@ -570,8 +570,6 @@ function roundTrip(
 
             const wallet = walletTmp as WalletBackend;
 
-            wallet.setLogLevel(LogLevel.DEBUG);
-
             const startTime = new Date().getTime();
 
             await wallet.start();
