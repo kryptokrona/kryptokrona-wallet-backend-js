@@ -8,3 +8,4 @@ export { LogLevel, LogCategory } from './Logger';
 export { validateAddresses, validatePaymentID } from './ValidateParameters';
 export { TransactionInput } from './Types';
 export { MixinLimit, MixinLimits } from './MixinLimits';
+export { Config } from './Config';

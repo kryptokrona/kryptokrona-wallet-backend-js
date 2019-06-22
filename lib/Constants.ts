@@ -145,7 +145,7 @@ export const MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR: number = 100 * 1024;
  * Part of the how fast blocks can grow
  */
 export const MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR: number
-    = 365 * 24 * 60 * 60 / Config.blockTargetTime;
+    = 365 * 24 * 60 * 60;
 
 /**
  * Initial block size

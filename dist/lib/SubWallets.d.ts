@@ -1,5 +1,6 @@
 import { SubWalletsJSON } from './JsonSerialization';
 import { SubWallet } from './SubWallet';
+import { Config } from './Config';
 import { Transaction, TransactionInput, TxInputAndOwner, UnconfirmedInput } from './Types';
 import { WalletError } from './WalletError';
 /**
@@ -44,10 +45,11 @@ export declare class SubWallets {
      * A mapping of key images to the subwallet public spend key that owns them
      */
     private keyImageOwners;
+    private config;
     /**
      * @param privateSpendKey Private spend key is optional if it's a view wallet
      */
-    constructor(address: string, scanHeight: number, newWallet: boolean, privateViewKey: string, privateSpendKey?: string);
+    constructor(config: Config, address: string, scanHeight: number, newWallet: boolean, privateViewKey: string, privateSpendKey?: string);
     initKeyImageMap(): void;
     pruneSpentInputs(pruneHeight: number): void;
     reset(scanHeight: number, scanTimestamp: number): void;
@@ -192,4 +194,5 @@ export declare class SubWallets {
      * has changed.
      */
     getNumUnconfirmedTransactions(): number;
+    initAfterLoad(config: Config): void;
 }

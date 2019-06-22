@@ -5,14 +5,18 @@ const nullKey = '0'.repeat(64);
 
 export async function generateKeyDerivation(
     transactionPublicKey: string,
-    privateViewKey: string): Promise<string> {
+    privateViewKey: string,
+    config: Config): Promise<string> {
 
-    if (Config.generateKeyDerivation) {
-        return Config.generateKeyDerivation(transactionPublicKey, privateViewKey);
+    if (config.generateKeyDerivation) {
+        return config.generateKeyDerivation(transactionPublicKey, privateViewKey);
     }
 
     try {
-        const key = await CryptoUtils().generateKeyDerivation(transactionPublicKey, privateViewKey);
+        const key = await CryptoUtils(config).generateKeyDerivation(
+            transactionPublicKey,
+            privateViewKey
+        );
         return key;
     } catch (err) {
         return nullKey;
@@ -23,27 +27,28 @@ export async function generateKeyImagePrimitive(
     publicSpendKey: string,
     privateSpendKey: string,
     outputIndex: number,
-    derivation: string): Promise<[string, string]> {
+    derivation: string,
+    config: Config): Promise<[string, string]> {
 
-    if (Config.derivePublicKey && Config.deriveSecretKey && Config.generateKeyImage) {
+    if (config.derivePublicKey && config.deriveSecretKey && config.generateKeyImage) {
         /* Derive the transfer public key from the derived key, the output index, and our public spend key */
-        const publicEphemeral = await Config.derivePublicKey(
+        const publicEphemeral = await config.derivePublicKey(
             derivation, outputIndex, publicSpendKey,
         );
 
         /* Derive the key image private key from the derived key, the output index, and our spend secret key */
-        const privateEphemeral = await Config.deriveSecretKey(
+        const privateEphemeral = await config.deriveSecretKey(
             derivation, outputIndex, privateSpendKey,
         );
 
         /* Generate the key image */
-        const keyImage = await Config.generateKeyImage(publicEphemeral, privateEphemeral);
+        const keyImage = await config.generateKeyImage(publicEphemeral, privateEphemeral);
 
         return [keyImage, privateEphemeral];
     }
 
     try {
-        const keys = await CryptoUtils().generateKeyImagePrimitive(
+        const keys = await CryptoUtils(config).generateKeyImagePrimitive(
             publicSpendKey, privateSpendKey, outputIndex, derivation,
         );
 
@@ -58,25 +63,29 @@ export async function generateKeyImage(
     privateViewKey: string,
     publicSpendKey: string,
     privateSpendKey: string,
-    transactionIndex: number): Promise<[string, string]> {
+    transactionIndex: number,
+    config: Config): Promise<[string, string]> {
 
-    const derivation: string = await generateKeyDerivation(transactionPublicKey, privateViewKey);
+    const derivation: string = await generateKeyDerivation(
+        transactionPublicKey, privateViewKey, config,
+    );
 
     return generateKeyImagePrimitive(
-        publicSpendKey, privateSpendKey, transactionIndex, derivation,
+        publicSpendKey, privateSpendKey, transactionIndex, derivation, config,
     );
 }
 
 export async function underivePublicKey(
     derivation: string,
     outputIndex: number,
-    outputKey: string): Promise<string> {
-    if (Config.underivePublicKey) {
-        return Config.underivePublicKey(derivation, outputIndex, outputKey);
+    outputKey: string,
+    config: Config): Promise<string> {
+    if (config.underivePublicKey) {
+        return config.underivePublicKey(derivation, outputIndex, outputKey);
     }
 
     try {
-        const key = await CryptoUtils().underivePublicKey(
+        const key = await CryptoUtils(config).underivePublicKey(
             derivation, outputIndex, outputKey,
         );
 

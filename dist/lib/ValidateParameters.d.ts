@@ -1,5 +1,6 @@
 import { SubWallets } from './SubWallets';
 import { WalletError } from './WalletError';
+import { IConfig } from './Config';
 /**
  * @param addresses The addresses to validate
  * @param integratedAddressesAllowed Should we allow integrated addresses?
@@ -7,7 +8,7 @@ import { WalletError } from './WalletError';
  * Verifies that the addresses given are valid.
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
-export declare function validateAddresses(addresses: string[], integratedAddressesAllowed: boolean): WalletError;
+export declare function validateAddresses(addresses: string[], integratedAddressesAllowed: boolean, config?: IConfig): WalletError;
 /**
  * Validate the amounts being sent are valid, and the addresses are valid.
  *
@@ -15,7 +16,7 @@ export declare function validateAddresses(addresses: string[], integratedAddress
  *
  * @hidden
  */
-export declare function validateDestinations(destinations: Array<[string, number]>): WalletError;
+export declare function validateDestinations(destinations: Array<[string, number]>, config?: IConfig): WalletError;
 /**
  * Validate that the payment ID's included in integrated addresses are valid.
  *
@@ -25,7 +26,7 @@ export declare function validateDestinations(destinations: Array<[string, number
  *
  * @hidden
  */
-export declare function validateIntegratedAddresses(destinations: Array<[string, number]>, paymentID: string): WalletError;
+export declare function validateIntegratedAddresses(destinations: Array<[string, number]>, paymentID: string, config?: IConfig): WalletError;
 /**
  * Validate the the addresses given are both valid, and exist in the subwallet
  *
@@ -33,7 +34,7 @@ export declare function validateIntegratedAddresses(destinations: Array<[string,
  *
  * @hidden
  */
-export declare function validateOurAddresses(addresses: string[], subWallets: SubWallets): WalletError;
+export declare function validateOurAddresses(addresses: string[], subWallets: SubWallets, config?: IConfig): WalletError;
 /**
  * Validate that the transfer amount + fee is valid, and we have enough balance
  * Note: Does not verify amounts are positive / integer, validateDestinations
@@ -43,7 +44,7 @@ export declare function validateOurAddresses(addresses: string[], subWallets: Su
  *
  * @hidden
  */
-export declare function validateAmount(destinations: Array<[string, number]>, fee: number, subWalletsToTakeFrom: string[], subWallets: SubWallets, currentHeight: number): WalletError;
+export declare function validateAmount(destinations: Array<[string, number]>, fee: number, subWalletsToTakeFrom: string[], subWallets: SubWallets, currentHeight: number, config?: IConfig): WalletError;
 /**
  * Validates mixin is valid and in allowed range
  *
@@ -51,7 +52,7 @@ export declare function validateAmount(destinations: Array<[string, number]>, fe
  *
  * @hidden
  */
-export declare function validateMixin(mixin: number, height: number): WalletError;
+export declare function validateMixin(mixin: number, height: number, config?: IConfig): WalletError;
 /**
  * Validates the payment ID is valid (or an empty string)
  *

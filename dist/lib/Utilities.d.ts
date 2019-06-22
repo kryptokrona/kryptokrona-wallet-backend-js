@@ -1,9 +1,10 @@
+import { IConfig } from './Config';
 /**
  * Creates an integrated address from a standard address, and a payment ID.
  *
  * Throws if either address or payment ID is invalid.
  */
-export declare function createIntegratedAddress(address: string, paymentID: string): string;
+export declare function createIntegratedAddress(address: string, paymentID: string, config?: IConfig): string;
 /**
  * Verifies if a key or payment ID is valid (64 char hex)
  */
@@ -14,7 +15,7 @@ export declare function isHex64(val: string): boolean;
  *
  * @hidden
  */
-export declare function addressToKeys(address: string): [string, string];
+export declare function addressToKeys(address: string, config?: IConfig): [string, string];
 /**
  * Get the nearest multiple of the given value, rounded down.
  *
@@ -32,7 +33,7 @@ export declare function getUpperBound(val: number, nearestMultiple: number): num
  *
  * @hidden
  */
-export declare function getCurrentTimestampAdjusted(): number;
+export declare function getCurrentTimestampAdjusted(blockTargetTime?: number): number;
 /**
  * Is an input unlocked for spending at this height
  *
@@ -43,7 +44,7 @@ export declare function isInputUnlocked(unlockTime: number, currentHeight: numbe
  * Takes an amount in atomic units and pretty prints it.
  * Example: 12345607 -> 123,456.07 TRTL
  */
-export declare function prettyPrintAmount(amount: number): string;
+export declare function prettyPrintAmount(amount: number, config?: IConfig): string;
 /**
  * Sleep for the given amount of milliseconds, async
  *
@@ -85,7 +86,7 @@ export declare function splitAmountIntoDenominations(amount: number): number[];
  *
  * @hidden
  */
-export declare function getMaxTxSize(currentHeight: number): number;
+export declare function getMaxTxSize(currentHeight: number, blockTime?: number): number;
 /**
  * Converts an amount in bytes, say, 10000, into 9.76 KB
  *
@@ -103,4 +104,4 @@ export declare function isValidMnemonicWord(word: string): boolean;
  * Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage
  * describing what is invalid.
  */
-export declare function isValidMnemonic(mnemonic: string): [boolean, string];
+export declare function isValidMnemonic(mnemonic: string, config?: IConfig): [boolean, string];

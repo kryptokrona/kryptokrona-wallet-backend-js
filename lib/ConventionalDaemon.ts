@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash';
 
-import { Config } from './Config';
+import { Config, MergeConfig, IConfig } from './Config';
 import { IDaemon } from './IDaemon';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { Block, TopBlock } from './Types';
@@ -65,6 +65,8 @@ export class ConventionalDaemon implements IDaemon {
      */
     private lastKnownHashrate = 0;
 
+    private config: Config = new Config();
+
     constructor(daemonHost: string, daemonPort: number) {
         this.daemonHost = daemonHost;
         this.daemonPort = daemonPort;
@@ -73,8 +75,12 @@ export class ConventionalDaemon implements IDaemon {
             host: daemonHost,
             port: daemonPort,
             ssl: false,
-            timeout: Config.requestTimeout,
+            timeout: this.config.requestTimeout,
         });
+    }
+
+    public updateConfig(config: IConfig) {
+        this.config = MergeConfig(config);
     }
 
     /**
@@ -128,7 +134,7 @@ export class ConventionalDaemon implements IDaemon {
 
         this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
-        this.lastKnownHashrate = info.difficulty / Config.blockTargetTime;
+        this.lastKnownHashrate = info.difficulty / this.config.blockTargetTime;
     }
 
     /**
@@ -158,7 +164,7 @@ export class ConventionalDaemon implements IDaemon {
         const { items, topBlock } = await this.daemon.getWalletSyncData({
             blockCount,
             blockHashCheckpoints,
-            skipCoinbaseTransactions: !Config.scanCoinbaseTransactions,
+            skipCoinbaseTransactions: !this.config.scanCoinbaseTransactions,
             startHeight,
             startTimestamp,
         });
@@ -296,7 +302,7 @@ export class ConventionalDaemon implements IDaemon {
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletErrorCode = validateAddresses(
-            new Array(feeInfo.address), integratedAddressesAllowed,
+            new Array(feeInfo.address), integratedAddressesAllowed, this.config
         ).errorCode;
 
         if (err !== WalletErrorCode.SUCCESS) {

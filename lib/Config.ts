@@ -166,7 +166,7 @@ export interface IConfig {
  *
  * @hidden
  */
-class OurConfig implements IConfig {
+export class Config implements IConfig {
     /**
      * The amount of decimal places your coin has, e.g. TurtleCoin has two
      * decimals
@@ -329,25 +329,24 @@ class OurConfig implements IConfig {
 }
 
 /**
- * @hidden
- */
-export let Config: OurConfig = new OurConfig();
-
-/**
  * Merge the default config with the provided config
  *
  * @hidden
  */
-export function MergeConfig(config?: IConfig): void {
-    const finalConfig = new OurConfig();
+export function MergeConfig(config?: IConfig, currentConfig = new Config()): Config {
+    /* Clone the given config so we don't alter it */
+    const finalConfig = Object.create(
+        Object.getPrototypeOf(currentConfig),
+        Object.getOwnPropertyDescriptors(currentConfig),
+    );
 
     if (!config) {
-        return;
+        return finalConfig;
     }
 
     for (const [key, value] of Object.entries(config)) {
         finalConfig[key] = value;
     }
 
-    Config = finalConfig;
+    return finalConfig;
 }

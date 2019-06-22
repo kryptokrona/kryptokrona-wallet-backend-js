@@ -382,6 +382,7 @@ export declare class WalletBackend extends EventEmitter {
      * Are we in the middle of a transaction?
      */
     private currentlyTransacting;
+    private config;
     /**
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
@@ -959,7 +960,7 @@ export declare class WalletBackend extends EventEmitter {
      */
     private getGlobalIndexes;
     /**
-     * Process Config.blocksPerTick stored blocks, finding transactions and
+     * Process config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
     private processBlocks;

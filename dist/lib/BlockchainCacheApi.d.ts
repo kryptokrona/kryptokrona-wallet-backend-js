@@ -1,4 +1,5 @@
 import { Block, TopBlock } from './Types';
+import { IConfig } from './Config';
 import { IDaemon } from './IDaemon';
 /**
  * Implements the daemon interface, talking to a standard TurtleCoind.
@@ -36,6 +37,7 @@ export declare class BlockchainCacheApi implements IDaemon {
      * The hashrate of the last known local block
      */
     private lastKnownHashrate;
+    private config;
     /**
      * @param cacheBaseURL  The base URL for our API. Shouldn't have a trailing '/'
      * @param ssl           Should we use https? Defaults to true.
@@ -46,6 +48,7 @@ export declare class BlockchainCacheApi implements IDaemon {
      * ```
      */
     constructor(cacheBaseURL: string, ssl?: boolean);
+    updateConfig(config: IConfig): void;
     /**
      * Get the amount of blocks the network has
      */

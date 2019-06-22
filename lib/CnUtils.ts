@@ -11,18 +11,18 @@ import { Config } from './Config';
  * Due to how the module system works, a default export is cached and so the
  * config will never update.
  */
-export function CryptoUtils(): CryptoNote {
+export function CryptoUtils(config: Config): CryptoNote {
     return new CryptoNote({
-        addressPrefix: Config.addressPrefix,
-        cnFastHash: Config.cnFastHash,
-        coinUnitPlaces: Config.decimalPlaces,
-        derivePublicKey: Config.derivePublicKey,
-        deriveSecretKey: Config.deriveSecretKey,
-        generateKeyDerivation: Config.generateKeyDerivation,
-        generateKeyImage: Config.generateKeyImage,
-        generateRingSignatures: Config.generateRingSignatures,
+        addressPrefix: config.addressPrefix,
+        cnFastHash: config.cnFastHash,
+        coinUnitPlaces: config.decimalPlaces,
+        derivePublicKey: config.derivePublicKey,
+        deriveSecretKey: config.deriveSecretKey,
+        generateKeyDerivation: config.generateKeyDerivation,
+        generateKeyImage: config.generateKeyImage,
+        generateRingSignatures: config.generateRingSignatures,
         keccakIterations: 1,
-        secretKeyToPublicKey: Config.secretKeyToPublicKey,
-        underivePublicKey: Config.underivePublicKey,
+        secretKeyToPublicKey: config.secretKeyToPublicKey,
+        underivePublicKey: config.underivePublicKey,
     });
 }

@@ -30,3 +30,5 @@ exports.TransactionInput = Types_1.TransactionInput;
 var MixinLimits_1 = require("./MixinLimits");
 exports.MixinLimit = MixinLimits_1.MixinLimit;
 exports.MixinLimits = MixinLimits_1.MixinLimits;
+var Config_1 = require("./Config");
+exports.Config = Config_1.Config;

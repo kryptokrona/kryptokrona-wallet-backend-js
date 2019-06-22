@@ -209,15 +209,17 @@ export class WalletBackend extends EventEmitter {
         password: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
-        MergeConfig(config);
-
         const [walletJSON, error] = openWallet(filename, password);
 
         if (error) {
             return [undefined, error];
         }
 
-        return WalletBackend.loadWalletFromJSON(daemon, walletJSON);
+        return WalletBackend.loadWalletFromJSON(
+            daemon,
+            walletJSON,
+            config,
+        );
     }
 
     /**
@@ -251,15 +253,17 @@ export class WalletBackend extends EventEmitter {
         password: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
-        MergeConfig(config);
-
         const [walletJSON, error] = WalletEncryption.decryptWalletFromString(data, password);
 
         if (error) {
             return [undefined, error];
         }
 
-        return WalletBackend.loadWalletFromJSON(deamon, walletJSON);
+        return WalletBackend.loadWalletFromJSON(
+            deamon,
+            walletJSON,
+            config,
+        );
     }
 
     /**
@@ -294,14 +298,11 @@ export class WalletBackend extends EventEmitter {
         json: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
-        MergeConfig(config);
-
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
-            wallet.initAfterLoad(daemon);
+            wallet.initAfterLoad(daemon, MergeConfig(config));
             return [wallet, undefined];
         } catch (err) {
-            console.log(err);
             return [undefined, new WalletError(WalletErrorCode.WALLET_FILE_CORRUPTED)];
         }
     }
@@ -342,12 +343,10 @@ export class WalletBackend extends EventEmitter {
         mnemonicSeed: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
-        MergeConfig(config);
-
         let keys;
 
         try {
-            keys = CryptoUtils().createAddressFromMnemonic(mnemonicSeed);
+            keys = CryptoUtils(MergeConfig(config)).createAddressFromMnemonic(mnemonicSeed);
         } catch (err) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_MNEMONIC, err.toString())];
         }
@@ -364,8 +363,8 @@ export class WalletBackend extends EventEmitter {
         const newWallet: boolean = false;
 
         const wallet = new WalletBackend(
-            daemon, keys.address, scanHeight, newWallet, keys.view.privateKey,
-            keys.spend.privateKey,
+            MergeConfig(config), daemon, keys.address, scanHeight, newWallet,
+            keys.view.privateKey, keys.spend.privateKey,
         );
 
         return [wallet, undefined];
@@ -408,8 +407,6 @@ export class WalletBackend extends EventEmitter {
         privateSpendKey: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
-        MergeConfig(config);
-
         if (!isHex64(privateViewKey) || !isHex64(privateSpendKey)) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
         }
@@ -417,7 +414,7 @@ export class WalletBackend extends EventEmitter {
         let keys;
 
         try {
-            keys = CryptoUtils().createAddressFromKeys(privateSpendKey, privateViewKey);
+            keys = CryptoUtils(MergeConfig(config)).createAddressFromKeys(privateSpendKey, privateViewKey);
         } catch (err) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT, err.toString())];
         }
@@ -434,8 +431,8 @@ export class WalletBackend extends EventEmitter {
         const newWallet: boolean = false;
 
         const wallet = new WalletBackend(
-            daemon, keys.address, scanHeight, newWallet, keys.view.privateKey,
-            keys.spend.privateKey,
+            MergeConfig(config), daemon, keys.address, scanHeight, newWallet,
+            keys.view.privateKey, keys.spend.privateKey,
         );
 
         return [wallet, undefined];
@@ -483,8 +480,6 @@ export class WalletBackend extends EventEmitter {
         address: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
-        MergeConfig(config);
-
         if (!isHex64(privateViewKey)) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
         }
@@ -492,7 +487,7 @@ export class WalletBackend extends EventEmitter {
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletError = validateAddresses(
-            new Array(address), integratedAddressesAllowed,
+            new Array(address), integratedAddressesAllowed, MergeConfig(config),
         );
 
         if (!_.isEqual(err, SUCCESS)) {
@@ -511,8 +506,8 @@ export class WalletBackend extends EventEmitter {
         const newWallet: boolean = false;
 
         const wallet = new WalletBackend(
-            daemon, address, scanHeight, newWallet, privateViewKey,
-            undefined, /* No private spend key */
+            MergeConfig(config), daemon, address, scanHeight, newWallet,
+            privateViewKey,
         );
 
         return [wallet, undefined];
@@ -537,17 +532,15 @@ export class WalletBackend extends EventEmitter {
         daemon: IDaemon,
         config?: IConfig): WalletBackend {
 
-        MergeConfig(config);
-
         const newWallet: boolean = true;
 
         const scanHeight: number = 0;
 
-        const keys = CryptoUtils().createNewAddress();
+        const keys = CryptoUtils(MergeConfig(config)).createNewAddress();
 
         const wallet = new WalletBackend(
-            daemon, keys.address, scanHeight, newWallet, keys.view.privateKey,
-            keys.spend.privateKey,
+            MergeConfig(config), daemon, keys.address, scanHeight, newWallet,
+            keys.view.privateKey, keys.spend.privateKey,
         );
 
         return wallet;
@@ -641,6 +634,8 @@ export class WalletBackend extends EventEmitter {
      */
     private currentlyTransacting: boolean = false;
 
+    private config: Config;
+
     /**
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
@@ -653,6 +648,7 @@ export class WalletBackend extends EventEmitter {
      *
      */
     private constructor(
+        config: Config,
         daemon: IDaemon,
         address: string,
         scanHeight: number,
@@ -662,35 +658,41 @@ export class WalletBackend extends EventEmitter {
 
         super();
 
+        this.config = config;
+
+        daemon.updateConfig(config);
+
         this.subWallets = new SubWallets(
-            address, scanHeight, newWallet, privateViewKey, privateSpendKey,
+            config, address, scanHeight, newWallet, privateViewKey,
+            privateSpendKey,
         );
 
         let timestamp = 0;
 
         if (newWallet) {
-            timestamp = getCurrentTimestampAdjusted();
+            timestamp = getCurrentTimestampAdjusted(this.config.blockTargetTime);
         }
 
         this.walletSynchronizer = new WalletSynchronizer(
-            daemon, this.subWallets, timestamp, scanHeight, privateViewKey,
+            daemon, this.subWallets, timestamp, scanHeight,
+            privateViewKey, this.config,
         );
 
         this.daemon = daemon;
 
         this.syncThread = new Metronome(
             () => this.sync(true),
-            Config.syncThreadInterval,
+            this.config.syncThreadInterval,
         );
 
         this.daemonUpdateThread = new Metronome(
             () => this.updateDaemonInfo(),
-            Config.daemonUpdateInterval,
+            this.config.daemonUpdateInterval,
         );
 
         this.lockedTransactionsCheckThread = new Metronome(
             () => this.checkLockedTransactions(),
-            Config.lockedTransactionsCheckInterval,
+            this.config.lockedTransactionsCheckInterval,
         );
     }
 
@@ -787,7 +789,7 @@ export class WalletBackend extends EventEmitter {
      * @param shouldScan Should we scan coinbase transactions?
      */
     public scanCoinbaseTransactions(shouldScan: boolean): void {
-        Config.scanCoinbaseTransactions = shouldScan;
+        this.config.scanCoinbaseTransactions = shouldScan;
     }
 
     /**
@@ -1019,14 +1021,14 @@ export class WalletBackend extends EventEmitter {
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletError = validateAddresses(
-            new Array(address), integratedAddressesAllowed,
+            new Array(address), integratedAddressesAllowed, this.config,
         );
 
         if (!_.isEqual(err, SUCCESS)) {
             return [undefined, undefined, err];
         }
 
-        const [publicViewKey, publicSpendKey] = addressToKeys(address);
+        const [publicViewKey, publicSpendKey] = addressToKeys(address, this.config);
 
         const [err2, privateSpendKey] = this.subWallets.getPrivateSpendKey(publicSpendKey);
 
@@ -1092,7 +1094,7 @@ export class WalletBackend extends EventEmitter {
             return [undefined, error];
         }
 
-        const parsedAddr = CryptoUtils().createAddressFromKeys(
+        const parsedAddr = CryptoUtils(this.config).createAddressFromKeys(
             privateSpendKey as string, privateViewKey as string,
         );
 
@@ -1256,7 +1258,7 @@ export class WalletBackend extends EventEmitter {
 
         const f = async (): Promise<(TransactionHash | TransactionError)> => {
             const [transaction, hash, error] = await sendFusionTransactionBasic(
-                this.daemon, this.subWallets,
+                this.config, this.daemon, this.subWallets,
             );
 
             if (transaction) {
@@ -1319,8 +1321,8 @@ export class WalletBackend extends EventEmitter {
 
         const f = async (): Promise<(TransactionHash | TransactionError)> => {
             const [transaction, hash, error] = await sendFusionTransactionAdvanced(
-                this.daemon, this.subWallets, mixin, subWalletsToTakeFrom,
-                destination,
+                this.config, this.daemon, this.subWallets, mixin,
+                subWalletsToTakeFrom, destination,
             );
 
             if (transaction) {
@@ -1381,7 +1383,8 @@ export class WalletBackend extends EventEmitter {
 
         const f = async (): Promise<([string, undefined]) | ([undefined, WalletError])> => {
             const [transaction, hash, error] = await sendTransactionBasic(
-                this.daemon, this.subWallets, destination, amount, paymentID,
+                this.config, this.daemon, this.subWallets, destination, amount,
+                paymentID,
             );
 
             if (transaction) {
@@ -1450,8 +1453,8 @@ export class WalletBackend extends EventEmitter {
 
         const f = async (): Promise<(TransactionHash | TransactionError)> => {
             const [transaction, hash, error] = await sendTransactionAdvanced(
-                this.daemon, this.subWallets, destinations, mixin, fee, paymentID,
-                subWalletsToTakeFrom, changeAddress,
+                this.config, this.daemon, this.subWallets, destinations, mixin,
+                fee, paymentID, subWalletsToTakeFrom, changeAddress,
             );
 
             if (transaction) {
@@ -1707,12 +1710,12 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Process Config.blocksPerTick stored blocks, finding transactions and
+     * Process config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
     private async processBlocks(sleep: boolean): Promise<boolean> {
         /* Take the blocks to process for this tick */
-        const blocks: Block[] = await this.walletSynchronizer.fetchBlocks(Config.blocksPerTick);
+        const blocks: Block[] = await this.walletSynchronizer.fetchBlocks(this.config.blocksPerTick);
 
         if (blocks.length === 0) {
             if (sleep) {
@@ -1756,7 +1759,7 @@ export class WalletBackend extends EventEmitter {
                 this.getPrivateViewKey(),
                 this.subWallets.getAllSpendKeys(),
                 this.subWallets.isViewWallet,
-                Config.scanCoinbaseTransactions,
+                this.config.scanCoinbaseTransactions,
             );
 
             let globalIndexes: Map<string, number[]> = new Map();
@@ -1843,24 +1846,29 @@ export class WalletBackend extends EventEmitter {
     /**
      * Initialize stuff not stored in the JSON.
      */
-    private initAfterLoad(daemon: IDaemon): void {
+    private initAfterLoad(daemon: IDaemon, config: Config): void {
+        this.config = config;
         this.daemon = daemon;
 
-        this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
+        this.daemon.updateConfig(config);
+
+        this.walletSynchronizer.initAfterLoad(this.subWallets, daemon, this.config);
+
+        this.subWallets.initAfterLoad(this.config);
 
         this.syncThread = new Metronome(
             () => this.sync(true),
-            Config.syncThreadInterval,
+            this.config.syncThreadInterval,
         );
 
         this.daemonUpdateThread = new Metronome(
             () => this.updateDaemonInfo(),
-            Config.daemonUpdateInterval,
+            this.config.daemonUpdateInterval,
         );
 
         this.lockedTransactionsCheckThread = new Metronome(
             () => this.checkLockedTransactions(),
-            Config.lockedTransactionsCheckInterval,
+            this.config.lockedTransactionsCheckInterval,
         );
     }
 

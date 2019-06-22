@@ -1,3 +1,4 @@
+import { IConfig } from './Config';
 import { IDaemon } from './IDaemon';
 import { Block, TopBlock } from './Types';
 /**
@@ -41,7 +42,9 @@ export declare class ConventionalDaemon implements IDaemon {
      * The hashrate of the last known local block
      */
     private lastKnownHashrate;
+    private config;
     constructor(daemonHost: string, daemonPort: number);
+    updateConfig(config: IConfig): void;
     /**
      * Get the amount of blocks the network has
      */

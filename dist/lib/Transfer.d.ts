@@ -1,3 +1,4 @@
+import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
 import { Transaction as TX } from './Types';
@@ -10,7 +11,7 @@ import { WalletError } from './WalletError';
  *
  * @return Returns either [transaction, transaction hash, undefined], or [undefined, undefined, error]
  */
-export declare function sendFusionTransactionBasic(daemon: IDaemon, subWallets: SubWallets): Promise<([TX, string, undefined]) | ([undefined, undefined, WalletError])>;
+export declare function sendFusionTransactionBasic(config: Config, daemon: IDaemon, subWallets: SubWallets): Promise<([TX, string, undefined]) | ([undefined, undefined, WalletError])>;
 /**
  * Sends a transaction, which permits multiple amounts to different destinations,
  * specifying the mixin, fee, subwallets to draw funds from, and change address.
@@ -26,7 +27,7 @@ export declare function sendFusionTransactionBasic(daemon: IDaemon, subWallets: 
  *
  * @return Returns either [transaction, transaction hash, undefined], or [undefined, undefined, error]
  */
-export declare function sendFusionTransactionAdvanced(daemon: IDaemon, subWallets: SubWallets, mixin?: number, subWalletsToTakeFrom?: string[], destination?: string): Promise<([TX, string, undefined]) | ([undefined, undefined, WalletError])>;
+export declare function sendFusionTransactionAdvanced(config: Config, daemon: IDaemon, subWallets: SubWallets, mixin?: number, subWalletsToTakeFrom?: string[], destination?: string): Promise<([TX, string, undefined]) | ([undefined, undefined, WalletError])>;
 /**
  * Sends a transaction of amount to the address destination, using the
  * given payment ID, if specified.
@@ -44,7 +45,7 @@ export declare function sendFusionTransactionAdvanced(daemon: IDaemon, subWallet
  *
  * @return Returns either [transaction, transaction hash, undefined], or [undefined, undefined, error]
  */
-export declare function sendTransactionBasic(daemon: IDaemon, subWallets: SubWallets, destination: string, amount: number, paymentID?: string): Promise<([TX, string, undefined]) | ([undefined, undefined, WalletError])>;
+export declare function sendTransactionBasic(config: Config, daemon: IDaemon, subWallets: SubWallets, destination: string, amount: number, paymentID?: string): Promise<([TX, string, undefined]) | ([undefined, undefined, WalletError])>;
 /**
  * Sends a transaction, which permits multiple amounts to different destinations,
  * specifying the mixin, fee, subwallets to draw funds from, and change address.
@@ -63,4 +64,4 @@ export declare function sendTransactionBasic(daemon: IDaemon, subWallets: SubWal
  *
  * @return Returns either [transaction, transaction hash, undefined], or [undefined, undefined, error]
  */
-export declare function sendTransactionAdvanced(daemon: IDaemon, subWallets: SubWallets, addressesAndAmounts: Array<[string, number]>, mixin?: number, fee?: number, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string): Promise<([TX, string, undefined]) | ([undefined, undefined, WalletError])>;
+export declare function sendTransactionAdvanced(config: Config, daemon: IDaemon, subWallets: SubWallets, addressesAndAmounts: Array<[string, number]>, mixin?: number, fee?: number, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string): Promise<([TX, string, undefined]) | ([undefined, undefined, WalletError])>;

@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import {
     IDaemon, prettyPrintAmount, SUCCESS, validateAddresses,
     WalletBackend, WalletError, WalletErrorCode, BlockchainCacheApi, LogLevel,
-    isValidMnemonic, isValidMnemonicWord, createIntegratedAddress,
+    isValidMnemonic, isValidMnemonicWord, createIntegratedAddress, Config,
 } from '../lib/index';
 
 import { CryptoUtils } from '../lib/CnUtils';
@@ -502,7 +502,7 @@ function roundTrip(
         await tester.test(async () => {
 
             /* Just random public + private keys */
-            const derivation: string = CryptoUtils().generateKeyDerivation(
+            const derivation: string = CryptoUtils(new Config()).generateKeyDerivation(
                 'f235acd76ee38ec4f7d95123436200f9ed74f9eb291b1454fbc30742481be1ab',
                 '89df8c4d34af41a51cfae0267e8254cadd2298f9256439fa1cfa7e25ee606606',
             );
@@ -513,7 +513,7 @@ function roundTrip(
 
             for (let i = 0; i < loopIterations; i++) {
                 /* Use i as output index to prevent optimization */
-                const derivedOutputKey = CryptoUtils().underivePublicKey(
+                const derivedOutputKey = CryptoUtils(new Config()).underivePublicKey(
                     derivation, i,
                     '14897efad619205256d9170192e50e2fbd7959633e274d1b6f94b1087d680451',
                 );
@@ -540,7 +540,7 @@ function roundTrip(
 
             for (let i = 0; i < loopIterations; i++) {
                 /* Just random public + private keys */
-                const derivation: string = CryptoUtils().generateKeyDerivation(
+                const derivation: string = CryptoUtils(new Config()).generateKeyDerivation(
                     'f235acd76ee38ec4f7d95123436200f9ed74f9eb291b1454fbc30742481be1ab',
                     '89df8c4d34af41a51cfae0267e8254cadd2298f9256439fa1cfa7e25ee606606',
                 );

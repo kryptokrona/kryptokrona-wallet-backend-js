@@ -12,7 +12,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
-const Config_1 = require("./Config");
 const CnUtils_1 = require("./CnUtils");
 const Types_1 = require("./Types");
 const CryptoWrapper_1 = require("./CryptoWrapper");
@@ -28,9 +27,9 @@ const WalletError_1 = require("./WalletError");
  *
  * @return Returns either [transaction, transaction hash, undefined], or [undefined, undefined, error]
  */
-function sendFusionTransactionBasic(daemon, subWallets) {
+function sendFusionTransactionBasic(config, daemon, subWallets) {
     return __awaiter(this, void 0, void 0, function* () {
-        return sendFusionTransactionAdvanced(daemon, subWallets);
+        return sendFusionTransactionAdvanced(config, daemon, subWallets);
     });
 }
 exports.sendFusionTransactionBasic = sendFusionTransactionBasic;
@@ -49,10 +48,10 @@ exports.sendFusionTransactionBasic = sendFusionTransactionBasic;
  *
  * @return Returns either [transaction, transaction hash, undefined], or [undefined, undefined, error]
  */
-function sendFusionTransactionAdvanced(daemon, subWallets, mixin, subWalletsToTakeFrom, destination) {
+function sendFusionTransactionAdvanced(config, daemon, subWallets, mixin, subWalletsToTakeFrom, destination) {
     return __awaiter(this, void 0, void 0, function* () {
         if (mixin === undefined) {
-            mixin = Config_1.Config.mixinLimits.getDefaultMixinByHeight(daemon.getNetworkBlockCount());
+            mixin = config.mixinLimits.getDefaultMixinByHeight(daemon.getNetworkBlockCount());
         }
         /* Take from all subaddresses if none given */
         if (subWalletsToTakeFrom === undefined || subWalletsToTakeFrom.length === 0) {
@@ -63,7 +62,7 @@ function sendFusionTransactionAdvanced(daemon, subWallets, mixin, subWalletsToTa
             destination = subWallets.getPrimaryAddress();
         }
         /* Verify it's all valid */
-        const error = validateFusionTransaction(mixin, subWalletsToTakeFrom, destination, daemon.getNetworkBlockCount(), subWallets);
+        const error = validateFusionTransaction(mixin, subWalletsToTakeFrom, destination, daemon.getNetworkBlockCount(), subWallets, config);
         if (!_.isEqual(error, WalletError_1.SUCCESS)) {
             return [undefined, undefined, error];
         }
@@ -92,7 +91,7 @@ function sendFusionTransactionAdvanced(daemon, subWallets, mixin, subWalletsToTa
                 continue;
             }
             const addressesAndAmounts = [[destination, amount]];
-            const [tx, creationError] = yield makeTransaction(mixin, fee, paymentID, ourInputs, addressesAndAmounts, subWallets, daemon);
+            const [tx, creationError] = yield makeTransaction(mixin, fee, paymentID, ourInputs, addressesAndAmounts, subWallets, daemon, config);
             if (creationError || tx === undefined) {
                 return [undefined, undefined, creationError];
             }
@@ -108,7 +107,7 @@ function sendFusionTransactionAdvanced(daemon, subWallets, mixin, subWalletsToTa
                sending it! */
             break;
         }
-        return verifyAndSendTransaction(fusionTX, fee, paymentID, ourInputs, destination, 0, subWallets, daemon);
+        return verifyAndSendTransaction(fusionTX, fee, paymentID, ourInputs, destination, 0, subWallets, daemon, config);
     });
 }
 exports.sendFusionTransactionAdvanced = sendFusionTransactionAdvanced;
@@ -129,9 +128,9 @@ exports.sendFusionTransactionAdvanced = sendFusionTransactionAdvanced;
  *
  * @return Returns either [transaction, transaction hash, undefined], or [undefined, undefined, error]
  */
-function sendTransactionBasic(daemon, subWallets, destination, amount, paymentID) {
+function sendTransactionBasic(config, daemon, subWallets, destination, amount, paymentID) {
     return __awaiter(this, void 0, void 0, function* () {
-        return sendTransactionAdvanced(daemon, subWallets, [[destination, amount]], undefined, undefined, paymentID);
+        return sendTransactionAdvanced(config, daemon, subWallets, [[destination, amount]], undefined, undefined, paymentID);
     });
 }
 exports.sendTransactionBasic = sendTransactionBasic;
@@ -153,13 +152,13 @@ exports.sendTransactionBasic = sendTransactionBasic;
  *
  * @return Returns either [transaction, transaction hash, undefined], or [undefined, undefined, error]
  */
-function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress) {
+function sendTransactionAdvanced(config, daemon, subWallets, addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress) {
     return __awaiter(this, void 0, void 0, function* () {
         if (mixin === undefined) {
-            mixin = Config_1.Config.mixinLimits.getDefaultMixinByHeight(daemon.getNetworkBlockCount());
+            mixin = config.mixinLimits.getDefaultMixinByHeight(daemon.getNetworkBlockCount());
         }
         if (fee === undefined) {
-            fee = Config_1.Config.minimumFee;
+            fee = config.minimumFee;
         }
         if (paymentID === undefined) {
             paymentID = '';
@@ -175,7 +174,7 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         if (feeAmount !== 0) {
             addressesAndAmounts.push([feeAddress, feeAmount]);
         }
-        const error = validateTransaction(addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress, daemon.getNetworkBlockCount(), subWallets);
+        const error = validateTransaction(addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress, daemon.getNetworkBlockCount(), subWallets, config);
         if (!_.isEqual(error, WalletError_1.SUCCESS)) {
             return [undefined, undefined, error];
         }
@@ -187,17 +186,17 @@ function sendTransactionAdvanced(daemon, subWallets, addressesAndAmounts, mixin,
         if (changeRequired > 0) {
             addressesAndAmounts.push([changeAddress, changeRequired]);
         }
-        const [tx, creationError] = yield makeTransaction(mixin, fee, paymentID, inputs, addressesAndAmounts, subWallets, daemon);
+        const [tx, creationError] = yield makeTransaction(mixin, fee, paymentID, inputs, addressesAndAmounts, subWallets, daemon, config);
         /* Checking for undefined to keep the compiler from complaining later.. */
         if (creationError || tx === undefined) {
             return [undefined, undefined, creationError];
         }
         /* Perform some final checks, and send the transaction */
-        return verifyAndSendTransaction(tx, fee, paymentID, inputs, changeAddress, changeRequired, subWallets, daemon);
+        return verifyAndSendTransaction(tx, fee, paymentID, inputs, changeAddress, changeRequired, subWallets, daemon, config);
     });
 }
 exports.sendTransactionAdvanced = sendTransactionAdvanced;
-function makeTransaction(mixin, fee, paymentID, ourInputs, addressesAndAmounts, subWallets, daemon) {
+function makeTransaction(mixin, fee, paymentID, ourInputs, addressesAndAmounts, subWallets, daemon, config) {
     return __awaiter(this, void 0, void 0, function* () {
         const amounts = [];
         /* Split amounts into denominations */
@@ -208,7 +207,7 @@ function makeTransaction(mixin, fee, paymentID, ourInputs, addressesAndAmounts, 
         });
         /* Prepare destinations keys */
         const transfers = amounts.map(([address, amount]) => {
-            const decoded = CnUtils_1.CryptoUtils().decodeAddress(address);
+            const decoded = CnUtils_1.CryptoUtils(config).decodeAddress(address);
             /* Assign payment ID from integrated address if present */
             if (decoded.paymentId !== '') {
                 paymentID = decoded.paymentId;
@@ -218,12 +217,12 @@ function makeTransaction(mixin, fee, paymentID, ourInputs, addressesAndAmounts, 
                 keys: decoded,
             };
         });
-        const randomOuts = yield getRingParticipants(ourInputs, mixin, daemon);
+        const randomOuts = yield getRingParticipants(ourInputs, mixin, daemon, config);
         if (randomOuts instanceof WalletError_1.WalletError) {
             return [undefined, randomOuts];
         }
         const ourOutputs = yield Promise.all(ourInputs.map((input) => __awaiter(this, void 0, void 0, function* () {
-            const [keyImage, tmpSecretKey] = yield CryptoWrapper_1.generateKeyImage(input.input.transactionPublicKey, subWallets.getPrivateViewKey(), input.publicSpendKey, input.privateSpendKey, input.input.transactionIndex);
+            const [keyImage, tmpSecretKey] = yield CryptoWrapper_1.generateKeyImage(input.input.transactionPublicKey, subWallets.getPrivateViewKey(), input.publicSpendKey, input.privateSpendKey, input.input.transactionIndex, config);
             return {
                 amount: input.input.amount,
                 globalIndex: input.input.globalOutputIndex,
@@ -236,7 +235,7 @@ function makeTransaction(mixin, fee, paymentID, ourInputs, addressesAndAmounts, 
             };
         })));
         try {
-            const tx = yield CnUtils_1.CryptoUtils().createTransactionAsync(transfers, ourOutputs, randomOuts, mixin, fee, paymentID);
+            const tx = yield CnUtils_1.CryptoUtils(config).createTransactionAsync(transfers, ourOutputs, randomOuts, mixin, fee, paymentID);
             return [tx, undefined];
         }
         catch (err) {
@@ -244,10 +243,10 @@ function makeTransaction(mixin, fee, paymentID, ourInputs, addressesAndAmounts, 
         }
     });
 }
-function verifyAndSendTransaction(tx, fee, paymentID, inputs, changeAddress, changeRequired, subWallets, daemon) {
+function verifyAndSendTransaction(tx, fee, paymentID, inputs, changeAddress, changeRequired, subWallets, daemon, config) {
     return __awaiter(this, void 0, void 0, function* () {
         /* Check the transaction isn't too large to fit in a block */
-        const tooBigErr = isTransactionPayloadTooBig(tx.rawTransaction, daemon.getNetworkBlockCount());
+        const tooBigErr = isTransactionPayloadTooBig(tx.rawTransaction, daemon.getNetworkBlockCount(), config);
         if (!_.isEqual(tooBigErr, WalletError_1.SUCCESS)) {
             return [undefined, undefined, tooBigErr];
         }
@@ -272,9 +271,9 @@ function verifyAndSendTransaction(tx, fee, paymentID, inputs, changeAddress, cha
             return [undefined, undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_ERROR)];
         }
         /* Store the unconfirmed transaction, update our balance */
-        const returnTX = storeSentTransaction(tx.hash, fee, paymentID, inputs, changeAddress, changeRequired, subWallets);
+        const returnTX = storeSentTransaction(tx.hash, fee, paymentID, inputs, changeAddress, changeRequired, subWallets, config);
         /* Update our locked balanced with the incoming funds */
-        yield storeUnconfirmedIncomingInputs(subWallets, tx.transaction.vout, tx.transaction.transactionKeys.publicKey, tx.hash);
+        yield storeUnconfirmedIncomingInputs(subWallets, tx.transaction.vout, tx.transaction.transactionKeys.publicKey, tx.hash, config);
         subWallets.storeTxPrivateKey(tx.transaction.transactionKeys.privateKey, tx.hash);
         /* Lock the input for spending till confirmed/cancelled */
         for (const input of inputs) {
@@ -283,14 +282,14 @@ function verifyAndSendTransaction(tx, fee, paymentID, inputs, changeAddress, cha
         return [returnTX, tx.hash, undefined];
     });
 }
-function storeSentTransaction(hash, fee, paymentID, ourInputs, changeAddress, changeRequired, subWallets) {
+function storeSentTransaction(hash, fee, paymentID, ourInputs, changeAddress, changeRequired, subWallets, config) {
     const transfers = new Map();
     for (const input of ourInputs) {
         /* Amounts we have spent, subtract them from the transfers map */
         transfers.set(input.publicSpendKey, -input.input.amount + (transfers.get(input.publicSpendKey) || 0));
     }
     if (changeRequired !== 0) {
-        const [publicViewKey, publicSpendKey] = Utilities_1.addressToKeys(changeAddress);
+        const [publicViewKey, publicSpendKey] = Utilities_1.addressToKeys(changeAddress, config);
         transfers.set(publicSpendKey, changeRequired + (transfers.get(publicSpendKey) || 0));
     }
     const timestamp = 0;
@@ -301,14 +300,14 @@ function storeSentTransaction(hash, fee, paymentID, ourInputs, changeAddress, ch
     subWallets.addUnconfirmedTransaction(tx);
     return tx;
 }
-function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txHash) {
+function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txHash, config) {
     return __awaiter(this, void 0, void 0, function* () {
-        const derivation = yield CryptoWrapper_1.generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey());
+        const derivation = yield CryptoWrapper_1.generateKeyDerivation(txPublicKey, subWallets.getPrivateViewKey(), config);
         const spendKeys = subWallets.getPublicSpendKeys();
         for (const [outputIndex, output] of keyOutputs.entries()) {
             /* Derive the spend key from the transaction, using the previous
                derivation */
-            const derivedSpendKey = yield CryptoWrapper_1.underivePublicKey(derivation, outputIndex, output.target.data);
+            const derivedSpendKey = yield CryptoWrapper_1.underivePublicKey(derivation, outputIndex, output.target.data, config);
             /* See if the derived spend key matches any of our spend keys */
             if (!_.includes(spendKeys, derivedSpendKey)) {
                 continue;
@@ -321,10 +320,10 @@ function storeUnconfirmedIncomingInputs(subWallets, keyOutputs, txPublicKey, txH
 /**
  * Verify the transaction is small enough to fit in a block
  */
-function isTransactionPayloadTooBig(rawTransaction, currentHeight) {
+function isTransactionPayloadTooBig(rawTransaction, currentHeight, config) {
     /* Divided by two because it's represented as hex */
     const txSize = rawTransaction.length / 2;
-    const maxTxSize = Utilities_1.getMaxTxSize(currentHeight);
+    const maxTxSize = Utilities_1.getMaxTxSize(currentHeight, config.blockTargetTime);
     if (txSize > maxTxSize) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.TOO_MANY_INPUTS_TO_FIT_IN_BLOCK, `Transaction is too large: (${Utilities_1.prettyPrintBytes(txSize)}). Max ` +
             `allowed size is ${Utilities_1.prettyPrintBytes(maxTxSize)}. Decrease the ` +
@@ -363,7 +362,7 @@ function verifyTransactionFee(transaction, expectedFee) {
  * Get sufficient random outputs for the transaction. Returns an error if
  * can't get outputs or can't get enough outputs.
  */
-function getRingParticipants(inputs, mixin, daemon) {
+function getRingParticipants(inputs, mixin, daemon, config) {
     return __awaiter(this, void 0, void 0, function* () {
         if (mixin === 0) {
             return [];
@@ -381,13 +380,13 @@ function getRingParticipants(inputs, mixin, daemon) {
             const foundOutputs = _.find(outs, ([outAmount, ignore]) => amount === outAmount);
             if (foundOutputs === undefined) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NOT_ENOUGH_FAKE_OUTPUTS, `Failed to get any matching outputs for amount ${amount} ` +
-                    `(${Utilities_1.prettyPrintAmount(amount)}). Further explanation here: ` +
+                    `(${Utilities_1.prettyPrintAmount(amount, config)}). Further explanation here: ` +
                     `https://gist.github.com/zpalmtree/80b3e80463225bcfb8f8432043cb594c`);
             }
             const [, outputs] = foundOutputs;
             if (outputs.length < mixin) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NOT_ENOUGH_FAKE_OUTPUTS, `Failed to get enough matching outputs for amount ${amount} ` +
-                    `(${Utilities_1.prettyPrintAmount(amount)}). Needed outputs: ${mixin} ` +
+                    `(${Utilities_1.prettyPrintAmount(amount, config)}). Needed outputs: ${mixin} ` +
                     `, found outputs: ${outputs.length}. Further explanation here: ` +
                     `https://gist.github.com/zpalmtree/80b3e80463225bcfb8f8432043cb594c`);
             }
@@ -407,7 +406,7 @@ function getRingParticipants(inputs, mixin, daemon) {
         for (const [amount, outputs] of outs) {
             if (outputs.length < mixin) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NOT_ENOUGH_FAKE_OUTPUTS, `Failed to get enough matching outputs for amount ${amount} ` +
-                    `(${Utilities_1.prettyPrintAmount(amount)}). Needed outputs: ${mixin} ` +
+                    `(${Utilities_1.prettyPrintAmount(amount, config)}). Needed outputs: ${mixin} ` +
                     `, found outputs: ${outputs.length}. Further explanation here: ` +
                     `https://gist.github.com/zpalmtree/80b3e80463225bcfb8f8432043cb594c`);
             }
@@ -426,29 +425,29 @@ function getRingParticipants(inputs, mixin, daemon) {
  *
  * @return Returns either SUCCESS or an error representing the issue
  */
-function validateTransaction(destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress, currentHeight, subWallets) {
+function validateTransaction(destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress, currentHeight, subWallets, config) {
     /* Validate the destinations are valid */
-    let error = ValidateParameters_1.validateDestinations(destinations);
+    let error = ValidateParameters_1.validateDestinations(destinations, config);
     if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Validate stored payment ID's in integrated addresses don't conflict */
-    error = ValidateParameters_1.validateIntegratedAddresses(destinations, paymentID);
+    error = ValidateParameters_1.validateIntegratedAddresses(destinations, paymentID, config);
     if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Verify the subwallets to take from exist */
-    error = ValidateParameters_1.validateOurAddresses(subWalletsToTakeFrom, subWallets);
+    error = ValidateParameters_1.validateOurAddresses(subWalletsToTakeFrom, subWallets, config);
     if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Verify we have enough money for the transaction */
-    error = ValidateParameters_1.validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight);
+    error = ValidateParameters_1.validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight, config);
     if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Validate mixin is within the bounds for the current height */
-    error = ValidateParameters_1.validateMixin(mixin, currentHeight);
+    error = ValidateParameters_1.validateMixin(mixin, currentHeight, config);
     if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
@@ -456,7 +455,7 @@ function validateTransaction(destinations, mixin, fee, paymentID, subWalletsToTa
     if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
-    error = ValidateParameters_1.validateOurAddresses([changeAddress], subWallets);
+    error = ValidateParameters_1.validateOurAddresses([changeAddress], subWallets, config);
     if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
@@ -467,19 +466,19 @@ function validateTransaction(destinations, mixin, fee, paymentID, subWalletsToTa
  *
  * @return Returns either SUCCESS or an error representing the issue
  */
-function validateFusionTransaction(mixin, subWalletsToTakeFrom, destination, currentHeight, subWallets) {
+function validateFusionTransaction(mixin, subWalletsToTakeFrom, destination, currentHeight, subWallets, config) {
     /* Validate mixin is within the bounds for the current height */
-    let error = ValidateParameters_1.validateMixin(mixin, currentHeight);
+    let error = ValidateParameters_1.validateMixin(mixin, currentHeight, config);
     if (_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Verify the subwallets to take from exist */
-    error = ValidateParameters_1.validateOurAddresses(subWalletsToTakeFrom, subWallets);
+    error = ValidateParameters_1.validateOurAddresses(subWalletsToTakeFrom, subWallets, config);
     if (_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     /* Verify the destination address is valid and exists in the subwallets */
-    error = ValidateParameters_1.validateOurAddresses([destination], subWallets);
+    error = ValidateParameters_1.validateOurAddresses([destination], subWallets, config);
     if (_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }

@@ -2,6 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
+import { Config, IConfig } from './Config';
 import { Block, TopBlock } from './Types';
 
 /**
@@ -90,4 +91,9 @@ export interface IDaemon {
      * @returns Whether the transaction was accepted
      */
     sendTransaction(rawTransaction: string): Promise<boolean>;
+
+    /**
+     * Updates the internal config with the passed in config.
+     */
+    updateConfig(config: IConfig): void;
 }

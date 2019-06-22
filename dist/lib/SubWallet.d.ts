@@ -1,5 +1,6 @@
 import { SubWalletJSON } from './JsonSerialization';
 import { TransactionInput, TxInputAndOwner, UnconfirmedInput } from './Types';
+import { Config } from './Config';
 export declare class SubWallet {
     static fromJSON(json: SubWalletJSON): SubWallet;
     /**
@@ -48,7 +49,8 @@ export declare class SubWallet {
      * when treating it as a single user wallet
      */
     private readonly primaryAddress;
-    constructor(address: string, scanHeight: number, timestamp: number, publicSpendKey: string, privateSpendKey?: string);
+    private config;
+    constructor(config: Config, address: string, scanHeight: number, timestamp: number, publicSpendKey: string, privateSpendKey?: string);
     toJSON(): SubWalletJSON;
     pruneSpentInputs(pruneHeight: number): void;
     reset(scanHeight: number, scanTimestamp: number): void;
@@ -106,4 +108,5 @@ export declare class SubWallet {
      */
     getSpendableInputs(currentHeight: number): TxInputAndOwner[];
     storeUnconfirmedIncomingInput(input: UnconfirmedInput): void;
+    initAfterLoad(config: Config): void;
 }

@@ -47,7 +47,7 @@ class WalletBackend extends events_1.EventEmitter {
      * @param privateSpendKey   Omit this parameter to create a view wallet.
      *
      */
-    constructor(daemon, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
+    constructor(config, daemon, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
         super();
         /**
          * Whether our wallet is synced. Used for selectively firing the sync/desync
@@ -70,16 +70,18 @@ class WalletBackend extends events_1.EventEmitter {
          * Are we in the middle of a transaction?
          */
         this.currentlyTransacting = false;
-        this.subWallets = new SubWallets_1.SubWallets(address, scanHeight, newWallet, privateViewKey, privateSpendKey);
+        this.config = config;
+        daemon.updateConfig(config);
+        this.subWallets = new SubWallets_1.SubWallets(config, address, scanHeight, newWallet, privateViewKey, privateSpendKey);
         let timestamp = 0;
         if (newWallet) {
-            timestamp = Utilities_1.getCurrentTimestampAdjusted();
+            timestamp = Utilities_1.getCurrentTimestampAdjusted(this.config.blockTargetTime);
         }
-        this.walletSynchronizer = new WalletSynchronizer_1.WalletSynchronizer(daemon, this.subWallets, timestamp, scanHeight, privateViewKey);
+        this.walletSynchronizer = new WalletSynchronizer_1.WalletSynchronizer(daemon, this.subWallets, timestamp, scanHeight, privateViewKey, this.config);
         this.daemon = daemon;
-        this.syncThread = new Metronome_1.Metronome(() => this.sync(true), Config_1.Config.syncThreadInterval);
-        this.daemonUpdateThread = new Metronome_1.Metronome(() => this.updateDaemonInfo(), Config_1.Config.daemonUpdateInterval);
-        this.lockedTransactionsCheckThread = new Metronome_1.Metronome(() => this.checkLockedTransactions(), Config_1.Config.lockedTransactionsCheckInterval);
+        this.syncThread = new Metronome_1.Metronome(() => this.sync(true), this.config.syncThreadInterval);
+        this.daemonUpdateThread = new Metronome_1.Metronome(() => this.updateDaemonInfo(), this.config.daemonUpdateInterval);
+        this.lockedTransactionsCheckThread = new Metronome_1.Metronome(() => this.checkLockedTransactions(), this.config.lockedTransactionsCheckInterval);
     }
     /**
      *
@@ -106,12 +108,11 @@ class WalletBackend extends events_1.EventEmitter {
      * @param password  The password to use to decrypt the wallet. May be blank.
      */
     static openWalletFromFile(daemon, filename, password, config) {
-        Config_1.MergeConfig(config);
         const [walletJSON, error] = OpenWallet_1.openWallet(filename, password);
         if (error) {
             return [undefined, error];
         }
-        return WalletBackend.loadWalletFromJSON(daemon, walletJSON);
+        return WalletBackend.loadWalletFromJSON(daemon, walletJSON, config);
     }
     /**
      *
@@ -139,12 +140,11 @@ class WalletBackend extends events_1.EventEmitter {
      * @param password  The password to use to decrypt the wallet. May be blank.
      */
     static openWalletFromEncryptedString(deamon, data, password, config) {
-        Config_1.MergeConfig(config);
         const [walletJSON, error] = WalletEncryption_1.WalletEncryption.decryptWalletFromString(data, password);
         if (error) {
             return [undefined, error];
         }
-        return WalletBackend.loadWalletFromJSON(deamon, walletJSON);
+        return WalletBackend.loadWalletFromJSON(deamon, walletJSON, config);
     }
     /**
      * Loads a wallet from a JSON encoded string. For the correct format for
@@ -174,14 +174,12 @@ class WalletBackend extends events_1.EventEmitter {
      *                      not do that yourself.
      */
     static loadWalletFromJSON(daemon, json, config) {
-        Config_1.MergeConfig(config);
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
-            wallet.initAfterLoad(daemon);
+            wallet.initAfterLoad(daemon, Config_1.MergeConfig(config));
             return [wallet, undefined];
         }
         catch (err) {
-            console.log(err);
             return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.WALLET_FILE_CORRUPTED)];
         }
     }
@@ -216,10 +214,9 @@ class WalletBackend extends events_1.EventEmitter {
      * @param mnemonicSeed  The mnemonic seed to import. Should be a 25 word string.
      */
     static importWalletFromSeed(daemon, scanHeight = 0, mnemonicSeed, config) {
-        Config_1.MergeConfig(config);
         let keys;
         try {
-            keys = CnUtils_1.CryptoUtils().createAddressFromMnemonic(mnemonicSeed);
+            keys = CnUtils_1.CryptoUtils(Config_1.MergeConfig(config)).createAddressFromMnemonic(mnemonicSeed);
         }
         catch (err) {
             return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.INVALID_MNEMONIC, err.toString())];
@@ -232,7 +229,7 @@ class WalletBackend extends events_1.EventEmitter {
         }
         /* Can't sync from the current scan height, not newly created */
         const newWallet = false;
-        const wallet = new WalletBackend(daemon, keys.address, scanHeight, newWallet, keys.view.privateKey, keys.spend.privateKey);
+        const wallet = new WalletBackend(Config_1.MergeConfig(config), daemon, keys.address, scanHeight, newWallet, keys.view.privateKey, keys.spend.privateKey);
         return [wallet, undefined];
     }
     /**
@@ -266,13 +263,12 @@ class WalletBackend extends events_1.EventEmitter {
      * @param privateSpendKey   The private spend key to import. Should be a 64 char hex string.
      */
     static importWalletFromKeys(daemon, scanHeight = 0, privateViewKey, privateSpendKey, config) {
-        Config_1.MergeConfig(config);
         if (!Utilities_1.isHex64(privateViewKey) || !Utilities_1.isHex64(privateSpendKey)) {
             return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.INVALID_KEY_FORMAT)];
         }
         let keys;
         try {
-            keys = CnUtils_1.CryptoUtils().createAddressFromKeys(privateSpendKey, privateViewKey);
+            keys = CnUtils_1.CryptoUtils(Config_1.MergeConfig(config)).createAddressFromKeys(privateSpendKey, privateViewKey);
         }
         catch (err) {
             return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.INVALID_KEY_FORMAT, err.toString())];
@@ -285,7 +281,7 @@ class WalletBackend extends events_1.EventEmitter {
         }
         /* Can't sync from the current scan height, not newly created */
         const newWallet = false;
-        const wallet = new WalletBackend(daemon, keys.address, scanHeight, newWallet, keys.view.privateKey, keys.spend.privateKey);
+        const wallet = new WalletBackend(Config_1.MergeConfig(config), daemon, keys.address, scanHeight, newWallet, keys.view.privateKey, keys.spend.privateKey);
         return [wallet, undefined];
     }
     /**
@@ -324,12 +320,11 @@ class WalletBackend extends events_1.EventEmitter {
      * @param address       The public address of this view wallet.
      */
     static importViewWallet(daemon, scanHeight = 0, privateViewKey, address, config) {
-        Config_1.MergeConfig(config);
         if (!Utilities_1.isHex64(privateViewKey)) {
             return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.INVALID_KEY_FORMAT)];
         }
         const integratedAddressesAllowed = false;
-        const err = ValidateParameters_1.validateAddresses(new Array(address), integratedAddressesAllowed);
+        const err = ValidateParameters_1.validateAddresses(new Array(address), integratedAddressesAllowed, Config_1.MergeConfig(config));
         if (!_.isEqual(err, WalletError_1.SUCCESS)) {
             return [undefined, err];
         }
@@ -341,7 +336,7 @@ class WalletBackend extends events_1.EventEmitter {
         }
         /* Can't sync from the current scan height, not newly created */
         const newWallet = false;
-        const wallet = new WalletBackend(daemon, address, scanHeight, newWallet, privateViewKey, undefined);
+        const wallet = new WalletBackend(Config_1.MergeConfig(config), daemon, address, scanHeight, newWallet, privateViewKey);
         return [wallet, undefined];
     }
     /**
@@ -360,11 +355,10 @@ class WalletBackend extends events_1.EventEmitter {
      *                      a conventional daemon, or a blockchain cache API.
      */
     static createWallet(daemon, config) {
-        Config_1.MergeConfig(config);
         const newWallet = true;
         const scanHeight = 0;
-        const keys = CnUtils_1.CryptoUtils().createNewAddress();
-        const wallet = new WalletBackend(daemon, keys.address, scanHeight, newWallet, keys.view.privateKey, keys.spend.privateKey);
+        const keys = CnUtils_1.CryptoUtils(Config_1.MergeConfig(config)).createNewAddress();
+        const wallet = new WalletBackend(Config_1.MergeConfig(config), daemon, keys.address, scanHeight, newWallet, keys.view.privateKey, keys.spend.privateKey);
         return wallet;
     }
     /* Utility function for nicer JSON parsing function */
@@ -469,7 +463,7 @@ class WalletBackend extends events_1.EventEmitter {
      * @param shouldScan Should we scan coinbase transactions?
      */
     scanCoinbaseTransactions(shouldScan) {
-        Config_1.Config.scanCoinbaseTransactions = shouldScan;
+        this.config.scanCoinbaseTransactions = shouldScan;
     }
     /**
      * Sets the log level. Log messages below this level are not shown.
@@ -675,11 +669,11 @@ class WalletBackend extends events_1.EventEmitter {
      */
     getSpendKeys(address) {
         const integratedAddressesAllowed = false;
-        const err = ValidateParameters_1.validateAddresses(new Array(address), integratedAddressesAllowed);
+        const err = ValidateParameters_1.validateAddresses(new Array(address), integratedAddressesAllowed, this.config);
         if (!_.isEqual(err, WalletError_1.SUCCESS)) {
             return [undefined, undefined, err];
         }
-        const [publicViewKey, publicSpendKey] = Utilities_1.addressToKeys(address);
+        const [publicViewKey, publicSpendKey] = Utilities_1.addressToKeys(address, this.config);
         const [err2, privateSpendKey] = this.subWallets.getPrivateSpendKey(publicSpendKey);
         if (!_.isEqual(err2, WalletError_1.SUCCESS)) {
             return [undefined, undefined, err2];
@@ -736,7 +730,7 @@ class WalletBackend extends events_1.EventEmitter {
         if (error) {
             return [undefined, error];
         }
-        const parsedAddr = CnUtils_1.CryptoUtils().createAddressFromKeys(privateSpendKey, privateViewKey);
+        const parsedAddr = CnUtils_1.CryptoUtils(this.config).createAddressFromKeys(privateSpendKey, privateViewKey);
         if (!parsedAddr.mnemonic) {
             return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.KEYS_NOT_DETERMINISTIC)];
         }
@@ -882,7 +876,7 @@ class WalletBackend extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             this.currentlyTransacting = true;
             const f = () => __awaiter(this, void 0, void 0, function* () {
-                const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionBasic(this.daemon, this.subWallets);
+                const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionBasic(this.config, this.daemon, this.subWallets);
                 if (transaction) {
                     this.emit('createdfusiontx', transaction);
                 }
@@ -930,7 +924,7 @@ class WalletBackend extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             this.currentlyTransacting = true;
             const f = () => __awaiter(this, void 0, void 0, function* () {
-                const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionAdvanced(this.daemon, this.subWallets, mixin, subWalletsToTakeFrom, destination);
+                const [transaction, hash, error] = yield Transfer_1.sendFusionTransactionAdvanced(this.config, this.daemon, this.subWallets, mixin, subWalletsToTakeFrom, destination);
                 if (transaction) {
                     this.emit('createdfusiontx', transaction);
                 }
@@ -976,7 +970,7 @@ class WalletBackend extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             this.currentlyTransacting = true;
             const f = () => __awaiter(this, void 0, void 0, function* () {
-                const [transaction, hash, error] = yield Transfer_1.sendTransactionBasic(this.daemon, this.subWallets, destination, amount, paymentID);
+                const [transaction, hash, error] = yield Transfer_1.sendTransactionBasic(this.config, this.daemon, this.subWallets, destination, amount, paymentID);
                 if (transaction) {
                     this.emit('createdtx', transaction);
                 }
@@ -1027,7 +1021,7 @@ class WalletBackend extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             this.currentlyTransacting = true;
             const f = () => __awaiter(this, void 0, void 0, function* () {
-                const [transaction, hash, error] = yield Transfer_1.sendTransactionAdvanced(this.daemon, this.subWallets, destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress);
+                const [transaction, hash, error] = yield Transfer_1.sendTransactionAdvanced(this.config, this.daemon, this.subWallets, destinations, mixin, fee, paymentID, subWalletsToTakeFrom, changeAddress);
                 if (transaction) {
                     this.emit('createdtx', transaction);
                 }
@@ -1229,13 +1223,13 @@ class WalletBackend extends events_1.EventEmitter {
         });
     }
     /**
-     * Process Config.blocksPerTick stored blocks, finding transactions and
+     * Process config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
      */
     processBlocks(sleep) {
         return __awaiter(this, void 0, void 0, function* () {
             /* Take the blocks to process for this tick */
-            const blocks = yield this.walletSynchronizer.fetchBlocks(Config_1.Config.blocksPerTick);
+            const blocks = yield this.walletSynchronizer.fetchBlocks(this.config.blocksPerTick);
             if (blocks.length === 0) {
                 if (sleep) {
                     yield Utilities_1.delay(1000);
@@ -1256,7 +1250,7 @@ class WalletBackend extends events_1.EventEmitter {
                    utilizing native code for moar speed */
                 const processFunction = this.externalBlockProcessFunction
                     || this.walletSynchronizer.processBlockOutputs.bind(this.walletSynchronizer);
-                const blockInputs = yield processFunction(block, this.getPrivateViewKey(), this.subWallets.getAllSpendKeys(), this.subWallets.isViewWallet, Config_1.Config.scanCoinbaseTransactions);
+                const blockInputs = yield processFunction(block, this.getPrivateViewKey(), this.subWallets.getAllSpendKeys(), this.subWallets.isViewWallet, this.config.scanCoinbaseTransactions);
                 let globalIndexes = new Map();
                 /* Fill in output indexes if not returned from daemon */
                 for (const [publicKey, input] of blockInputs) {
@@ -1320,12 +1314,15 @@ class WalletBackend extends events_1.EventEmitter {
     /**
      * Initialize stuff not stored in the JSON.
      */
-    initAfterLoad(daemon) {
+    initAfterLoad(daemon, config) {
+        this.config = config;
         this.daemon = daemon;
-        this.walletSynchronizer.initAfterLoad(this.subWallets, daemon);
-        this.syncThread = new Metronome_1.Metronome(() => this.sync(true), Config_1.Config.syncThreadInterval);
-        this.daemonUpdateThread = new Metronome_1.Metronome(() => this.updateDaemonInfo(), Config_1.Config.daemonUpdateInterval);
-        this.lockedTransactionsCheckThread = new Metronome_1.Metronome(() => this.checkLockedTransactions(), Config_1.Config.lockedTransactionsCheckInterval);
+        this.daemon.updateConfig(config);
+        this.walletSynchronizer.initAfterLoad(this.subWallets, daemon, this.config);
+        this.subWallets.initAfterLoad(this.config);
+        this.syncThread = new Metronome_1.Metronome(() => this.sync(true), this.config.syncThreadInterval);
+        this.daemonUpdateThread = new Metronome_1.Metronome(() => this.updateDaemonInfo(), this.config.daemonUpdateInterval);
+        this.lockedTransactionsCheckThread = new Metronome_1.Metronome(() => this.checkLockedTransactions(), this.config.lockedTransactionsCheckInterval);
     }
     /**
      * Since we're going to use optimize() with auto optimizing, and auto

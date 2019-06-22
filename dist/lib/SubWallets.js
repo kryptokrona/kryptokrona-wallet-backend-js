@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const CnUtils_1 = require("./CnUtils");
 const JsonSerialization_1 = require("./JsonSerialization");
 const SubWallet_1 = require("./SubWallet");
+const Config_1 = require("./Config");
 const Types_1 = require("./Types");
 const Constants_1 = require("./Constants");
 const Utilities_1 = require("./Utilities");
@@ -18,7 +19,7 @@ class SubWallets {
     /**
      * @param privateSpendKey Private spend key is optional if it's a view wallet
      */
-    constructor(address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
+    constructor(config, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
         /**
          * The public spend keys this wallet contains. Used for verifying if a
          * transaction is ours.
@@ -44,15 +45,17 @@ class SubWallets {
          * A mapping of key images to the subwallet public spend key that owns them
          */
         this.keyImageOwners = new Map();
+        this.config = new Config_1.Config();
+        this.config = config;
         this.isViewWallet = privateSpendKey === undefined;
         this.privateViewKey = privateViewKey;
         let timestamp = 0;
         if (newWallet) {
-            timestamp = Utilities_1.getCurrentTimestampAdjusted();
+            timestamp = Utilities_1.getCurrentTimestampAdjusted(this.config.blockTargetTime);
         }
-        const publicKeys = CnUtils_1.CryptoUtils().decodeAddress(address);
+        const publicKeys = CnUtils_1.CryptoUtils(config).decodeAddress(address);
         this.publicSpendKeys.push(publicKeys.publicSpendKey);
-        const subWallet = new SubWallet_1.SubWallet(address, scanHeight, timestamp, publicKeys.publicSpendKey, privateSpendKey);
+        const subWallet = new SubWallet_1.SubWallet(config, address, scanHeight, timestamp, publicKeys.publicSpendKey, privateSpendKey);
         this.subWallets.set(publicKeys.publicSpendKey, subWallet);
     }
     /**
@@ -312,7 +315,7 @@ class SubWallets {
         }
         else {
             publicSpendKeys = subWalletsToTakeFrom.map((address) => {
-                const [publicViewKey, publicSpendKey] = Utilities_1.addressToKeys(address);
+                const [publicViewKey, publicSpendKey] = Utilities_1.addressToKeys(address, this.config);
                 return publicSpendKey;
             });
         }
@@ -350,7 +353,7 @@ class SubWallets {
     getTransactionInputsForAmount(amount, subWalletsToTakeFrom, currentHeight) {
         let availableInputs = [];
         /* Loop through each subwallet that we can take from */
-        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(Utilities_1.addressToKeys)) {
+        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map((address) => Utilities_1.addressToKeys(address, this.config))) {
             const subWallet = this.subWallets.get(publicSpendKey);
             if (!subWallet) {
                 throw new Error('Subwallet not found!');
@@ -374,7 +377,7 @@ class SubWallets {
     getFusionTransactionInputs(subWalletsToTakeFrom, mixin, currentHeight) {
         let availableInputs = [];
         /* Loop through each subwallet we can take from */
-        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(Utilities_1.addressToKeys)) {
+        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map((address) => Utilities_1.addressToKeys(address, this.config))) {
             const subWallet = this.subWallets.get(publicSpendKey);
             if (!subWallet) {
                 throw new Error('Subwallet not found!');
@@ -483,6 +486,10 @@ class SubWallets {
      */
     getNumUnconfirmedTransactions() {
         return this.lockedTransactions.length;
+    }
+    initAfterLoad(config) {
+        this.config = config;
+        this.subWallets.forEach((subWallet) => subWallet.initAfterLoad(config));
     }
 }
 exports.SubWallets = SubWallets;

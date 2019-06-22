@@ -8,6 +8,7 @@ import { logger, LogLevel, LogCategory } from './Logger';
 import { TransactionInput, TxInputAndOwner, UnconfirmedInput } from './Types';
 import { isInputUnlocked } from './Utilities';
 import { generateKeyImagePrimitive } from './CryptoWrapper';
+import { Config } from './Config';
 
 import * as _ from 'lodash';
 
@@ -97,7 +98,10 @@ export class SubWallet {
      */
     private readonly primaryAddress: boolean;
 
+    private config: Config = new Config();
+
     constructor(
+        config: Config,
         address: string,
         scanHeight: number,
         timestamp: number,
@@ -110,6 +114,7 @@ export class SubWallet {
         this.publicSpendKey = publicSpendKey;
         this.privateSpendKey = privateSpendKey;
         this.primaryAddress = true;
+        this.config = config;
     }
 
     public toJSON(): SubWalletJSON {
@@ -341,7 +346,7 @@ export class SubWallet {
 
         const [keyImage] = await generateKeyImagePrimitive(
             this.publicSpendKey, this.privateSpendKey as string, outputIndex,
-            derivation,
+            derivation, this.config,
         );
 
         return keyImage;
@@ -388,5 +393,9 @@ export class SubWallet {
 
     public storeUnconfirmedIncomingInput(input: UnconfirmedInput): void {
         this.unconfirmedIncomingAmounts.push(input);
+    }
+
+    public initAfterLoad(config: Config): void {
+        this.config = config;
     }
 }

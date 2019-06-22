@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash';
 
-import { Config } from './Config';
+import { IConfig, Config, MergeConfig } from './Config';
 import { CryptoUtils} from './CnUtils';
 
 import {
@@ -24,8 +24,14 @@ import { English } from './WordList';
  *
  * Throws if either address or payment ID is invalid.
  */
-export function createIntegratedAddress(address: string, paymentID: string): string {
-    let error = validateAddresses([address], false);
+export function createIntegratedAddress(
+    address: string,
+    paymentID: string,
+    config: IConfig = new Config()): string {
+
+    const _config: Config = MergeConfig(config);
+
+    let error = validateAddresses([address], false, _config);
 
     if (!_.isEqual(error, SUCCESS)) {
         throw error;
@@ -42,13 +48,13 @@ export function createIntegratedAddress(address: string, paymentID: string): str
         throw new Error('Payment ID is empty string!');
     }
 
-    return CryptoUtils().createIntegratedAddress(address, paymentID);
+    return CryptoUtils(_config).createIntegratedAddress(address, paymentID);
 }
 
 /**
  * Verifies if a key or payment ID is valid (64 char hex)
  */
-export function isHex64(val: string) {
+export function isHex64(val: string): boolean {
     const regex = new RegExp('^[0-9a-fA-F]{64}$');
     return regex.test(val);
 }
@@ -59,8 +65,10 @@ export function isHex64(val: string) {
  *
  * @hidden
  */
-export function addressToKeys(address: string): [string, string] {
-    const parsed = CryptoUtils().decodeAddress(address);
+export function addressToKeys(address: string, config: IConfig = new Config()): [string, string] {
+    const _config: Config = MergeConfig(config);
+
+    const parsed = CryptoUtils(_config).decodeAddress(address);
 
     return [parsed.publicViewKey, parsed.publicSpendKey];
 }
@@ -90,10 +98,10 @@ export function getUpperBound(val: number, nearestMultiple: number): number {
  *
  * @hidden
  */
-export function getCurrentTimestampAdjusted(): number {
+export function getCurrentTimestampAdjusted(blockTargetTime: number = 30): number {
     const timestamp = Math.floor(Date.now() / 1000);
 
-    return timestamp - (100 * Config.blockTargetTime);
+    return timestamp - (100 * blockTargetTime);
 }
 
 /**
@@ -120,19 +128,21 @@ export function isInputUnlocked(unlockTime: number, currentHeight: number): bool
  * Takes an amount in atomic units and pretty prints it.
  * Example: 12345607 -> 123,456.07 TRTL
  */
-export function prettyPrintAmount(amount: number): string {
+export function prettyPrintAmount(amount: number, config: IConfig = new Config()): string {
+    const _config: Config = MergeConfig(config);
+
     /* Get the amount we need to divide atomic units by. 2 decimal places = 100 */
-    const divisor: number = Math.pow(10, Config.decimalPlaces);
+    const divisor: number = Math.pow(10, _config.decimalPlaces);
 
     const dollars: number = amount >= 0 ? Math.floor(amount / divisor) : Math.ceil(amount / divisor);
 
     /* Make sure 1 is displaced as 01 */
-    const cents: string = (Math.abs(amount % divisor)).toString().padStart(Config.decimalPlaces, '0');
+    const cents: string = (Math.abs(amount % divisor)).toString().padStart(_config.decimalPlaces, '0');
 
     /* Makes our numbers thousand separated. https://stackoverflow.com/a/2901298/8737306 */
     const formatted: string = dollars.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    return formatted + '.' + cents + ' ' + Config.ticker;
+    return formatted + '.' + cents + ' ' + _config.ticker;
 }
 
 /**
@@ -199,9 +209,9 @@ export function splitAmountIntoDenominations(amount: number): number[] {
  *
  * @hidden
  */
-export function getMaxTxSize(currentHeight: number): number {
+export function getMaxTxSize(currentHeight: number, blockTime: number = 30): number {
     const numerator: number = currentHeight * MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR;
-    const denominator: number = MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR;
+    const denominator: number = (MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR / blockTime);
     const growth: number = numerator / denominator;
     const x: number = MAX_BLOCK_SIZE_INITIAL + growth;
     const y: number = 125000;
@@ -242,7 +252,9 @@ export function isValidMnemonicWord(word: string): boolean {
  * Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage
  * describing what is invalid.
  */
-export function isValidMnemonic(mnemonic: string): [boolean, string] {
+export function isValidMnemonic(mnemonic: string, config: IConfig = new Config()): [boolean, string] {
+    const _config: Config = MergeConfig(config);
+
     const words = mnemonic.split(' ').map((x) => x.toLowerCase());
 
     if (words.length !== 25) {
@@ -266,7 +278,7 @@ export function isValidMnemonic(mnemonic: string): [boolean, string] {
     }
 
     try {
-        CryptoUtils().createAddressFromMnemonic(words.join(' '));
+        CryptoUtils(_config).createAddressFromMnemonic(words.join(' '));
         return [true, ''];
     } catch (err) {
         return [false, 'Mnemonic checksum word is invalid'];

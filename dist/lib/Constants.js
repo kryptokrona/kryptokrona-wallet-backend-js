@@ -3,7 +3,6 @@
 //
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
-const Config_1 = require("./Config");
 /**
  * What version of the file format are we on (to make it easier to
  * upgrade the wallet format in the future)
@@ -115,7 +114,7 @@ exports.MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR = 100 * 1024;
 /**
  * Part of the how fast blocks can grow
  */
-exports.MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR = 365 * 24 * 60 * 60 / Config_1.Config.blockTargetTime;
+exports.MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR = 365 * 24 * 60 * 60;
 /**
  * Initial block size
  */

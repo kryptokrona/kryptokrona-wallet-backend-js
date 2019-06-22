@@ -82,13 +82,13 @@
 					<a name="validateaddresses" class="tsd-anchor"></a>
 					<h3>validate<wbr>Addresses</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">validate<wbr>Addresses<span class="tsd-signature-symbol">(</span>addresses<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, integratedAddressesAllowed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></li>
+						<li class="tsd-signature tsd-kind-icon">validate<wbr>Addresses<span class="tsd-signature-symbol">(</span>addresses<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, integratedAddressesAllowed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/e8fbbaa/lib/ValidateParameters.ts#L20">ValidateParameters.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f1c9f32/lib/ValidateParameters.ts#L20">ValidateParameters.ts:20</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -108,6 +108,9 @@
 										<p>Verifies that the addresses given are valid.</p>
 									</div>
 								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol"> =&nbsp;new Config()</span></h5>
+								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></h4>
 							<p>Returns SUCCESS if valid, otherwise a WalletError describing the error</p>
@@ -124,7 +127,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/e8fbbaa/lib/ValidateParameters.ts#L245">ValidateParameters.ts:245</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/f1c9f32/lib/ValidateParameters.ts#L268">ValidateParameters.ts:268</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">

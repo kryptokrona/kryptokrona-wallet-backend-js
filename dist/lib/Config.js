@@ -9,7 +9,7 @@ const MixinLimits_1 = require("./MixinLimits");
  *
  * @hidden
  */
-class OurConfig {
+class Config {
     constructor() {
         /**
          * The amount of decimal places your coin has, e.g. TurtleCoin has two
@@ -132,23 +132,21 @@ class OurConfig {
         this.maxBodyResponseSize = 1024 * 1024 * 10;
     }
 }
-/**
- * @hidden
- */
-exports.Config = new OurConfig();
+exports.Config = Config;
 /**
  * Merge the default config with the provided config
  *
  * @hidden
  */
-function MergeConfig(config) {
-    const finalConfig = new OurConfig();
+function MergeConfig(config, currentConfig = new Config()) {
+    /* Clone the given config so we don't alter it */
+    const finalConfig = Object.create(Object.getPrototypeOf(currentConfig), Object.getOwnPropertyDescriptors(currentConfig));
     if (!config) {
-        return;
+        return finalConfig;
     }
     for (const [key, value] of Object.entries(config)) {
         finalConfig[key] = value;
     }
-    exports.Config = finalConfig;
+    return finalConfig;
 }
 exports.MergeConfig = MergeConfig;

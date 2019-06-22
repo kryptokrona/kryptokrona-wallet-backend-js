@@ -88,18 +88,22 @@ export class WalletSynchronizer {
      */
     private finishedFunc: (() => void) | undefined = undefined;
 
+    private config: Config = new Config();
+
     constructor(
         daemon: IDaemon,
         subWallets: SubWallets,
         startTimestamp: number,
         startHeight: number,
-        privateViewKey: string) {
+        privateViewKey: string,
+        config: Config) {
 
         this.daemon = daemon;
         this.startTimestamp = startTimestamp;
         this.startHeight = startHeight;
         this.privateViewKey = privateViewKey;
         this.subWallets = subWallets;
+        this.config = config;
     }
 
     public getScanHeights(): [number, number] {
@@ -109,10 +113,11 @@ export class WalletSynchronizer {
     /**
      * Initialize things we can't initialize from the JSON
      */
-    public initAfterLoad(subWallets: SubWallets, daemon: IDaemon): void {
+    public initAfterLoad(subWallets: SubWallets, daemon: IDaemon, config: Config): void {
         this.subWallets = subWallets;
         this.daemon = daemon;
         this.storedBlocks = [];
+        this.config = config;
     }
 
     /**
@@ -133,7 +138,7 @@ export class WalletSynchronizer {
 
         const txData: TransactionData = new TransactionData();
 
-        if (Config.scanCoinbaseTransactions) {
+        if (this.config.scanCoinbaseTransactions) {
             const tx: Transaction | undefined = this.processCoinbaseTransaction(
                 block, ourInputs,
             );
@@ -326,7 +331,7 @@ export class WalletSynchronizer {
 
         const ramUsage = sizeof(this.storedBlocks);
 
-        if (ramUsage + Config.maxBodyResponseSize < Config.blockStoreMemoryLimit) {
+        if (ramUsage + this.config.maxBodyResponseSize < this.config.blockStoreMemoryLimit) {
             logger.log(
                 `Approximate ram usage of stored blocks: ${prettyPrintBytes(ramUsage)}, fetching more.`,
                 LogLevel.DEBUG,
@@ -381,7 +386,7 @@ export class WalletSynchronizer {
         try {
             [blocks, topBlock] = await this.daemon.getWalletSyncData(
                 blockCheckpoints, this.startHeight, this.startTimestamp,
-                Config.blocksPerDaemonRequest,
+                this.config.blocksPerDaemonRequest,
             );
         } catch (err) {
             logger.log(
@@ -459,7 +464,7 @@ export class WalletSynchronizer {
         const inputs: Array<[string, TransactionInput]> = [];
 
         const derivation: string = await generateKeyDerivation(
-            rawTX.transactionPublicKey, this.privateViewKey,
+            rawTX.transactionPublicKey, this.privateViewKey, this.config,
         );
 
         const spendKeys: string[] = this.subWallets.getPublicSpendKeys();
@@ -468,7 +473,7 @@ export class WalletSynchronizer {
             /* Derive the spend key from the transaction, using the previous
                derivation */
             const derivedSpendKey = await underivePublicKey(
-                derivation, outputIndex, output.key,
+                derivation, outputIndex, output.key, this.config,
             );
 
             /* See if the derived spend key matches any of our spend keys */

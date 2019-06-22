@@ -1,3 +1,4 @@
+import { IConfig } from './Config';
 import { Block, TopBlock } from './Types';
 /**
  * Provides an interface to a daemon or similar, such as a blockchain cache
@@ -68,4 +69,8 @@ export interface IDaemon {
      * @returns Whether the transaction was accepted
      */
     sendTransaction(rawTransaction: string): Promise<boolean>;
+    /**
+     * Updates the internal config with the passed in config.
+     */
+    updateConfig(config: IConfig): void;
 }

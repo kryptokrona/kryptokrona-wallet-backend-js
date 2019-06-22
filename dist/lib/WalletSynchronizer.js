@@ -24,7 +24,7 @@ const Types_1 = require("./Types");
  * Decrypts blocks for our transactions and inputs
  */
 class WalletSynchronizer {
-    constructor(daemon, subWallets, startTimestamp, startHeight, privateViewKey) {
+    constructor(daemon, subWallets, startTimestamp, startHeight, privateViewKey, config) {
         /**
          * Stores the progress of our synchronization
          */
@@ -47,11 +47,13 @@ class WalletSynchronizer {
          * correctly without blocks being stored after wiping them.
          */
         this.finishedFunc = undefined;
+        this.config = new Config_1.Config();
         this.daemon = daemon;
         this.startTimestamp = startTimestamp;
         this.startHeight = startHeight;
         this.privateViewKey = privateViewKey;
         this.subWallets = subWallets;
+        this.config = config;
     }
     static fromJSON(json) {
         const walletSynchronizer = Object.create(WalletSynchronizer.prototype);
@@ -68,10 +70,11 @@ class WalletSynchronizer {
     /**
      * Initialize things we can't initialize from the JSON
      */
-    initAfterLoad(subWallets, daemon) {
+    initAfterLoad(subWallets, daemon, config) {
         this.subWallets = subWallets;
         this.daemon = daemon;
         this.storedBlocks = [];
+        this.config = config;
     }
     /**
      * Convert from class to stringable type
@@ -86,7 +89,7 @@ class WalletSynchronizer {
     }
     processBlock(block, ourInputs) {
         const txData = new Types_1.TransactionData();
-        if (Config_1.Config.scanCoinbaseTransactions) {
+        if (this.config.scanCoinbaseTransactions) {
             const tx = this.processCoinbaseTransaction(block, ourInputs);
             if (tx !== undefined) {
                 txData.transactionsToAdd.push(tx);
@@ -237,7 +240,7 @@ class WalletSynchronizer {
             return false;
         }
         const ramUsage = sizeof(this.storedBlocks);
-        if (ramUsage + Config_1.Config.maxBodyResponseSize < Config_1.Config.blockStoreMemoryLimit) {
+        if (ramUsage + this.config.maxBodyResponseSize < this.config.blockStoreMemoryLimit) {
             Logger_1.logger.log(`Approximate ram usage of stored blocks: ${Utilities_1.prettyPrintBytes(ramUsage)}, fetching more.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
             return true;
         }
@@ -273,7 +276,7 @@ class WalletSynchronizer {
             let blocks = [];
             let topBlock;
             try {
-                [blocks, topBlock] = yield this.daemon.getWalletSyncData(blockCheckpoints, this.startHeight, this.startTimestamp, Config_1.Config.blocksPerDaemonRequest);
+                [blocks, topBlock] = yield this.daemon.getWalletSyncData(blockCheckpoints, this.startHeight, this.startTimestamp, this.config.blocksPerDaemonRequest);
             }
             catch (err) {
                 Logger_1.logger.log('Failed to get blocks from daemon', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
@@ -321,12 +324,12 @@ class WalletSynchronizer {
     processTransactionOutputs(rawTX, blockHeight) {
         return __awaiter(this, void 0, void 0, function* () {
             const inputs = [];
-            const derivation = yield CryptoWrapper_1.generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey);
+            const derivation = yield CryptoWrapper_1.generateKeyDerivation(rawTX.transactionPublicKey, this.privateViewKey, this.config);
             const spendKeys = this.subWallets.getPublicSpendKeys();
             for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
                 /* Derive the spend key from the transaction, using the previous
                    derivation */
-                const derivedSpendKey = yield CryptoWrapper_1.underivePublicKey(derivation, outputIndex, output.key);
+                const derivedSpendKey = yield CryptoWrapper_1.underivePublicKey(derivation, outputIndex, output.key, this.config);
                 /* See if the derived spend key matches any of our spend keys */
                 if (!_.includes(spendKeys, derivedSpendKey)) {
                     continue;

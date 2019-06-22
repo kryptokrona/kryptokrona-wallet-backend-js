@@ -123,7 +123,7 @@ export interface IConfig {
  *
  * @hidden
  */
-declare class OurConfig implements IConfig {
+export declare class Config implements IConfig {
     /**
      * The amount of decimal places your coin has, e.g. TurtleCoin has two
      * decimals
@@ -234,13 +234,8 @@ declare class OurConfig implements IConfig {
     [key: string]: any;
 }
 /**
- * @hidden
- */
-export declare let Config: OurConfig;
-/**
  * Merge the default config with the provided config
  *
  * @hidden
  */
-export declare function MergeConfig(config?: IConfig): void;
-export {};
+export declare function MergeConfig(config?: IConfig, currentConfig?: Config): Config;

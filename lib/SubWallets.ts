@@ -5,6 +5,7 @@
 import { CryptoUtils} from './CnUtils';
 import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';
 import { SubWallet } from './SubWallet';
+import { Config } from './Config';
 
 import {
     Transaction, TransactionInput, TxInputAndOwner, UnconfirmedInput,
@@ -99,15 +100,20 @@ export class SubWallets {
      */
     private keyImageOwners: Map<string, string> = new Map();
 
+    private config: Config = new Config();
+
     /**
      * @param privateSpendKey Private spend key is optional if it's a view wallet
      */
     constructor(
+        config: Config,
         address: string,
         scanHeight: number,
         newWallet: boolean,
         privateViewKey: string,
         privateSpendKey?: string) {
+
+        this.config = config;
 
         this.isViewWallet = privateSpendKey === undefined;
         this.privateViewKey = privateViewKey;
@@ -115,15 +121,15 @@ export class SubWallets {
         let timestamp = 0;
 
         if (newWallet) {
-            timestamp = getCurrentTimestampAdjusted();
+            timestamp = getCurrentTimestampAdjusted(this.config.blockTargetTime);
         }
 
-        const publicKeys = CryptoUtils().decodeAddress(address);
+        const publicKeys = CryptoUtils(config).decodeAddress(address);
 
         this.publicSpendKeys.push(publicKeys.publicSpendKey);
 
         const subWallet = new SubWallet(
-            address, scanHeight, timestamp, publicKeys.publicSpendKey,
+            config, address, scanHeight, timestamp, publicKeys.publicSpendKey,
             privateSpendKey,
         );
 
@@ -428,7 +434,7 @@ export class SubWallets {
             publicSpendKeys = this.publicSpendKeys;
         } else {
             publicSpendKeys = subWalletsToTakeFrom.map((address) => {
-                const [publicViewKey, publicSpendKey] = addressToKeys(address);
+                const [publicViewKey, publicSpendKey] = addressToKeys(address, this.config);
 
                 return publicSpendKey;
             });
@@ -482,7 +488,7 @@ export class SubWallets {
         let availableInputs: TxInputAndOwner[] = [];
 
         /* Loop through each subwallet that we can take from */
-        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(addressToKeys)) {
+        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map((address) => addressToKeys(address, this.config))) {
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
             if (!subWallet) {
@@ -521,7 +527,7 @@ export class SubWallets {
         let availableInputs: TxInputAndOwner[] = [];
 
         /* Loop through each subwallet we can take from */
-        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(addressToKeys)) {
+        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map((address) => addressToKeys(address, this.config))) {
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
             if (!subWallet) {
@@ -661,5 +667,10 @@ export class SubWallets {
      */
     public getNumUnconfirmedTransactions(): number {
         return this.lockedTransactions.length;
+    }
+
+    public initAfterLoad(config: Config): void {
+        this.config = config;
+        this.subWallets.forEach((subWallet) => subWallet.initAfterLoad(config));
     }
 }

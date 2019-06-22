@@ -16,7 +16,7 @@ if (!(typeof navigator !== 'undefined'
 }
 
 import { Block, TopBlock } from './Types';
-import { Config } from './Config';
+import { Config, IConfig, MergeConfig } from './Config';
 import { IDaemon } from './IDaemon';
 import { validateAddresses } from './ValidateParameters';
 import { LogCategory, logger, LogLevel } from './Logger';
@@ -67,6 +67,8 @@ export class BlockchainCacheApi implements IDaemon {
      */
     private lastKnownHashrate = 0;
 
+    private config: Config = new Config();
+
     /**
      * @param cacheBaseURL  The base URL for our API. Shouldn't have a trailing '/'
      * @param ssl           Should we use https? Defaults to true.
@@ -79,6 +81,10 @@ export class BlockchainCacheApi implements IDaemon {
     constructor(cacheBaseURL: string, ssl: boolean = true) {
         this.cacheBaseURL = cacheBaseURL;
         this.ssl = ssl;
+    }
+
+    public updateConfig(config: IConfig) {
+        this.config = MergeConfig(config);
     }
 
     /**
@@ -132,7 +138,7 @@ export class BlockchainCacheApi implements IDaemon {
 
         this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
-        this.lastKnownHashrate = info.difficulty / Config.blockTargetTime;
+        this.lastKnownHashrate = info.difficulty / this.config.blockTargetTime;
     }
 
     /**
@@ -165,7 +171,7 @@ export class BlockchainCacheApi implements IDaemon {
             data = await this.makePostRequest('/getwalletsyncdata', {
                 blockCount,
                 blockHashCheckpoints,
-                skipCoinbaseTransactions: !Config.scanCoinbaseTransactions,
+                skipCoinbaseTransactions: !this.config.scanCoinbaseTransactions,
                 startHeight,
                 startTimestamp,
             });
@@ -177,7 +183,7 @@ export class BlockchainCacheApi implements IDaemon {
 
                 logger.log(
                     'getWalletSyncData failed, body exceeded max size of ' +
-                    `${Config.maxResponseBodySize}, decreasing block count to ` +
+                    `${this.config.maxResponseBodySize}, decreasing block count to ` +
                     `${Math.floor(blockCount / 2)} and retrying`,
                     LogLevel.WARNING,
                     [LogCategory.DAEMON, LogCategory.SYNC],
@@ -319,7 +325,7 @@ export class BlockchainCacheApi implements IDaemon {
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletErrorCode = validateAddresses(
-            new Array(feeInfo.address), integratedAddressesAllowed,
+            new Array(feeInfo.address), integratedAddressesAllowed, this.config,
         ).errorCode;
 
         if (err !== WalletErrorCode.SUCCESS) {
@@ -356,10 +362,10 @@ export class BlockchainCacheApi implements IDaemon {
             if (controller !== undefined) {
                 controller.abort();
             }
-        }, Config.requestTimeout);
+        }, this.config.requestTimeout);
 
         const res = await fetch(url, {
-            timeout: Config.requestTimeout,
+            timeout: this.config.requestTimeout,
             ...(controller !== undefined && { signal: controller.signal }),
         });
 
@@ -390,15 +396,15 @@ export class BlockchainCacheApi implements IDaemon {
             if (controller !== undefined) {
                 controller.abort();
             }
-        }, Config.requestTimeout);
+        }, this.config.requestTimeout);
 
         const res = await fetch(url, {
             body: JSON.stringify(body),
             headers: { 'Content-Type': 'application/json' },
             method: 'post',
             ...(controller !== undefined && { signal: controller.signal }),
-            size: Config.maxBodyResponseSize,
-            timeout: Config.requestTimeout,
+            size: this.config.maxBodyResponseSize,
+            timeout: this.config.requestTimeout,
         } as any);
 
         if (!res.ok) {
@@ -416,7 +422,7 @@ export class BlockchainCacheApi implements IDaemon {
         res.body.on('data', (chunk) => {
             length += chunk.length;
 
-            if (length > Config.maxBodyResponseSize) {
+            if (length > this.config.maxBodyResponseSize) {
                 if (controller !== undefined) {
                     controller.abort();
                 }

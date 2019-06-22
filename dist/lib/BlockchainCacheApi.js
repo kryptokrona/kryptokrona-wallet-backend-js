@@ -71,8 +71,12 @@ class BlockchainCacheApi {
          * The hashrate of the last known local block
          */
         this.lastKnownHashrate = 0;
+        this.config = new Config_1.Config();
         this.cacheBaseURL = cacheBaseURL;
         this.ssl = ssl;
+    }
+    updateConfig(config) {
+        this.config = Config_1.MergeConfig(config);
     }
     /**
      * Get the amount of blocks the network has
@@ -116,7 +120,7 @@ class BlockchainCacheApi {
                 this.networkBlockCount--;
             }
             this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
-            this.lastKnownHashrate = info.difficulty / Config_1.Config.blockTargetTime;
+            this.lastKnownHashrate = info.difficulty / this.config.blockTargetTime;
         });
     }
     /**
@@ -143,7 +147,7 @@ class BlockchainCacheApi {
                 data = yield this.makePostRequest('/getwalletsyncdata', {
                     blockCount,
                     blockHashCheckpoints,
-                    skipCoinbaseTransactions: !Config_1.Config.scanCoinbaseTransactions,
+                    skipCoinbaseTransactions: !this.config.scanCoinbaseTransactions,
                     startHeight,
                     startTimestamp,
                 });
@@ -153,7 +157,7 @@ class BlockchainCacheApi {
                     || (err.type && err.type === 'max-size');
                 if (maxSizeErr && blockCount > 1) {
                     Logger_1.logger.log('getWalletSyncData failed, body exceeded max size of ' +
-                        `${Config_1.Config.maxResponseBodySize}, decreasing block count to ` +
+                        `${this.config.maxResponseBodySize}, decreasing block count to ` +
                         `${Math.floor(blockCount / 2)} and retrying`, Logger_1.LogLevel.WARNING, [Logger_1.LogCategory.DAEMON, Logger_1.LogCategory.SYNC]);
                     /* Body is too large, decrease the amount of blocks we're requesting
                        and retry */
@@ -251,7 +255,7 @@ class BlockchainCacheApi {
                 return;
             }
             const integratedAddressesAllowed = false;
-            const err = ValidateParameters_1.validateAddresses(new Array(feeInfo.address), integratedAddressesAllowed).errorCode;
+            const err = ValidateParameters_1.validateAddresses(new Array(feeInfo.address), integratedAddressesAllowed, this.config).errorCode;
             if (err !== WalletError_1.WalletErrorCode.SUCCESS) {
                 Logger_1.logger.log('Failed to validate address from daemon fee info: ' + err.toString(), Logger_1.LogLevel.WARNING, [Logger_1.LogCategory.DAEMON]);
                 return;
@@ -279,8 +283,8 @@ class BlockchainCacheApi {
                 if (controller !== undefined) {
                     controller.abort();
                 }
-            }, Config_1.Config.requestTimeout);
-            const res = yield node_fetch_1.default(url, Object.assign({ timeout: Config_1.Config.requestTimeout }, (controller !== undefined && { signal: controller.signal })));
+            }, this.config.requestTimeout);
+            const res = yield node_fetch_1.default(url, Object.assign({ timeout: this.config.requestTimeout }, (controller !== undefined && { signal: controller.signal })));
             if (!res.ok) {
                 throw new Error('Request failed.');
             }
@@ -305,8 +309,8 @@ class BlockchainCacheApi {
                 if (controller !== undefined) {
                     controller.abort();
                 }
-            }, Config_1.Config.requestTimeout);
-            const res = yield node_fetch_1.default(url, Object.assign({ body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' }, method: 'post' }, (controller !== undefined && { signal: controller.signal }), { size: Config_1.Config.maxBodyResponseSize, timeout: Config_1.Config.requestTimeout }));
+            }, this.config.requestTimeout);
+            const res = yield node_fetch_1.default(url, Object.assign({ body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' }, method: 'post' }, (controller !== undefined && { signal: controller.signal }), { size: this.config.maxBodyResponseSize, timeout: this.config.requestTimeout }));
             if (!res.ok) {
                 throw new Error('Request failed.');
             }
@@ -318,7 +322,7 @@ class BlockchainCacheApi {
             let length = 0;
             res.body.on('data', (chunk) => {
                 length += chunk.length;
-                if (length > Config_1.Config.maxBodyResponseSize) {
+                if (length > this.config.maxBodyResponseSize) {
                     if (controller !== undefined) {
                         controller.abort();
                     }

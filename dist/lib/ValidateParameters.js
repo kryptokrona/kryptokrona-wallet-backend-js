@@ -14,13 +14,14 @@ const Config_1 = require("./Config");
  * Verifies that the addresses given are valid.
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
-function validateAddresses(addresses, integratedAddressesAllowed) {
+function validateAddresses(addresses, integratedAddressesAllowed, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
     const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
     for (const address of addresses) {
         try {
             /* Verify address lengths are correct */
-            if (address.length !== Config_1.Config.standardAddressLength
-                && address.length !== Config_1.Config.integratedAddressLength) {
+            if (address.length !== config.standardAddressLength
+                && address.length !== config.integratedAddressLength) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_WRONG_LENGTH);
             }
             /* Verify every address character is in the base58 set */
@@ -28,9 +29,9 @@ function validateAddresses(addresses, integratedAddressesAllowed) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_NOT_BASE58);
             }
             /* Verify checksum */
-            const parsed = CnUtils_1.CryptoUtils().decodeAddress(address);
+            const parsed = CnUtils_1.CryptoUtils(_config).decodeAddress(address);
             /* Verify the prefix is correct */
-            if (parsed.prefix !== Config_1.Config.addressPrefix) {
+            if (parsed.prefix !== _config.addressPrefix) {
                 return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_WRONG_PREFIX);
             }
             /* Verify it's not an integrated, if those aren't allowed */
@@ -52,7 +53,8 @@ exports.validateAddresses = validateAddresses;
  *
  * @hidden
  */
-function validateDestinations(destinations) {
+function validateDestinations(destinations, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
     if (destinations.length === 0) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NO_DESTINATIONS_GIVEN);
     }
@@ -70,7 +72,7 @@ function validateDestinations(destinations) {
         destinationAddresses.push(destination);
     }
     /* Validate the addresses, integrated addresses allowed */
-    return validateAddresses(destinationAddresses, true);
+    return validateAddresses(destinationAddresses, true, _config);
 }
 exports.validateDestinations = validateDestinations;
 /**
@@ -82,13 +84,14 @@ exports.validateDestinations = validateDestinations;
  *
  * @hidden
  */
-function validateIntegratedAddresses(destinations, paymentID) {
+function validateIntegratedAddresses(destinations, paymentID, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
     for (const [destination, amount] of destinations) {
-        if (destination.length !== Config_1.Config.integratedAddressLength) {
+        if (destination.length !== _config.integratedAddressLength) {
             continue;
         }
         /* Extract the payment ID */
-        const parsedAddress = CnUtils_1.CryptoUtils().decodeAddress(destination);
+        const parsedAddress = CnUtils_1.CryptoUtils(_config).decodeAddress(destination);
         if (paymentID === '') {
             paymentID = parsedAddress.paymentId;
         }
@@ -106,13 +109,14 @@ exports.validateIntegratedAddresses = validateIntegratedAddresses;
  *
  * @hidden
  */
-function validateOurAddresses(addresses, subWallets) {
-    const error = validateAddresses(addresses, false);
+function validateOurAddresses(addresses, subWallets, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
+    const error = validateAddresses(addresses, false, _config);
     if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         return error;
     }
     for (const address of addresses) {
-        const parsedAddress = CnUtils_1.CryptoUtils().decodeAddress(address);
+        const parsedAddress = CnUtils_1.CryptoUtils(_config).decodeAddress(address);
         const keys = subWallets.getPublicSpendKeys();
         if (!keys.includes(parsedAddress.publicSpendKey)) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.ADDRESS_NOT_IN_WALLET, `The address given (${address}) does not exist in the wallet ` +
@@ -131,8 +135,9 @@ exports.validateOurAddresses = validateOurAddresses;
  *
  * @hidden
  */
-function validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight) {
-    if (fee < Config_1.Config.minimumFee) {
+function validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
+    if (fee < _config.minimumFee) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.FEE_TOO_SMALL);
     }
     if (!Number.isInteger(fee)) {
@@ -160,14 +165,15 @@ exports.validateAmount = validateAmount;
  *
  * @hidden
  */
-function validateMixin(mixin, height) {
+function validateMixin(mixin, height, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
     if (mixin < 0) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NEGATIVE_VALUE_GIVEN);
     }
     if (!Number.isInteger(mixin)) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NON_INTEGER_GIVEN);
     }
-    const [minMixin, maxMixin] = Config_1.Config.mixinLimits.getMixinLimitsByHeight(height);
+    const [minMixin, maxMixin] = _config.mixinLimits.getMixinLimitsByHeight(height);
     if (mixin < minMixin) {
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.MIXIN_TOO_SMALL, `The mixin value given (${mixin}) is lower than the minimum mixin ` +
             `allowed (${minMixin})`);

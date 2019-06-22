@@ -15,8 +15,9 @@ const WordList_1 = require("./WordList");
  *
  * Throws if either address or payment ID is invalid.
  */
-function createIntegratedAddress(address, paymentID) {
-    let error = ValidateParameters_1.validateAddresses([address], false);
+function createIntegratedAddress(address, paymentID, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
+    let error = ValidateParameters_1.validateAddresses([address], false, _config);
     if (!_.isEqual(error, WalletError_1.SUCCESS)) {
         throw error;
     }
@@ -28,7 +29,7 @@ function createIntegratedAddress(address, paymentID) {
     if (paymentID === '') {
         throw new Error('Payment ID is empty string!');
     }
-    return CnUtils_1.CryptoUtils().createIntegratedAddress(address, paymentID);
+    return CnUtils_1.CryptoUtils(_config).createIntegratedAddress(address, paymentID);
 }
 exports.createIntegratedAddress = createIntegratedAddress;
 /**
@@ -45,8 +46,9 @@ exports.isHex64 = isHex64;
  *
  * @hidden
  */
-function addressToKeys(address) {
-    const parsed = CnUtils_1.CryptoUtils().decodeAddress(address);
+function addressToKeys(address, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
+    const parsed = CnUtils_1.CryptoUtils(_config).decodeAddress(address);
     return [parsed.publicViewKey, parsed.publicSpendKey];
 }
 exports.addressToKeys = addressToKeys;
@@ -74,9 +76,9 @@ exports.getUpperBound = getUpperBound;
  *
  * @hidden
  */
-function getCurrentTimestampAdjusted() {
+function getCurrentTimestampAdjusted(blockTargetTime = 30) {
     const timestamp = Math.floor(Date.now() / 1000);
-    return timestamp - (100 * Config_1.Config.blockTargetTime);
+    return timestamp - (100 * blockTargetTime);
 }
 exports.getCurrentTimestampAdjusted = getCurrentTimestampAdjusted;
 /**
@@ -103,15 +105,16 @@ exports.isInputUnlocked = isInputUnlocked;
  * Takes an amount in atomic units and pretty prints it.
  * Example: 12345607 -> 123,456.07 TRTL
  */
-function prettyPrintAmount(amount) {
+function prettyPrintAmount(amount, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
     /* Get the amount we need to divide atomic units by. 2 decimal places = 100 */
-    const divisor = Math.pow(10, Config_1.Config.decimalPlaces);
+    const divisor = Math.pow(10, _config.decimalPlaces);
     const dollars = amount >= 0 ? Math.floor(amount / divisor) : Math.ceil(amount / divisor);
     /* Make sure 1 is displaced as 01 */
-    const cents = (Math.abs(amount % divisor)).toString().padStart(Config_1.Config.decimalPlaces, '0');
+    const cents = (Math.abs(amount % divisor)).toString().padStart(_config.decimalPlaces, '0');
     /* Makes our numbers thousand separated. https://stackoverflow.com/a/2901298/8737306 */
     const formatted = dollars.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return formatted + '.' + cents + ' ' + Config_1.Config.ticker;
+    return formatted + '.' + cents + ' ' + _config.ticker;
 }
 exports.prettyPrintAmount = prettyPrintAmount;
 /**
@@ -173,9 +176,9 @@ exports.splitAmountIntoDenominations = splitAmountIntoDenominations;
  *
  * @hidden
  */
-function getMaxTxSize(currentHeight) {
+function getMaxTxSize(currentHeight, blockTime = 30) {
     const numerator = currentHeight * Constants_1.MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR;
-    const denominator = Constants_1.MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR;
+    const denominator = (Constants_1.MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR / blockTime);
     const growth = numerator / denominator;
     const x = Constants_1.MAX_BLOCK_SIZE_INITIAL + growth;
     const y = 125000;
@@ -212,7 +215,8 @@ exports.isValidMnemonicWord = isValidMnemonicWord;
  * Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage
  * describing what is invalid.
  */
-function isValidMnemonic(mnemonic) {
+function isValidMnemonic(mnemonic, config = new Config_1.Config()) {
+    const _config = Config_1.MergeConfig(config);
     const words = mnemonic.split(' ').map((x) => x.toLowerCase());
     if (words.length !== 25) {
         return [false, 'The mnemonic seed given is the wrong length.'];
@@ -231,7 +235,7 @@ function isValidMnemonic(mnemonic) {
         ];
     }
     try {
-        CnUtils_1.CryptoUtils().createAddressFromMnemonic(words.join(' '));
+        CnUtils_1.CryptoUtils(_config).createAddressFromMnemonic(words.join(' '));
         return [true, ''];
     }
     catch (err) {

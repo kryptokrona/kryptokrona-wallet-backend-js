@@ -48,14 +48,18 @@ class ConventionalDaemon {
          * The hashrate of the last known local block
          */
         this.lastKnownHashrate = 0;
+        this.config = new Config_1.Config();
         this.daemonHost = daemonHost;
         this.daemonPort = daemonPort;
         this.daemon = new TurtleCoind({
             host: daemonHost,
             port: daemonPort,
             ssl: false,
-            timeout: Config_1.Config.requestTimeout,
+            timeout: this.config.requestTimeout,
         });
+    }
+    updateConfig(config) {
+        this.config = Config_1.MergeConfig(config);
     }
     /**
      * Get the amount of blocks the network has
@@ -99,7 +103,7 @@ class ConventionalDaemon {
                 this.networkBlockCount--;
             }
             this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
-            this.lastKnownHashrate = info.difficulty / Config_1.Config.blockTargetTime;
+            this.lastKnownHashrate = info.difficulty / this.config.blockTargetTime;
         });
     }
     /**
@@ -124,7 +128,7 @@ class ConventionalDaemon {
             const { items, topBlock } = yield this.daemon.getWalletSyncData({
                 blockCount,
                 blockHashCheckpoints,
-                skipCoinbaseTransactions: !Config_1.Config.scanCoinbaseTransactions,
+                skipCoinbaseTransactions: !this.config.scanCoinbaseTransactions,
                 startHeight,
                 startTimestamp,
             });
@@ -225,7 +229,7 @@ class ConventionalDaemon {
                 return;
             }
             const integratedAddressesAllowed = false;
-            const err = ValidateParameters_1.validateAddresses(new Array(feeInfo.address), integratedAddressesAllowed).errorCode;
+            const err = ValidateParameters_1.validateAddresses(new Array(feeInfo.address), integratedAddressesAllowed, this.config).errorCode;
             if (err !== WalletError_1.WalletErrorCode.SUCCESS) {
                 Logger_1.logger.log('Failed to validate address from daemon fee info: ' + err.toString(), Logger_1.LogLevel.WARNING, [Logger_1.LogCategory.DAEMON]);
                 return;

@@ -1,3 +1,4 @@
+import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
 import { WalletSynchronizerJSON } from './JsonSerialization';
@@ -49,12 +50,13 @@ export declare class WalletSynchronizer {
      * correctly without blocks being stored after wiping them.
      */
     private finishedFunc;
-    constructor(daemon: IDaemon, subWallets: SubWallets, startTimestamp: number, startHeight: number, privateViewKey: string);
+    private config;
+    constructor(daemon: IDaemon, subWallets: SubWallets, startTimestamp: number, startHeight: number, privateViewKey: string, config: Config);
     getScanHeights(): [number, number];
     /**
      * Initialize things we can't initialize from the JSON
      */
-    initAfterLoad(subWallets: SubWallets, daemon: IDaemon): void;
+    initAfterLoad(subWallets: SubWallets, daemon: IDaemon, config: Config): void;
     /**
      * Convert from class to stringable type
      */

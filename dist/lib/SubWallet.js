@@ -15,9 +15,10 @@ const Logger_1 = require("./Logger");
 const Types_1 = require("./Types");
 const Utilities_1 = require("./Utilities");
 const CryptoWrapper_1 = require("./CryptoWrapper");
+const Config_1 = require("./Config");
 const _ = require("lodash");
 class SubWallet {
-    constructor(address, scanHeight, timestamp, publicSpendKey, privateSpendKey) {
+    constructor(config, address, scanHeight, timestamp, publicSpendKey, privateSpendKey) {
         /**
          * A vector of the stored transaction input data, to be used for
          * sending transactions later
@@ -47,12 +48,14 @@ class SubWallet {
          * The height to begin syncing the wallet at
          */
         this.syncStartHeight = 0;
+        this.config = new Config_1.Config();
         this.address = address;
         this.syncStartHeight = scanHeight;
         this.syncStartTimestamp = timestamp;
         this.publicSpendKey = publicSpendKey;
         this.privateSpendKey = privateSpendKey;
         this.primaryAddress = true;
+        this.config = config;
     }
     static fromJSON(json) {
         const subWallet = Object.create(SubWallet.prototype);
@@ -244,7 +247,7 @@ class SubWallet {
      */
     getTxInputKeyImage(derivation, outputIndex) {
         return __awaiter(this, void 0, void 0, function* () {
-            const [keyImage] = yield CryptoWrapper_1.generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation);
+            const [keyImage] = yield CryptoWrapper_1.generateKeyImagePrimitive(this.publicSpendKey, this.privateSpendKey, outputIndex, derivation, this.config);
             return keyImage;
         });
     }
@@ -279,6 +282,9 @@ class SubWallet {
     }
     storeUnconfirmedIncomingInput(input) {
         this.unconfirmedIncomingAmounts.push(input);
+    }
+    initAfterLoad(config) {
+        this.config = config;
     }
 }
 exports.SubWallet = SubWallet;
