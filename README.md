@@ -160,7 +160,18 @@ wallet.setLoggerCallback((prettyMessage, message, level, categories) => {
 
 In this example, we only print messages that fall into the SYNC category.
 
-You can view available categories and log levels in the documentation below.
+You can view available categories and log levels in the documentation.
+
+## Changelog
+
+### v3.0.0
+
+* Fix bug where using multiple wallet instances with different configs would only use the latest config.
+* API change - You must now provide a config to the Utilities/ValidateParameters functions if you are using a non default config, for example if you are using the library for another cryptocurrency. Otherwise, the default TurtleCoin config will be used.
+
+### v2.0.0
+
+Start of changelog.
 
 ## Contributing
 
