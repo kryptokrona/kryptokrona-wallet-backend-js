@@ -577,7 +577,7 @@ export declare class WalletBackend extends EventEmitter {
      * wallet.stop();
      * ```
      */
-    stop(): void;
+    stop(): Promise<void>;
     /**
      * Get the node fee the daemon you are connected to is charging for
      * transactions. If the daemon charges no fee, this will return `['', 0]`

@@ -943,7 +943,7 @@ export class WalletBackend extends EventEmitter {
      * wallet.stop();
      * ```
      */
-    public async stop(): void {
+    public async stop(): Promise<void> {
         this.started = false;
         await this.syncThread.stop();
         await this.daemonUpdateThread.stop();
