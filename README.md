@@ -164,6 +164,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.0.1
+
+* Fix issue where `reset()` would cause double wallet scanning
+
 ### v3.0.0
 
 * Fix bug where using multiple wallet instances with different configs would only use the latest config.
