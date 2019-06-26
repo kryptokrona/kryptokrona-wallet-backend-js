@@ -938,9 +938,10 @@ turtlecoin-crypto@^1.0.0:
     bindings "^1.5.0"
     nan "^2.13.2"
 
-"turtlecoin-rpc@https://github.com/turtlecoin/turtlecoin-rpc-js":
+turtlecoin-rpc@^1.0.0:
   version "1.0.0"
-  resolved "https://github.com/turtlecoin/turtlecoin-rpc-js#564ab913af65b5f717a774932bc156e890a166b4"
+  resolved "https://registry.yarnpkg.com/turtlecoin-rpc/-/turtlecoin-rpc-1.0.0.tgz#1225153fd1a77b2ea95ac621a3a8b726ea4fe989"
+  integrity sha512-w1Sm19vfPSCglpMFG6L1abTRNJhwHCbl4MxTQLYjSN9SFYS6n9JWk5840+1zV9UGc7lwQ1xh+OFk5tVjqp8ysw==
   dependencies:
     request "^2.88.0"
     request-promise-native "^1.0.7"

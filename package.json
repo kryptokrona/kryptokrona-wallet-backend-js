@@ -24,7 +24,7 @@
     "node-fetch": "^2.5.0",
     "object-sizeof": "^1.3.0",
     "pbkdf2": "^3.0.17",
-    "turtlecoin-rpc": "https://github.com/turtlecoin/turtlecoin-rpc-js",
+    "turtlecoin-rpc": "^1.0.0",
     "turtlecoin-utils": "^0.0.13"
   },
   "devDependencies": {
