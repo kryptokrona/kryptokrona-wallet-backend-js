@@ -920,13 +920,13 @@ export class WalletBackend extends EventEmitter {
      */
     public async start(): Promise<void> {
         if (!this.started) {
+            this.started = true;
+
             await this.daemon.init();
 
             this.syncThread.start();
             this.daemonUpdateThread.start();
             this.lockedTransactionsCheckThread.start();
-
-            this.started = true;
         }
     }
 
@@ -944,10 +944,10 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public stop(): void {
+        this.started = false;
         this.syncThread.stop();
         this.daemonUpdateThread.stop();
         this.lockedTransactionsCheckThread.stop();
-        this.started = false;
     }
 
     /**

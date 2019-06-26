@@ -579,11 +579,11 @@ class WalletBackend extends events_1.EventEmitter {
     start() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.started) {
+                this.started = true;
                 yield this.daemon.init();
                 this.syncThread.start();
                 this.daemonUpdateThread.start();
                 this.lockedTransactionsCheckThread.start();
-                this.started = true;
             }
         });
     }
@@ -601,10 +601,10 @@ class WalletBackend extends events_1.EventEmitter {
      * ```
      */
     stop() {
+        this.started = false;
         this.syncThread.stop();
         this.daemonUpdateThread.stop();
         this.lockedTransactionsCheckThread.stop();
-        this.started = false;
     }
     /**
      * Get the node fee the daemon you are connected to is charging for
