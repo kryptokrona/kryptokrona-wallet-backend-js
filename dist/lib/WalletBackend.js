@@ -601,10 +601,12 @@ class WalletBackend extends events_1.EventEmitter {
      * ```
      */
     stop() {
-        this.started = false;
-        this.syncThread.stop();
-        this.daemonUpdateThread.stop();
-        this.lockedTransactionsCheckThread.stop();
+        return __awaiter(this, void 0, void 0, function* () {
+            this.started = false;
+            yield this.syncThread.stop();
+            yield this.daemonUpdateThread.stop();
+            yield this.lockedTransactionsCheckThread.stop();
+        });
     }
     /**
      * Get the node fee the daemon you are connected to is charging for

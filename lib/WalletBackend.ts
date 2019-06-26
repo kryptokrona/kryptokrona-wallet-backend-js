@@ -943,11 +943,11 @@ export class WalletBackend extends EventEmitter {
      * wallet.stop();
      * ```
      */
-    public stop(): void {
+    public async stop(): void {
         this.started = false;
-        this.syncThread.stop();
-        this.daemonUpdateThread.stop();
-        this.lockedTransactionsCheckThread.stop();
+        await this.syncThread.stop();
+        await this.daemonUpdateThread.stop();
+        await this.lockedTransactionsCheckThread.stop();
     }
 
     /**
