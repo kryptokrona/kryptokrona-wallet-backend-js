@@ -191,7 +191,7 @@ export class WalletBackend extends EventEmitter {
      * ```javascript
      * const WB = require('turtlecoin-wallet-backend');
      *
-     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const daemon = new WB.Daemon('127.0.0.1', 11898);
      *
      * const [wallet, error] = WB.WalletBackend.openWalletFromFile(daemon, 'mywallet.wallet', 'hunter2');
      *
@@ -234,7 +234,7 @@ export class WalletBackend extends EventEmitter {
      * ```javascript
      * const WB = require('turtlecoin-wallet-backend');
      *
-     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const daemon = new WB.Daemon('127.0.0.1', 11898);
      * const data = 'ENCRYPTED_WALLET_STRING';
      *
      * const [wallet, error] = WB.WalletBackend.openWalletFromEncryptedString(daemon, data, 'hunter2');
@@ -276,7 +276,7 @@ export class WalletBackend extends EventEmitter {
      * ```javascript
      * const WB = require('turtlecoin-wallet-backend');
      *
-     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const daemon = new WB.Daemon('127.0.0.1', 11898);
      *
      * const [wallet, err] = WB.WalletBackend.loadWalletFromJSON(daemon, json);
      *
@@ -285,8 +285,7 @@ export class WalletBackend extends EventEmitter {
      * }
      * ```
      *
-     * @param daemon        An implementation of the IDaemon interface. Either
-     *                      a conventional daemon, or a blockchain cache API.
+     * @param daemon        An implementation of the IDaemon interface.
      *
      * @param json          Wallet info encoded as a JSON encoded string. Note
      *                      that this should be a *string*, NOT a JSON object.
@@ -314,7 +313,7 @@ export class WalletBackend extends EventEmitter {
      * ```javascript
      * const WB = require('turtlecoin-wallet-backend');
      *
-     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const daemon = new WB.Daemon('127.0.0.1', 11898);
      *
      * const seed = 'necklace went vials phone both haunted either eskimos ' +
      *              'dialect civilian western dabbing snout rustled balding ' +
@@ -328,8 +327,7 @@ export class WalletBackend extends EventEmitter {
      * }
      * ```
      *
-     * @param daemon        An implementation of the IDaemon interface. Either
-     *                      a conventional daemon, or a blockchain cache API.
+     * @param daemon        An implementation of the IDaemon interface.
      *
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -377,7 +375,7 @@ export class WalletBackend extends EventEmitter {
      * ```javascript
      * const WB = require('turtlecoin-wallet-backend');
      *
-     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const daemon = new WB.Daemon('127.0.0.1', 11898);
      *
      * const privateViewKey = 'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01';
      * const privateSpendKey = 'f1b1e9a6f56241594ddabb243cdb39355a8b4a1a1c0343dde36f3b57835fe607';
@@ -389,8 +387,7 @@ export class WalletBackend extends EventEmitter {
      * }
      * ```
      *
-     * @param daemon        An implementation of the IDaemon interface. Either
-     *                      a conventional daemon, or a blockchain cache API.
+     * @param daemon        An implementation of the IDaemon interface.
      *
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -450,7 +447,7 @@ export class WalletBackend extends EventEmitter {
      * ```javascript
      * const WB = require('turtlecoin-wallet-backend');
      *
-     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const daemon = new WB.Daemon('127.0.0.1', 11898);
      *
      * const privateViewKey = 'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01';
      *
@@ -463,8 +460,7 @@ export class WalletBackend extends EventEmitter {
      * }
      * ```
      *
-     * @param daemon        An implementation of the IDaemon interface. Either
-     *                      a conventional daemon, or a blockchain cache API.
+     * @param daemon        An implementation of the IDaemon interface.
      *
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -520,13 +516,12 @@ export class WalletBackend extends EventEmitter {
      * ```javascript
      * const WB = require('turtlecoin-wallet-backend');
      *
-     * const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+     * const daemon = new WB.Daemon('127.0.0.1', 11898);
      *
      * const wallet = WB.WalletBackend.createWallet(daemon);
      * ```
      *
-     * @param daemon        An implementation of the IDaemon interface. Either
-     *                      a conventional daemon, or a blockchain cache API.
+     * @param daemon        An implementation of the IDaemon interface.
      */
     public static createWallet(
         daemon: IDaemon,

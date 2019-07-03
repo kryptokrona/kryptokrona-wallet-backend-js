@@ -27,8 +27,8 @@ function sleep(ms) {
     let wallet;
 
     /* Initialise our blockchain cache api. Can use a public node or local node
-       with `const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);` */
-    const daemon = new WB.BlockchainCacheApi('blockapi.turtlepay.io', true);
+       with `const daemon = new WB.Daemon('127.0.0.1', 11898);` */
+    const daemon = new WB.Daemon('blockapi.turtlepay.io', 443);
 
     if (response === 'c') {
         const newWallet = WB.WalletBackend.createWallet(daemon);

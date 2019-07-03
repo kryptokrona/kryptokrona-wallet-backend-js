@@ -45,9 +45,9 @@ You can find an [example project in the examples](https://github.com/turtlecoin/
 const WB = require('turtlecoin-wallet-backend');
 
 (async () => {
-    const daemon = new WB.ConventionalDaemon('127.0.0.1', 11898);
+    const daemon = new WB.Daemon('127.0.0.1', 11898);
     /* OR
-    const daemon = new WB.BlockchainCacheApi('blockapi.turtlepay.io', true);
+    const daemon = new WB.Daemon('blockapi.turtlepay.io', 443);
     */
     
     const wallet = WB.WalletBackend.createWallet(daemon);
@@ -70,15 +70,15 @@ const WB = require('turtlecoin-wallet-backend');
 ### Typescript
 
 ```typescript
-import { WalletBackend, ConventionalDaemon, BlockchainCacheApi } from 'turtlecoin-wallet-backend';
+import { WalletBackend, Daemon, IDaemon } from 'turtlecoin-wallet-backend';
 
 (async () => {
-    const daemon: ConventionalDaemon = new ConventionalDaemon('127.0.0.1', 11898);
+    const daemon: IDaemon = new Daemon('127.0.0.1', 11898);
 
     /* OR
-    const daemon: BlockchainCacheApi = new BlockchainCacheApi('blockapi.turtlepay.io', true);
+    const daemon: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
     */
-    
+
     const wallet: WalletBackend = WalletBackend.createWallet(daemon);
 
     console.log('Created wallet');
@@ -164,9 +164,14 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.1.0
+
+* Adds `Daemon` class. This class supports Blockchain cache api's, conventional daemons, http and https, all automatically.
+* Marks `ConventionalDaemon` and `BlockchainCacheApi` as deprecated. These will be removed in v4.0.0. Please use the `Daemon` class instead.
+
 ### v3.0.1
 
-* Fix issue where `reset()` would cause double wallet scanning
+* Fix issue where `reset()` would cause double wallet scanning.
 
 ### v3.0.0
 

@@ -89,9 +89,9 @@
 				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
 
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.ConventionalDaemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
+    <span class="hljs-keyword">const</span> daemon = <span class="hljs-keyword">new</span> WB.Daemon(<span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">11898</span>);
     <span class="hljs-comment">/* OR
-    const daemon = new WB.BlockchainCacheApi('blockapi.turtlepay.io', true);
+    const daemon = new WB.Daemon('blockapi.turtlepay.io', 443);
     */</span>
 
     <span class="hljs-keyword">const</span> wallet = WB.WalletBackend.createWallet(daemon);
@@ -110,13 +110,13 @@
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Caught promise rejection: '</span> + err);
 });</code></pre>
 				<h3 id="typescript">Typescript</h3>
-				<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { WalletBackend, ConventionalDaemon, BlockchainCacheApi } <span class="hljs-keyword">from</span> <span class="hljs-string">'turtlecoin-wallet-backend'</span>;
+				<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { WalletBackend, Daemon, IDaemon } <span class="hljs-keyword">from</span> <span class="hljs-string">'turtlecoin-wallet-backend'</span>;
 
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; {
-    <span class="hljs-keyword">const</span> daemon: ConventionalDaemon = <span class="hljs-keyword">new</span> ConventionalDaemon(<span class="hljs-params">'127.0.0.1', 11898</span>);
+    <span class="hljs-keyword">const</span> daemon: IDaemon = <span class="hljs-keyword">new</span> Daemon(<span class="hljs-params">'127.0.0.1', 11898</span>);
 
     <span class="hljs-comment">/* OR
-    const daemon: BlockchainCacheApi = new BlockchainCacheApi('blockapi.turtlepay.io', true);
+    const daemon: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
     */</span>
 
     <span class="hljs-keyword">const</span> wallet: WalletBackend = WalletBackend.createWallet(<span class="hljs-params">daemon</span>);
@@ -167,9 +167,14 @@
 				<p>In this example, we only print messages that fall into the SYNC category.</p>
 				<p>You can view available categories and log levels in the documentation.</p>
 				<h2 id="changelog">Changelog</h2>
+				<h3 id="v3-1-0">v3.1.0</h3>
+				<ul>
+					<li>Adds <code>Daemon</code> class. This class supports Blockchain cache api&#39;s, conventional daemons, http and https, all automatically.</li>
+					<li>Marks <code>ConventionalDaemon</code> and <code>BlockchainCacheApi</code> as deprecated. These will be removed in v4.0.0. Please use the <code>Daemon</code> class instead.</li>
+				</ul>
 				<h3 id="v3-0-1">v3.0.1</h3>
 				<ul>
-					<li>Fix issue where <code>reset()</code> would cause double wallet scanning</li>
+					<li>Fix issue where <code>reset()</code> would cause double wallet scanning.</li>
 				</ul>
 				<h3 id="v3-0-0">v3.0.0</h3>
 				<ul>
