@@ -17,7 +17,8 @@ module.exports = {
     './lib/index.ts',
     './lib/Transfer.ts',
     './lib/WalletEncryption.ts',
-    './lib/WordList.ts'
+    './lib/WordList.ts',
+    './lib/Assert.ts'
   ],
   mode: 'modules'
 }

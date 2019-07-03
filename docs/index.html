@@ -165,7 +165,19 @@
     }
 });</code></pre>
 				<p>In this example, we only print messages that fall into the SYNC category.</p>
-				<p>You can view available categories and log levels in the documentation below.</p>
+				<p>You can view available categories and log levels in the documentation.</p>
+				<h2 id="changelog">Changelog</h2>
+				<h3 id="v3-0-1">v3.0.1</h3>
+				<ul>
+					<li>Fix issue where <code>reset()</code> would cause double wallet scanning</li>
+				</ul>
+				<h3 id="v3-0-0">v3.0.0</h3>
+				<ul>
+					<li>Fix bug where using multiple wallet instances with different configs would only use the latest config.</li>
+					<li>API change - You must now provide a config to the Utilities/ValidateParameters functions if you are using a non default config, for example if you are using the library for another cryptocurrency. Otherwise, the default TurtleCoin config will be used.</li>
+				</ul>
+				<h3 id="v2-0-0">v2.0.0</h3>
+				<p>Start of changelog.</p>
 				<h2 id="contributing">Contributing</h2>
 				<h3 id="building-for-developers-">Building (For Developers)</h3>
 				<p><code>git clone https://github.com/turtlecoin/turtlecoin-wallet-backend-js.git</code></p>
@@ -202,6 +214,9 @@
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/_conventionaldaemon_.html">"<wbr>Conventional<wbr>Daemon"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_daemon_.html">"<wbr>Daemon"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/_idaemon_.html">"IDaemon"</a>
