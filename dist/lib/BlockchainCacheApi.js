@@ -25,6 +25,11 @@ const Config_1 = require("./Config");
 const ValidateParameters_1 = require("./ValidateParameters");
 const Logger_1 = require("./Logger");
 const WalletError_1 = require("./WalletError");
+/**
+ * @deprecated This Class will be removed in v4.0.0. Please update your code
+ * to instead use the [[Daemon]] class. This supports both ConventionalDaemon's,
+ * BlockchainCacheApi's, and http/https, all automatically.
+ */
 class BlockchainCacheApi {
     /**
      * @param cacheBaseURL  The base URL for our API. Shouldn't have a trailing '/'
@@ -69,6 +74,10 @@ class BlockchainCacheApi {
          */
         this.lastKnownHashrate = 0;
         this.config = new Config_1.Config();
+        console.warn('This Class will be removed in v4.0.0. Please update your code ' +
+            'to instead use the Daemon class. This supports both ' +
+            'ConventionalDaemon\'s, BlockchainCacheApi\'s, and http/https, ' +
+            'all automatically.');
         this.cacheBaseURL = cacheBaseURL;
         this.ssl = ssl;
     }

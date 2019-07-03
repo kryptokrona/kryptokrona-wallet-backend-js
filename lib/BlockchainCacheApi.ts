@@ -22,6 +22,11 @@ import { validateAddresses } from './ValidateParameters';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { WalletError, WalletErrorCode } from './WalletError';
 
+/**
+ * @deprecated This Class will be removed in v4.0.0. Please update your code
+ * to instead use the [[Daemon]] class. This supports both ConventionalDaemon's,
+ * BlockchainCacheApi's, and http/https, all automatically.
+ */
 export class BlockchainCacheApi implements IDaemon {
 
     /**
@@ -76,6 +81,13 @@ export class BlockchainCacheApi implements IDaemon {
      * ```
      */
     constructor(cacheBaseURL: string, ssl: boolean = true) {
+        console.warn(
+            'This Class will be removed in v4.0.0. Please update your code ' +
+            'to instead use the Daemon class. This supports both ' +
+            'ConventionalDaemon\'s, BlockchainCacheApi\'s, and http/https, ' +
+            'all automatically.'
+        );
+
         this.cacheBaseURL = cacheBaseURL;
         this.ssl = ssl;
     }

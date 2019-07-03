@@ -2,7 +2,9 @@ import { IConfig } from './Config';
 import { IDaemon } from './IDaemon';
 import { Block, TopBlock } from './Types';
 /**
- * Implements the daemon interface, talking to a standard TurtleCoind.
+ * @deprecated This Class will be removed in v4.0.0. Please update your code
+ * to instead use the [[Daemon]] class. This supports both ConventionalDaemon's,
+ * BlockchainCacheApi's, and http/https, all automatically.
  */
 export declare class ConventionalDaemon implements IDaemon {
     /**

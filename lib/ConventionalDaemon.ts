@@ -15,7 +15,9 @@ import { WalletError, WalletErrorCode } from './WalletError';
 const TurtleCoind = require('turtlecoin-rpc').TurtleCoind;
 
 /**
- * Implements the daemon interface, talking to a standard TurtleCoind.
+ * @deprecated This Class will be removed in v4.0.0. Please update your code
+ * to instead use the [[Daemon]] class. This supports both ConventionalDaemon's,
+ * BlockchainCacheApi's, and http/https, all automatically.
  */
 export class ConventionalDaemon implements IDaemon {
 
@@ -68,6 +70,13 @@ export class ConventionalDaemon implements IDaemon {
     private config: Config = new Config();
 
     constructor(daemonHost: string, daemonPort: number) {
+        console.warn(
+            'This Class will be removed in v4.0.0. Please update your code ' +
+            'to instead use the Daemon class. This supports both ' +
+            'ConventionalDaemon\'s, BlockchainCacheApi\'s, and http/https, ' +
+            'all automatically.'
+        );
+
         this.daemonHost = daemonHost;
         this.daemonPort = daemonPort;
 

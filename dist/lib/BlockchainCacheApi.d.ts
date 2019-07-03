@@ -1,6 +1,11 @@
 import { Block, TopBlock } from './Types';
 import { IConfig } from './Config';
 import { IDaemon } from './IDaemon';
+/**
+ * @deprecated This Class will be removed in v4.0.0. Please update your code
+ * to instead use the [[Daemon]] class. This supports both ConventionalDaemon's,
+ * BlockchainCacheApi's, and http/https, all automatically.
+ */
 export declare class BlockchainCacheApi implements IDaemon {
     /**
      * The base URL for our API. Shouldn't have a trailing '/'.

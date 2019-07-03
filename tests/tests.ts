@@ -115,8 +115,7 @@ function roundTrip(
     const tester: Tester = new Tester();
 
     /* Setup a daemon */
-    //const daemon: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
-    const daemon: IDaemon = new Daemon('127.0.0.1', 11898);
+    const daemon: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
 
     /* Begin testing */
     await tester.test(async () => {
