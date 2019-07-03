@@ -279,10 +279,35 @@ export class Daemon implements IDaemon {
         startHeight: number,
         endHeight: number): Promise<Map<string, number[]>> {
 
-        throw new Error(
-            'This call is not supported on the cache api. The cache API ' +
-            'returns global indexes directly from /getWalletSyncData',
-        );
+        if (this.isCacheApi) {
+            throw new Error(
+                'This call is not supported on the cache api. The cache API ' +
+                'returns global indexes directly from /getWalletSyncData',
+            );
+        }
+
+        try {
+            const data = await this.makePostRequest('/get_global_indexes_for_range', {
+                startHeight,
+                endHeight,
+            });
+
+            const indexes: Map<string, number[]> = new Map();
+
+            for (const index of data.indexes) {
+                indexes.set(index.key, index.value);
+            }
+
+            return indexes;
+        } catch (err) {
+            logger.log(
+                'Failed to get global indexes: ' + err.toString(),
+                LogLevel.ERROR,
+                LogCategory.DAEMON,
+            );
+
+            return new Map();
+        }
     }
 
     public async getCancelledTransactions(transactionHashes: string[]): Promise<string[]> {
@@ -317,10 +342,19 @@ export class Daemon implements IDaemon {
         let data;
 
         try {
-            data = await this.makePostRequest('/randomOutputs', {
-                amounts: amounts,
-                mixin: requestedOuts,
-            });
+            if (this.isCacheApi) {
+                data = await this.makePostRequest('/randomOutputs', {
+                    amounts: amounts,
+                    mixin: requestedOuts,
+                });
+            } else {
+                const tmp = await this.makePostRequest('/getrandom_outs', {
+                    amounts: amounts,
+                    outs_count: requestedOuts,
+                });
+
+                data = tmp.outs || [];
+            }
         } catch (err) {
             logger.log(
                 'Failed to get random outs: ' + err.toString(),
@@ -422,9 +456,6 @@ export class Daemon implements IDaemon {
                    HTTPS or HTTP yet. */
                 url: `${protocol}://${this.host}:${this.port}${endpoint}`,
             });
-
-            console.log(data);
-            console.log(body);
 
             /* Cool, https works. Store for later. */
             if (!this.sslDetermined) {

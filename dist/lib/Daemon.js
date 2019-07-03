@@ -218,8 +218,25 @@ class Daemon {
      */
     getGlobalIndexesForRange(startHeight, endHeight) {
         return __awaiter(this, void 0, void 0, function* () {
-            throw new Error('This call is not supported on the cache api. The cache API ' +
-                'returns global indexes directly from /getWalletSyncData');
+            if (this.isCacheApi) {
+                throw new Error('This call is not supported on the cache api. The cache API ' +
+                    'returns global indexes directly from /getWalletSyncData');
+            }
+            try {
+                const data = yield this.makePostRequest('/get_global_indexes_for_range', {
+                    startHeight,
+                    endHeight,
+                });
+                const indexes = new Map();
+                for (const index of data.indexes) {
+                    indexes.set(index.key, index.value);
+                }
+                return indexes;
+            }
+            catch (err) {
+                Logger_1.logger.log('Failed to get global indexes: ' + err.toString(), Logger_1.LogLevel.ERROR, Logger_1.LogCategory.DAEMON);
+                return new Map();
+            }
         });
     }
     getCancelledTransactions(transactionHashes) {
@@ -247,10 +264,19 @@ class Daemon {
         return __awaiter(this, void 0, void 0, function* () {
             let data;
             try {
-                data = yield this.makePostRequest('/randomOutputs', {
-                    amounts: amounts,
-                    mixin: requestedOuts,
-                });
+                if (this.isCacheApi) {
+                    data = yield this.makePostRequest('/randomOutputs', {
+                        amounts: amounts,
+                        mixin: requestedOuts,
+                    });
+                }
+                else {
+                    const tmp = yield this.makePostRequest('/getrandom_outs', {
+                        amounts: amounts,
+                        outs_count: requestedOuts,
+                    });
+                    data = tmp.outs || [];
+                }
             }
             catch (err) {
                 Logger_1.logger.log('Failed to get random outs: ' + err.toString(), Logger_1.LogLevel.ERROR, [Logger_1.LogCategory.TRANSACTIONS, Logger_1.LogCategory.DAEMON]);
@@ -330,8 +356,6 @@ class Daemon {
                        HTTPS or HTTP yet. */
                     url: `${protocol}://${this.host}:${this.port}${endpoint}`,
                 });
-                console.log(data);
-                console.log(body);
                 /* Cool, https works. Store for later. */
                 if (!this.sslDetermined) {
                     this.ssl = true;
