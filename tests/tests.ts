@@ -3,8 +3,8 @@ import * as colors from 'colors';
 import * as fs from 'fs';
 
 import {
-    IDaemon, prettyPrintAmount, SUCCESS, validateAddresses,
-    WalletBackend, WalletError, WalletErrorCode, BlockchainCacheApi, LogLevel,
+    IDaemon, Daemon, prettyPrintAmount, SUCCESS, validateAddresses,
+    WalletBackend, WalletError, WalletErrorCode, LogLevel,
     isValidMnemonic, isValidMnemonicWord, createIntegratedAddress, Config,
 } from '../lib/index';
 
@@ -115,7 +115,7 @@ function roundTrip(
     const tester: Tester = new Tester();
 
     /* Setup a daemon */
-    const daemon: BlockchainCacheApi = new BlockchainCacheApi('blockapi.turtlepay.io');
+    const daemon: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
 
     /* Begin testing */
     await tester.test(async () => {
@@ -472,7 +472,7 @@ function roundTrip(
         /* TODO: Maybe use a remote node? */
         await tester.test(async () => {
             /* Reinit daemon so it has no leftover state */
-            const daemon2: BlockchainCacheApi = new BlockchainCacheApi('blockapi.turtlepay.io');
+            const daemon2: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
 
             const wallet = WalletBackend.createWallet(daemon2);
 

@@ -2,6 +2,7 @@ export { WalletError, WalletErrorCode, SUCCESS } from './WalletError';
 export { WalletBackend } from './WalletBackend';
 export { BlockchainCacheApi } from './BlockchainCacheApi';
 export { ConventionalDaemon } from './ConventionalDaemon';
+export { Daemon } from './Daemon';
 export { IDaemon } from './IDaemon';
 export { prettyPrintAmount, isHex64, isValidMnemonic, isValidMnemonicWord, createIntegratedAddress, } from './Utilities';
 export { LogLevel, LogCategory } from './Logger';

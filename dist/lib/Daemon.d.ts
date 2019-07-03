@@ -1,15 +1,31 @@
 import { Block, TopBlock } from './Types';
 import { IConfig } from './Config';
 import { IDaemon } from './IDaemon';
-export declare class BlockchainCacheApi implements IDaemon {
+export declare class Daemon implements IDaemon {
     /**
-     * The base URL for our API. Shouldn't have a trailing '/'.
+     * Daemon/API host
      */
-    private cacheBaseURL;
+    private host;
+    /**
+     * Daemon/API port
+     */
+    private port;
     /**
      * Whether we should use https for our requests
      */
     private ssl;
+    /**
+     * Have we determined if we should be using ssl or not?
+     */
+    private sslDetermined;
+    /**
+     * Whether we're talking to a conventional daemon, or a blockchain cache API
+     */
+    private isCacheApi;
+    /**
+     * Have we determined if this is a cache API or not?
+     */
+    private isCacheApiDetermined;
     /**
      * The address node fees will go to
      */
@@ -36,15 +52,23 @@ export declare class BlockchainCacheApi implements IDaemon {
     private lastKnownHashrate;
     private config;
     /**
-     * @param cacheBaseURL  The base URL for our API. Shouldn't have a trailing '/'
-     * @param ssl           Should we use https? Defaults to true.
+     * @param host The host to access the API on. Can be an IP, or a URL, for
+     *             example, 1.1.1.1, or blockapi.turtlepay.io
      *
-     * Example usage:
-     * ```
-     * const daemon = new BlockchainCacheApi('blockapi.turtlepay.io', true);
-     * ```
+     * @param port The port to access the API on. Normally 11898 for a TurtleCoin
+     *             daemon, 80 for a HTTP api, or 443 for a HTTPS api.
+     *
+     * @param isCacheApi You can optionally specify whether this API is a
+     *                   blockchain cache API to save a couple of requests.
+     *                   If you're not sure, do not specify this parameter -
+     *                   we will work it out automatically.
+     *
+     * @param ssl        You can optionally specify whether this API supports
+     *                   ssl/tls/https to save a couple of requests.
+     *                   If you're not sure, do not specify this parameter -
+     *                   we will work it out automatically.
      */
-    constructor(cacheBaseURL: string, ssl?: boolean);
+    constructor(host: string, port: number, isCacheApi?: boolean, ssl?: boolean);
     updateConfig(config: IConfig): void;
     /**
      * Get the amount of blocks the network has
@@ -99,12 +123,10 @@ export declare class BlockchainCacheApi implements IDaemon {
      * Update the fee address and amount
      */
     private updateFeeInfo;
+    private makeGetRequest;
+    private makePostRequest;
     /**
      * Makes a get request to the given endpoint
      */
-    private makeGetRequest;
-    /**
-     * Makes a post request to the given endpoint with the given body
-     */
-    private makePostRequest;
+    private makeRequest;
 }

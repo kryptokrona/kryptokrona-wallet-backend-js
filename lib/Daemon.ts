@@ -4,17 +4,9 @@
 
 import * as _ from 'lodash';
 
-import fetch from 'node-fetch';
+import request = require('request-promise-native');
 
-let AbortController: any;
-
-/* This require doesn't work in react native. dunno why. */
-if (!(typeof navigator !== 'undefined'
-   && typeof navigator.product === 'string'
-   && navigator.product.toLowerCase() === 'reactnative')) {
-    AbortController = require('abort-controller');
-}
-
+import { assertString, assertNumber, assertBoolean } from './Assert';
 import { Block, TopBlock } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
 import { IDaemon } from './IDaemon';
@@ -22,17 +14,37 @@ import { validateAddresses } from './ValidateParameters';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { WalletError, WalletErrorCode } from './WalletError';
 
-export class BlockchainCacheApi implements IDaemon {
+export class Daemon implements IDaemon {
 
     /**
-     * The base URL for our API. Shouldn't have a trailing '/'.
+     * Daemon/API host
      */
-    private cacheBaseURL: string = '';
+    private host: string;
+
+    /**
+     * Daemon/API port
+     */
+    private port: number;
 
     /**
      * Whether we should use https for our requests
      */
     private ssl: boolean = true;
+
+    /**
+     * Have we determined if we should be using ssl or not?
+     */
+    private sslDetermined: boolean = false;
+
+    /**
+     * Whether we're talking to a conventional daemon, or a blockchain cache API
+     */
+    private isCacheApi: boolean = false;
+
+    /**
+     * Have we determined if this is a cache API or not?
+     */
+    private isCacheApiDetermined: boolean = false;
 
     /**
      * The address node fees will go to
@@ -67,17 +79,40 @@ export class BlockchainCacheApi implements IDaemon {
     private config: Config = new Config();
 
     /**
-     * @param cacheBaseURL  The base URL for our API. Shouldn't have a trailing '/'
-     * @param ssl           Should we use https? Defaults to true.
+     * @param host The host to access the API on. Can be an IP, or a URL, for
+     *             example, 1.1.1.1, or blockapi.turtlepay.io
      *
-     * Example usage:
-     * ```
-     * const daemon = new BlockchainCacheApi('blockapi.turtlepay.io', true);
-     * ```
+     * @param port The port to access the API on. Normally 11898 for a TurtleCoin
+     *             daemon, 80 for a HTTP api, or 443 for a HTTPS api.
+     *
+     * @param isCacheApi You can optionally specify whether this API is a
+     *                   blockchain cache API to save a couple of requests.
+     *                   If you're not sure, do not specify this parameter -
+     *                   we will work it out automatically.
+     *
+     * @param ssl        You can optionally specify whether this API supports
+     *                   ssl/tls/https to save a couple of requests.
+     *                   If you're not sure, do not specify this parameter -
+     *                   we will work it out automatically.
      */
-    constructor(cacheBaseURL: string, ssl: boolean = true) {
-        this.cacheBaseURL = cacheBaseURL;
-        this.ssl = ssl;
+    constructor(host: string, port: number, isCacheApi?: boolean, ssl?: boolean) {
+        assertString(host, 'Host');
+        assertNumber(port, 'Port');
+        isCacheApi !== undefined && assertBoolean(isCacheApi, 'IsCacheApi');
+        ssl !== undefined && assertBoolean(ssl, 'Ssl');
+
+        this.host = host;
+        this.port = port;
+        
+        if (isCacheApi !== undefined) {
+            this.isCacheApi = isCacheApi;
+            this.isCacheApiDetermined = true;
+        }
+
+        if (ssl !== undefined) {
+            this.ssl = ssl;
+            this.sslDetermined = true;
+        }
     }
 
     public updateConfig(config: IConfig) {
@@ -112,6 +147,8 @@ export class BlockchainCacheApi implements IDaemon {
     public async updateDaemonInfo(): Promise<void> {
         let info;
 
+        const haveDeterminedSsl = this.sslDetermined;
+
         try {
             info = await this.makeGetRequest('/info');
         } catch (err) {
@@ -122,6 +159,26 @@ export class BlockchainCacheApi implements IDaemon {
             );
 
             return;
+        }
+
+        /* Possibly determined daemon type was HTTPS, got a valid response,
+           but not valid data. Manually set to http and try again. */
+        if (info.height === undefined && !haveDeterminedSsl) {
+            this.sslDetermined = true;
+            this.ssl = false;
+
+            return this.updateDaemonInfo();
+        }
+
+        /* Are we talking to a cache API or not? */
+        if (!this.isCacheApiDetermined) {
+            if (info.isCacheApi !== undefined && _.isBoolean(info.isCacheApi)) {
+                this.isCacheApi = info.isCacheApi;
+                this.isCacheApiDetermined = true;
+            } else {
+                this.isCacheApi = false;
+                this.isCacheApiDetermined = true;
+            }
         }
 
         this.localDaemonBlockCount = info.height;
@@ -341,107 +398,62 @@ export class BlockchainCacheApi implements IDaemon {
         }
     }
 
-    /**
-     * Makes a get request to the given endpoint
-     */
     private async makeGetRequest(endpoint: string): Promise<any> {
-        const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
+        return this.makeRequest(endpoint, 'GET');
+    }
 
-        let controller: undefined | AbortController;
-
-        try {
-            controller = new AbortController();
-        } catch (err) {
-            /* In some environments, the controller doesn't get imported/work correctly. */
-        }
-
-        const timeout = setTimeout(() => {
-            if (controller !== undefined) {
-                controller.abort();
-            }
-        }, this.config.requestTimeout);
-
-        const res = await fetch(url, {
-            timeout: this.config.requestTimeout,
-            ...(controller !== undefined && { signal: controller.signal }),
-        });
-
-        if (!res.ok) {
-            throw new Error('Request failed.');
-        }
-
-        clearTimeout(timeout);
-
-        return res.json();
+    private async makePostRequest(endpoint: string, body: any): Promise<any> {
+        return this.makeRequest(endpoint, 'POST', body);
     }
 
     /**
-     * Makes a post request to the given endpoint with the given body
+     * Makes a get request to the given endpoint
      */
-    private async makePostRequest(endpoint: string, body: any): Promise<any> {
-        const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
-
-        let controller: undefined | AbortController;
-
+    private async makeRequest(endpoint: string, method: string, body?: any): Promise<any> {
         try {
-            controller = new AbortController();
+            const protocol = this.sslDetermined ? (this.ssl ? 'https' : 'http') : 'https';
+
+            const data = await request({
+                body: body,
+                json: true,
+                method: method,
+                timeout: this.config.requestTimeout,
+                /* Start by trying HTTPS if we haven't determined whether it's
+                   HTTPS or HTTP yet. */
+                url: `${protocol}://${this.host}:${this.port}${endpoint}`,
+            });
+
+            console.log(data);
+            console.log(body);
+
+            /* Cool, https works. Store for later. */
+            if (!this.sslDetermined) {
+                this.ssl = true;
+                this.sslDetermined = true;
+            }
+
+            return data;
         } catch (err) {
-            /* In some environments, the controller doesn't get imported/work correctly. */
-        }
-
-        const timeout = setTimeout(() => {
-            if (controller !== undefined) {
-                controller.abort();
-            }
-        }, this.config.requestTimeout);
-
-        const res = await fetch(url, {
-            body: JSON.stringify(body),
-            headers: { 'Content-Type': 'application/json' },
-            method: 'post',
-            ...(controller !== undefined && { signal: controller.signal }),
-            size: this.config.maxBodyResponseSize,
-            timeout: this.config.requestTimeout,
-        } as any);
-
-        if (!res.ok) {
-            throw new Error('Request failed.');
-        }
-
-        /* https://github.com/bitinn/node-fetch/issues/584 */
-        if (res.body === undefined) {
-            return res.json();
-        }
-
-        let data = '';
-        let length = 0;
-
-        res.body.on('data', (chunk) => {
-            length += chunk.length;
-
-            if (length > this.config.maxBodyResponseSize) {
-                if (controller !== undefined) {
-                    controller.abort();
-                }
-
-                throw new Error('max-size');
+            /* No point trying again with SSL - we already have decided what
+               type it is. */
+            if (this.sslDetermined) {
+                throw err;
             }
 
-            data += chunk;
-        });
-
-        const result = await new Promise((resolve, reject) => {
-            res.body.on('end', () => {
-                return resolve(JSON.parse(data));
+            /* If this throws again, we won't catch it. */
+            const data = await request({
+                body: body,
+                json: true,
+                method: method,
+                timeout: this.config.requestTimeout,
+                /* Lets try HTTP now. */
+                url: `http://${this.host}:${this.port}${endpoint}`,
             });
 
-            res.body.on('error', (err) => {
-                return reject(err);
-            });
-        });
+            this.ssl = false;
+            this.sslDetermined = true;
 
-        clearTimeout(timeout);
-
-        return result;
+            return data;
+        }
     }
 }
