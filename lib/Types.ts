@@ -534,3 +534,26 @@ export class TopBlock {
         this.height = height;
     }
 }
+
+export enum DaemonType {
+    ConventionalDaemon = 0,
+    BlockchainCacheApi = 1,
+}
+
+export interface DaemonConnection {
+    /* What is the host/ip of this daemon */
+    host: string;
+    /* What is the port of this daemon */
+    port: number;
+
+    /* Is this daemon a conventional daemon or a blockchain cache API */
+    daemonType: DaemonType;
+    /* Have we worked out if this daemon is a conventional daemon or a cache
+       API yet */
+    daemonTypeDetermined: boolean;
+
+    /* Is this daemon connection served over HTTPS or HTTP */
+    ssl: boolean;
+    /* Have we worked out if this daemon is server over HTTPS or HTTP yet */
+    sslDetermined: boolean;
+}

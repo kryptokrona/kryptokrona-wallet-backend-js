@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import request = require('request-promise-native');
 
 import { assertString, assertNumber, assertBoolean } from './Assert';
-import { Block, TopBlock } from './Types';
+import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
 import { IDaemon } from './IDaemon';
 import { validateAddresses } from './ValidateParameters';
@@ -364,6 +364,17 @@ export class Daemon implements IDaemon {
         });
 
         return result.status === 'OK';
+    }
+
+    public getConnectionInfo(): DaemonConnection {
+        return {
+            host: this.host,
+            port: this.port,
+            daemonType: this.isCacheApi ? DaemonType.BlockchainCacheApi : DaemonType.ConventionalDaemon,
+            daemonTypeDetermined: this.isCacheApiDetermined,
+            ssl: this.ssl,
+            sslDetermined: this.sslDetermined,
+        };
     }
 
     /**

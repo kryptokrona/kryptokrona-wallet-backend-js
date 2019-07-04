@@ -120,3 +120,15 @@ export declare class TopBlock {
     readonly height: number;
     constructor(hash: string, height: number);
 }
+export declare enum DaemonType {
+    ConventionalDaemon = 0,
+    BlockchainCacheApi = 1
+}
+export interface DaemonConnection {
+    host: string;
+    port: number;
+    daemonType: DaemonType;
+    daemonTypeDetermined: boolean;
+    ssl: boolean;
+    sslDetermined: boolean;
+}

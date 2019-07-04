@@ -265,3 +265,8 @@ class TopBlock {
     }
 }
 exports.TopBlock = TopBlock;
+var DaemonType;
+(function (DaemonType) {
+    DaemonType[DaemonType["ConventionalDaemon"] = 0] = "ConventionalDaemon";
+    DaemonType[DaemonType["BlockchainCacheApi"] = 1] = "BlockchainCacheApi";
+})(DaemonType = exports.DaemonType || (exports.DaemonType = {}));

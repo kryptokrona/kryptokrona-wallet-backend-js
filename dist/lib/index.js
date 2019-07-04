@@ -29,6 +29,7 @@ exports.validateAddresses = ValidateParameters_1.validateAddresses;
 exports.validatePaymentID = ValidateParameters_1.validatePaymentID;
 var Types_1 = require("./Types");
 exports.TransactionInput = Types_1.TransactionInput;
+exports.DaemonType = Types_1.DaemonType;
 var MixinLimits_1 = require("./MixinLimits");
 exports.MixinLimit = MixinLimits_1.MixinLimit;
 exports.MixinLimits = MixinLimits_1.MixinLimits;

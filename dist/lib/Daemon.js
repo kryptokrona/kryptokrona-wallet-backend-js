@@ -292,6 +292,16 @@ class Daemon {
             return result.status === 'OK';
         });
     }
+    getConnectionInfo() {
+        return {
+            host: this.host,
+            port: this.port,
+            daemonType: this.isCacheApi ? Types_1.DaemonType.BlockchainCacheApi : Types_1.DaemonType.ConventionalDaemon,
+            daemonTypeDetermined: this.isCacheApiDetermined,
+            ssl: this.ssl,
+            sslDetermined: this.sslDetermined,
+        };
+    }
     /**
      * Update the fee address and amount
      */

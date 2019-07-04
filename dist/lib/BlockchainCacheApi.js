@@ -244,6 +244,16 @@ class BlockchainCacheApi {
             return result.status === 'OK';
         });
     }
+    getConnectionInfo() {
+        return {
+            host: this.cacheBaseURL,
+            port: this.ssl ? 443 : 80,
+            daemonType: Types_1.DaemonType.BlockchainCacheApi,
+            daemonTypeDetermined: true,
+            ssl: this.ssl,
+            sslDetermined: true,
+        };
+    }
     /**
      * Update the fee address and amount
      */

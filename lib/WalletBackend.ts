@@ -19,7 +19,10 @@ import { WalletSynchronizer } from './WalletSynchronizer';
 import { Config, MergeConfig, IConfig } from './Config';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
-import { Block, Transaction, TransactionData, TransactionInput } from './Types';
+
+import {
+    Block, Transaction, TransactionData, TransactionInput, DaemonConnection
+} from './Types';
 
 import {
     sendTransactionAdvanced, sendTransactionBasic,
@@ -689,6 +692,30 @@ export class WalletBackend extends EventEmitter {
             () => this.checkLockedTransactions(),
             this.config.lockedTransactionsCheckInterval,
         );
+    }
+
+    /**
+     * Gets information on the currently connected daemon - It's host, port,
+     * daemon type, and ssl presence.
+     * This can be helpful if you are taking arbitary host/port from a user,
+     * and wish to display the daemon type they are connecting to once we
+     * have figured it out. If you are using the [[Daemon]] daemon type, then
+     * note that the `ssl` and `daemonType` variables may have not been
+     * determined yet - If you have not awaited [[start]] yet, or if the daemon
+     * is having connection issues.
+     * 
+     * For this reason, there are two additional properties - `sslDetermined`,
+     * and `daemonTypeDetermined` which let you verify that we have managed
+     * to contact the daemon and detect it's specifics.
+     *
+     * Example:
+     * ```javascript
+     * const daemonInfo = wallet.getDaemonConnectionInfo();
+     * console.log(`Connected to ${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`);
+     * ```
+     */
+    public getDaemonConnectionInfo(): DaemonConnection {
+        return this.daemon.getConnectionInfo();
     }
 
     /**

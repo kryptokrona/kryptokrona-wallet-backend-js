@@ -15,7 +15,7 @@ if (!(typeof navigator !== 'undefined'
     AbortController = require('abort-controller');
 }
 
-import { Block, TopBlock } from './Types';
+import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
 import { IDaemon } from './IDaemon';
 import { validateAddresses } from './ValidateParameters';
@@ -308,6 +308,17 @@ export class BlockchainCacheApi implements IDaemon {
         });
 
         return result.status === 'OK';
+    }
+
+    public getConnectionInfo(): DaemonConnection {
+        return {
+            host: this.cacheBaseURL,
+            port: this.ssl ? 443 : 80,
+            daemonType: DaemonType.BlockchainCacheApi,
+            daemonTypeDetermined: true,
+            ssl: this.ssl,
+            sslDetermined: true,
+        };
     }
 
     /**

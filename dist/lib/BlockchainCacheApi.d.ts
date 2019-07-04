@@ -1,4 +1,4 @@
-import { Block, TopBlock } from './Types';
+import { Block, TopBlock, DaemonConnection } from './Types';
 import { IConfig } from './Config';
 import { IDaemon } from './IDaemon';
 /**
@@ -100,6 +100,7 @@ export declare class BlockchainCacheApi implements IDaemon {
      */
     getRandomOutputsByAmount(amounts: number[], requestedOuts: number): Promise<Array<[number, Array<[number, string]>]>>;
     sendTransaction(rawTransaction: string): Promise<boolean>;
+    getConnectionInfo(): DaemonConnection;
     /**
      * Update the fee address and amount
      */

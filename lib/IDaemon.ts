@@ -3,7 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import { Config, IConfig } from './Config';
-import { Block, TopBlock } from './Types';
+import { Block, TopBlock, DaemonConnection } from './Types';
 
 /**
  * Provides an interface to a daemon or similar, such as a blockchain cache
@@ -96,4 +96,9 @@ export interface IDaemon {
      * Updates the internal config with the passed in config.
      */
     updateConfig(config: IConfig): void;
+
+    /**
+     * Returns information on the daemon connection such as host and port
+     */
+    getConnectionInfo(): DaemonConnection;
 }

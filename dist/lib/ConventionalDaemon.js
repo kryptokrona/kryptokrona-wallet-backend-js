@@ -213,6 +213,16 @@ class ConventionalDaemon {
             return result.status === 'OK';
         });
     }
+    getConnectionInfo() {
+        return {
+            host: this.daemonHost,
+            port: this.daemonPort,
+            daemonType: Types_1.DaemonType.ConventionalDaemon,
+            daemonTypeDetermined: true,
+            ssl: false,
+            sslDetermined: true,
+        };
+    }
     /**
      * Update the fee address and amount
      */

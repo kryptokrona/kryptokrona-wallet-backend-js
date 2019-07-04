@@ -1,6 +1,6 @@
 import { IConfig } from './Config';
 import { IDaemon } from './IDaemon';
-import { Block, TopBlock } from './Types';
+import { Block, TopBlock, DaemonConnection } from './Types';
 /**
  * @deprecated This Class will be removed in v4.0.0. Please update your code
  * to instead use the [[Daemon]] class. This supports both ConventionalDaemon's,
@@ -96,6 +96,7 @@ export declare class ConventionalDaemon implements IDaemon {
      */
     getRandomOutputsByAmount(amounts: number[], requestedOuts: number): Promise<Array<[number, Array<[number, string]>]>>;
     sendTransaction(rawTransaction: string): Promise<boolean>;
+    getConnectionInfo(): DaemonConnection;
     /**
      * Update the fee address and amount
      */

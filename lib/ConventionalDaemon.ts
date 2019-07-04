@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import { Config, MergeConfig, IConfig } from './Config';
 import { IDaemon } from './IDaemon';
 import { LogCategory, logger, LogLevel } from './Logger';
-import { Block, TopBlock } from './Types';
+import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { validateAddresses } from './ValidateParameters';
 import { WalletError, WalletErrorCode } from './WalletError';
 
@@ -274,6 +274,17 @@ export class ConventionalDaemon implements IDaemon {
         });
 
         return result.status === 'OK';
+    }
+
+    public getConnectionInfo(): DaemonConnection {
+        return {
+            host: this.daemonHost,
+            port: this.daemonPort,
+            daemonType: DaemonType.ConventionalDaemon,
+            daemonTypeDetermined: true,
+            ssl: false,
+            sslDetermined: true,
+        };
     }
 
     /**
