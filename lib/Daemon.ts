@@ -230,29 +230,6 @@ export class Daemon implements IDaemon {
                 startTimestamp,
             });
         } catch (err) {
-            const maxSizeErr: boolean = err.msg === 'max-size'
-                                    || (err.type && err.type === 'max-size');
-
-            if (maxSizeErr && blockCount > 1) {
-
-                logger.log(
-                    'getWalletSyncData failed, body exceeded max size of ' +
-                    `${this.config.maxResponseBodySize}, decreasing block count to ` +
-                    `${Math.floor(blockCount / 2)} and retrying`,
-                    LogLevel.WARNING,
-                    [LogCategory.DAEMON, LogCategory.SYNC],
-                );
-
-                /* Body is too large, decrease the amount of blocks we're requesting
-                   and retry */
-                return this.getWalletSyncData(
-                    blockHashCheckpoints,
-                    startHeight,
-                    startTimestamp,
-                    Math.floor(blockCount / 2),
-                );
-            }
-
             logger.log(
                 'Failed to get wallet sync data: ' + err.toString(),
                 LogLevel.INFO,

@@ -28,7 +28,7 @@ function sleep(ms) {
 
     /* Initialise our blockchain cache api. Can use a public node or local node
        with `const daemon = new WB.Daemon('127.0.0.1', 11898);` */
-    const daemon = new WB.Daemon('blockapi.turtlepay.io', 443);
+    const daemon = new WB.Daemon('127.0.0.1', 11898);
 
     if (response === 'c') {
         const newWallet = WB.WalletBackend.createWallet(daemon);
@@ -52,11 +52,18 @@ function sleep(ms) {
     /* Enable debug logging to the console */
     wallet.setLogLevel(WB.LogLevel.DEBUG);
 
+    //await wallet.reset(1636000);
+
     /* Start wallet sync process */
     await wallet.start();
 
     console.log('Started wallet');
     console.log('Address: ' + wallet.getPrimaryAddress());
+
+    const [hash, err] = await wallet.sendTransactionBasic('TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW', 70);
+
+    console.log(hash);
+    console.log(err);
 
     await sleep(1000 * 10);
 
