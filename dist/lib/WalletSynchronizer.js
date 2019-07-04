@@ -293,6 +293,10 @@ class WalletSynchronizer {
                     this.finishedFunc();
                 }
                 this.synchronizationStatus.storeBlockHash(topBlock.height, topBlock.hash);
+                Logger_1.logger.log('Zero blocks received from daemon, fully synced', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+                if (this.finishedFunc) {
+                    this.finishedFunc();
+                }
                 this.fetchingBlocks = false;
                 return;
             }

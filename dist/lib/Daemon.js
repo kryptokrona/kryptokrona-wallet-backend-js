@@ -191,16 +191,6 @@ class Daemon {
                 });
             }
             catch (err) {
-                const maxSizeErr = err.msg === 'max-size'
-                    || (err.type && err.type === 'max-size');
-                if (maxSizeErr && blockCount > 1) {
-                    Logger_1.logger.log('getWalletSyncData failed, body exceeded max size of ' +
-                        `${this.config.maxResponseBodySize}, decreasing block count to ` +
-                        `${Math.floor(blockCount / 2)} and retrying`, Logger_1.LogLevel.WARNING, [Logger_1.LogCategory.DAEMON, Logger_1.LogCategory.SYNC]);
-                    /* Body is too large, decrease the amount of blocks we're requesting
-                       and retry */
-                    return this.getWalletSyncData(blockHashCheckpoints, startHeight, startTimestamp, Math.floor(blockCount / 2));
-                }
                 Logger_1.logger.log('Failed to get wallet sync data: ' + err.toString(), Logger_1.LogLevel.INFO, [Logger_1.LogCategory.DAEMON]);
                 return [[], undefined];
             }
