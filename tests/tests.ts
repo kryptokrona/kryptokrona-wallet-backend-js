@@ -6,6 +6,7 @@ import {
     IDaemon, Daemon, prettyPrintAmount, SUCCESS, validateAddresses,
     WalletBackend, WalletError, WalletErrorCode, LogLevel,
     isValidMnemonic, isValidMnemonicWord, createIntegratedAddress, Config,
+    DaemonType,
 } from '../lib/index';
 
 import { CryptoUtils } from '../lib/CnUtils';
@@ -468,8 +469,35 @@ function roundTrip(
        'isValidMnemonic works',
        'isValidMnemonic doesn\'t work!');
 
+    await tester.test(async () => {
+        const daemon2: IDaemon = new Daemon('127.0.0.1', 11898);
+
+        const wallet = WalletBackend.createWallet(daemon2);
+
+        await wallet.start();
+
+        const daemon3: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
+
+        await wallet.swapNode(daemon3);
+
+        const info = wallet.getDaemonConnectionInfo();
+
+        await wallet.stop();
+
+        return _.isEqual(info, {
+            host: 'blockapi.turtlepay.io',
+            port: 443,
+            daemonType: DaemonType.BlockchainCacheApi,
+            daemonTypeDetermined: true,
+            ssl: true,
+            sslDetermined: true,
+        });
+
+    }, 'Testing swapNode',
+       'swapNode works',
+       'swapNode doesn\'t work!');
+
     if (doPerformanceTests) {
-        /* TODO: Maybe use a remote node? */
         await tester.test(async () => {
             /* Reinit daemon so it has no leftover state */
             const daemon2: IDaemon = new Daemon('blockapi.turtlepay.io', 443);

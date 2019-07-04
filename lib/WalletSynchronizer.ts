@@ -106,6 +106,10 @@ export class WalletSynchronizer {
         this.config = config;
     }
 
+    public swapNode(newDaemon: IDaemon): void {
+        this.daemon = newDaemon;
+    }
+
     public getScanHeights(): [number, number] {
         return [this.startHeight, this.startTimestamp];
     }

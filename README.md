@@ -164,9 +164,13 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.3.0
+
+* Adds `swapNode()` method
+
 ### v3.2.0
 
-* Adds `getDaemonConnectionInfo` method
+* Adds `getDaemonConnectionInfo()` method
 * Removes compiled JavaScript from GitHub - GitHub install is no longer supported
 
 ### v3.1.1

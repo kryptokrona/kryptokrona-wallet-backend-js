@@ -695,6 +695,32 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Swaps the currently connected daemon with a different one. If the wallet
+     * is currently started, it will remain started after the node is swapped,
+     * if it is currently stopped, it will remain stopped.
+     *
+     * Example:
+     * ```javascript
+     * const daemon = new WB.Daemon('blockapi.turtlepay.io', 443);
+     * await wallet.swapNode(daemon);
+     * const daemonInfo = wallet.getDaemonConnectionInfo();
+     * console.log(`Connected to ${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`);
+     * ```
+     */
+    public async swapNode(newDaemon: IDaemon): Promise<void> {
+        const shouldRestart: boolean = this.started;
+
+        await this.stop();
+
+        this.daemon = newDaemon;
+        this.walletSynchronizer.swapNode(newDaemon);
+
+        if (shouldRestart) {
+            await this.start();
+        }
+    }
+
+    /**
      * Gets information on the currently connected daemon - It's host, port,
      * daemon type, and ssl presence.
      * This can be helpful if you are taking arbitary host/port from a user,
