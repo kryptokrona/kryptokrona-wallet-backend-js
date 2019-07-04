@@ -164,6 +164,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.1.1
+
+* Fixes bug where wallet may not correctly halt after calling `stop()`.
+
 ### v3.1.0
 
 * Adds `Daemon` class. This class supports Blockchain cache api's, conventional daemons, http and https, all automatically.
