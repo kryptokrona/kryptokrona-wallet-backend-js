@@ -387,7 +387,7 @@ export class BlockchainCacheApi implements IDaemon {
         const res = await fetch(url, {
             timeout: this.config.requestTimeout,
             ...(controller !== undefined && { signal: controller.signal }),
-        });
+        } as any);
 
         if (!res.ok) {
             throw new Error('Request failed.');
