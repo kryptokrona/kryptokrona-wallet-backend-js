@@ -674,10 +674,10 @@ mkdirp@^0.5.1:
   dependencies:
     minimist "0.0.8"
 
-nan@^2.13.2:
-  version "2.13.2"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-2.13.2.tgz#f51dc7ae66ba7d5d55e1e6d4d8092e802c9aefe7"
-  integrity sha512-TghvYc72wlMGMVMluVo9WRJc0mB8KxxF/gZ4YYFy7V2ZQX9l7rgbPg7vjS9mt6U5HXODVFVI2bOduCzwOMv/lw==
+nan@^2.14.0:
+  version "2.14.0"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.0.tgz#7818f722027b2459a86f0295d434d1fc2336c52c"
+  integrity sha512-INOFj37C7k3AfaNTtX8RhsTw7qRy7eLET14cROi9+5HAVbbHuIWUHEauBv5qT4Av2tWasiTY1Jw6puUNqRJXQg==
 
 neo-async@^2.6.0:
   version "2.6.0"
@@ -969,13 +969,13 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-turtlecoin-crypto@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/turtlecoin-crypto/-/turtlecoin-crypto-1.0.0.tgz#97aae984b66d5d94f91e985185c201218bf31d30"
-  integrity sha512-qNieKsrWjMjpR56QkErO1KtD89IudSm/DX+GKf3aBQJ5ylnr9CR0U5+dTPjz9SNpXHPwDLC/pp4VNp+B4aj1fg==
+turtlecoin-crypto@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/turtlecoin-crypto/-/turtlecoin-crypto-3.0.2.tgz#8f01f273a19bbb95acfbde18ac923f8273933c16"
+  integrity sha512-gTVJZAS8snn93L5OUWCFtpD+ov0gbWFWcMj0X9VOGjgTMvKbE4IBKkrMyeLJ41sKWzQm+qTaGvD3VtFH+bD2uQ==
   dependencies:
     bindings "^1.5.0"
-    nan "^2.13.2"
+    nan "^2.14.0"
 
 turtlecoin-rpc@^1.0.0:
   version "1.0.0"
@@ -985,10 +985,10 @@ turtlecoin-rpc@^1.0.0:
     request "^2.88.0"
     request-promise-native "^1.0.7"
 
-turtlecoin-utils@^0.0.13:
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/turtlecoin-utils/-/turtlecoin-utils-0.0.13.tgz#f799e809ad5b76fe9ac8586e6a7269233466d8fc"
-  integrity sha512-A6Cy7MrNUiQVpEi/meZGD5Mh7M5byczYQhEilWuJVuC1KEjwoxLsb6mYf4Mq4xqwgeFT4Ik7cYH+2qzKgp3iwA==
+turtlecoin-utils@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/turtlecoin-utils/-/turtlecoin-utils-1.0.0.tgz#45a0487d8f83ed599dbd518ec31c003691d25660"
+  integrity sha512-/96CdqGkPqnNW+78aeZwksgLpN/2x57Rjk44EENIgPKocnI8GHJt9k5OHUeMHAQsy3QEhnJIXheC+VkV6v+jLQ==
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"
@@ -996,7 +996,7 @@ turtlecoin-utils@^0.0.13:
     secure-random-string "^1.1.0"
     varint "^5.0.0"
   optionalDependencies:
-    turtlecoin-crypto "^1.0.0"
+    turtlecoin-crypto "^3.0.2"
 
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
