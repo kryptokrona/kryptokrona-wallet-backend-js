@@ -623,6 +623,11 @@ export class WalletBackend extends EventEmitter {
     private autoOptimize: boolean = true;
 
     /**
+     * Should we perform auto optimization when next synced
+     */
+    private shouldPerformAutoOptimize: boolean = false;
+
+    /**
      * Are we in the middle of an optimization?
      */
     private currentlyOptimizing: boolean = false;
@@ -1679,6 +1684,10 @@ export class WalletBackend extends EventEmitter {
                 this.emit('sync', walletHeight, networkHeight);
                 this.synced = true;
             }
+
+            if (this.shouldPerformAutoOptimize) {
+                this.performAutoOptimize();
+            }
         } else {
 
             /* We are no longer synced :( */
@@ -1734,7 +1743,7 @@ export class WalletBackend extends EventEmitter {
         }
 
         if (txData.transactionsToAdd.length > 0 && this.autoOptimize) {
-            this.performAutoOptimize();
+            this.shouldPerformAutoOptimize = true;
         }
     }
 
@@ -1954,6 +1963,8 @@ export class WalletBackend extends EventEmitter {
     }
 
     private async performAutoOptimize() {
+        this.shouldPerformAutoOptimize = false;
+
         /* Already optimizing, don't optimize again */
         if (this.currentlyOptimizing) {
             return;
@@ -1964,14 +1975,6 @@ export class WalletBackend extends EventEmitter {
         const f = async () => {
             /* In a transaction, don't optimize as it may possibly break things */
             if (this.currentlyTransacting) {
-                return;
-            }
-
-            const walletHeight: number = this.walletSynchronizer.getHeight();
-            const networkHeight: number = this.daemon.getNetworkBlockCount();
-
-            /* We're not close to synced, don't bother optimizing yet */
-            if (walletHeight + 100 < networkHeight) {
                 return;
             }
 
