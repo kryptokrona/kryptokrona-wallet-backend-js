@@ -164,6 +164,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.3.1
+
+* Improve auto optimization
+
 ### v3.3.0
 
 * Adds `swapNode()` method
