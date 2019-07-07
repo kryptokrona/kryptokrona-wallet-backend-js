@@ -167,6 +167,7 @@ You can view available categories and log levels in the documentation.
 ### v3.3.1
 
 * Improve auto optimization
+* Update turtlecoin-utils dependency
 
 ### v3.3.0
 
