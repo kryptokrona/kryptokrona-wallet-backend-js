@@ -52,18 +52,27 @@ function sleep(ms) {
     /* Enable debug logging to the console */
     wallet.setLogLevel(WB.LogLevel.DEBUG);
 
-    //await wallet.reset(1636000);
-
     /* Start wallet sync process */
     await wallet.start();
 
     console.log('Started wallet');
     console.log('Address: ' + wallet.getPrimaryAddress());
 
-    const [hash, err] = await wallet.sendTransactionBasic('TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW', 70);
+    const [unlockedBalance, lockedBalance] = wallet.getBalance();
 
-    console.log(hash);
-    console.log(err);
+    if (unlockedBalance < 11) {
+        console.log('Not enough funds to send a transaction...');
+    } else {
+        console.log('Attempting to send a transaction');
+
+        const [hash, err] = await wallet.sendTransactionBasic('TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW', 1);
+
+        if (err) {
+            console.log('Failed to send transaction: ' + err.toString());
+        } else {
+            console.log('Sent transaction: ' + hash);
+        }
+    }
 
     await sleep(1000 * 10);
 
