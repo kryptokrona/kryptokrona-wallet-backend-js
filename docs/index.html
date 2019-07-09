@@ -167,6 +167,11 @@
 				<p>In this example, we only print messages that fall into the SYNC category.</p>
 				<p>You can view available categories and log levels in the documentation.</p>
 				<h2 id="changelog">Changelog</h2>
+				<h3 id="v3-3-2">v3.3.2</h3>
+				<ul>
+					<li>Migrate from node-fetch to request for <code>BlockchainCacheApi</code> as it works better in odd environments</li>
+					<li>Remove <code>maxBodyRequestSize</code> property as <code>abort-controller</code> significantly complicated code and didn&#39;t work in odd environments</li>
+				</ul>
 				<h3 id="v3-3-1">v3.3.1</h3>
 				<ul>
 					<li>Improve auto optimization</li>
