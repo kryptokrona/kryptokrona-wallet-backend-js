@@ -164,6 +164,11 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.3.2
+
+* Migrate from node-fetch to request for `BlockchainCacheApi` as it works better in odd environments
+* Remove `maxBodyRequestSize` property as `abort-controller` significantly complicated code and didn't work in odd environments
+
 ### v3.3.1
 
 * Improve auto optimization
