@@ -4,16 +4,7 @@
 
 import * as _ from 'lodash';
 
-import fetch from 'node-fetch';
-
-let AbortController: any;
-
-/* This require doesn't work in react native. dunno why. */
-if (!(typeof navigator !== 'undefined'
-   && typeof navigator.product === 'string'
-   && navigator.product.toLowerCase() === 'reactnative')) {
-    AbortController = require('abort-controller');
-}
+import request = require('request-promise-native');
 
 import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
@@ -185,29 +176,6 @@ export class BlockchainCacheApi implements IDaemon {
                 startTimestamp,
             });
         } catch (err) {
-            const maxSizeErr: boolean = err.msg === 'max-size'
-                                    || (err.type && err.type === 'max-size');
-
-            if (maxSizeErr && blockCount > 1) {
-
-                logger.log(
-                    'getWalletSyncData failed, body exceeded max size of ' +
-                    `${this.config.maxResponseBodySize}, decreasing block count to ` +
-                    `${Math.floor(blockCount / 2)} and retrying`,
-                    LogLevel.WARNING,
-                    [LogCategory.DAEMON, LogCategory.SYNC],
-                );
-
-                /* Body is too large, decrease the amount of blocks we're requesting
-                   and retry */
-                return this.getWalletSyncData(
-                    blockHashCheckpoints,
-                    startHeight,
-                    startTimestamp,
-                    Math.floor(blockCount / 2),
-                );
-            }
-
             logger.log(
                 'Failed to get wallet sync data: ' + err.toString(),
                 LogLevel.INFO,
@@ -364,107 +332,24 @@ export class BlockchainCacheApi implements IDaemon {
         }
     }
 
-    /**
-     * Makes a get request to the given endpoint
-     */
     private async makeGetRequest(endpoint: string): Promise<any> {
-        const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
+        return this.makeRequest(endpoint, 'GET');
+    }
 
-        let controller: undefined | AbortController;
-
-        try {
-            controller = new AbortController();
-        } catch (err) {
-            /* In some environments, the controller doesn't get imported/work correctly. */
-        }
-
-        const timeout = setTimeout(() => {
-            if (controller !== undefined) {
-                controller.abort();
-            }
-        }, this.config.requestTimeout);
-
-        const res = await fetch(url, {
-            timeout: this.config.requestTimeout,
-            ...(controller !== undefined && { signal: controller.signal }),
-        } as any);
-
-        if (!res.ok) {
-            throw new Error('Request failed.');
-        }
-
-        clearTimeout(timeout);
-
-        return res.json();
+    private async makePostRequest(endpoint: string, body: any): Promise<any> {
+        return this.makeRequest(endpoint, 'POST', body);
     }
 
     /**
-     * Makes a post request to the given endpoint with the given body
+     * Makes a get request to the given endpoint
      */
-    private async makePostRequest(endpoint: string, body: any): Promise<any> {
-        const url = (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint;
-
-        let controller: undefined | AbortController;
-
-        try {
-            controller = new AbortController();
-        } catch (err) {
-            /* In some environments, the controller doesn't get imported/work correctly. */
-        }
-
-        const timeout = setTimeout(() => {
-            if (controller !== undefined) {
-                controller.abort();
-            }
-        }, this.config.requestTimeout);
-
-        const res = await fetch(url, {
-            body: JSON.stringify(body),
-            headers: { 'Content-Type': 'application/json' },
-            method: 'post',
-            ...(controller !== undefined && { signal: controller.signal }),
-            size: this.config.maxBodyResponseSize,
+    private async makeRequest(endpoint: string, method: string, body?: any): Promise<any> {
+        return request({
+            body: body,
+            json: true,
+            method,
             timeout: this.config.requestTimeout,
-        } as any);
-
-        if (!res.ok) {
-            throw new Error('Request failed.');
-        }
-
-        /* https://github.com/bitinn/node-fetch/issues/584 */
-        if (res.body === undefined) {
-            return res.json();
-        }
-
-        let data = '';
-        let length = 0;
-
-        res.body.on('data', (chunk) => {
-            length += chunk.length;
-
-            if (length > this.config.maxBodyResponseSize) {
-                if (controller !== undefined) {
-                    controller.abort();
-                }
-
-                throw new Error('max-size');
-            }
-
-            data += chunk;
+            url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
         });
-
-        const result = await new Promise((resolve, reject) => {
-            res.body.on('end', () => {
-                return resolve(JSON.parse(data));
-            });
-
-            res.body.on('error', (err) => {
-                return reject(err);
-            });
-        });
-
-        clearTimeout(timeout);
-
-        return result;
     }
 }

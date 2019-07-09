@@ -19,9 +19,7 @@
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
-    "abort-controller": "^3.0.0",
     "lodash": "^4.17.11",
-    "node-fetch": "^2.6.0",
     "object-sizeof": "^1.4.0",
     "pbkdf2": "^3.0.17",
     "turtlecoin-rpc": "^1.0.0",
@@ -30,7 +28,6 @@
   "devDependencies": {
     "@types/lodash": "^4.14.135",
     "@types/node": "^12.0.12",
-    "@types/node-fetch": "^2.3.7",
     "@types/pbkdf2": "^3.0.0",
     "@types/request-promise-native": "^1.0.16",
     "colors": "^1.3.3",
