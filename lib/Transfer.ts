@@ -449,7 +449,7 @@ async function verifyAndSendTransaction(
 
     /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
        they will not be mixable */
-    if (!verifyAmounts(tx.transaction.vout)) {
+    if (!verifyAmounts(tx.transaction.outputs)) {
         return [undefined, undefined, new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY)];
     }
 
@@ -480,7 +480,7 @@ async function verifyAndSendTransaction(
 
     /* Update our locked balanced with the incoming funds */
     await storeUnconfirmedIncomingInputs(
-        subWallets, tx.transaction.vout, tx.transaction.transactionKeys.publicKey,
+        subWallets, tx.transaction.outputs, tx.transaction.transactionKeys.publicKey,
         tx.hash, config,
     );
 
@@ -555,7 +555,7 @@ async function storeUnconfirmedIncomingInputs(
         /* Derive the spend key from the transaction, using the previous
            derivation */
         const derivedSpendKey = await underivePublicKey(
-            derivation, outputIndex, output.target.data, config
+            derivation, outputIndex, output.key, config
         );
 
         /* See if the derived spend key matches any of our spend keys */
@@ -564,7 +564,7 @@ async function storeUnconfirmedIncomingInputs(
         }
 
         const input: UnconfirmedInput = new UnconfirmedInput(
-            output.amount, output.target.data, txHash,
+            output.amount, output.key, txHash,
         );
 
         subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
@@ -617,11 +617,11 @@ function verifyTransactionFee(transaction: Transaction, expectedFee: number): bo
     let inputTotal: number = 0;
     let outputTotal: number = 0;
 
-    for (const input of transaction.vin) {
+    for (const input of transaction.inputs) {
         inputTotal += input.amount;
     }
 
-    for (const output of transaction.vout) {
+    for (const output of transaction.outputs) {
         outputTotal += output.amount;
     }
 
