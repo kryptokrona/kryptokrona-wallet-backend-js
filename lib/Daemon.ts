@@ -5,6 +5,7 @@
 import * as _ from 'lodash';
 
 import request = require('request-promise-native');
+import net = require('net');
 
 import { assertString, assertNumber, assertBooleanOrUndefined } from './Assert';
 import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
@@ -103,6 +104,12 @@ export class Daemon implements IDaemon {
 
         this.host = host;
         this.port = port;
+
+        /* Raw IP's very rarely support SSL. This fixes the warning from
+           https://github.com/nodejs/node/pull/23329 */
+        if (net.isIP(this.host) && ssl === undefined) {
+            ssl = false;
+        }
         
         if (isCacheApi !== undefined) {
             this.isCacheApi = isCacheApi;

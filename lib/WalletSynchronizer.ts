@@ -122,6 +122,7 @@ export class WalletSynchronizer {
         this.daemon = daemon;
         this.storedBlocks = [];
         this.config = config;
+        this.cancelledTransactionsFailCount = new Map();
     }
 
     /**
