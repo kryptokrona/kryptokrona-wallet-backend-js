@@ -12,6 +12,7 @@ import { IDaemon } from './IDaemon';
 import { validateAddresses } from './ValidateParameters';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { WalletError, WalletErrorCode } from './WalletError';
+import { assertString, assertBoolean } from './Assert';
 
 /**
  * @deprecated This Class will be removed in v4.0.0. Please update your code
@@ -78,6 +79,9 @@ export class BlockchainCacheApi implements IDaemon {
             'ConventionalDaemon\'s, BlockchainCacheApi\'s, and http/https, ' +
             'all automatically.'
         );
+
+        assertString(cacheBaseURL, 'cacheBaseURL');
+        assertBoolean(ssl, 'ssl');
 
         this.cacheBaseURL = cacheBaseURL;
         this.ssl = ssl;

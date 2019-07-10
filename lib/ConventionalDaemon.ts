@@ -10,6 +10,7 @@ import { LogCategory, logger, LogLevel } from './Logger';
 import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { validateAddresses } from './ValidateParameters';
 import { WalletError, WalletErrorCode } from './WalletError';
+import { assertString, assertNumber } from './Assert';
 
 /* REEEEE ADD TYPES */
 const TurtleCoind = require('turtlecoin-rpc').TurtleCoind;
@@ -76,6 +77,9 @@ export class ConventionalDaemon implements IDaemon {
             'ConventionalDaemon\'s, BlockchainCacheApi\'s, and http/https, ' +
             'all automatically.'
         );
+
+        assertString(daemonHost, 'daemonHost');
+        assertNumber(daemonPort, 'daemonPort');
 
         this.daemonHost = daemonHost;
         this.daemonPort = daemonPort;

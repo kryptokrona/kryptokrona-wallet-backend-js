@@ -36,6 +36,11 @@ import {
     getLowerBound, getUpperBound,
 } from './Utilities';
 
+import {
+    assertStringOrUndefined, assertString, assertNumberOrUndefined, assertNumber,
+    assertBooleanOrUndefined, assertBoolean, assertArrayOrUndefined, assertArray,
+} from './Assert';
+
 /* Typedoc is stupid and can't work out our sendTransaction??? types - using
    these aliases helps it figure it out */
 type TransactionHash = [string, undefined];
@@ -212,6 +217,9 @@ export class WalletBackend extends EventEmitter {
         password: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
+        assertString(filename, 'filename');
+        assertString(password, 'password');
+
         const [walletJSON, error] = openWallet(filename, password);
 
         if (error) {
@@ -255,6 +263,9 @@ export class WalletBackend extends EventEmitter {
         data: string,
         password: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
+
+        assertString(data, 'data');
+        assertString(password, 'password');
 
         const [walletJSON, error] = WalletEncryption.decryptWalletFromString(data, password);
 
@@ -300,6 +311,8 @@ export class WalletBackend extends EventEmitter {
         json: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
+        assertString(json, 'json');
+
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
             wallet.initAfterLoad(daemon, MergeConfig(config));
@@ -343,6 +356,9 @@ export class WalletBackend extends EventEmitter {
         scanHeight: number = 0,
         mnemonicSeed: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
+
+        assertNumber(scanHeight, 'scanHeight');
+        assertString(mnemonicSeed, 'mnemonicSeed');
 
         let keys;
 
@@ -406,6 +422,10 @@ export class WalletBackend extends EventEmitter {
         privateViewKey: string,
         privateSpendKey: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
+
+        assertNumber(scanHeight, 'scanHeight');
+        assertString(privateViewKey, 'privateViewKey');
+        assertString(privateSpendKey, 'privateSpendKey');
 
         if (!isHex64(privateViewKey) || !isHex64(privateSpendKey)) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
@@ -478,6 +498,10 @@ export class WalletBackend extends EventEmitter {
         privateViewKey: string,
         address: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
+
+        assertNumber(scanHeight, 'scanHeight');
+        assertString(privateViewKey, 'privateViewKey');
+        assertString(address, 'address');
 
         if (!isHex64(privateViewKey)) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
@@ -786,6 +810,9 @@ export class WalletBackend extends EventEmitter {
      * @param timestamp The timestamp to being scanning transactions from
      */
     public async reset(scanHeight: number = 0, scanTimestamp: number = 0): Promise<void> {
+        assertNumber(scanHeight, 'scanHeight');
+        assertNumber(scanTimestamp, 'scanTimestamp');
+
         const shouldRestart: boolean = this.started;
 
         await this.stop();
@@ -842,6 +869,8 @@ export class WalletBackend extends EventEmitter {
      * @param shouldScan Should we scan coinbase transactions?
      */
     public scanCoinbaseTransactions(shouldScan: boolean): void {
+        assertBoolean(shouldScan, 'shouldScan');
+
         this.config.scanCoinbaseTransactions = shouldScan;
     }
 
@@ -882,6 +911,8 @@ export class WalletBackend extends EventEmitter {
      * @param shouldAutoOptimize Should we automatically keep the wallet optimized?
      */
     public enableAutoOptimization(shouldAutoOptimize: boolean): void {
+        assertBoolean(shouldAutoOptimize, 'shouldAutoOptimize');
+
         this.autoOptimize = shouldAutoOptimize;
     }
 
@@ -1007,6 +1038,8 @@ export class WalletBackend extends EventEmitter {
      * Get the node fee the daemon you are connected to is charging for
      * transactions. If the daemon charges no fee, this will return `['', 0]`
      *
+     * Fees returned will be zero if you have not yet awaited [[start]].
+     *
      * Example:
      * ```javascript
      * const [nodeFeeAddress, nodeFeeAmount] = wallet.getNodeFee();
@@ -1071,6 +1104,8 @@ export class WalletBackend extends EventEmitter {
      * @param address A valid address in this container, to get the spend keys of
      */
     public getSpendKeys(address: string): ([string, string, undefined] | [undefined, undefined, WalletError]) {
+        assertString(address, 'address');
+
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletError = validateAddresses(
@@ -1139,6 +1174,8 @@ export class WalletBackend extends EventEmitter {
      * @param address A valid address that exists in this container
      */
     public getMnemonicSeedForAddress(address: string): ([string, undefined] | [undefined, WalletError]) {
+        assertString(address, 'address');
+
         const privateViewKey: string = this.getPrivateViewKey();
 
         const [publicSpendKey, privateSpendKey, error] = this.getSpendKeys(address);
@@ -1189,6 +1226,8 @@ export class WalletBackend extends EventEmitter {
      * @return Returns the encrypted wallet as astring.
      */
     public encryptWalletToString(password: string): string {
+        assertString(password, 'password');
+
         const walletJson: string = JSON.stringify(this);
 
         return WalletEncryption.encryptWalletToString(walletJson, password);
@@ -1216,6 +1255,9 @@ export class WalletBackend extends EventEmitter {
      * @return Returns a boolean indicating success.
      */
     public saveWalletToFile(filename: string, password: string): boolean {
+        assertString(filename, 'filename');
+        assertString(password, 'password');
+
         const walletJson: string = JSON.stringify(this);
         const fileData = WalletEncryption.encryptWalletToBuffer(walletJson, password);
 
@@ -1370,6 +1412,10 @@ export class WalletBackend extends EventEmitter {
         subWalletsToTakeFrom?: string[],
         destination?: string): Promise<(TransactionHash | TransactionError)> {
 
+        assertNumberOrUndefined(mixin, 'mixin');
+        assertArrayOrUndefined(subWalletsToTakeFrom, 'subWalletsToTakeFrom');
+        assertStringOrUndefined(destination, 'destination');
+
         this.currentlyTransacting = true;
 
         const f = async (): Promise<(TransactionHash | TransactionError)> => {
@@ -1431,6 +1477,10 @@ export class WalletBackend extends EventEmitter {
         destination: string,
         amount: number,
         paymentID?: string): Promise<(TransactionHash | TransactionError)> {
+
+        assertString(destination, 'destination');
+        assertNumber(amount, 'amount');
+        assertStringOrUndefined(paymentID, 'paymentID');
 
         this.currentlyTransacting = true;
 
@@ -1502,6 +1552,13 @@ export class WalletBackend extends EventEmitter {
         subWalletsToTakeFrom?: string[],
         changeAddress?: string): Promise<(TransactionHash | TransactionError)> {
 
+        assertArray(destinations, 'destinations');
+        assertNumberOrUndefined(mixin, 'mixin');
+        assertNumberOrUndefined(fee, 'fee');
+        assertStringOrUndefined(paymentID, 'paymentID');
+        assertArrayOrUndefined(subWalletsToTakeFrom, 'subWalletsToTakeFrom');
+        assertStringOrUndefined(changeAddress, 'changeAddress');
+
         this.currentlyTransacting = true;
 
         const f = async (): Promise<(TransactionHash | TransactionError)> => {
@@ -1546,6 +1603,8 @@ export class WalletBackend extends EventEmitter {
      *                             not given, defaults to all addresses.
      */
     public getBalance(subWalletsToTakeFrom?: string[]): [number, number] {
+        assertArrayOrUndefined(subWalletsToTakeFrom, 'subWalletsToTakeFrom');
+
         return this.subWallets.getBalance(
             this.daemon.getNetworkBlockCount(),
             subWalletsToTakeFrom,
@@ -1569,7 +1628,15 @@ export class WalletBackend extends EventEmitter {
      * @param numTransactions Number of transactions to take
      * @param includeFusions Should we include fusion transactions?
      */
-    public getTransactions(startIndex?: number, numTransactions?: number, includeFusions = true): Transaction[] {
+    public getTransactions(
+        startIndex?: number,
+        numTransactions?: number,
+        includeFusions = true): Transaction[] {
+
+        assertNumberOrUndefined(startIndex, 'startIndex');
+        assertNumberOrUndefined(numTransactions, 'numTransactions');
+        assertBoolean(includeFusions, 'includeFusions');
+
         /* Clone the array and reverse it, newer txs first */
         const unconfirmed = this.subWallets.getUnconfirmedTransactions().slice().reverse();
         /* Clone the array and reverse it, newer txs first */
@@ -1609,6 +1676,8 @@ export class WalletBackend extends EventEmitter {
      * @param hash The hash of the transaction to get
      */
     public getTransaction(hash: string): Transaction | undefined {
+        assertString(hash, 'hash');
+
         const txs = this.getTransactions();
 
         return txs.find((tx) => tx.hash === hash);

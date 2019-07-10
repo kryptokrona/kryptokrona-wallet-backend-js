@@ -14,10 +14,9 @@ import {
 } from './Constants';
 
 import { validateAddresses, validatePaymentID } from './ValidateParameters';
-
 import { SUCCESS } from './WalletError';
-
 import { English } from './WordList';
+import { assertString, assertNumber } from './Assert';
 
 /**
  * Creates an integrated address from a standard address, and a payment ID.
@@ -28,6 +27,9 @@ export function createIntegratedAddress(
     address: string,
     paymentID: string,
     config: IConfig = new Config()): string {
+
+    assertString(address, 'address');
+    assertString(paymentID, 'paymentID');
 
     const _config: Config = MergeConfig(config);
 
@@ -55,6 +57,8 @@ export function createIntegratedAddress(
  * Verifies if a key or payment ID is valid (64 char hex)
  */
 export function isHex64(val: string): boolean {
+    assertString(val, 'val');
+
     const regex = new RegExp('^[0-9a-fA-F]{64}$');
     return regex.test(val);
 }
@@ -129,6 +133,8 @@ export function isInputUnlocked(unlockTime: number, currentHeight: number): bool
  * Example: 12345607 -> 123,456.07 TRTL
  */
 export function prettyPrintAmount(amount: number, config: IConfig = new Config()): string {
+    assertNumber(amount, 'amount');
+
     const _config: Config = MergeConfig(config);
 
     /* Get the amount we need to divide atomic units by. 2 decimal places = 100 */
@@ -245,6 +251,8 @@ export function prettyPrintBytes(bytes: number): string {
  * Use isValidMnemonic to verify that.
  */
 export function isValidMnemonicWord(word: string): boolean {
+    assertString(word, 'word');
+
     return English.includes(word);
 }
 
@@ -253,6 +261,8 @@ export function isValidMnemonicWord(word: string): boolean {
  * describing what is invalid.
  */
 export function isValidMnemonic(mnemonic: string, config: IConfig = new Config()): [boolean, string] {
+    assertString(mnemonic, 'mnemonic');
+
     const _config: Config = MergeConfig(config);
 
     const words = mnemonic.split(' ').map((x) => x.toLowerCase());

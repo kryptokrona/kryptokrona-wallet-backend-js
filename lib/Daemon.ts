@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 
 import request = require('request-promise-native');
 
-import { assertString, assertNumber, assertBoolean } from './Assert';
+import { assertString, assertNumber, assertBooleanOrUndefined } from './Assert';
 import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
 import { IDaemon } from './IDaemon';
@@ -96,10 +96,10 @@ export class Daemon implements IDaemon {
      *                   we will work it out automatically.
      */
     constructor(host: string, port: number, isCacheApi?: boolean, ssl?: boolean) {
-        assertString(host, 'Host');
-        assertNumber(port, 'Port');
-        isCacheApi !== undefined && assertBoolean(isCacheApi, 'IsCacheApi');
-        ssl !== undefined && assertBoolean(ssl, 'Ssl');
+        assertString(host, 'host');
+        assertNumber(port, 'port');
+        assertBooleanOrUndefined(isCacheApi, 'isCacheApi');
+        assertBooleanOrUndefined(ssl, 'ssl');
 
         this.host = host;
         this.port = port;

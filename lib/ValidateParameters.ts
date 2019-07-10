@@ -9,6 +9,7 @@ import { SubWallets } from './SubWallets';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import { Config, MergeConfig, IConfig } from './Config';
+import { assertString, assertArray, assertBoolean } from './Assert';
 
 /**
  * @param addresses The addresses to validate
@@ -21,6 +22,9 @@ export function validateAddresses(
     addresses: string[],
     integratedAddressesAllowed: boolean,
     config: IConfig = new Config()): WalletError {
+
+    assertArray(addresses, 'addresses');
+    assertBoolean(integratedAddressesAllowed, 'integratedAddressesAllowed');
 
     const _config: Config = MergeConfig(config);
 
@@ -266,6 +270,8 @@ export function validateMixin(
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
 export function validatePaymentID(paymentID: string): WalletError {
+    assertString(paymentID, 'paymentID');
+
     if (paymentID === '') {
         return SUCCESS;
     }
