@@ -164,22 +164,29 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.4.1
+
+* Fix transactions being broken
+
 ### v3.4.0
 
 * Add type assertions for JavaScript users
 * May possibly break your code if you were using implicit conversions to pass strings as numbers, etc
 * Fix bug where `cancelledTransactionsFailCount` was not correctly initialized when loading from file
 * Fix warning when using TLS with raw IP address
+* Known regression - Transactions are broken. Update to 3.4.1
 
 ### v3.3.2
 
 * Migrate from node-fetch to request for `BlockchainCacheApi` as it works better in odd environments
 * Remove `maxBodyRequestSize` property as `abort-controller` significantly complicated code and didn't work in odd environments
+* Known regression - Transactions are broken. Update to 3.4.1
 
 ### v3.3.1
 
 * Improve auto optimization
 * Update turtlecoin-utils dependency
+* Known regression - Transactions are broken. Update to 3.4.1
 
 ### v3.3.0
 
