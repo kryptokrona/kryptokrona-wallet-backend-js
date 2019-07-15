@@ -958,10 +958,10 @@ turtlecoin-crypto@^3.0.3:
     bindings "^1.5.0"
     nan "^2.14.0"
 
-turtlecoin-rpc@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/turtlecoin-rpc/-/turtlecoin-rpc-1.0.0.tgz#1225153fd1a77b2ea95ac621a3a8b726ea4fe989"
-  integrity sha512-w1Sm19vfPSCglpMFG6L1abTRNJhwHCbl4MxTQLYjSN9SFYS6n9JWk5840+1zV9UGc7lwQ1xh+OFk5tVjqp8ysw==
+turtlecoin-rpc@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/turtlecoin-rpc/-/turtlecoin-rpc-1.0.1.tgz#d41a3ff904ed8437cf8f67b1c10fb9e27ae0b932"
+  integrity sha512-3U0FDbbM3+Es/Asd6QwQY/WWrVWknhyxEFfFuuBYd2KBncfqdQXoxzjLMGIOSSiCSl4PdFIxhxEaKY/EfQGKmw==
   dependencies:
     request "^2.88.0"
     request-promise-native "^1.0.7"
@@ -989,10 +989,10 @@ typedoc-default-themes@^0.5.0:
   resolved "https://registry.yarnpkg.com/typedoc-default-themes/-/typedoc-default-themes-0.5.0.tgz#6dc2433e78ed8bea8e887a3acde2f31785bd6227"
   integrity sha1-bcJDPnjti+qOiHo6zeLzF4W9Yic=
 
-typedoc-plugin-no-inherit@^1.1.8:
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/typedoc-plugin-no-inherit/-/typedoc-plugin-no-inherit-1.1.8.tgz#4abc1ca18babb1ad73ff303fb358ffff111b76bc"
-  integrity sha512-bcyYnRxXG1Wz1pA9ZUeFQHoO1sZJsgbPc7ynC+HxSCfeamUX228pVed03OzMJPFsmSNdV0/OmD/SPYhQ6jQXig==
+typedoc-plugin-no-inherit@^1.1.9:
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/typedoc-plugin-no-inherit/-/typedoc-plugin-no-inherit-1.1.9.tgz#918b05247136ac1252f4444e685a175922156cb6"
+  integrity sha512-Mw9569aOopX/OdcVgjG2GxsfDpPhvXPbptlYLgDWjvgWYZjzeKxkMFZOU9zbTUnB9KGDj8fFuG9yvcczq09Kyw==
 
 typedoc@^0.14.2:
   version "0.14.2"
