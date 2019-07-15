@@ -5,7 +5,6 @@
 import * as _ from 'lodash';
 
 import request = require('request-promise-native');
-import net = require('net');
 
 import { assertString, assertNumber, assertBooleanOrUndefined } from './Assert';
 import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
@@ -107,7 +106,7 @@ export class Daemon implements IDaemon {
 
         /* Raw IP's very rarely support SSL. This fixes the warning from
            https://github.com/nodejs/node/pull/23329 */
-        if (net.isIP(this.host) && ssl === undefined) {
+        if (/^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/.test(this.host) && ssl === undefined) {
             ssl = false;
         }
         
@@ -450,6 +449,7 @@ export class Daemon implements IDaemon {
                 /* Start by trying HTTPS if we haven't determined whether it's
                    HTTPS or HTTP yet. */
                 url: `${protocol}://${this.host}:${this.port}${endpoint}`,
+                forever: true,
             });
 
             /* Cool, https works. Store for later. */
@@ -474,6 +474,7 @@ export class Daemon implements IDaemon {
                 timeout: this.config.requestTimeout,
                 /* Lets try HTTP now. */
                 url: `http://${this.host}:${this.port}${endpoint}`,
+                forever: true,
             });
 
             this.ssl = false;

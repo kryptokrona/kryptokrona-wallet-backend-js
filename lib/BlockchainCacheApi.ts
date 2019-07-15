@@ -354,6 +354,7 @@ export class BlockchainCacheApi implements IDaemon {
             method,
             timeout: this.config.requestTimeout,
             url: (this.ssl ? 'https://' : 'http://') + this.cacheBaseURL + endpoint,
+            forever: true,
         });
     }
 }
