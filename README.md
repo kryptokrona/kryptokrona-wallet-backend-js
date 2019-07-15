@@ -164,6 +164,11 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.4.2
+
+* Set keep-alive to true for `Daemon` and `BlockchainCacheApi`
+* Use IP regex instead of `net` module to allow working in non node environments
+
 ### v3.4.1
 
 * Fix transactions being broken
