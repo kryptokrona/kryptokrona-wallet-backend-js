@@ -966,9 +966,10 @@ turtlecoin-rpc@^1.0.1:
     request "^2.88.0"
     request-promise-native "^1.0.7"
 
-"turtlecoin-utils@https://github.com/turtlecoin/turtlecoin-utils#development":
+turtlecoin-utils@^1.0.3:
   version "1.0.3"
-  resolved "https://github.com/turtlecoin/turtlecoin-utils#07040f1718da03cdf19057b602d406e8d6fdc7de"
+  resolved "https://registry.yarnpkg.com/turtlecoin-utils/-/turtlecoin-utils-1.0.3.tgz#6eb98c11699281b73ff15bf51befdc9c143c7dad"
+  integrity sha512-QsEkbgE0FJ2RQUvoG4pXHtBVPpX9gfd53zQ0Dj3cME4lSnirZDpVOmGWnCrTIezZgraJdDXTPjJT7gSvuZthzQ==
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"
