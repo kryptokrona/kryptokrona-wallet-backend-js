@@ -6,6 +6,8 @@ import * as _ from 'lodash';
 
 import request = require('request-promise-native');
 
+import { EventEmitter } from 'events';
+
 import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
 import { IDaemon } from './IDaemon';
@@ -19,7 +21,7 @@ import { assertString, assertBoolean } from './Assert';
  * to instead use the [[Daemon]] class. This supports both ConventionalDaemon's,
  * BlockchainCacheApi's, and http/https, all automatically.
  */
-export class BlockchainCacheApi implements IDaemon {
+export class BlockchainCacheApi extends EventEmitter implements IDaemon {
 
     /**
      * The base URL for our API. Shouldn't have a trailing '/'.
@@ -73,6 +75,8 @@ export class BlockchainCacheApi implements IDaemon {
      * ```
      */
     constructor(cacheBaseURL: string, ssl: boolean = true) {
+        super();
+
         console.warn(
             'This Class will be removed in v4.0.0. Please update your code ' +
             'to instead use the Daemon class. This supports both ' +

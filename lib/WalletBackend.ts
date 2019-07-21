@@ -175,6 +175,47 @@ export declare interface WalletBackend {
      * @event
      */
     on(event: 'desync', callback: (walletHeight: number, networkHeight: number) => void): this;
+
+    /**
+     * This is emitted whenever the wallet fails to contact the underlying daemon.
+     * This event will only be emitted on the first disconnection. It will not
+     * be emitted again, until the daemon connects, and then disconnects again.
+     *
+     * Example:
+     *
+     * ```javascript
+     * daemon.on('disconnect', (error) => {
+     *     console.log('Possibly lost connection to daemon: ' + error.toString());
+     * });
+     *
+     * Note that these events will only be emitted if using the Daemon daemon
+     * type, as the other daemon types are considered legacy and are not having
+     * new features added.
+     *
+     * @event
+     */
+    on(event: 'disconnect', callback: (error: Error) => void): this;
+
+    /**
+     * This is emitted whenever the wallet previously failed to contact the
+     * underlying daemon, and has now reconnected.
+     * This event will only be emitted on the first connection. It will not
+     * be emitted again, until the daemon disconnects, and then reconnects again.
+     *
+     * Example:
+     *
+     * ```javascript
+     * daemon.on('connect', () => {
+     *     console.log('Regained connection to daemon!');
+     * });
+     *
+     * Note that these events will only be emitted if using the Daemon daemon
+     * type, as the other daemon types are considered legacy and are not having
+     * new features added.
+     *
+     * @event
+     */
+    on(event: 'connect', callback: () => void): this;
 }
 
 /**
@@ -707,6 +748,15 @@ export class WalletBackend extends EventEmitter {
 
         this.daemon = daemon;
 
+        /* Passing through events from daemon to users */
+        this.daemon.on('disconnect', () => {
+            this.emit('disconnect');
+        });
+
+        this.daemon.on('connect', () => {
+            this.emit('connect');
+        });
+
         this.syncThread = new Metronome(
             () => this.sync(true),
             this.config.syncThreadInterval,
@@ -741,7 +791,20 @@ export class WalletBackend extends EventEmitter {
 
         await this.stop();
 
+        /* Ensuring we don't double emit if same daemon instance is given */
+        if (this.daemon !== newDaemon) {
+            /* Passing through events from daemon to users */
+            newDaemon.on('disconnect', () => {
+                this.emit('disconnect');
+            });
+
+            newDaemon.on('connect', () => {
+                this.emit('connect');
+            });
+        }
+
         this.daemon = newDaemon;
+
         this.walletSynchronizer.swapNode(newDaemon);
 
         if (shouldRestart) {
@@ -1977,6 +2040,15 @@ export class WalletBackend extends EventEmitter {
         this.daemon = daemon;
 
         this.daemon.updateConfig(config);
+
+        /* Passing through events from daemon to users */
+        this.daemon.on('disconnect', () => {
+            this.emit('disconnect');
+        });
+
+        this.daemon.on('connect', () => {
+            this.emit('connect');
+        });
 
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon, this.config);
 

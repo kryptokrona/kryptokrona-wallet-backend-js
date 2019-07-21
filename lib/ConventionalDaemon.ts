@@ -4,6 +4,8 @@
 
 import * as _ from 'lodash';
 
+import { EventEmitter } from 'events';
+
 import { Config, MergeConfig, IConfig } from './Config';
 import { IDaemon } from './IDaemon';
 import { LogCategory, logger, LogLevel } from './Logger';
@@ -20,7 +22,7 @@ const TurtleCoind = require('turtlecoin-rpc').TurtleCoind;
  * to instead use the [[Daemon]] class. This supports both ConventionalDaemon's,
  * BlockchainCacheApi's, and http/https, all automatically.
  */
-export class ConventionalDaemon implements IDaemon {
+export class ConventionalDaemon extends EventEmitter implements IDaemon {
 
     /**
      * The hostname of the daemon
@@ -71,6 +73,8 @@ export class ConventionalDaemon implements IDaemon {
     private config: Config = new Config();
 
     constructor(daemonHost: string, daemonPort: number) {
+        super();
+
         console.warn(
             'This Class will be removed in v4.0.0. Please update your code ' +
             'to instead use the Daemon class. This supports both ' +

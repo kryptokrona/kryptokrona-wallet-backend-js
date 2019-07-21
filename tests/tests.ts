@@ -497,6 +497,31 @@ function roundTrip(
        'swapNode works',
        'swapNode doesn\'t work!');
 
+    await tester.test(async () => {
+        const daemon2: IDaemon = new Daemon('this is not a valid host', 7777);
+
+        let success: boolean = false;
+
+        daemon2.on('disconnect', (err) => {
+            success = true;
+        });
+
+        await daemon2.init();
+
+        const daemon3: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
+
+        daemon3.on('disconnect', (err) => {
+            success = false;
+        });
+
+        await daemon3.init();
+
+        return success;
+
+    }, 'Testing daemon events',
+       'Daemon events work',
+       'Daemon events don\'t work!');
+
     if (doPerformanceTests) {
         await tester.test(async () => {
             /* Reinit daemon so it has no leftover state */

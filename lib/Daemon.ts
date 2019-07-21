@@ -6,6 +6,8 @@ import * as _ from 'lodash';
 
 import request = require('request-promise-native');
 
+import { EventEmitter } from 'events';
+
 import { assertString, assertNumber, assertBooleanOrUndefined } from './Assert';
 import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
@@ -14,7 +16,7 @@ import { validateAddresses } from './ValidateParameters';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { WalletError, WalletErrorCode } from './WalletError';
 
-export class Daemon implements IDaemon {
+export class Daemon extends EventEmitter implements IDaemon {
 
     /**
      * Daemon/API host
@@ -79,6 +81,12 @@ export class Daemon implements IDaemon {
     private config: Config = new Config();
 
     /**
+     * Did our last contact with the daemon succeed. Set to true initially
+     * so initial failure to connect will fire disconnect event.
+     */
+    private connected: boolean = true;
+
+    /**
      * @param host The host to access the API on. Can be an IP, or a URL, for
      *             example, 1.1.1.1, or blockapi.turtlepay.io
      *
@@ -96,6 +104,10 @@ export class Daemon implements IDaemon {
      *                   we will work it out automatically.
      */
     constructor(host: string, port: number, isCacheApi?: boolean, ssl?: boolean) {
+        super();
+
+        this.setMaxListeners(0);
+
         assertString(host, 'host');
         assertNumber(port, 'port');
         assertBooleanOrUndefined(isCacheApi, 'isCacheApi');
@@ -191,7 +203,7 @@ export class Daemon implements IDaemon {
         this.networkBlockCount = info.network_height;
 
         /* Height returned is one more than the current height - but we
-           don't want to overflow is the height returned is zero */
+           don't want to overflow if the height returned is zero */
         if (this.networkBlockCount !== 0) {
             this.networkBlockCount--;
         }
@@ -458,29 +470,53 @@ export class Daemon implements IDaemon {
                 this.sslDetermined = true;
             }
 
+            if (!this.connected) {
+                this.emit('connect');
+                this.connected = true;
+            }
+
             return data;
         } catch (err) {
             /* No point trying again with SSL - we already have decided what
                type it is. */
             if (this.sslDetermined) {
+                if (this.connected) {
+                    this.emit('disconnect', err);
+                    this.connected = false;
+                }
+
                 throw err;
             }
 
-            /* If this throws again, we won't catch it. */
-            const data = await request({
-                body: body,
-                json: true,
-                method: method,
-                timeout: this.config.requestTimeout,
-                /* Lets try HTTP now. */
-                url: `http://${this.host}:${this.port}${endpoint}`,
-                forever: true,
-            });
+            try {
+                const data = await request({
+                    body: body,
+                    json: true,
+                    method: method,
+                    timeout: this.config.requestTimeout,
+                    /* Lets try HTTP now. */
+                    url: `http://${this.host}:${this.port}${endpoint}`,
+                    forever: true,
+                });
 
-            this.ssl = false;
-            this.sslDetermined = true;
+                this.ssl = false;
+                this.sslDetermined = true;
 
-            return data;
+                if (!this.connected) {
+                    this.emit('connect');
+                    this.connected = true;
+                }
+
+                return data;
+
+            } catch (err) {
+                if (this.connected) {
+                    this.emit('disconnect', err);
+                    this.connected = false;
+                }
+
+                throw err;
+            }
         }
     }
 }
