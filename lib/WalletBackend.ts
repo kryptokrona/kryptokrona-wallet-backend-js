@@ -187,6 +187,7 @@ export declare interface WalletBackend {
      * daemon.on('disconnect', (error) => {
      *     console.log('Possibly lost connection to daemon: ' + error.toString());
      * });
+     * ```
      *
      * Note that these events will only be emitted if using the Daemon daemon
      * type, as the other daemon types are considered legacy and are not having
@@ -208,6 +209,7 @@ export declare interface WalletBackend {
      * daemon.on('connect', () => {
      *     console.log('Regained connection to daemon!');
      * });
+     * ```
      *
      * Note that these events will only be emitted if using the Daemon daemon
      * type, as the other daemon types are considered legacy and are not having

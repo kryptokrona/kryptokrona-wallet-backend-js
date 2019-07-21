@@ -21,6 +21,7 @@ export interface IDaemon {
      * daemon.on('disconnect', (error) => {
      *     console.log('Possibly lost connection to daemon: ' + error.toString());
      * });
+     * ```
      *
      * @event
      */
@@ -38,6 +39,7 @@ export interface IDaemon {
      * daemon.on('connect', () => {
      *     console.log('Regained connection to daemon!');
      * });
+     * ```
      *
      * @event
      */
