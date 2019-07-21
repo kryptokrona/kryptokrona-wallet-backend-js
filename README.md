@@ -164,6 +164,11 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.4.3
+
+* Add `on('disconnect')` and `on('connect')` events for daemon
+* Update `turtlecoin-utils` dependency
+
 ### v3.4.2
 
 * Set keep-alive to true for `Daemon` and `BlockchainCacheApi`
