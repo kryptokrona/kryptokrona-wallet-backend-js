@@ -148,7 +148,7 @@ export class SubWallet {
         /* Remove all spent inputs that are older than 5000 blocks old.
            It is assumed the blockchain cannot fork more than this, and this
            frees up a lot of disk space with large, old wallets. */
-        this.spentInputs = this.spentInputs.filter((input) => input.spendHeight > pruneHeight);
+        _.remove(this.spentInputs, (input) => input.spendHeight > pruneHeight);
 
         const lenAfterPrune: number = this.spentInputs.length;
 
@@ -203,14 +203,20 @@ export class SubWallet {
                sent ourselves, that are now returning as change. Remove from
                vector if found. */
             _.remove(this.unconfirmedIncomingAmounts, (storedInput) => {
-                return storedInput.key !== input.key;
+                return storedInput.key === input.key;
             });
         }
 
         const existingInput = this.unspentInputs.find((x) => x.key === input.key);
 
         if (existingInput !== undefined) {
-            throw new Error(`Input ${input.key} was added to the wallet twice!`);
+            logger.log(
+                `Input ${input.key} was added to the wallet twice!`,
+                LogLevel.ERROR,
+                LogCategory.SYNC,
+            );
+
+            return;
         }
 
         this.unspentInputs.push(input);
