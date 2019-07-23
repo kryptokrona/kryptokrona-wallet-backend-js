@@ -164,6 +164,12 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.4.4
+
+* Fix bug with how forked transactions were handled
+* Increase max sockets to use with request to fix timeouts in some environments
+* Fix bug where transactions to yourself had an incorrect amount when locked
+
 ### v3.4.3
 
 * Add `on('disconnect')` and `on('connect')` events for daemon
