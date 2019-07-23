@@ -462,6 +462,7 @@ export class Daemon extends EventEmitter implements IDaemon {
                    HTTPS or HTTP yet. */
                 url: `${protocol}://${this.host}:${this.port}${endpoint}`,
                 forever: true,
+                pool: { maxSockets: 100 },
             });
 
             /* Cool, https works. Store for later. */
