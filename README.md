@@ -164,6 +164,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.4.5
+
+* Fix bug causing balance from sent transaction to appear in both locked + unlocked balance
+
 ### v3.4.4
 
 * Fix bug with how forked transactions were handled
