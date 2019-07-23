@@ -473,18 +473,10 @@ async function verifyAndSendTransaction(
     }
 
     /* Store the unconfirmed transaction, update our balance */
-    const returnTX: TX = storeSentTransaction(
-        tx.hash, fee, paymentID, inputs, changeAddress, changeRequired,
-        subWallets, config
+    const returnTX: TX = await storeSentTransaction(
+        tx.hash, tx.transaction.outputs, tx.transaction.transactionKeys.publicKey, 
+        fee, paymentID, inputs, subWallets, config
     );
-
-    /* Update our locked balanced with the incoming funds */
-    await storeUnconfirmedIncomingInputs(
-        subWallets, tx.transaction.outputs, tx.transaction.transactionKeys.publicKey,
-        tx.hash, config,
-    );
-
-    subWallets.storeTxPrivateKey(tx.transaction.transactionKeys.privateKey, tx.hash);
 
     /* Lock the input for spending till confirmed/cancelled */
     for (const input of inputs) {
@@ -494,56 +486,17 @@ async function verifyAndSendTransaction(
     return [returnTX, tx.hash, undefined];
 }
 
-function storeSentTransaction(
+async function storeSentTransaction(
     hash: string,
+    keyOutputs: Vout[],
+    txPublicKey: string,
     fee: number,
     paymentID: string,
     ourInputs: TxInputAndOwner[],
-    changeAddress: string,
-    changeRequired: number,
     subWallets: SubWallets,
-    config: Config): TX {
+    config: Config): Promise<TX> {
 
     const transfers: Map<string, number> = new Map();
-
-    for (const input of ourInputs) {
-        /* Amounts we have spent, subtract them from the transfers map */
-        transfers.set(
-            input.publicSpendKey,
-            -input.input.amount + (transfers.get(input.publicSpendKey) || 0),
-        );
-    }
-
-    if (changeRequired !== 0) {
-        const [publicViewKey, publicSpendKey] = addressToKeys(changeAddress, config);
-
-        transfers.set(
-            publicSpendKey,
-            changeRequired + (transfers.get(publicSpendKey) || 0),
-        );
-    }
-
-    const timestamp: number = 0;
-    const blockHeight: number = 0;
-    const unlockTime: number = 0;
-    const isCoinbaseTransaction: boolean = false;
-
-    const tx: TX = new TX(
-        transfers, hash, fee, timestamp, blockHeight, paymentID,
-        unlockTime, isCoinbaseTransaction,
-    );
-
-    subWallets.addUnconfirmedTransaction(tx);
-
-    return tx;
-}
-
-async function storeUnconfirmedIncomingInputs(
-    subWallets: SubWallets,
-    keyOutputs: Vout[],
-    txPublicKey: string,
-    txHash: string,
-    config: Config): Promise<void> {
 
     const derivation: string = await generateKeyDerivation(
         txPublicKey, subWallets.getPrivateViewKey(), config
@@ -564,11 +517,38 @@ async function storeUnconfirmedIncomingInputs(
         }
 
         const input: UnconfirmedInput = new UnconfirmedInput(
-            output.amount, output.key, txHash,
+            output.amount, output.key, hash,
         );
 
         subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
+
+        transfers.set(
+            derivedSpendKey,
+            output.amount + (transfers.get(derivedSpendKey) || 0)
+        );
     }
+
+    for (const input of ourInputs) {
+        /* Amounts we have spent, subtract them from the transfers map */
+        transfers.set(
+            input.publicSpendKey,
+            -input.input.amount + (transfers.get(input.publicSpendKey) || 0),
+        );
+    }
+
+    const timestamp: number = 0;
+    const blockHeight: number = 0;
+    const unlockTime: number = 0;
+    const isCoinbaseTransaction: boolean = false;
+
+    const tx: TX = new TX(
+        transfers, hash, fee, timestamp, blockHeight, paymentID,
+        unlockTime, isCoinbaseTransaction,
+    );
+
+    subWallets.addUnconfirmedTransaction(tx);
+
+    return tx;
 }
 
 /**
