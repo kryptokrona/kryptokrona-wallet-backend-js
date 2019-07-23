@@ -339,8 +339,16 @@ export class SubWallets {
             return tx.blockHeight >= forkHeight;
         });
 
+        let keyImagesToRemove: string[] = [];
+
         for (const [publicKey, subWallet] of this.subWallets) {
-            subWallet.removeForkedTransactions(forkHeight);
+            keyImagesToRemove = keyImagesToRemove.concat(subWallet.removeForkedTransactions(forkHeight));
+        }
+
+        if (!this.isViewWallet) {
+            for (const keyImage of keyImagesToRemove) {
+                this.keyImageOwners.delete(keyImage);
+            }
         }
     }
 
