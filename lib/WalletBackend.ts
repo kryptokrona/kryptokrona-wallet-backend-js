@@ -892,6 +892,40 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * This function works similarly to both [[reset]] and [[rescan]].
+     *
+     * The difference is that while reset and rescan discard all progress before
+     * the specified height, and then continues syncing from there, rewind
+     * instead retains the information previous, and only removes information
+     * after the rewind height.
+     *
+     * This can be helpful if you suspect a transaction has been missed by
+     * the sync process, and want to only rescan a small section of blocks.
+     *
+     * Example:
+     * ```javascript
+     * await wallet.rewind(123456);
+     * ```
+     *
+     * @param scanHeight The scan height to rewind to 
+     */
+    public async rewind(scanHeight: number = 0): Promise<void> {
+        assertNumber(scanHeight, 'scanHeight');
+
+        const shouldRestart: boolean = this.started;
+
+        await this.stop();
+
+        await this.walletSynchronizer.rewind(scanHeight);
+
+        await this.subWallets.rewind(scanHeight);
+
+        if (shouldRestart) {
+            await this.start();
+        }
+    }
+
+    /**
      * Gets the wallet, local daemon, and network block count
      *
      * Example:

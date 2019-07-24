@@ -167,6 +167,21 @@
 				<p>In this example, we only print messages that fall into the SYNC category.</p>
 				<p>You can view available categories and log levels in the documentation.</p>
 				<h2 id="changelog">Changelog</h2>
+				<h3 id="v3-4-5">v3.4.5</h3>
+				<ul>
+					<li>Fix bug causing balance from sent transaction to appear in both locked + unlocked balance</li>
+				</ul>
+				<h3 id="v3-4-4">v3.4.4</h3>
+				<ul>
+					<li>Fix bug with how forked transactions were handled</li>
+					<li>Increase max sockets to use with request to fix timeouts in some environments</li>
+					<li>Fix bug where transactions to yourself had an incorrect amount when locked</li>
+				</ul>
+				<h3 id="v3-4-3">v3.4.3</h3>
+				<ul>
+					<li>Add <code>on(&#39;disconnect&#39;)</code> and <code>on(&#39;connect&#39;)</code> events for daemon</li>
+					<li>Update <code>turtlecoin-utils</code> dependency</li>
+				</ul>
 				<h3 id="v3-4-2">v3.4.2</h3>
 				<ul>
 					<li>Set keep-alive to true for <code>Daemon</code> and <code>BlockchainCacheApi</code></li>

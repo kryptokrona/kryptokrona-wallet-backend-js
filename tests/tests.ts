@@ -522,6 +522,34 @@ function roundTrip(
        'Daemon events work',
        'Daemon events don\'t work!');
 
+    await tester.test(async () => {
+        /* Load a test file to check compatibility with C++ wallet backend */
+        const [testWallet, error] = WalletBackend.openWalletFromFile(
+            daemon, './tests/test.wallet', 'password',
+        );
+
+        const wallet = testWallet as WalletBackend;
+
+        const a = wallet.getNumTransactions() === 3;
+
+        let [ unlockedBalance, lockedBalance ] = wallet.getBalance();
+
+        const c = unlockedBalance === 246 && lockedBalance === 167;
+
+        await wallet.rewind(1026200);
+
+        const b = wallet.getNumTransactions() === 2;
+
+        [ unlockedBalance, lockedBalance ] = wallet.getBalance();
+
+        const d = unlockedBalance === 200 && lockedBalance === 0;
+
+        return a && b && c && d; 
+
+    }, 'Testing rewind',
+       'Rewind succeeded',
+       'Rewind failed');
+
     if (doPerformanceTests) {
         await tester.test(async () => {
             /* Reinit daemon so it has no leftover state */

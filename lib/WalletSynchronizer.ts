@@ -233,6 +233,29 @@ export class WalletSynchronizer {
         });
     }
 
+    public rewind(scanHeight: number): Promise<void> {
+        return new Promise((resolve) => {
+            const f = () => {
+                this.startHeight = scanHeight;
+                this.startTimestamp = 0;
+                /* Discard sync status */
+                this.synchronizationStatus = new SynchronizationStatus();
+                this.storedBlocks = [];
+            };
+
+            if (this.fetchingBlocks) {
+                this.finishedFunc = () => {
+                    f();
+                    resolve();
+                    this.finishedFunc = undefined;
+                };
+            } else {
+                f();
+                resolve();
+            }
+        });
+    }
+
     /**
      * Takes in hashes that we have previously sent. Returns transactions which
      * are no longer in the pool, and not in a block, and therefore have
