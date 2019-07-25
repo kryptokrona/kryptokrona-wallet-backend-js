@@ -28,6 +28,8 @@ export class Metronome {
      */
     private inTick: boolean = false;
 
+    private started: boolean = false;
+
     /**
      * Function to run when stopping, and tick func has completed
      */
@@ -46,6 +48,12 @@ export class Metronome {
      * Start running the function
      */
     public async start(): Promise<void> {
+        if (this.started) {
+            return;
+        }
+
+        this.started = true;
+
         this.shouldStop = false;
         await this.tick();
     }
@@ -60,10 +68,12 @@ export class Metronome {
 
             if (this.inTick) {
                 this.finishedFunc = () => {
-                    resolve();
+                    this.started = false;
                     this.finishedFunc = undefined;
+                    resolve();
                 };
             } else {
+                this.started = false;
                 resolve();
             }
         });
