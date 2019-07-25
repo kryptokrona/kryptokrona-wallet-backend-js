@@ -216,7 +216,7 @@ export class WalletSynchronizer {
                 this.startHeight = scanHeight;
                 this.startTimestamp = scanTimestamp;
                 /* Discard sync status */
-                this.synchronizationStatus = new SynchronizationStatus();
+                this.synchronizationStatus = new SynchronizationStatus(scanHeight - 1);
                 this.storedBlocks = [];
             };
 
@@ -239,7 +239,7 @@ export class WalletSynchronizer {
                 this.startHeight = scanHeight;
                 this.startTimestamp = 0;
                 /* Discard sync status */
-                this.synchronizationStatus = new SynchronizationStatus();
+                this.synchronizationStatus = new SynchronizationStatus(scanHeight - 1);
                 this.storedBlocks = [];
             };
 

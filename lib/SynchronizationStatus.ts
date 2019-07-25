@@ -29,6 +29,14 @@ export class SynchronizationStatus {
 
     private lastSavedCheckpointAt: number = 0;
 
+    constructor(startHeight: number = 0) {
+        if (startHeight <= 0) {
+            startHeight = 0;
+        }
+
+        this.lastKnownBlockHeight = startHeight;
+    }
+
     public toJSON(): SynchronizationStatusJSON {
         return {
             blockHashCheckpoints: this.blockHashCheckpoints,
