@@ -46,6 +46,23 @@ export interface IDaemon {
     on(event: 'connect', callback: () => void): this;
 
     /**
+     * This is emitted whenever either the localDaemonBlockCount or the networkDaemonBlockCount
+     * changes.
+     *
+     * Example:
+     *
+     * ```javascript
+     * daemon.on('heightchange', (localDaemonBlockCount, networkDaemonBlockCount) => {
+     *     console.log(localDaemonBlockCount, networkDaemonBlockCount);
+     * });
+     *
+     * @event
+     */
+    on(event: 'heightchange', 
+        callback: (localDaemonBlockCount: number, networkDaemonBlockCount: number) => void
+    ): this;
+
+    /**
      * @param blockHashCheckpoints  Hashes of the last known blocks. Later
      *                              blocks (higher block height) should be
      *                              ordered at the front of the array.

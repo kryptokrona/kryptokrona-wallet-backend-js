@@ -184,7 +184,7 @@ export declare interface WalletBackend {
      * Example:
      *
      * ```javascript
-     * daemon.on('disconnect', (error) => {
+     * wallet.on('disconnect', (error) => {
      *     console.log('Possibly lost connection to daemon: ' + error.toString());
      * });
      * ```
@@ -206,7 +206,7 @@ export declare interface WalletBackend {
      * Example:
      *
      * ```javascript
-     * daemon.on('connect', () => {
+     * wallet.on('connect', () => {
      *     console.log('Regained connection to daemon!');
      * });
      * ```
@@ -218,6 +218,29 @@ export declare interface WalletBackend {
      * @event
      */
     on(event: 'connect', callback: () => void): this;
+
+    /**
+     * This is emitted whenever the walletBlockCount (Amount of blocks the wallet has synced),
+     * localDaemonBlockCount (Amount of blocks the daemon you're connected to has synced),
+     * or networkBlockCount (Amount of blocks the network has) changes.
+     *
+     * This can be used in place of repeatedly polling [[getSyncStatus]]
+     *
+     * Example:
+     *
+     * ```javascript
+     * 
+     * wallet.on('heightchange', (walletBlockCount, localDaemonBlockCount, networkBlockCount) => {
+     *     console.log(`New sync status: ${walletBlockCount} / ${localDaemonBlockCount}`);
+     * });
+     * ```
+     *
+     * @event
+     */
+    on(event: 'heightchange', callback: (
+        walletBlockCount: number,
+        localDaemonBlockCount: number,
+        networkBlockCount: number) => void): this;
 }
 
 /**
@@ -757,6 +780,15 @@ export class WalletBackend extends EventEmitter {
 
         this.daemon.on('connect', () => {
             this.emit('connect');
+        });
+
+        this.daemon.on('heightchange', (localDaemonBlockCount, networkDaemonBlockCount) => {
+            this.emit(
+                'heightchange',
+                this.walletSynchronizer.getHeight(),
+                localDaemonBlockCount,
+                networkDaemonBlockCount,
+            );
         });
 
         this.syncThread = new Metronome(
@@ -2030,6 +2062,13 @@ export class WalletBackend extends EventEmitter {
                 LogLevel.DEBUG,
                 LogCategory.SYNC,
             );
+
+            this.emit(
+                'heightchange',
+                block.blockHeight, 
+                this.daemon.getLocalDaemonBlockCount(),
+                this.daemon.getNetworkBlockCount()
+            );
         }
 
         return true;
@@ -2084,6 +2123,15 @@ export class WalletBackend extends EventEmitter {
 
         this.daemon.on('connect', () => {
             this.emit('connect');
+        });
+
+        this.daemon.on('heightchange', (localDaemonBlockCount, networkDaemonBlockCount) => {
+            this.emit(
+                'heightchange',
+                this.walletSynchronizer.getHeight(),
+                localDaemonBlockCount,
+                networkDaemonBlockCount,
+            );
         });
 
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon, this.config);

@@ -214,15 +214,20 @@ export class Daemon extends EventEmitter implements IDaemon {
             }
         }
 
-        this.localDaemonBlockCount = info.height;
-        this.networkBlockCount = info.network_height;
-
         /* Height returned is one more than the current height - but we
            don't want to overflow if the height returned is zero */
-        if (this.networkBlockCount !== 0) {
-            this.networkBlockCount--;
+        if (info.network_height !== 0) {
+            info.network_height--;
         }
 
+        if (this.localDaemonBlockCount !== info.height 
+         || this.networkBlockCount !== info.network_height) {
+            this.emit('heightchange', info.height, info.network_height);
+        }
+
+        this.localDaemonBlockCount = info.height;
+        this.networkBlockCount = info.network_height;
+        
         this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
         this.lastKnownHashrate = info.difficulty / this.config.blockTargetTime;
