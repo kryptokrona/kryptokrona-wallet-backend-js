@@ -191,7 +191,7 @@ export class Config implements IConfig {
     /**
      * How often to update the daemon info
      */
-    public daemonUpdateInterval: number = 5 * 1000;
+    public daemonUpdateInterval: number = 10 * 1000;
 
     /**
      * How often to check on locked transactions

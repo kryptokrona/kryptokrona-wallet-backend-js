@@ -1944,7 +1944,7 @@ export class WalletBackend extends EventEmitter {
 
         if (blocks.length === 0) {
             if (sleep) {
-                await delay(1000);
+                await delay(this.config.daemonUpdateInterval);
             }
 
             return false;
