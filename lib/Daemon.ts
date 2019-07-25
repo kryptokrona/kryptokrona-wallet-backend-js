@@ -8,6 +8,9 @@ import request = require('request-promise-native');
 
 import { EventEmitter } from 'events';
 
+import * as http from 'http';
+import * as https from 'https';
+
 import { assertString, assertNumber, assertBooleanOrUndefined } from './Assert';
 import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
@@ -79,6 +82,18 @@ export class Daemon extends EventEmitter implements IDaemon {
     private lastKnownHashrate = 0;
 
     private config: Config = new Config();
+
+    private httpAgent: http.Agent = new http.Agent({
+        keepAlive: true,
+        maxSockets: Infinity,
+        keepAliveMsecs: 20000,
+    });
+
+    private httpsAgent: https.Agent = new https.Agent({
+        keepAlive: true,
+        maxSockets: Infinity,
+        keepAliveMsecs: 20000,
+    });
 
     /**
      * Did our last contact with the daemon succeed. Set to true initially
@@ -461,8 +476,7 @@ export class Daemon extends EventEmitter implements IDaemon {
                 /* Start by trying HTTPS if we haven't determined whether it's
                    HTTPS or HTTP yet. */
                 url: `${protocol}://${this.host}:${this.port}${endpoint}`,
-                forever: true,
-                pool: { maxSockets: 100 },
+                agent: protocol === 'https' ? this.httpsAgent : this.httpAgent,
             });
 
             /* Cool, https works. Store for later. */
@@ -497,7 +511,7 @@ export class Daemon extends EventEmitter implements IDaemon {
                     timeout: this.config.requestTimeout,
                     /* Lets try HTTP now. */
                     url: `http://${this.host}:${this.port}${endpoint}`,
-                    forever: true,
+                    agent: this.httpAgent,
                 });
 
                 this.ssl = false;
