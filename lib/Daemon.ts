@@ -401,7 +401,7 @@ export class Daemon extends EventEmitter implements IDaemon {
             tx_as_hex: rawTransaction,
         });
 
-        return result.status === 'OK';
+        return result.status.toUpperCase() === 'OK';
     }
 
     public getConnectionInfo(): DaemonConnection {
