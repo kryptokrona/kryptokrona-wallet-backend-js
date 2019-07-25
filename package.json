@@ -10,7 +10,8 @@
     "test": "yarn install && node dist/tests/tests.js",
     "test-all": "yarn install && node dist/tests/tests.js --do-performance-tests",
     "style": "./node_modules/.bin/tslint -c tslint.json 'lib/**/*.ts'",
-    "docs": "./node_modules/.bin/typedoc --options ./typedoc.js ./lib/; touch docs/.nojekyll"
+    "docs": "./node_modules/.bin/typedoc --options ./typedoc.js ./lib/; touch docs/.nojekyll",
+    "prepare": "yarn build"
   },
   "files": [
     "dist/lib/*"
@@ -23,7 +24,8 @@
     "object-sizeof": "^1.4.0",
     "pbkdf2": "^3.0.17",
     "turtlecoin-rpc": "^1.0.1",
-    "turtlecoin-utils": "^1.0.3"
+    "turtlecoin-utils": "^1.0.3",
+    "typescript": "^3.5.3"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.136",
@@ -33,7 +35,6 @@
     "colors": "^1.3.3",
     "tslint": "^5.18.0",
     "typedoc": "^0.14.2",
-    "typedoc-plugin-no-inherit": "^1.1.9",
-    "typescript": "^3.5.3"
+    "typedoc-plugin-no-inherit": "^1.1.9"
   }
 }
