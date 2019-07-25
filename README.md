@@ -167,6 +167,8 @@ You can view available categories and log levels in the documentation.
 ### v3.4.6
 
 * Add `rewind()`
+* Add `on('heightchange')` event
+* More improvements to keep-alive, max sockets, etc
 
 ### v3.4.5
 
