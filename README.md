@@ -28,6 +28,18 @@ Yarn:
 
 `yarn add turtlecoin-wallet-backend`
 
+## Installation from GitHub
+
+If you need features which have not yet made it into a release yet, you can install from GitHub.
+
+NPM:
+
+`npm install https://github.com/turtlecoin/turtlecoin-wallet-backend-js --save`
+
+Yarn:
+
+`yarn add https://github.com/turtlecoin/turtlecoin-wallet-backend-js`
+
 ## Documentation
 
 [You can view the documentation here](https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html)
