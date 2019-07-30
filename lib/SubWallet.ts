@@ -304,27 +304,47 @@ export class SubWallet {
      * Remove transactions and inputs that occured after a fork height
      */
     public removeForkedTransactions(forkHeight: number): string[] {
+        const lockedInputKeyImages = this.lockedInputs.map((input) => input.keyImage);
+
+        /* Both of these will get resolved by the wallet in time */
         this.lockedInputs = [];
         this.unconfirmedIncomingAmounts = [];
 
         /* Remove unspent inputs which arrived after this height */
-        const keyImagesToRemove = _.remove(this.unspentInputs, (input) => {
+        const removedUnspent = _.remove(this.unspentInputs, (input) => {
             return input.blockHeight >= forkHeight;
         });
 
-        /* Find inputs which we have spent, which revert to being unspent now
-           the spend height is in the future */
-        const unspent = _.remove(this.spentInputs, (input) => {
+        /* Remove spent inputs which arrived after this height */
+        const removedSpent = _.remove(this.spentInputs, (input) => {
             return input.blockHeight >= forkHeight;
-        }).map((input) => {
-            input.spendHeight = 0;
-            return input;
         });
 
-        /* Add to unspent vector */
-        this.unspentInputs = this.unspentInputs.concat(unspent);
+        /* This input arrived before the fork height, but was spent after the
+           fork height. So, we move them back into the unspent inputs vector. */
+        const nowUnspent = _.remove(this.spentInputs, (input) => {
+            return input.spendHeight >= forkHeight;
+        });
 
-        return keyImagesToRemove.map((input) => input.keyImage);
+        this.unspentInputs = this.unspentInputs.concat(nowUnspent.map((input) => { input.spendHeight = 0; return input }));
+
+        /* Could do this with concat+map.. but i think this is a little more
+           readable */
+        const keyImagesToRemove: string[] = [];
+
+        for (const keyImage of lockedInputKeyImages) {
+            keyImagesToRemove.push(keyImage);
+        }
+
+        for (const input of removedUnspent) {
+            keyImagesToRemove.push(input.keyImage);
+        }
+
+        for (const input of removedSpent) {
+            keyImagesToRemove.push(input.keyImage);
+        }
+
+        return keyImagesToRemove;
     }
 
     /**

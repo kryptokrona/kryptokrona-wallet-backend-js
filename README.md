@@ -176,6 +176,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.4.7
+
+* Fix issue with removeForkedTransactions, which also effected `rewind()`
+
 ### v3.4.6
 
 * Add `rewind()`
