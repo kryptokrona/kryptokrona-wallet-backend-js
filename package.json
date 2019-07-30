@@ -34,7 +34,7 @@
     "@types/request-promise-native": "^1.0.16",
     "colors": "^1.3.3",
     "tslint": "^5.18.0",
-    "typedoc": "^0.14.2",
+    "typedoc": "^0.15.0",
     "typedoc-plugin-no-inherit": "^1.1.9"
   }
 }
