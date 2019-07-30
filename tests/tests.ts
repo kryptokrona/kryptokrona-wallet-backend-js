@@ -542,7 +542,7 @@ function roundTrip(
 
         [ unlockedBalance, lockedBalance ] = wallet.getBalance();
 
-        const d = unlockedBalance === 200 && lockedBalance === 0;
+        const d = unlockedBalance === 1234 && lockedBalance === 0;
 
         return a && b && c && d; 
 
