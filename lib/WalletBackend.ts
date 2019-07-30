@@ -766,12 +766,21 @@ export class WalletBackend extends EventEmitter {
             timestamp = getCurrentTimestampAdjusted(this.config.blockTargetTime);
         }
 
+        this.daemon = daemon;
+
         this.walletSynchronizer = new WalletSynchronizer(
             daemon, this.subWallets, timestamp, scanHeight,
             privateViewKey, this.config,
         );
 
-        this.daemon = daemon;
+        this.walletSynchronizer.on('heightchange', (walletHeight) => {
+            this.emit(
+                'heightchange',
+                walletHeight,
+                this.daemon.getLocalDaemonBlockCount(),
+                this.daemon.getNetworkBlockCount()
+            );
+        });
 
         /* Passing through events from daemon to users */
         this.daemon.on('disconnect', () => {
@@ -921,6 +930,13 @@ export class WalletBackend extends EventEmitter {
         if (shouldRestart) {
             await this.start();
         }
+
+        this.emit(
+            'heightchange',
+            this.walletSynchronizer.getHeight(),
+            this.daemon.getLocalDaemonBlockCount(),
+            this.daemon.getNetworkBlockCount()
+        );
     }
 
     /**
@@ -955,6 +971,13 @@ export class WalletBackend extends EventEmitter {
         if (shouldRestart) {
             await this.start();
         }
+
+        this.emit(
+            'heightchange',
+            this.walletSynchronizer.getHeight(),
+            this.daemon.getLocalDaemonBlockCount(),
+            this.daemon.getNetworkBlockCount()
+        );
     }
 
     /**
@@ -2135,6 +2158,15 @@ export class WalletBackend extends EventEmitter {
         });
 
         this.walletSynchronizer.initAfterLoad(this.subWallets, daemon, this.config);
+
+        this.walletSynchronizer.on('heightchange', (walletHeight) => {
+            this.emit(
+                'heightchange',
+                walletHeight,
+                this.daemon.getLocalDaemonBlockCount(),
+                this.daemon.getNetworkBlockCount()
+            );
+        });
 
         this.subWallets.initAfterLoad(this.config);
 

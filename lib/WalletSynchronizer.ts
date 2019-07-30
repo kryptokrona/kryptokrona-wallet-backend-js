@@ -5,6 +5,8 @@
 import * as _ from 'lodash';
 const sizeof = require('object-sizeof');
 
+import { EventEmitter } from 'events';
+
 import { Config } from './Config';
 import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
@@ -23,7 +25,7 @@ import {
 /**
  * Decrypts blocks for our transactions and inputs
  */
-export class WalletSynchronizer {
+export class WalletSynchronizer extends EventEmitter {
 
     public static fromJSON(json: WalletSynchronizerJSON): WalletSynchronizer {
         const walletSynchronizer = Object.create(WalletSynchronizer.prototype);
@@ -97,6 +99,8 @@ export class WalletSynchronizer {
         startHeight: number,
         privateViewKey: string,
         config: Config) {
+
+        super();
 
         this.daemon = daemon;
         this.startTimestamp = startTimestamp;
@@ -440,6 +444,8 @@ export class WalletSynchronizer {
             }
 
             this.synchronizationStatus.storeBlockHash(topBlock.height, topBlock.hash);
+
+            this.emit('heightchange', topBlock.height);
 
             logger.log(
                 'Zero blocks received from daemon, fully synced',

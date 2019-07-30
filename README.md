@@ -176,6 +176,11 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.4.8
+
+* `on('heightchange')` is now emitted when `reset()`, `rewind()`, or `rescan()` is used.
+* `on('heightchange')` is now emitted when a top block is stored, fixing wallet height lagging behind network height.
+
 ### v3.4.7
 
 * Fix issue with removeForkedTransactions, which also effected `rewind()`
