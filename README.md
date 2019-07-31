@@ -176,6 +176,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.4.9
+
+* Fix heightchange being emitted on topblock when there are still blocks remaining to be processed
+
 ### v3.4.8
 
 * `on('heightchange')` is now emitted when `reset()`, `rewind()`, or `rescan()` is used.
