@@ -15,7 +15,7 @@ import {
     FUSION_TX_MIN_INPUT_COUNT, MAX_FUSION_TX_SIZE,
 } from './Constants';
 
-import { addressToKeys, getCurrentTimestampAdjusted } from './Utilities';
+import { addressToKeys, getCurrentTimestampAdjusted, isInputUnlocked } from './Utilities';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import * as _ from 'lodash';
@@ -162,6 +162,7 @@ export class SubWallets {
     }
 
     public rewind(scanHeight: number): void {
+        this.lockedTransactions = [];
         this.removeForkedTransactions(scanHeight);
     }
 
@@ -455,6 +456,34 @@ export class SubWallets {
         let unlockedBalance: number = 0;
         let lockedBalance: number = 0;
 
+        /* For faster lookups in case we have a ton of transactions or
+           subwallets to take from */
+        const lookupMap = new Map(publicSpendKeys.map((x) => [x, true]));
+
+        for (const transaction of this.transactions) {
+            const unlocked = isInputUnlocked(transaction.unlockTime, currentHeight);
+
+            for (const [publicKey, amount] of transaction.transfers) {
+                if (lookupMap.has(publicKey)) {
+                    if (unlocked) {
+                        unlockedBalance += amount;
+                    } else {
+                        lockedBalance += amount;
+                    }
+                }
+            }
+        }
+
+        for (const transaction of this.lockedTransactions) {
+            for (const [publicKey, amount] of transaction.transfers) {
+                if (lookupMap.has(publicKey)) {
+                    unlockedBalance += amount;
+                }
+            }
+        }
+
+        let unconfirmedIncomingBalance = 0;
+
         for (const publicSpendKey of publicSpendKeys) {
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
@@ -462,11 +491,11 @@ export class SubWallets {
                 throw new Error('Subwallet not found!');
             }
 
-            const [unlocked, locked] = subWallet.getBalance(currentHeight);
-
-            unlockedBalance += unlocked;
-            lockedBalance += locked;
+            unconfirmedIncomingBalance += subWallet.getUnconfirmedChange();
         }
+
+        lockedBalance += unconfirmedIncomingBalance;
+        unlockedBalance -= unconfirmedIncomingBalance;
 
         return [unlockedBalance, lockedBalance];
     }

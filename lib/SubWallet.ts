@@ -407,6 +407,14 @@ export class SubWallet {
     }
 
     /**
+     * Gets the amount of funds returning to us as change from outgoing 
+     * unconfirmed transactions
+     */
+    public getUnconfirmedChange(): number {
+        return _.sumBy(this.unconfirmedIncomingAmounts, 'amount');
+    }
+
+    /**
      * Get inputs that are available to be spent, and their keys
      */
     public getSpendableInputs(currentHeight: number): TxInputAndOwner[] {

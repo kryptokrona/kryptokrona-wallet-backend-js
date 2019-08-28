@@ -538,7 +538,7 @@ function roundTrip(
 
         await wallet.rewind(1026200);
 
-        const b = wallet.getNumTransactions() === 2;
+        const b = wallet.getNumTransactions() === 1;
 
         [ unlockedBalance, lockedBalance ] = wallet.getBalance();
 
