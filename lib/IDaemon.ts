@@ -80,7 +80,7 @@ export interface IDaemon {
         blockHashCheckpoints: string[],
         startHeight: number,
         startTimestamp: number,
-        blockCount: number): Promise<[Block[], TopBlock | undefined]>;
+        blockCount: number): Promise<[Block[], TopBlock | boolean]>;
 
     /**
      * Gets the node fee address and amount. Will be `['', 0]` if none/invalid

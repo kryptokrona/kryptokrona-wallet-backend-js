@@ -171,7 +171,7 @@ export class BlockchainCacheApi extends EventEmitter implements IDaemon {
         blockHashCheckpoints: string[],
         startHeight: number,
         startTimestamp: number,
-        blockCount: number): Promise<[Block[], TopBlock | undefined]> {
+        blockCount: number): Promise<[Block[], TopBlock | boolean]> {
 
         let data;
 
@@ -190,14 +190,14 @@ export class BlockchainCacheApi extends EventEmitter implements IDaemon {
                 [LogCategory.DAEMON],
             );
 
-            return [[], undefined];
+            return [[], false];
         }
 
         if (data.synced && data.topBlock && data.topBlock.height && data.topBlock.hash) {
             return [data.items.map(Block.fromJSON), data.topBlock];
         }
 
-        return [data.items.map(Block.fromJSON), undefined];
+        return [data.items.map(Block.fromJSON), true];
     }
 
     /**

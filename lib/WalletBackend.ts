@@ -241,6 +241,31 @@ export declare interface WalletBackend {
         walletBlockCount: number,
         localDaemonBlockCount: number,
         networkBlockCount: number) => void): this;
+
+    /**
+     * This is emitted when we consider the node to no longer be online. There
+     * are a few categories we use to determine this.
+     *
+     * 1) We have not recieved any data from /getwalletsyncdata since the
+     *    configured timeout. (Default 3 mins)
+     *
+     * 2) The network height has not changed since the configured timeout
+     *   (Default 3 mins)
+     *
+     * 3) The local daemon height has not changed since the configured timeout
+     *   (Default 3 mins)
+     *
+     * Example:
+     *
+     * ```javascript
+     * wallet.on('deadnode', () => {
+     *     console.log('Ruh roh, looks like the daemon is dead.. maybe you want to swapNode()?');
+     * });
+     * ```
+     *
+     * @event
+     */
+    on(event: 'deadnode', callback: () => void): this;
 }
 
 /**
@@ -673,17 +698,17 @@ export class WalletBackend extends EventEmitter {
     /**
      * Executes the main loop every n seconds for us
      */
-    private syncThread: Metronome;
+    private syncThread!: Metronome;
 
     /**
      * Update daemon info every n seconds
      */
-    private daemonUpdateThread: Metronome;
+    private daemonUpdateThread!: Metronome;
 
     /**
      * Check on locked tx status every n seconds
      */
-    private lockedTransactionsCheckThread: Metronome;
+    private lockedTransactionsCheckThread!: Metronome;
 
     /**
      * Whether our wallet is synced. Used for selectively firing the sync/desync
@@ -773,47 +798,9 @@ export class WalletBackend extends EventEmitter {
             privateViewKey, this.config,
         );
 
-        this.walletSynchronizer.on('heightchange', (walletHeight) => {
-            this.emit(
-                'heightchange',
-                walletHeight,
-                this.daemon.getLocalDaemonBlockCount(),
-                this.daemon.getNetworkBlockCount()
-            );
-        });
+        this.setupEventHandlers();
 
-        /* Passing through events from daemon to users */
-        this.daemon.on('disconnect', () => {
-            this.emit('disconnect');
-        });
-
-        this.daemon.on('connect', () => {
-            this.emit('connect');
-        });
-
-        this.daemon.on('heightchange', (localDaemonBlockCount, networkDaemonBlockCount) => {
-            this.emit(
-                'heightchange',
-                this.walletSynchronizer.getHeight(),
-                localDaemonBlockCount,
-                networkDaemonBlockCount,
-            );
-        });
-
-        this.syncThread = new Metronome(
-            () => this.sync(true),
-            this.config.syncThreadInterval,
-        );
-
-        this.daemonUpdateThread = new Metronome(
-            () => this.updateDaemonInfo(),
-            this.config.daemonUpdateInterval,
-        );
-
-        this.lockedTransactionsCheckThread = new Metronome(
-            () => this.checkLockedTransactions(),
-            this.config.lockedTransactionsCheckInterval,
-        );
+        this.setupMetronomes();
     }
 
     /**
@@ -1995,11 +1982,17 @@ export class WalletBackend extends EventEmitter {
      */
     private async processBlocks(sleep: boolean): Promise<boolean> {
         /* Take the blocks to process for this tick */
-        const blocks: Block[] = await this.walletSynchronizer.fetchBlocks(this.config.blocksPerTick);
+        const [blocks, failCount] = await this.walletSynchronizer.fetchBlocks(this.config.blocksPerTick);
 
         if (blocks.length === 0) {
+            let sleepMultiplier: number = failCount === 0 ? 1 : failCount;
+
+            if (sleepMultiplier > 10) {
+                sleepMultiplier = 10;
+            }
+
             if (sleep) {
-                await delay(this.config.daemonUpdateInterval);
+                await delay(sleepMultiplier * this.config.daemonUpdateInterval);
             }
 
             return false;
@@ -2130,15 +2123,24 @@ export class WalletBackend extends EventEmitter {
         };
     }
 
-    /**
-     * Initialize stuff not stored in the JSON.
-     */
-    private initAfterLoad(daemon: IDaemon, config: Config): void {
-        this.config = config;
-        this.daemon = daemon;
+    private setupMetronomes() {
+        this.syncThread = new Metronome(
+            () => this.sync(true),
+            this.config.syncThreadInterval,
+        );
 
-        this.daemon.updateConfig(config);
+        this.daemonUpdateThread = new Metronome(
+            () => this.updateDaemonInfo(),
+            this.config.daemonUpdateInterval,
+        );
 
+        this.lockedTransactionsCheckThread = new Metronome(
+            () => this.checkLockedTransactions(),
+            this.config.lockedTransactionsCheckInterval,
+        );
+    }
+
+    private setupEventHandlers() {
         /* Passing through events from daemon to users */
         this.daemon.on('disconnect', () => {
             this.emit('disconnect');
@@ -2157,7 +2159,12 @@ export class WalletBackend extends EventEmitter {
             );
         });
 
-        this.walletSynchronizer.initAfterLoad(this.subWallets, daemon, this.config);
+        /* Compiler being really stupid and can't figure out how to fix.. */
+        this.daemon.on('deadnode' as any, () => {
+            this.emit('deadnode');
+        });
+
+        this.walletSynchronizer.initAfterLoad(this.subWallets, this.daemon, this.config);
 
         this.walletSynchronizer.on('heightchange', (walletHeight) => {
             this.emit(
@@ -2168,22 +2175,25 @@ export class WalletBackend extends EventEmitter {
             );
         });
 
+        this.walletSynchronizer.on('deadnode', () => {
+            this.emit('deadnode');
+        });
+    }
+
+    /**
+     * Initialize stuff not stored in the JSON.
+     */
+    private initAfterLoad(daemon: IDaemon, config: Config): void {
+        this.config = config;
+        this.daemon = daemon;
+
+        this.daemon.updateConfig(config);
+
+        this.setupEventHandlers();
+
         this.subWallets.initAfterLoad(this.config);
 
-        this.syncThread = new Metronome(
-            () => this.sync(true),
-            this.config.syncThreadInterval,
-        );
-
-        this.daemonUpdateThread = new Metronome(
-            () => this.updateDaemonInfo(),
-            this.config.daemonUpdateInterval,
-        );
-
-        this.lockedTransactionsCheckThread = new Metronome(
-            () => this.checkLockedTransactions(),
-            this.config.lockedTransactionsCheckInterval,
-        );
+        this.setupMetronomes();
     }
 
     /**

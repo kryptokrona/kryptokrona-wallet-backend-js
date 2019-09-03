@@ -96,6 +96,18 @@ export class Daemon extends EventEmitter implements IDaemon {
     });
 
     /**
+     * Last time the network height updated. If this goes over the configured
+     * limit, we'll emit deadnode.
+     */
+    private lastUpdatedNetworkHeight: Date = new Date();
+
+    /**
+     * Last time the daemon height updated. If this goes over the configured
+     * limit, we'll emit deadnode.
+     */
+    private lastUpdatedLocalHeight: Date = new Date();
+
+    /**
      * Did our last contact with the daemon succeed. Set to true initially
      * so initial failure to connect will fire disconnect event.
      */
@@ -191,6 +203,14 @@ export class Daemon extends EventEmitter implements IDaemon {
                 [LogCategory.DAEMON],
             );
 
+            const diff1 = (new Date().getTime() - this.lastUpdatedNetworkHeight.getTime()) / 1000;
+            const diff2 = (new Date().getTime() - this.lastUpdatedLocalHeight.getTime()) / 1000;
+
+            if (diff1 > this.config.maxLastUpdatedNetworkHeightInterval
+             || diff2 > this.config.maxLastUpdatedLocalHeightInterval) {
+                this.emit('deadnode');
+            }
+
             return;
         }
 
@@ -199,6 +219,14 @@ export class Daemon extends EventEmitter implements IDaemon {
         if (info.height === undefined && !haveDeterminedSsl) {
             this.sslDetermined = true;
             this.ssl = false;
+
+            const diff1 = (new Date().getTime() - this.lastUpdatedNetworkHeight.getTime()) / 1000;
+            const diff2 = (new Date().getTime() - this.lastUpdatedLocalHeight.getTime()) / 1000;
+
+            if (diff1 > this.config.maxLastUpdatedNetworkHeightInterval
+             || diff2 > this.config.maxLastUpdatedLocalHeightInterval) {
+                this.emit('deadnode');
+            }
 
             return this.updateDaemonInfo();
         }
@@ -223,6 +251,17 @@ export class Daemon extends EventEmitter implements IDaemon {
         if (this.localDaemonBlockCount !== info.height 
          || this.networkBlockCount !== info.network_height) {
             this.emit('heightchange', info.height, info.network_height);
+
+            this.lastUpdatedNetworkHeight = new Date();
+            this.lastUpdatedLocalHeight = new Date();
+        } else {
+            const diff1 = (new Date().getTime() - this.lastUpdatedNetworkHeight.getTime()) / 1000;
+            const diff2 = (new Date().getTime() - this.lastUpdatedLocalHeight.getTime()) / 1000;
+
+            if (diff1 > this.config.maxLastUpdatedNetworkHeightInterval
+             || diff2 > this.config.maxLastUpdatedLocalHeightInterval) {
+                this.emit('deadnode');
+            }
         }
 
         this.localDaemonBlockCount = info.height;
@@ -255,7 +294,7 @@ export class Daemon extends EventEmitter implements IDaemon {
         blockHashCheckpoints: string[],
         startHeight: number,
         startTimestamp: number,
-        blockCount: number): Promise<[Block[], TopBlock | undefined]> {
+        blockCount: number): Promise<[Block[], TopBlock | boolean]> {
 
         let data;
 
@@ -274,14 +313,14 @@ export class Daemon extends EventEmitter implements IDaemon {
                 [LogCategory.DAEMON],
             );
 
-            return [[], undefined];
+            return [[], false];
         }
 
         if (data.synced && data.topBlock && data.topBlock.height && data.topBlock.hash) {
             return [data.items.map(Block.fromJSON), data.topBlock];
         }
 
-        return [data.items.map(Block.fromJSON), undefined];
+        return [data.items.map(Block.fromJSON), true];
     }
 
     /**

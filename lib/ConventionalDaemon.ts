@@ -176,7 +176,7 @@ export class ConventionalDaemon extends EventEmitter implements IDaemon {
         blockHashCheckpoints: string[],
         startHeight: number,
         startTimestamp: number,
-        blockCount: number): Promise<[Block[], TopBlock | undefined]> {
+        blockCount: number): Promise<[Block[], TopBlock | false]> {
 
         const { items, topBlock } = await this.daemon.getWalletSyncData({
             blockCount,

@@ -152,6 +152,26 @@ export interface IConfig {
      */
     blocksPerDaemonRequest?: number;
 
+    /**
+     * The amount of seconds to permit not having fetched a block from the
+     * daemon before emitting 'deadnode'. Note that this just means contacting
+     * the daemon for data - if you are synced and it returns TopBlock - the
+     * event will not be emitted.
+     */
+    maxLastFetchedBlockInterval?: number;
+
+    /**
+     * The amount of seconds to permit not having fetched a new network height
+     * from the daemon before emitting 'deadnode'.
+     */
+    maxLastUpdatedNetworkHeightInterval?: number;
+
+    /**
+     * The amount of seconds to permit not having fetched a new local height
+     * from the daemon before emitting 'deadnode'.
+     */
+    maxLastUpdatedLocalHeightInterval?: number;
+
     [key: string]: any;
 }
 
@@ -309,6 +329,27 @@ export class Config implements IConfig {
      * more than 100.
      */
     public blocksPerDaemonRequest: number = 100;
+
+    /**
+     * The amount of seconds to permit not having fetched a block from the
+     * daemon before emitting 'deadnode'. Note that this just means contacting
+     * the daemon for data - if you are synced and it returns TopBlock - the
+     * event will not be emitted.
+     */
+    public maxLastFetchedBlockInterval: number = 60 * 3;
+
+    /**
+     * The amount of seconds to permit not having fetched a new network height
+     * from the daemon before emitting 'deadnode'.
+     */
+    public maxLastUpdatedNetworkHeightInterval: number = 60 * 3;
+
+    /**
+     * The amount of seconds to permit not having fetched a new local height
+     * from the daemon before emitting 'deadnode'.
+     */
+    public maxLastUpdatedLocalHeightInterval: number = 60 * 3;
+
 
     [key: string]: any;
 }
