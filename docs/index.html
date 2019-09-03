@@ -61,31 +61,55 @@
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
 				<p><img src="https://user-images.githubusercontent.com/34389545/35821974-62e0e25c-0a70-11e8-87dd-2cfffeb6ed47.png" alt="image"></p>
-				<h4 id="master-build-status">Master Build Status</h4>
+				<a href="#master-build-status" id="master-build-status" style="color: inherit; text-decoration: none;">
+					<h4>Master Build Status</h4>
+				</a>
 				<p><a href="https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js"><img src="https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js.svg?branch=master" alt="Build Status"></a></p>
-				<h4 id="npm">NPM</h4>
+				<a href="#npm" id="npm" style="color: inherit; text-decoration: none;">
+					<h4>NPM</h4>
+				</a>
 				<p><a href="https://npmjs.org/package/turtlecoin-wallet-backend"><img src="https://nodei.co/npm/turtlecoin-wallet-backend.png?compact=true" alt="NPM"></a></p>
-				<h4 id="github">Github</h4>
+				<a href="#github" id="github" style="color: inherit; text-decoration: none;">
+					<h4>Github</h4>
+				</a>
 				<p><a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js">https://github.com/turtlecoin/turtlecoin-wallet-backend-js</a></p>
-				<h1 id="turtlecoin-wallet-backend">turtlecoin-wallet-backend</h1>
+				<a href="#turtlecoin-wallet-backend" id="turtlecoin-wallet-backend" style="color: inherit; text-decoration: none;">
+					<h1>turtlecoin-wallet-backend</h1>
+				</a>
 				<p>Provides an interface to the TurtleCoin network, allowing wallet applications to be built.</p>
 				<ul>
 					<li>Downloads blocks from the network, either through a traditional daemon, or a blockchain cache for increased speed</li>
 					<li>Processes blocks, decrypting transactions that belong to the user</li>
 					<li>Sends and receives transactions</li>
 				</ul>
-				<h2 id="installation">Installation</h2>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h2>Installation</h2>
+				</a>
 				<p>NPM:</p>
 				<p><code>npm install turtlecoin-wallet-backend --save</code></p>
 				<p>Yarn:</p>
 				<p><code>yarn add turtlecoin-wallet-backend</code></p>
-				<h2 id="documentation">Documentation</h2>
+				<a href="#installation-from-github" id="installation-from-github" style="color: inherit; text-decoration: none;">
+					<h2>Installation from GitHub</h2>
+				</a>
+				<p>If you need features which have not yet made it into a release yet, you can install from GitHub.</p>
+				<p>NPM:</p>
+				<p><code>npm install https://github.com/turtlecoin/turtlecoin-wallet-backend-js --save</code></p>
+				<p>Yarn:</p>
+				<p><code>yarn add https://github.com/turtlecoin/turtlecoin-wallet-backend-js</code></p>
+				<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
+					<h2>Documentation</h2>
+				</a>
 				<p><a href="https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html">You can view the documentation here</a></p>
 				<p>You can see a list of all the other classes on the right side of the screen.
 				Note that you will need to prefix them all with <code>WB.</code> to access them, if you are not using typescript style imports, assuming you imported with <code>const WB = require(&#39;turtlecoin-wallet-backend&#39;)</code>.</p>
-				<h2 id="quick-start">Quick Start</h2>
+				<a href="#quick-start" id="quick-start" style="color: inherit; text-decoration: none;">
+					<h2>Quick Start</h2>
+				</a>
 				<p>You can find an <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/tree/master/examples/example1">example project in the examples</a> folder.</p>
-				<h3 id="javascript">Javascript</h3>
+				<a href="#javascript" id="javascript" style="color: inherit; text-decoration: none;">
+					<h3>Javascript</h3>
+				</a>
 				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> WB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'turtlecoin-wallet-backend'</span>);
 
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
@@ -109,7 +133,9 @@
 })().catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Caught promise rejection: '</span> + err);
 });</code></pre>
-				<h3 id="typescript">Typescript</h3>
+				<a href="#typescript" id="typescript" style="color: inherit; text-decoration: none;">
+					<h3>Typescript</h3>
+				</a>
 				<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { WalletBackend, Daemon, IDaemon } <span class="hljs-keyword">from</span> <span class="hljs-string">'turtlecoin-wallet-backend'</span>;
 
 <span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; {
@@ -134,18 +160,26 @@
 }</span>)<span class="hljs-params">()</span>.<span class="hljs-params">catch</span>(<span class="hljs-params">err =&gt; {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-params">'Caught promise rejection: ' + err</span>);
 }</span>);</span></code></pre>
-				<h2 id="configuration">Configuration</h2>
+				<a href="#configuration" id="configuration" style="color: inherit; text-decoration: none;">
+					<h2>Configuration</h2>
+				</a>
 				<p>There are a few features which you may wish to configure that are worth mentioning.</p>
-				<h3 id="auto-optimize">Auto Optimize</h3>
+				<a href="#auto-optimize" id="auto-optimize" style="color: inherit; text-decoration: none;">
+					<h3>Auto Optimize</h3>
+				</a>
 				<p>Auto optimization is enabled by default. This makes the wallet automatically send fusion transactions when needed to keep the wallet permanently optimized.</p>
 				<p>To enable/disable this feature, use the following code:</p>
 				<pre><code class="language-javascript">wallet.enableAutoOptimization(<span class="hljs-literal">false</span>); <span class="hljs-comment">// disables auto optimization</span></code></pre>
-				<h3 id="coinbase-transaction-scanning">Coinbase Transaction Scanning</h3>
+				<a href="#coinbase-transaction-scanning" id="coinbase-transaction-scanning" style="color: inherit; text-decoration: none;">
+					<h3>Coinbase Transaction Scanning</h3>
+				</a>
 				<p>By default, coinbase transactions are not scanned.
 				This is due to the majority of people not having solo mined any blocks.</p>
 				<p>If you wish to enable coinbase transaction scanning, run this line of code:</p>
 				<pre><code class="language-javascript">wallet.scanCoinbaseTransactions(<span class="hljs-literal">true</span>)</code></pre>
-				<h3 id="logging">Logging</h3>
+				<a href="#logging" id="logging" style="color: inherit; text-decoration: none;">
+					<h3>Logging</h3>
+				</a>
 				<p>By default, the logger is disabled. You can enable it like so:</p>
 				<pre><code class="language-javascript">wallet.setLogLevel(WB.LogLevel.DEBUG);</code></pre>
 				<p>and in typescript:</p>
@@ -166,36 +200,79 @@
 });</code></pre>
 				<p>In this example, we only print messages that fall into the SYNC category.</p>
 				<p>You can view available categories and log levels in the documentation.</p>
-				<h2 id="changelog">Changelog</h2>
-				<h3 id="v3-4-6">v3.4.6</h3>
+				<a href="#changelog" id="changelog" style="color: inherit; text-decoration: none;">
+					<h2>Changelog</h2>
+				</a>
+				<a href="#v3410" id="v3410" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.10</h3>
+				</a>
+				<ul>
+					<li>Calculate balance in an alternative way which fixes historical balances being incorrect after a rewind &gt; 5000 blocks</li>
+				</ul>
+				<a href="#v349" id="v349" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.9</h3>
+				</a>
+				<ul>
+					<li>Fix heightchange being emitted on topblock when there are still blocks remaining to be processed</li>
+				</ul>
+				<a href="#v348" id="v348" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.8</h3>
+				</a>
+				<ul>
+					<li><code>on(&#39;heightchange&#39;)</code> is now emitted when <code>reset()</code>, <code>rewind()</code>, or <code>rescan()</code> is used.</li>
+					<li><code>on(&#39;heightchange&#39;)</code> is now emitted when a top block is stored, fixing wallet height lagging behind network height.</li>
+				</ul>
+				<a href="#v347" id="v347" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.7</h3>
+				</a>
+				<ul>
+					<li>Fix issue with removeForkedTransactions, which also effected <code>rewind()</code></li>
+				</ul>
+				<a href="#v346" id="v346" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.6</h3>
+				</a>
 				<ul>
 					<li>Add <code>rewind()</code></li>
+					<li>Add <code>on(&#39;heightchange&#39;)</code> event</li>
+					<li>More improvements to keep-alive, max sockets, etc</li>
 				</ul>
-				<h3 id="v3-4-5">v3.4.5</h3>
+				<a href="#v345" id="v345" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.5</h3>
+				</a>
 				<ul>
 					<li>Fix bug causing balance from sent transaction to appear in both locked + unlocked balance</li>
 				</ul>
-				<h3 id="v3-4-4">v3.4.4</h3>
+				<a href="#v344" id="v344" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.4</h3>
+				</a>
 				<ul>
 					<li>Fix bug with how forked transactions were handled</li>
 					<li>Increase max sockets to use with request to fix timeouts in some environments</li>
 					<li>Fix bug where transactions to yourself had an incorrect amount when locked</li>
 				</ul>
-				<h3 id="v3-4-3">v3.4.3</h3>
+				<a href="#v343" id="v343" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.3</h3>
+				</a>
 				<ul>
 					<li>Add <code>on(&#39;disconnect&#39;)</code> and <code>on(&#39;connect&#39;)</code> events for daemon</li>
 					<li>Update <code>turtlecoin-utils</code> dependency</li>
 				</ul>
-				<h3 id="v3-4-2">v3.4.2</h3>
+				<a href="#v342" id="v342" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.2</h3>
+				</a>
 				<ul>
 					<li>Set keep-alive to true for <code>Daemon</code> and <code>BlockchainCacheApi</code></li>
 					<li>Use IP regex instead of <code>net</code> module to allow working in non node environments</li>
 				</ul>
-				<h3 id="v3-4-1">v3.4.1</h3>
+				<a href="#v341" id="v341" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.1</h3>
+				</a>
 				<ul>
 					<li>Fix transactions being broken</li>
 				</ul>
-				<h3 id="v3-4-0">v3.4.0</h3>
+				<a href="#v340" id="v340" style="color: inherit; text-decoration: none;">
+					<h3>v3.4.0</h3>
+				</a>
 				<ul>
 					<li>Add type assertions for JavaScript users</li>
 					<li>May possibly break your code if you were using implicit conversions to pass strings as numbers, etc</li>
@@ -203,58 +280,84 @@
 					<li>Fix warning when using TLS with raw IP address</li>
 					<li>Known regression - Transactions are broken. Update to 3.4.1</li>
 				</ul>
-				<h3 id="v3-3-2">v3.3.2</h3>
+				<a href="#v332" id="v332" style="color: inherit; text-decoration: none;">
+					<h3>v3.3.2</h3>
+				</a>
 				<ul>
 					<li>Migrate from node-fetch to request for <code>BlockchainCacheApi</code> as it works better in odd environments</li>
 					<li>Remove <code>maxBodyRequestSize</code> property as <code>abort-controller</code> significantly complicated code and didn&#39;t work in odd environments</li>
 					<li>Known regression - Transactions are broken. Update to 3.4.1</li>
 				</ul>
-				<h3 id="v3-3-1">v3.3.1</h3>
+				<a href="#v331" id="v331" style="color: inherit; text-decoration: none;">
+					<h3>v3.3.1</h3>
+				</a>
 				<ul>
 					<li>Improve auto optimization</li>
 					<li>Update turtlecoin-utils dependency</li>
 					<li>Known regression - Transactions are broken. Update to 3.4.1</li>
 				</ul>
-				<h3 id="v3-3-0">v3.3.0</h3>
+				<a href="#v330" id="v330" style="color: inherit; text-decoration: none;">
+					<h3>v3.3.0</h3>
+				</a>
 				<ul>
 					<li>Adds <code>swapNode()</code> method</li>
 				</ul>
-				<h3 id="v3-2-0">v3.2.0</h3>
+				<a href="#v320" id="v320" style="color: inherit; text-decoration: none;">
+					<h3>v3.2.0</h3>
+				</a>
 				<ul>
 					<li>Adds <code>getDaemonConnectionInfo()</code> method</li>
 					<li>Removes compiled JavaScript from GitHub - GitHub install is no longer supported</li>
 				</ul>
-				<h3 id="v3-1-1">v3.1.1</h3>
+				<a href="#v311" id="v311" style="color: inherit; text-decoration: none;">
+					<h3>v3.1.1</h3>
+				</a>
 				<ul>
 					<li>Fixes bug where wallet may not correctly halt after calling <code>stop()</code>.</li>
 				</ul>
-				<h3 id="v3-1-0">v3.1.0</h3>
+				<a href="#v310" id="v310" style="color: inherit; text-decoration: none;">
+					<h3>v3.1.0</h3>
+				</a>
 				<ul>
 					<li>Adds <code>Daemon</code> class. This class supports Blockchain cache api&#39;s, conventional daemons, http and https, all automatically.</li>
 					<li>Marks <code>ConventionalDaemon</code> and <code>BlockchainCacheApi</code> as deprecated. These will be removed in v4.0.0. Please use the <code>Daemon</code> class instead.</li>
 				</ul>
-				<h3 id="v3-0-1">v3.0.1</h3>
+				<a href="#v301" id="v301" style="color: inherit; text-decoration: none;">
+					<h3>v3.0.1</h3>
+				</a>
 				<ul>
 					<li>Fix issue where <code>reset()</code> would cause double wallet scanning.</li>
 				</ul>
-				<h3 id="v3-0-0">v3.0.0</h3>
+				<a href="#v300" id="v300" style="color: inherit; text-decoration: none;">
+					<h3>v3.0.0</h3>
+				</a>
 				<ul>
 					<li>Fix bug where using multiple wallet instances with different configs would only use the latest config.</li>
 					<li>API change - You must now provide a config to the Utilities/ValidateParameters functions if you are using a non default config, for example if you are using the library for another cryptocurrency. Otherwise, the default TurtleCoin config will be used.</li>
 				</ul>
-				<h3 id="v2-0-0">v2.0.0</h3>
+				<a href="#v200" id="v200" style="color: inherit; text-decoration: none;">
+					<h3>v2.0.0</h3>
+				</a>
 				<p>Start of changelog.</p>
-				<h2 id="contributing">Contributing</h2>
-				<h3 id="building-for-developers-">Building (For Developers)</h3>
+				<a href="#contributing" id="contributing" style="color: inherit; text-decoration: none;">
+					<h2>Contributing</h2>
+				</a>
+				<a href="#building-for-developers" id="building-for-developers" style="color: inherit; text-decoration: none;">
+					<h3>Building (For Developers)</h3>
+				</a>
 				<p><code>git clone https://github.com/turtlecoin/turtlecoin-wallet-backend-js.git</code></p>
 				<p><code>cd turtlecoin-wallet-backend</code></p>
 				<p><code>npm install -g yarn</code> (Skip this if you already have yarn installed)</p>
 				<p><code>yarn build</code></p>
 				<p>Generated javascript files will be written to the dist/lib/ folder.</p>
-				<h3 id="running-tests">Running tests</h3>
+				<a href="#running-tests" id="running-tests" style="color: inherit; text-decoration: none;">
+					<h3>Running tests</h3>
+				</a>
 				<p><code>yarn test</code> - This will run the basic tests</p>
 				<p><code>yarn test-all</code> - This will run all tests, including performance tests.</p>
-				<h3 id="before-making-a-pr">Before making a PR</h3>
+				<a href="#before-making-a-pr" id="before-making-a-pr" style="color: inherit; text-decoration: none;">
+					<h3>Before making a PR</h3>
+				</a>
 				<ul>
 					<li>Ensure you are editing the TypeScript code, and not the JavaScript code (You should be in the <code>lib/</code> folder)</li>
 					<li>Ensure you have built the JavaScript code from the TypeScript code: <code>yarn build</code></li>
@@ -329,6 +432,7 @@
 				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
@@ -377,7 +481,7 @@
 	</div>
 </footer>
 <div class="container tsd-generator">
-	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
 </div>
 <div class="overlay"></div>
 <script src="assets/js/main.js"></script>
