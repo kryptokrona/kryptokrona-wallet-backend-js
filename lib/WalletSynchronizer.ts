@@ -139,6 +139,7 @@ export class WalletSynchronizer extends EventEmitter {
         this.config = config;
         this.cancelledTransactionsFailCount = new Map();
         this.lastDownloadedBlocks = new Date();
+        this.failCount = 0;
     }
 
     /**
