@@ -184,6 +184,10 @@ export class Daemon extends EventEmitter implements IDaemon {
     public async init(): Promise<void> {
         /* Note - if one promise throws, the other will be cancelled */
         await Promise.all([this.updateDaemonInfo(), this.updateFeeInfo()]);
+
+        if (this.networkBlockCount === 0) {
+            this.emit('deadnode');
+        }
     }
 
     /**
@@ -314,6 +318,12 @@ export class Daemon extends EventEmitter implements IDaemon {
             );
 
             return [[], false];
+        }
+
+        /* The node is not dead if we're fetching blocks. */
+        if (data.items.length >= 0) {
+            this.lastUpdatedNetworkHeight = new Date();
+            this.lastUpdatedLocalHeight = new Date();
         }
 
         if (data.synced && data.topBlock && data.topBlock.height && data.topBlock.hash) {
