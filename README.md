@@ -176,6 +176,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v3.4.11
+
+* Add `on('deadnode')` event
+
 ### v3.4.10
 
 * Calculate balance in an alternative way which fixes historical balances being incorrect after a rewind > 5000 blocks
