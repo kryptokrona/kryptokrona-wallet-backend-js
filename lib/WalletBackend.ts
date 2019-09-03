@@ -755,6 +755,12 @@ export class WalletBackend extends EventEmitter {
     private config: Config;
 
     /**
+     * We only want to submit dead node once, then reset the flag when we
+     * swap node or the node comes back online.
+     */
+    private haveEmittedDeadNode: boolean = false;
+
+    /**
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
      *
@@ -836,6 +842,8 @@ export class WalletBackend extends EventEmitter {
         this.daemon = newDaemon;
 
         this.walletSynchronizer.swapNode(newDaemon);
+
+        this.haveEmittedDeadNode = false;
 
         if (shouldRestart) {
             await this.start();
@@ -2157,11 +2165,16 @@ export class WalletBackend extends EventEmitter {
                 localDaemonBlockCount,
                 networkDaemonBlockCount,
             );
+
+            this.haveEmittedDeadNode = false;
         });
 
         /* Compiler being really stupid and can't figure out how to fix.. */
         this.daemon.on('deadnode' as any, () => {
-            this.emit('deadnode');
+            if (!this.haveEmittedDeadNode) {
+                this.haveEmittedDeadNode = true;
+                this.emit('deadnode');
+            }
         });
 
         this.walletSynchronizer.initAfterLoad(this.subWallets, this.daemon, this.config);
@@ -2173,10 +2186,15 @@ export class WalletBackend extends EventEmitter {
                 this.daemon.getLocalDaemonBlockCount(),
                 this.daemon.getNetworkBlockCount()
             );
+
+            this.haveEmittedDeadNode = false;
         });
 
         this.walletSynchronizer.on('deadnode', () => {
-            this.emit('deadnode');
+            if (!this.haveEmittedDeadNode) {
+                this.haveEmittedDeadNode = true;
+                this.emit('deadnode');
+            }
         });
     }
 
