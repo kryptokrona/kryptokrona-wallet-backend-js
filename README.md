@@ -179,6 +179,7 @@ You can view available categories and log levels in the documentation.
 ### v3.4.12
 
 * Adds a customizable user agent option to the config
+* Ring signatures are now always checked before sending
 
 ### v3.4.11
 
