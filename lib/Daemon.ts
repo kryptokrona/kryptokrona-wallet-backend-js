@@ -531,6 +531,7 @@ export class Daemon extends EventEmitter implements IDaemon {
                    HTTPS or HTTP yet. */
                 url: `${protocol}://${this.host}:${this.port}${endpoint}`,
                 agent: protocol === 'https' ? this.httpsAgent : this.httpAgent,
+                headers: { 'User-Agent': this.config.customUserAgentString },
             });
 
             /* Cool, https works. Store for later. */
@@ -566,6 +567,7 @@ export class Daemon extends EventEmitter implements IDaemon {
                     /* Lets try HTTP now. */
                     url: `http://${this.host}:${this.port}${endpoint}`,
                     agent: this.httpAgent,
+                    headers: { 'User-Agent': this.config.customUserAgentString },
                 });
 
                 this.ssl = false;

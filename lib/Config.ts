@@ -172,6 +172,11 @@ export interface IConfig {
      */
     maxLastUpdatedLocalHeightInterval?: number;
 
+    /**
+     * Allows specifying a customer user agent string to use with requests.
+     */
+    customUserAgentString?: string;
+
     [key: string]: any;
 }
 
@@ -350,6 +355,10 @@ export class Config implements IConfig {
      */
     public maxLastUpdatedLocalHeightInterval: number = 60 * 3;
 
+    /**
+     * Allows setting a customer user agent string
+     */
+    public customUserAgentString: string = this.ticker.toLowerCase() + '-wallet-backend-da-greatest!';
 
     [key: string]: any;
 }
