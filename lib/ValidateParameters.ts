@@ -80,7 +80,7 @@ export function validateAddress(
         new Array(address), integratedAddressAllowed, MergeConfig(config),
     );
 
-    return err.errorCode === 0;
+    return err.errorCode === WalletErrorCode.SUCCESS;
 }
 
 /**
