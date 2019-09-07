@@ -550,6 +550,36 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Verifies that the address given is valid.
+     *
+     * Example:
+     * ```javascript
+     * const address = 'TRTLuzbkEepSJdmqkMJ11APWaazS8aat2Vmobbve6GA1D8FfMr7PAZZMJv7TozUXaw5y7DN2n626P54J465fhDmFatRSnp61Vkv';
+     *
+     * const isValid = WB.WalletBackend.validateAddress(address, true);
+     *
+     * ```
+     *
+     * @param address   The address to validate.
+     *
+     * @param integratedAddressAllowed    Should an integrated address be allowed?
+     *
+     * @returns Returns true if the address is valid, otherwise returns false
+     *
+     */
+    public static validateAddress(
+        address: string,
+        integratedAddressAllowed: boolean,
+        config?: IConfig): boolean {
+
+        const err: WalletError = validateAddresses(
+            new Array(address), integratedAddressAllowed, MergeConfig(config),
+        );
+
+        return err.errorCode === 0;
+    }
+
+    /**
      * This method imports a wallet you have previously created, in a 'watch only'
      * state. This wallet can view incoming transactions, but cannot send
      * transactions. It also cannot view outgoing transactions, so balances
