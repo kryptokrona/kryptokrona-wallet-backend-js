@@ -173,7 +173,7 @@ export interface IConfig {
     maxLastUpdatedLocalHeightInterval?: number;
 
     /**
-     * Allows specifying a customer user agent string to use with requests.
+     * Allows specifying a custom user agent string to use with requests.
      */
     customUserAgentString?: string;
 
