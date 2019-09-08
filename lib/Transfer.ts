@@ -455,6 +455,12 @@ async function verifyAndSendTransaction(
     daemon: IDaemon,
     config: Config): Promise<([TX, string, undefined]) | ([undefined, undefined, WalletError])> {
 
+    logger.log(
+        `Created transaction: ${JSON.stringify(tx.transaction)}`,
+        LogLevel.TRACE,
+        LogCategory.TRANSACTIONS
+    );
+
     /* Check the transaction isn't too large to fit in a block */
     const tooBigErr: WalletError = isTransactionPayloadTooBig(
         tx.rawTransaction, daemon.getNetworkBlockCount(), config
@@ -470,7 +476,7 @@ async function verifyAndSendTransaction(
         return [undefined, undefined, new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY)];
     }
 
-    /* Check the transaction is zero fee */
+    /* Check the transaction has the fee that we expect (0 for fusion) */
     if (!verifyTransactionFee(tx.transaction, fee)) {
         return [undefined, undefined, new WalletError(WalletErrorCode.UNEXPECTED_FEE)];
     }
@@ -569,6 +575,12 @@ async function storeSentTransaction(
     );
 
     subWallets.addUnconfirmedTransaction(tx);
+
+    logger.log(
+        `Stored unconfirmed transaction: ${JSON.stringify(tx)}`,
+        LogLevel.TRACE,
+        LogCategory.TRANSACTIONS,
+    );
 
     return tx;
 }

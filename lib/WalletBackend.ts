@@ -1924,7 +1924,7 @@ export class WalletBackend extends EventEmitter {
         for (const [publicKey, input] of txData.inputsToAdd) {
 
             logger.log(
-                'Adding input ' + input.key,
+                `Adding input ${input.key} with keyimage ${input.keyImage}`,
                 LogLevel.DEBUG,
                 LogCategory.SYNC,
             );
@@ -1934,12 +1934,17 @@ export class WalletBackend extends EventEmitter {
 
         /* Mark any spent key images */
         for (const [publicKey, keyImage] of txData.keyImagesToMarkSpent) {
+            logger.log(
+                `Marking input with keyimage ${keyImage} as spent`,
+                LogLevel.DEBUG,
+                LogCategory.SYNC,
+            );
+
             this.subWallets.markInputAsSpent(publicKey, keyImage, blockHeight);
         }
 
         /* Store any transactions */
         for (const transaction of txData.transactionsToAdd) {
-
             logger.log(
                 'Adding transaction ' + transaction.hash,
                 LogLevel.INFO,
@@ -2005,6 +2010,12 @@ export class WalletBackend extends EventEmitter {
 
             return false;
         }
+
+        logger.log(
+            `Processing chunk of ${blocks.length} blocks`,
+            LogLevel.DEBUG,
+            LogCategory.SYNC,
+        );
 
         for (const block of blocks) {
 

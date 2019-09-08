@@ -6,6 +6,7 @@ import { CryptoUtils} from './CnUtils';
 import { SubWalletsJSON, txPrivateKeysToVector } from './JsonSerialization';
 import { SubWallet } from './SubWallet';
 import { Config } from './Config';
+import { LogCategory, logger, LogLevel } from './Logger';
 
 import {
     Transaction, TransactionInput, TxInputAndOwner, UnconfirmedInput,
@@ -247,6 +248,12 @@ export class SubWallets {
      * sent by us, remove it from the locked container
      */
     public addTransaction(transaction: Transaction): void {
+        logger.log(
+            `Transaction details: ${JSON.stringify(transaction)}`,
+            LogLevel.TRACE,
+            [LogCategory.SYNC, LogCategory.TRANSACTIONS],
+        );
+
         /* Remove this transaction from the locked data structure, if we had
            added it previously as an outgoing tx */
         _.remove(this.lockedTransactions, (tx) => {
@@ -254,7 +261,13 @@ export class SubWallets {
         });
 
         if (this.transactions.some((tx) => tx.hash === transaction.hash)) {
-            throw new Error(`Transaction ${transaction.hash} was added to the wallet twice!`);
+            logger.log(
+                `Already seen transaction ${transaction.hash}, ignoring.`,
+                LogLevel.DEBUG,
+                [LogCategory.SYNC, LogCategory.TRANSACTIONS],
+            );
+
+            return;
         }
 
         this.transactions.push(transaction);
@@ -264,8 +277,20 @@ export class SubWallets {
      * Adds a transaction we sent to the locked transactions container
      */
     public addUnconfirmedTransaction(transaction: Transaction): void {
+        logger.log(
+            `Unconfirmed transaction details: ${JSON.stringify(transaction)}`,
+            LogLevel.TRACE,
+            [LogCategory.SYNC, LogCategory.TRANSACTIONS],
+        );
+
         if (this.lockedTransactions.some((tx) => tx.hash === transaction.hash)) {
-            throw new Error(`Transaction ${transaction.hash} was added to the wallet twice!`);
+            logger.log(
+                `Already seen unconfirmed transaction ${transaction.hash}, ignoring.`,
+                LogLevel.DEBUG,
+                [LogCategory.SYNC, LogCategory.TRANSACTIONS],
+            );
+
+            return;
         }
 
         this.lockedTransactions.push(transaction);
@@ -283,6 +308,12 @@ export class SubWallets {
         if (!subWallet) {
             throw new Error('Subwallet not found!');
         }
+
+        logger.log(
+            `Input details: ${JSON.stringify(input)}`,
+            LogLevel.TRACE,
+            [LogCategory.SYNC, LogCategory.TRANSACTIONS],
+        );
 
         if (!this.isViewWallet) {
             this.keyImageOwners.set(input.keyImage, publicSpendKey);

@@ -285,6 +285,12 @@ export class WalletSynchronizer extends EventEmitter {
             return [];
         }
 
+        logger.log(
+            'Checking locked transactions',
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         const cancelled: string[] = await this.daemon.getCancelledTransactions(transactionHashes);
 
         const toRemove: string[] = [];
@@ -296,11 +302,31 @@ export class WalletSynchronizer extends EventEmitter {
                 if (failCount === 10) {
                     toRemove.push(hash);
                     this.cancelledTransactionsFailCount.delete(hash);
+
+                    logger.log(
+                        `Unconfirmed transaction ${hash} is still not known by daemon after ${failCount} queries. ` +
+                        'Assuming transaction got dropped from mempool, returning funds and removing unconfirmed transaction.',
+                        LogLevel.DEBUG,
+                        LogCategory.TRANSACTIONS,
+                    );
+
                 } else {
+                    logger.log(
+                        `Unconfirmed transaction ${hash} is not known by daemon, query ${failCount + 1}.`,
+                        LogLevel.DEBUG,
+                        LogCategory.TRANSACTIONS,
+                    );
+
                     this.cancelledTransactionsFailCount.set(hash, failCount + 1);
                 }
             /* Hash has since been found, remove from fail count array */
             } else {
+                logger.log(
+                    `Unconfirmed transaction ${hash} is known by daemon, removing from possibly cancelled transactions array.`,
+                    LogLevel.DEBUG,
+                    LogCategory.TRANSACTIONS,
+                );
+
                 this.cancelledTransactionsFailCount.delete(hash);
             }
         }
@@ -308,6 +334,12 @@ export class WalletSynchronizer extends EventEmitter {
         for (const hash of cancelled) {
             /* Transaction with no history, first fail, add to map. */
             if (!this.cancelledTransactionsFailCount.has(hash)) {
+                logger.log(
+                    `Unconfirmed transaction ${hash} is not known by daemon, query 1.`,
+                    LogLevel.DEBUG,
+                    LogCategory.TRANSACTIONS,
+                );
+
                 this.cancelledTransactionsFailCount.set(hash, 1);
             }
         }
@@ -323,7 +355,7 @@ export class WalletSynchronizer extends EventEmitter {
         /* Fetch more blocks if we haven't got any downloaded yet */
         if (this.storedBlocks.length === 0) {
             logger.log(
-                'No blocks stored, fetching more.',
+                'No blocks stored, attempting to fetch more.',
                 LogLevel.DEBUG,
                 LogCategory.SYNC,
             );
