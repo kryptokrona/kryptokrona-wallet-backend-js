@@ -176,6 +176,16 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.0
+
+* Adds a `TRACE` log level for logging of daemon request+response data
+* Adds a simpler `validateAddress` function to the `ValidateParameters` module
+* Slightly improves the Auto Optimization implementation
+* Removes `BlockchainCacheApi` and `ConventionalDaemon` - Please use `Daemon` instead
+* Returns additional information from transaction failure when available
+* More logging information added
+* Transaction creation process sped up by not re-generating keyimages
+
 ### v3.4.12
 
 * Adds a customizable user agent option to the config
