@@ -740,7 +740,7 @@ export class WalletBackend extends EventEmitter {
     /**
      * Should we perform auto optimization when next synced
      */
-    private shouldPerformAutoOptimize: boolean = false;
+    private shouldPerformAutoOptimize: boolean = true;
 
     /**
      * Are we in the middle of an optimization?
