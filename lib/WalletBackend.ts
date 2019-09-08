@@ -2011,12 +2011,6 @@ export class WalletBackend extends EventEmitter {
             return false;
         }
 
-        logger.log(
-            `Processing chunk of ${blocks.length} blocks`,
-            LogLevel.DEBUG,
-            LogCategory.SYNC,
-        );
-
         for (const block of blocks) {
 
             logger.log(
