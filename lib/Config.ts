@@ -358,7 +358,7 @@ export class Config implements IConfig {
     /**
      * Allows setting a customer user agent string
      */
-    public customUserAgentString: string = this.ticker.toLowerCase() + '-wallet-backend-da-greatest!';
+    public customUserAgentString: string = this.ticker.toLowerCase() + '-wallet-backend-4.0.0';
 
     [key: string]: any;
 }
