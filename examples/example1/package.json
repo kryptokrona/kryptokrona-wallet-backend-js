@@ -4,6 +4,6 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "turtlecoin-wallet-backend": "^3.4.1"
+    "turtlecoin-wallet-backend": "https://github.com/turtlecoin/turtlecoin-wallet-backend-js"
   }
 }
