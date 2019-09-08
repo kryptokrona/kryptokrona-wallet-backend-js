@@ -132,6 +132,8 @@ export interface TransactionInputJSON {
     unlockTime: number;
 
     parentTransactionHash: string;
+
+    privateEphemeral?: string;
 }
 
 export interface UnconfirmedInputJSON {

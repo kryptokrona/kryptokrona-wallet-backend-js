@@ -376,14 +376,12 @@ export class SubWallet {
      */
     public async getTxInputKeyImage(
         derivation: string,
-        outputIndex: number): Promise<string> {
+        outputIndex: number): Promise<[string, string]> {
 
-        const [keyImage] = await generateKeyImagePrimitive(
+        return generateKeyImagePrimitive(
             this.publicSpendKey, this.privateSpendKey as string, outputIndex,
             derivation, this.config,
         );
-
-        return keyImage;
     }
 
     /**

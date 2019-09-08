@@ -587,7 +587,7 @@ export class WalletSynchronizer extends EventEmitter {
             /* Not spent yet! */
             const spendHeight: number = 0;
 
-            const keyImage = await this.subWallets.getTxInputKeyImage(
+            const [keyImage, privateEphemeral] = await this.subWallets.getTxInputKeyImage(
                 ownerSpendKey, derivation, outputIndex,
             );
 
@@ -595,6 +595,7 @@ export class WalletSynchronizer extends EventEmitter {
                 keyImage, output.amount, blockHeight,
                 rawTX.transactionPublicKey, outputIndex, output.globalIndex,
                 output.key, spendHeight, rawTX.unlockTime, rawTX.hash,
+                privateEphemeral,
             );
 
             inputs.push([ownerSpendKey, txInput]);

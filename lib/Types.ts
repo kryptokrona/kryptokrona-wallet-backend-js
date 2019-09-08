@@ -282,6 +282,8 @@ export class TransactionInput {
             unlockTime: json.unlockTime,
 
             parentTransactionHash: json.parentTransactionHash,
+
+            privateEphemeral: json.privateEphemeral || undefined,
         });
     }
 
@@ -318,6 +320,10 @@ export class TransactionInput {
     /* The transaction hash of the transaction that contains this input */
     public readonly parentTransactionHash: string;
 
+    /* The tmp private key generated when we generated the key image. Optional,
+       for backwards compatiblity. */
+    public privateEphemeral?: string = undefined;
+
     constructor(
         keyImage: string,
         amount: number,
@@ -328,7 +334,8 @@ export class TransactionInput {
         key: string,
         spendHeight: number,
         unlockTime: number,
-        parentTransactionHash: string) {
+        parentTransactionHash: string,
+        privateEphemeral: string) {
 
         this.keyImage = keyImage;
         this.amount = amount;
@@ -340,10 +347,11 @@ export class TransactionInput {
         this.spendHeight = spendHeight;
         this.unlockTime = unlockTime;
         this.parentTransactionHash = parentTransactionHash;
+        this.privateEphemeral = privateEphemeral;
     }
 
     public toJSON(): TransactionInputJSON {
-        return {
+        let json: TransactionInputJSON = {
             keyImage: this.keyImage,
 
             amount: this.amount,
@@ -364,6 +372,12 @@ export class TransactionInput {
 
             parentTransactionHash: this.parentTransactionHash,
         };
+
+        if (this.privateEphemeral) {
+            json.privateEphemeral = this.privateEphemeral;
+        }
+
+        return json;
     }
 }
 

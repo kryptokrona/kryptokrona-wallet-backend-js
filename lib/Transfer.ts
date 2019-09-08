@@ -24,7 +24,7 @@ import {
 
 import {
     addressToKeys, getMaxTxSize, prettyPrintAmount, prettyPrintBytes,
-    splitAmountIntoDenominations,
+    splitAmountIntoDenominations, isHex64,
 } from './Utilities';
 
 import {
@@ -393,27 +393,44 @@ async function makeTransaction(
         return [undefined, randomOuts as WalletError];
     }
 
+    let numPregenerated = 0;
+    let numGeneratedOnDemand = 0;
+
     const ourOutputs: Output[] = await Promise.all(ourInputs.map(async (input) => {
-        const [keyImage, tmpSecretKey] = await generateKeyImage(
-            input.input.transactionPublicKey,
-            subWallets.getPrivateViewKey(),
-            input.publicSpendKey,
-            input.privateSpendKey,
-            input.input.transactionIndex,
-            config,
-        );
+        if (typeof input.input.privateEphemeral !== 'string' || !isHex64(input.input.privateEphemeral)) {
+            const [keyImage, tmpSecretKey] = await generateKeyImage(
+                input.input.transactionPublicKey,
+                subWallets.getPrivateViewKey(),
+                input.publicSpendKey,
+                input.privateSpendKey,
+                input.input.transactionIndex,
+                config,
+            );
+
+            input.input.privateEphemeral = tmpSecretKey;
+
+            numGeneratedOnDemand++;
+        } else {
+            numPregenerated++;
+        }
 
         return {
             amount: input.input.amount,
             globalIndex: input.input.globalOutputIndex as number,
             index: input.input.transactionIndex,
             input: {
-                privateEphemeral: tmpSecretKey,
+                privateEphemeral: input.input.privateEphemeral,
             },
             key: input.input.key,
-            keyImage: keyImage,
+            keyImage: input.input.keyImage,
         };
     }));
+
+    logger.log(
+        `Generated key images for ${numGeneratedOnDemand} inputs, used pre-generated key images for ${numPregenerated} inputs.`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
 
     try {
         const tx = await CryptoUtils(config).createTransactionAsync(
