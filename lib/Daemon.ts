@@ -445,12 +445,23 @@ export class Daemon extends EventEmitter implements IDaemon {
         return outputs;
     }
 
-    public async sendTransaction(rawTransaction: string): Promise<boolean> {
+    public async sendTransaction(rawTransaction: string): Promise<[boolean, string | undefined]> {
         const result = await this.makePostRequest('/sendrawtransaction', {
             tx_as_hex: rawTransaction,
         });
 
-        return result.status.toUpperCase() === 'OK';
+        /* Success. */
+        if (result.status.toUpperCase() === 'OK') {
+            return [true, undefined];
+        }
+
+        /* Fail, no extra error message. */
+        if (!result || !result.status || !result.error) {
+            return [false, undefined];
+        }
+
+        /* Fail, extra error message */
+        return [false, result.error];
     }
 
     public getConnectionInfo(): DaemonConnection {

@@ -141,9 +141,10 @@ export interface IDaemon {
      *
      * Will throw on timeout.
      *
-     * @returns Whether the transaction was accepted
+     * @returns Whether the transaction was accepted and an optional extra
+     *          error message.
      */
-    sendTransaction(rawTransaction: string): Promise<boolean>;
+    sendTransaction(rawTransaction: string): Promise<[boolean, string | undefined]>;
 
     /**
      * Updates the internal config with the passed in config.

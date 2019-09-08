@@ -459,9 +459,10 @@ async function verifyAndSendTransaction(
     }
 
     let relaySuccess: boolean;
+    let errorMessage: string | undefined;
 
     try {
-        relaySuccess = await daemon.sendTransaction(tx.rawTransaction);
+        [relaySuccess, errorMessage] = await daemon.sendTransaction(tx.rawTransaction);
 
     /* Timeout */
     } catch (err) {
@@ -469,7 +470,11 @@ async function verifyAndSendTransaction(
     }
 
     if (!relaySuccess) {
-        return [undefined, undefined, new WalletError(WalletErrorCode.DAEMON_ERROR)];
+        const customMessage = errorMessage === undefined 
+            ? ''
+            : `The daemon did not accept our transaction. Error: ${errorMessage}. You may need to resync your wallet.`;
+
+        return [undefined, undefined, new WalletError(WalletErrorCode.DAEMON_ERROR, customMessage)];
     }
 
     /* Store the unconfirmed transaction, update our balance */
