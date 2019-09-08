@@ -101,11 +101,12 @@ class Logger {
  * Levels to log at
  */
 export enum LogLevel {
-    DEBUG = 0,
-    INFO = 1,
-    WARNING = 2,
-    ERROR = 3,
-    DISABLED = 4,
+    TRACE = 0,
+    DEBUG = 1,
+    INFO = 2,
+    WARNING = 3,
+    ERROR = 4,
+    DISABLED = 5,
 }
 
 /**
@@ -115,6 +116,9 @@ function logLevelToString(level: LogLevel) {
     switch (level) {
         case LogLevel.DISABLED: {
             return 'Disabled';
+        }
+        case LogLevel.TRACE: {
+            return 'Trace';
         }
         case LogLevel.DEBUG: {
             return 'Debug';

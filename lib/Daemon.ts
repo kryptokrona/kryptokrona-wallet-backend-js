@@ -522,6 +522,12 @@ export class Daemon extends EventEmitter implements IDaemon {
         try {
             const protocol = this.sslDetermined ? (this.ssl ? 'https' : 'http') : 'https';
 
+            logger.log(
+                `Making request to ${endpoint} with params ${body ? JSON.stringify(body) : '{}'}`,
+                LogLevel.TRACE,
+                [LogCategory.DAEMON],
+            );
+
             const data = await request({
                 body: body,
                 json: true,
@@ -544,6 +550,12 @@ export class Daemon extends EventEmitter implements IDaemon {
                 this.emit('connect');
                 this.connected = true;
             }
+
+            logger.log(
+                `Got response from ${endpoint} with body ${JSON.stringify(data)}`,
+                LogLevel.TRACE,
+                [LogCategory.DAEMON],
+            );
 
             return data;
         } catch (err) {
@@ -577,6 +589,12 @@ export class Daemon extends EventEmitter implements IDaemon {
                     this.emit('connect');
                     this.connected = true;
                 }
+
+                logger.log(
+                    `Got response from ${method} with body ${JSON.stringify(data)}`,
+                    LogLevel.TRACE,
+                    [LogCategory.DAEMON],
+                );
 
                 return data;
 
