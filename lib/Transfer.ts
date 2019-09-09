@@ -361,7 +361,7 @@ async function makeTransaction(
     daemon: IDaemon,
     config: Config): Promise<([CreatedTransaction, undefined]) | ([undefined, WalletError])> {
 
-    const amounts: Array<[string, number]> = [];
+    let amounts: Array<[string, number]> = [];
 
     /* Split amounts into denominations */
     addressesAndAmounts.map(([address, amount]) => {
@@ -369,6 +369,8 @@ async function makeTransaction(
             amounts.push([address, denomination]);
         }
     });
+
+    amounts = _.sortBy(amounts, ([address, amount]) => amount);
 
     /* Prepare destinations keys */
     const transfers: TxDestination[] = amounts.map(([address, amount]) => {
@@ -384,6 +386,8 @@ async function makeTransaction(
             keys: decoded,
         };
     });
+
+    ourInputs = _.sortBy(ourInputs, (input) => input.input.amount);
 
     const randomOuts: WalletError | RandomOutput[][] = await getRingParticipants(
         ourInputs, mixin, daemon, config,
