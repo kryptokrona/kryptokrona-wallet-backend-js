@@ -176,6 +176,12 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.1
+
+* Fix auto-optimize not functioning after loading from file
+* Increase node threadpool size to prevent issues with timeouts
+* Sort outputs before requesting random outs
+
 ### v4.0.0
 
 * Adds a `TRACE` log level for logging of daemon request+response data
