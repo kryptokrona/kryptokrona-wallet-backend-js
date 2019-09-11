@@ -176,6 +176,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.2
+
+* Fix package.json not being published to NPM causing require() fail
+
 ### v4.0.1
 
 * Fix auto-optimize not functioning after loading from file
