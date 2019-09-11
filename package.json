@@ -6,13 +6,12 @@
   "types": "dist/lib/index.d.ts",
   "scripts": {
     "prepublish": "npm run-script build",
-    "build": "npm run-script version && ./node_modules/.bin/tsc",
+    "build": "./node_modules/.bin/tsc",
     "test": "npm run-script build && node dist/tests/tests.js",
     "test-all": "npm run-script build && node dist/tests/tests.js --do-performance-tests",
     "style": "./node_modules/.bin/tslint -c tslint.json 'lib/**/*.ts'",
     "docs": "./node_modules/.bin/typedoc --options ./typedoc.js ./lib/; touch docs/.nojekyll",
-    "prepare": "npm run-script build",
-    "version": "node scripts/expose-version.js"
+    "prepare": "npm run-script build"
   },
   "files": [
     "dist/lib/*"
