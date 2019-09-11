@@ -4,6 +4,8 @@
 
 import { MixinLimit, MixinLimits } from './MixinLimits';
 
+const version = require('../package.json').version;
+
 /**
  * Configuration for the wallet backend.
  *
@@ -358,7 +360,7 @@ export class Config implements IConfig {
     /**
      * Allows setting a customer user agent string
      */
-    public customUserAgentString: string = this.ticker.toLowerCase() + '-wallet-backend-4.0.0';
+    public customUserAgentString: string = `${this.ticker.toLowerCase()}-wallet-backend-${version}`;
 
     [key: string]: any;
 }
