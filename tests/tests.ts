@@ -13,6 +13,9 @@ import { CryptoUtils } from '../lib/CnUtils';
 
 const doPerformanceTests: boolean = process.argv.includes('--do-performance-tests');
 
+const daemonAddress = 'blockapi.turtlepay.io';
+const daemonPort = 443;
+
 class Tester {
 
     public totalTests: number = 0;
@@ -116,7 +119,7 @@ function roundTrip(
     const tester: Tester = new Tester();
 
     /* Setup a daemon */
-    const daemon: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
+    const daemon: IDaemon = new Daemon(daemonAddress, daemonPort);
 
     /* Begin testing */
     await tester.test(async () => {
@@ -476,7 +479,7 @@ function roundTrip(
 
         await wallet.start();
 
-        const daemon3: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
+        const daemon3: IDaemon = new Daemon(daemonAddress, daemonPort);
 
         await wallet.swapNode(daemon3);
 
@@ -485,8 +488,8 @@ function roundTrip(
         await wallet.stop();
 
         return _.isEqual(info, {
-            host: 'blockapi.turtlepay.io',
-            port: 443,
+            host: daemonAddress,
+            port: daemonPort,
             daemonType: DaemonType.BlockchainCacheApi,
             daemonTypeDetermined: true,
             ssl: true,
@@ -508,7 +511,7 @@ function roundTrip(
 
         await daemon2.init();
 
-        const daemon3: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
+        const daemon3: IDaemon = new Daemon(daemonAddress, daemonPort);
 
         daemon3.on('disconnect', (err) => {
             success = false;
@@ -553,7 +556,7 @@ function roundTrip(
     if (doPerformanceTests) {
         await tester.test(async () => {
             /* Reinit daemon so it has no leftover state */
-            const daemon2: IDaemon = new Daemon('blockapi.turtlepay.io', 443);
+            const daemon2: IDaemon = new Daemon(daemonAddress, daemonPort);
 
             const wallet = WalletBackend.createWallet(daemon2);
 
