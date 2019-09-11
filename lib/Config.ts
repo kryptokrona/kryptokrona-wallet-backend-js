@@ -4,7 +4,7 @@
 
 import { MixinLimit, MixinLimits } from './MixinLimits';
 
-const version = require('../package.json').version;
+const version = require('../../package.json').version;
 
 /**
  * Configuration for the wallet backend.
