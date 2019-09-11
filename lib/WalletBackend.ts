@@ -2207,6 +2207,14 @@ export class WalletBackend extends EventEmitter {
      * Initialize stuff not stored in the JSON.
      */
     private initAfterLoad(daemon: IDaemon, config: Config): void {
+        this.synced = false;
+        this.started = false;
+        this.autoOptimize = true;
+        this.shouldPerformAutoOptimize = true;
+        this.currentlyOptimizing = false;
+        this.currentlyTransacting = false;
+        this.haveEmittedDeadNode = false;
+
         this.config = config;
         this.daemon = daemon;
 
@@ -2217,6 +2225,7 @@ export class WalletBackend extends EventEmitter {
         this.subWallets.initAfterLoad(this.config);
 
         this.setupMetronomes();
+
     }
 
     /**
