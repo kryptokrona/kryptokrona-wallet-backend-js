@@ -493,6 +493,10 @@ async function verifyAndSendTransaction(
 
     /* Timeout */
     } catch (err) {
+        if (err.statusCode === 504) {
+            return [undefined, undefined, new WalletError(WalletErrorCode.DAEMON_STILL_PROCESSING)];
+        }
+
         return [undefined, undefined, new WalletError(WalletErrorCode.DAEMON_OFFLINE)];
     }
 

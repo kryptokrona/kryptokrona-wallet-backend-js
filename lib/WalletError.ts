@@ -234,6 +234,10 @@ export class WalletError {
             case WalletErrorCode.UNKNOWN_ERROR: {
                 return 'An unknown error occured.';
             }
+            case WalletErrorCode.DAEMON_STILL_PROCESSING: {
+                return 'The daemon received our request but did not respond before ' +
+                       'the timeout expired. The request may or may not have succeeded.';
+            }
         }
     }
 }
@@ -432,6 +436,10 @@ export enum WalletErrorCode {
 
     /* An unknown error occured */
     UNKNOWN_ERROR = 51,
+
+    /* The daemon received our request but we timed out before we could figure
+     * out if it completed */
+    DAEMON_STILL_PROCESSING = 52,
 }
 
 /**
