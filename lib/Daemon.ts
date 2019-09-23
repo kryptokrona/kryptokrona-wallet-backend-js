@@ -530,6 +530,14 @@ export class Daemon extends EventEmitter implements IDaemon {
      * Makes a get request to the given endpoint
      */
     private async makeRequest(endpoint: string, method: string, body?: any): Promise<any> {
+        const options = {
+            body,
+            json: true,
+            method,
+            timeout: this.config.requestTimeout,
+            headers: { 'User-Agent': this.config.customUserAgentString },
+        };
+
         try {
             const protocol = this.sslDetermined ? (this.ssl ? 'https' : 'http') : 'https';
 
@@ -540,15 +548,11 @@ export class Daemon extends EventEmitter implements IDaemon {
             );
 
             const data = await request({
-                body: body,
-                json: true,
-                method: method,
-                timeout: this.config.requestTimeout,
+                ...options,
                 /* Start by trying HTTPS if we haven't determined whether it's
                    HTTPS or HTTP yet. */
                 url: `${protocol}://${this.host}:${this.port}${endpoint}`,
                 agent: protocol === 'https' ? this.httpsAgent : this.httpAgent,
-                headers: { 'User-Agent': this.config.customUserAgentString },
             });
 
             /* Cool, https works. Store for later. */
@@ -583,14 +587,10 @@ export class Daemon extends EventEmitter implements IDaemon {
 
             try {
                 const data = await request({
-                    body: body,
-                    json: true,
-                    method: method,
-                    timeout: this.config.requestTimeout,
+                    ...options,
                     /* Lets try HTTP now. */
                     url: `http://${this.host}:${this.port}${endpoint}`,
                     agent: this.httpAgent,
-                    headers: { 'User-Agent': this.config.customUserAgentString },
                 });
 
                 this.ssl = false;
