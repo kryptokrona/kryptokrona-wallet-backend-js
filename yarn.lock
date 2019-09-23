@@ -169,7 +169,15 @@ brace-expansion@^1.1.7:
     balanced-match "^1.0.0"
     concat-map "0.0.1"
 
-buffer@^5.1.0, buffer@^5.4.0:
+buffer@^5.1.0:
+  version "5.4.3"
+  resolved "https://registry.yarnpkg.com/buffer/-/buffer-5.4.3.tgz#3fbc9c69eb713d323e3fc1a895eee0710c072115"
+  integrity sha512-zvj65TkFeIt3i6aj5bIvJDzjjQQGs4o/sNoezg1F1kYap9Nu2jcUdpwzRSJTHMMzG0H7bZkn4rNQpImhuxWX2A==
+  dependencies:
+    base64-js "^1.0.2"
+    ieee754 "^1.1.4"
+
+buffer@^5.4.0:
   version "5.4.2"
   resolved "https://registry.yarnpkg.com/buffer/-/buffer-5.4.2.tgz#2012872776206182480eccb2c0fba5f672a2efef"
   integrity sha512-iy9koArjAFCzGnx3ZvNA6Z0clIbbFgbdWQ0mKD3hO0krOrZh8UgA6qMKcZvwLJxS+D6iVR76+5/pV56yMNYTag==
@@ -937,9 +945,10 @@ turtlecoin-rpc@^1.0.2:
     request "^2.88.0"
     request-promise-native "^1.0.7"
 
-"turtlecoin-utils@https://github.com/turtlecoin/turtlecoin-utils#development":
-  version "1.0.5"
-  resolved "https://github.com/turtlecoin/turtlecoin-utils#0faef4bb0b2291e46bd4ef3c552144550a3c3f11"
+turtlecoin-utils@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/turtlecoin-utils/-/turtlecoin-utils-1.0.6.tgz#0b33e945c8c05334391fcdb7dbdb65d059dd8e83"
+  integrity sha512-ldMF38Z+Nxti/Ol/pVKnsccFEUBbRE14ZknwZqoSCfmVl+pBwHSgC5Xr5oogUyUM0x0djCB+Nsv/yYlSNgAHgA==
   dependencies:
     crc "^3.8.0"
     get-random-values "^1.2.0"
