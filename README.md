@@ -176,6 +176,11 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.3
+
+* Update turtlecoin-utils
+* Add error code `DAEMON_STILL_PROCESSING` returned when a transaction may or may not have failed
+
 ### v4.0.2
 
 * Fix package.json not being published to NPM causing require() fail
