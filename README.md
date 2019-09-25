@@ -180,6 +180,7 @@ You can view available categories and log levels in the documentation.
 
 * Update turtlecoin-utils
 * Add error code `DAEMON_STILL_PROCESSING` returned when a transaction may or may not have failed
+* Fix bug causing balance double counts with fusions in rare case
 
 ### v4.0.2
 
