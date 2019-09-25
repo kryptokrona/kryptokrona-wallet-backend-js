@@ -525,12 +525,13 @@ export class WalletSynchronizer extends EventEmitter {
                 this.finishedFunc();
             }
 
-            this.synchronizationStatus.storeBlockHash(topBlock.height, topBlock.hash);
-
             /* Synced, store the top block so sync status displays correctly if
-               we are not scanning coinbase tx only blocks. */
+               we are not scanning coinbase tx only blocks.
+               Only store top block if we have finished processing stored
+               blocks */
             if (this.storedBlocks.length === 0) {
                 this.emit('heightchange', topBlock.height);
+                this.synchronizationStatus.storeBlockHash(topBlock.height, topBlock.hash);
             }
 
             logger.log(
