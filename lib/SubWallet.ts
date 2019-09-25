@@ -304,11 +304,12 @@ export class SubWallet {
      * Remove transactions and inputs that occured after a fork height
      */
     public removeForkedTransactions(forkHeight: number): string[] {
-        const lockedInputKeyImages = this.lockedInputs.map((input) => input.keyImage);
-
-        /* Both of these will get resolved by the wallet in time */
-        this.lockedInputs = [];
+        /* This will get resolved by the wallet in time */
         this.unconfirmedIncomingAmounts = [];
+
+        const removedLocked = _.remove(this.lockedInputs, (input) => {
+            return input.blockHeight >= forkHeight;
+        });
 
         /* Remove unspent inputs which arrived after this height */
         const removedUnspent = _.remove(this.unspentInputs, (input) => {
@@ -332,8 +333,8 @@ export class SubWallet {
            readable */
         const keyImagesToRemove: string[] = [];
 
-        for (const keyImage of lockedInputKeyImages) {
-            keyImagesToRemove.push(keyImage);
+        for (const input of removedLocked) {
+            keyImagesToRemove.push(input.keyImage);
         }
 
         for (const input of removedUnspent) {
