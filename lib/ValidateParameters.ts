@@ -289,10 +289,11 @@ export function validateMixin(
  *
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
-export function validatePaymentID(paymentID: string): WalletError {
+export function validatePaymentID(paymentID: string, allowEmptyString: boolean = true): WalletError {
     assertString(paymentID, 'paymentID');
+    assertBoolean(allowEmptyString, 'allowEmptyString');
 
-    if (paymentID === '') {
+    if (paymentID === '' && allowEmptyString) {
         return SUCCESS;
     }
 
