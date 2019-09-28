@@ -30,7 +30,7 @@ Yarn:
 
 ## Installation from GitHub
 
-If you need features which have not yet made it into a release yet, you can install from GitHub.
+If you need features which have not yet made it into a release, you can install from GitHub.
 
 NPM:
 
