@@ -179,6 +179,11 @@ export interface IConfig {
      */
     customUserAgentString?: string;
 
+    /**
+     * Allows specifying a custom configuration object for the request module.
+     */
+    customRequestOptions?: any;
+
     [key: string]: any;
 }
 
@@ -361,6 +366,11 @@ export class Config implements IConfig {
      * Allows setting a customer user agent string
      */
     public customUserAgentString: string = `${this.ticker.toLowerCase()}-wallet-backend-${version}`;
+
+    /**
+     * Allows specifying a custom configuration object for the request module.
+     */
+    public customRequestOptions: any = {};
 
     [key: string]: any;
 }

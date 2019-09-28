@@ -549,6 +549,7 @@ export class Daemon extends EventEmitter implements IDaemon {
 
             const data = await request({
                 ...options,
+                ...this.config.customRequestOptions,
                 /* Start by trying HTTPS if we haven't determined whether it's
                    HTTPS or HTTP yet. */
                 url: `${protocol}://${this.host}:${this.port}${endpoint}`,
