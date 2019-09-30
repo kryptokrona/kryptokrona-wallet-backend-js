@@ -578,6 +578,25 @@ function roundTrip(
        'Subwallets work',
        'Subwallet tests don\'t work!'); 
 
+    await tester.test(async () => {
+        const wallet = WalletBackend.createWallet(daemon);
+
+        let success = true;
+
+        for (let i = 2; i < 10; i++) {
+            wallet.addSubWallet();
+
+            if (wallet.getWalletCount() !== i) {
+                success = false;
+            }
+        }
+
+        return success;
+
+    }, 'Testing getWalletCount',
+       'getWalletCount works',
+       'getWalletCount doesn\'t work!');
+
     if (doPerformanceTests) {
         await tester.test(async () => {
             /* Reinit daemon so it has no leftover state */

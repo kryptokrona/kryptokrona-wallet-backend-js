@@ -871,6 +871,10 @@ export class SubWallets {
         return SUCCESS;
     }
 
+    public getWalletCount(): number {
+        return this.subWallets.size;
+    }
+
     private deleteAddressTransactions(txs: Transaction[], publicSpendKey: string): void {
         _.remove(txs, (tx) => {
             /* See if this transaction contains the subwallet we're deleting */

@@ -1140,6 +1140,20 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Returns the number of subwallets in this wallet.
+     *
+     * Example:
+     * ```javascript
+     * const count = wallet.getWalletCount();
+     *
+     * console.log(`Wallet has ${count} subwallets`);
+     * ```
+     */
+    public getWalletCount(): number {
+        return this.subWallets.getWalletCount();
+    }
+
+    /**
      * Gets the wallet, local daemon, and network block count
      *
      * Example:
