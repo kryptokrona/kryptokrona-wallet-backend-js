@@ -746,4 +746,145 @@ export class SubWallets {
         this.config = config;
         this.subWallets.forEach((subWallet) => subWallet.initAfterLoad(config));
     }
+
+    public addSubWallet(scanHeight: number): ([string, undefined] | [undefined, WalletError]) {
+        if (this.isViewWallet) {
+            /* Adding a random subwallet to a view wallet makes no sense. */
+            return [undefined, new WalletError(WalletErrorCode.ILLEGAL_VIEW_WALLET_OPERATION)];
+        }
+
+        const keys = CryptoUtils(this.config).createNewAddress();
+
+        const privateSpendKey = keys.spend.privateKey;
+        const publicSpendKey = keys.spend.publicKey;
+
+        if (this.publicSpendKeys.includes(publicSpendKey)) {
+            return [undefined, new WalletError(WalletErrorCode.SUBWALLET_ALREADY_EXISTS)];
+        }
+
+        const publicViewKey = CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
+
+        const newAddress = CryptoUtils(this.config).encodeAddress(
+            publicViewKey, publicSpendKey
+        );
+
+        this.publicSpendKeys.push(publicSpendKey);
+
+        const isPrimaryAddress: boolean = false;
+
+        const subWallet = new SubWallet(
+            this.config, newAddress, scanHeight, 0, publicSpendKey,
+            privateSpendKey, false
+        );
+
+        this.subWallets.set(publicSpendKey, subWallet);
+
+        return [newAddress, undefined];
+    }
+
+    public importSubWallet(
+        privateSpendKey: string,
+        scanHeight: number): ([string, undefined] | [undefined, WalletError]) {
+
+        if (this.isViewWallet) {
+            /* Adding a random subwallet to a view wallet makes no sense. */
+            return [undefined, new WalletError(WalletErrorCode.ILLEGAL_VIEW_WALLET_OPERATION)];
+        }
+
+        const publicSpendKey = CryptoUtils(this.config).privateKeyToPublicKey(privateSpendKey);
+
+        if (this.publicSpendKeys.includes(publicSpendKey)) {
+            return [undefined, new WalletError(WalletErrorCode.SUBWALLET_ALREADY_EXISTS)];
+        }
+
+        const publicViewKey = CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
+
+        const newAddress = CryptoUtils(this.config).encodeAddress(
+            publicViewKey, publicSpendKey
+        );
+
+        this.publicSpendKeys.push(publicSpendKey);
+
+        const isPrimaryAddress: boolean = false;
+
+        const subWallet = new SubWallet(
+            this.config, newAddress, scanHeight, 0, publicSpendKey,
+            privateSpendKey, false
+        );
+
+        this.subWallets.set(publicSpendKey, subWallet);
+
+        return [newAddress, undefined];
+    }
+
+    public importViewSubWallet(
+        publicSpendKey: string,
+        scanHeight: number): ([string, undefined] | [undefined, WalletError]) {
+
+        if (!this.isViewWallet) {
+            /* Adding a random subwallet to a view wallet makes no sense. */
+            return [undefined, new WalletError(WalletErrorCode.ILLEGAL_NON_VIEW_WALLET_OPERATION)];
+        }
+
+        if (this.publicSpendKeys.includes(publicSpendKey)) {
+            return [undefined, new WalletError(WalletErrorCode.SUBWALLET_ALREADY_EXISTS)];
+        }
+
+        const publicViewKey = CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
+
+        const newAddress = CryptoUtils(this.config).encodeAddress(
+            publicViewKey, publicSpendKey
+        );
+
+        this.publicSpendKeys.push(publicSpendKey);
+
+        const isPrimaryAddress: boolean = false;
+
+        const subWallet = new SubWallet(
+            this.config, newAddress, scanHeight, 0, publicSpendKey,
+            undefined, false
+        );
+
+        this.subWallets.set(publicSpendKey, subWallet);
+
+        return [newAddress, undefined];
+    }
+
+    public deleteSubWallet(address: string): WalletError {
+        const [publicViewKey, publicSpendKey] = addressToKeys(address, this.config);
+
+        const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
+
+        if (!subWallet) {
+            return new WalletError(WalletErrorCode.ADDRESS_NOT_IN_WALLET);
+        }
+
+        if (subWallet.isPrimaryAddress()) {
+            return new WalletError(WalletErrorCode.CANNOT_DELETE_PRIMARY_ADDRESS);
+        }
+
+        this.subWallets.delete(publicSpendKey);
+
+        this.deleteAddressTransactions(this.transactions, publicSpendKey);
+        this.deleteAddressTransactions(this.lockedTransactions, publicSpendKey);
+
+        return SUCCESS;
+    }
+
+    private deleteAddressTransactions(txs: Transaction[], publicSpendKey: string): void {
+        _.remove(txs, (tx) => {
+            /* See if this transaction contains the subwallet we're deleting */
+            if (tx.transfers.has(publicSpendKey)) {
+                /* If it's the only element, delete the transaction */
+                if (tx.transfers.size === 1) {
+                    return true;
+                /* Otherwise just delete the transfer in the transaction */
+                } else {
+                    tx.transfers.delete(publicSpendKey);
+                }
+            }
+
+            return false;
+        });
+    }
 }

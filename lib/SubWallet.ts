@@ -106,14 +106,15 @@ export class SubWallet {
         scanHeight: number,
         timestamp: number,
         publicSpendKey: string,
-        privateSpendKey?: string) {
+        privateSpendKey?: string,
+        primaryAddress: boolean = true) {
 
         this.address = address;
         this.syncStartHeight = scanHeight;
         this.syncStartTimestamp = timestamp;
         this.publicSpendKey = publicSpendKey;
         this.privateSpendKey = privateSpendKey;
-        this.primaryAddress = true;
+        this.primaryAddress = primaryAddress;
         this.config = config;
     }
 

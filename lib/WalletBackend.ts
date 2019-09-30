@@ -975,6 +975,92 @@ export class WalletBackend extends EventEmitter {
         );
     }
 
+    public addSubWallet(): ([string, undefined] | [undefined, WalletError]) {
+        const currentHeight: number = this.walletSynchronizer.getHeight();
+
+        return this.subWallets.addSubWallet(currentHeight);
+    }
+
+    public async importSubWallet(
+        privateSpendKey: string,
+        scanHeight?: number): Promise<([string, undefined] | [undefined, WalletError])> {
+
+        const currentHeight: number = this.walletSynchronizer.getHeight();
+
+        if (scanHeight === undefined) {
+            scanHeight = currentHeight;
+        }
+
+        assertString(privateSpendKey, 'privateSpendKey');
+        assertNumber(scanHeight, 'scanHeight');
+
+        if (!isHex64(privateSpendKey)) {
+            return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
+        }
+
+        const [error, address] = this.subWallets.importSubWallet(privateSpendKey, scanHeight);
+
+        /* If the import height is lower than the current height then we need
+         * to go back and rescan those blocks with the new subwallet. */
+        if (!error) {
+            if (currentHeight > scanHeight) {
+                await this.rewind(scanHeight);
+            }
+        }
+
+        /* Since we destructured the components, compiler can no longer figure
+         * out it's either [string, undefined], or [undefined, WalletError] -
+         * it could possibly be [string, WalletError] */
+        return [error, address] as [string, undefined] | [undefined, WalletError];
+    }
+
+    public async importViewSubWallet(
+        publicSpendKey: string,
+        scanHeight?: number): Promise<([string, undefined] | [undefined, WalletError])> {
+
+        const currentHeight: number = this.walletSynchronizer.getHeight();
+
+        if (scanHeight === undefined) {
+            scanHeight = currentHeight;
+        }
+
+        assertString(publicSpendKey, 'publicSpendKey');
+        assertNumber(scanHeight, 'scanHeight');
+
+        if (!isHex64(publicSpendKey)) {
+            return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
+        }
+
+        const [error, address] = this.subWallets.importViewSubWallet(publicSpendKey, scanHeight);
+
+        /* If the import height is lower than the current height then we need
+         * to go back and rescan those blocks with the new subwallet. */
+        if (!error) {
+            if (currentHeight > scanHeight) {
+                await this.rewind(scanHeight);
+            }
+        }
+
+        /* Since we destructured the components, compiler can no longer figure
+         * out it's either [string, undefined], or [undefined, WalletError] -
+         * it could possibly be [string, WalletError] */
+        return [error, address] as [string, undefined] | [undefined, WalletError];
+    }
+
+    public deleteSubWallet(address: string): WalletError {
+        assertString(address, 'address');
+
+        const err: WalletError = validateAddresses(
+            new Array(address), false, this.config,
+        );
+
+        if (!_.isEqual(err, SUCCESS)) {
+            return err;
+        }
+
+        return this.subWallets.deleteSubWallet(address);
+    }
+
     /**
      * Gets the wallet, local daemon, and network block count
      *
