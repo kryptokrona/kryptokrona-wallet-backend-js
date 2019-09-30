@@ -975,12 +975,50 @@ export class WalletBackend extends EventEmitter {
         );
     }
 
+    /**
+     * Adds a subwallet to the wallet container. Must not be used on a view
+     * only wallet. For more information on subwallets, see https://docs.turtlecoin.lol/developer/subwallets
+     *
+     * Example:
+     * ```javascript
+     * const [address, error] = wallet.addSubWallet();
+     *
+     * if (!error) {
+     *      console.log(`Created subwallet with address of ${address}`);
+     * }
+     * ```
+     *
+     * @returns Returns the newly created address or an error.
+     */
     public addSubWallet(): ([string, undefined] | [undefined, WalletError]) {
         const currentHeight: number = this.walletSynchronizer.getHeight();
 
         return this.subWallets.addSubWallet(currentHeight);
     }
 
+    /**
+     * Imports a subwallet to the wallet container. Must not be used on a view
+     * only wallet. For more information on subwallets, see https://docs.turtlecoin.lol/developer/subwallets
+     *
+     * Example:
+     * ```javascript
+     * const [address, error] = await wallet.importSubWallet('c984628484a1a5eaab4cfb63831b2f8ac8c3a56af2102472ab35044b46742501');
+     *
+     * if (!error) {
+     *      console.log(`Imported subwallet with address of ${address}`);
+     * } else {
+     *      console.log(`Failed to import subwallet: ${error.toString()}`);
+     * }
+     * ```
+     *
+     * @param privateSpendKey The private spend key of the subwallet to import
+     * @param scanHeight The scan height to start scanning this subwallet from.
+     *                   If the scan height is less than the wallets current
+     *                   height, the entire wallet will be rewound to that height,
+     *                   and will restart syncing. If not specified, this defaults
+     *                   to the current height.
+     * @returns Returns the newly created address or an error.
+     */
     public async importSubWallet(
         privateSpendKey: string,
         scanHeight?: number): Promise<([string, undefined] | [undefined, WalletError])> {
@@ -1013,6 +1051,30 @@ export class WalletBackend extends EventEmitter {
          * it could possibly be [string, WalletError] */
         return [error, address] as [string, undefined] | [undefined, WalletError];
     }
+
+    /**
+     * Imports a view only subwallet to the wallet container. Must not be used
+     * on a non view wallet. For more information on subwallets, see https://docs.turtlecoin.lol/developer/subwallets
+     *
+     * Example:
+     * ```javascript
+     * const [address, error] = await wallet.importViewSubWallet('c984628484a1a5eaab4cfb63831b2f8ac8c3a56af2102472ab35044b46742501');
+     *
+     * if (!error) {
+     *      console.log(`Imported view subwallet with address of ${address}`);
+     * } else {
+     *      console.log(`Failed to import view subwallet: ${error.toString()}`);
+     * }
+     * ```
+     *
+     * @param publicSpendKey The public spend key of the subwallet to import
+     * @param scanHeight The scan height to start scanning this subwallet from.
+     *                   If the scan height is less than the wallets current
+     *                   height, the entire wallet will be rewound to that height,
+     *                   and will restart syncing. If not specified, this defaults
+     *                   to the current height.
+     * @returns Returns the newly created address or an error.
+     */
 
     public async importViewSubWallet(
         publicSpendKey: string,
@@ -1047,6 +1109,22 @@ export class WalletBackend extends EventEmitter {
         return [error, address] as [string, undefined] | [undefined, WalletError];
     }
 
+    /**
+     * Removes the subwallet specified from the wallet container. If you have
+     * not backed up the private keys for this subwallet, all funds in it
+     * will be lost.
+     *
+     * Example:
+     * ```javascript
+     * const error = wallet.deleteSubWallet('TRTLv2txGW8daTunmAVV6dauJgEv1LezM2Hse7EUD5c11yKHsNDrzQ5UWNRmu2ToQVhDcr82ZPVXy4mU5D7w9RmfR747KeXD3UF');
+     *
+     * if (error) {
+     *      console.log(`Failed to delete subwallet: ${error.toString()}`);
+     * }
+     * ```
+     *
+     * @param address The subwallet address to remove
+     */
     public deleteSubWallet(address: string): WalletError {
         assertString(address, 'address');
 
