@@ -24,6 +24,7 @@ import {
 
 /**
  * Decrypts blocks for our transactions and inputs
+ * @noInheritDoc
  */
 export class WalletSynchronizer extends EventEmitter {
 

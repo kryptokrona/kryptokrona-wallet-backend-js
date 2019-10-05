@@ -19,6 +19,9 @@ import { validateAddresses } from './ValidateParameters';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { WalletError, WalletErrorCode } from './WalletError';
 
+/**
+ * @noInheritDoc
+ */
 export class Daemon extends EventEmitter implements IDaemon {
 
     /**
