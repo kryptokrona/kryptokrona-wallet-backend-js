@@ -171,3 +171,8 @@ export const MAX_FUSION_TX_SIZE = 30000;
  * Required ratio of inputs to outputs in fusion transactions
  */
 export const FUSION_TX_MIN_IN_OUT_COUNT_RATIO = 4;
+
+/**
+ * Max amount to create a single output of
+ */
+export const MAX_OUTPUT_SIZE_CLIENT = 100000000000;

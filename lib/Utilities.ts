@@ -11,6 +11,7 @@ import {
     CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE, MAX_BLOCK_NUMBER,
     MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR,
     MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR, MAX_BLOCK_SIZE_INITIAL,
+    MAX_OUTPUT_SIZE_CLIENT,
 } from './Constants';
 
 import { validateAddresses, validatePaymentID } from './ValidateParameters';
@@ -166,17 +167,29 @@ export function delay(ms: number): Promise<void> {
  *
  * @hidden
  */
-export function splitAmountIntoDenominations(amount: number): number[] {
+export function splitAmountIntoDenominations(amount: number, preventTooLargeOutputs: boolean = true): number[] {
     let multiplier: number = 1;
 
-    const splitAmounts: number[] = [];
+    let splitAmounts: number[] = [];
 
     while (amount >= 1) {
         const denomination: number = multiplier * (amount % 10);
 
+        if (denomination > MAX_OUTPUT_SIZE_CLIENT && preventTooLargeOutputs) {
+            /* Split amounts into ten chunks */
+            let numSplitAmounts = 10;
+            let splitAmount = denomination / 10;
+
+            while (splitAmount > MAX_OUTPUT_SIZE_CLIENT) {
+                splitAmount = Math.floor(splitAmount / 10);
+                numSplitAmounts *= 10;
+            }
+
+            splitAmounts = splitAmounts.concat(Array(numSplitAmounts).fill(splitAmount));
+        }
         /* If we have for example, 1010 - we want 1000 + 10,
            not 1000 + 0 + 10 + 0 */
-        if (denomination !== 0) {
+        else if (denomination !== 0) {
             splitAmounts.push(denomination);
         }
 
