@@ -13,7 +13,7 @@ export {
 } from './Utilities';
 
 export { LogLevel, LogCategory } from './Logger';
-export { validateAddresses, validatePaymentID } from './ValidateParameters';
+export { validateAddress, validateAddresses, validatePaymentID } from './ValidateParameters';
 export { TransactionInput, DaemonType, DaemonConnection } from './Types';
 export { MixinLimit, MixinLimits } from './MixinLimits';
 export { Config } from './Config';
