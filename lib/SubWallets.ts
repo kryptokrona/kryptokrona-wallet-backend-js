@@ -711,35 +711,51 @@ export class SubWallets {
     }
 
     /**
-     * Get all transactions in a wallet container
+     * Get the transactions of the given subWallet address. If no subWallet address is given,
+     * gets all transactions.
      */
-    public getTransactions(): Transaction[] {
-        return this.transactions;
+    public getTransactions(address?: string): Transaction[] {
+        if (address) {
+            const [, publicSpendKey] = addressToKeys(address, this.config);
+
+            return this.transactions.filter((tx) => tx.transfers.has(publicSpendKey));
+        } else {
+            return this.transactions;
+        }
     }
 
     /**
-     * Get the number of transactions in the wallet container. Can be used
+     * Get the number of transactions for the given subWallet, if no subWallet is given,
+     * gets the total number of transactions in the wallet container. Can be used
      * if you want to avoid fetching every transactions repeatedly when nothing
      * has changed.
      */
-    public getNumTransactions(): number {
-        return this.transactions.length;
+    public getNumTransactions(address?: string): number {
+        return this.getTransactions(address).length;
     }
 
     /**
-     * Get all unconfirmed transactions in a wallet container
+     * Get the unconfirmed transactions of the given subwallet address. If no subwallet address
+     * is given, gets all unconfirmed transactions.
      */
-    public getUnconfirmedTransactions(): Transaction[] {
-        return this.lockedTransactions;
+    public getUnconfirmedTransactions(address?: string): Transaction[] {
+        if (address) {
+            const [, publicSpendKey] = addressToKeys(address, this.config);
+
+            return this.lockedTransactions.filter((tx) => tx.transfers.has(publicSpendKey));
+        } else {
+            return this.lockedTransactions;
+        }
     }
 
     /**
-     * Get the number of unconfirmed transactions in the wallet container. Can be used
+     * Get the number of unconfirmed transactions for the given subWallet, if no subWallet is given,
+     * gets the total number of unconfirmed transactions in the wallet container. Can be used
      * if you want to avoid fetching every transactions repeatedly when nothing
      * has changed.
      */
-    public getNumUnconfirmedTransactions(): number {
-        return this.lockedTransactions.length;
+    public getNumUnconfirmedTransactions(address?: string): number {
+        return this.getUnconfirmedTransactions(address).length;
     }
 
     public initAfterLoad(config: Config): void {
