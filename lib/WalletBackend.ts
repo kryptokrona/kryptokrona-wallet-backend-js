@@ -1939,7 +1939,8 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Gets all the transactions in the wallet container.
+     * Gets all the transactions in the wallet container unless a subWallet address is specified,
+     * in which case we get only the transactions for that subWallet.
      *
      * Newer transactions are at the front of the array - Unconfirmed transactions
      * come at the very front.
@@ -1954,20 +1955,22 @@ export class WalletBackend extends EventEmitter {
      * @param startIndex Index to start taking transactions from
      * @param numTransactions Number of transactions to take
      * @param includeFusions Should we include fusion transactions?
+     * @param subWallet Should we only include transactions of the specified subWallet?
      */
     public getTransactions(
         startIndex?: number,
         numTransactions?: number,
-        includeFusions = true): Transaction[] {
+        includeFusions = true,
+        subWallet?: string): Transaction[] {
 
         assertNumberOrUndefined(startIndex, 'startIndex');
         assertNumberOrUndefined(numTransactions, 'numTransactions');
         assertBoolean(includeFusions, 'includeFusions');
 
         /* Clone the array and reverse it, newer txs first */
-        const unconfirmed = this.subWallets.getUnconfirmedTransactions().slice().reverse();
+        const unconfirmed = this.subWallets.getUnconfirmedTransactions(subWallet).slice().reverse();
         /* Clone the array and reverse it, newer txs first */
-        const confirmed = this.subWallets.getTransactions().slice().reverse();
+        const confirmed = this.subWallets.getTransactions(subWallet).slice().reverse();
 
         const allTransactions: Transaction[] = unconfirmed.concat(confirmed).filter((x) => includeFusions ? true : x.totalAmount() !== 0);
 
@@ -2011,7 +2014,8 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Get the number of transactions in the wallet container. Can be used
+     * Get the number of transactions belonging to the given subWallet. If no subWallet is given,
+     * gets the total number of transactions in the wallet container. Can be used
      * if you want to avoid fetching all transactions repeatedly when nothing
      * has changed.
      *
@@ -2032,10 +2036,12 @@ export class WalletBackend extends EventEmitter {
      *      }
      * }
      * ```
+     *
+     * @param subWallet Should we only count transactions of the specified subWallet?
      */
-    public getNumTransactions(): number {
-        return this.subWallets.getNumTransactions()
-             + this.subWallets.getNumUnconfirmedTransactions();
+    public getNumTransactions(subWallet?: string): number {
+        return this.subWallets.getNumTransactions(subWallet)
+             + this.subWallets.getNumUnconfirmedTransactions(subWallet);
     }
 
     /**
