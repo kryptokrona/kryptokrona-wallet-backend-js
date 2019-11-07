@@ -155,4 +155,9 @@ export interface IDaemon {
      * Returns information on the daemon connection such as host and port
      */
     getConnectionInfo(): DaemonConnection;
+
+    /**
+     * Returns host:port
+     */
+    getConnectionString(): string;
 }

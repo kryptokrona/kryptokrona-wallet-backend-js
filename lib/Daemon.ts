@@ -478,6 +478,10 @@ export class Daemon extends EventEmitter implements IDaemon {
         };
     }
 
+    public getConnectionString(): string {
+        return this.host + ':' + this.port;
+    }
+
     /**
      * Update the fee address and amount
      */
