@@ -176,6 +176,19 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.5
+
+* Add a subwallets beta. API may change. Functionality may be buggy.
+* No longer will create inputs of over than 1 billion in transactions to prevent creating unmixable funds
+* Export the `validateAddress()` function
+* Add `getConnectionString()`, for retrieving the daemon connection ip:port pair
+* Add an optional subwallet address filter for `getTransactions`
+
+### v4.0.4
+
+* Allow passing custom options to `request()` calls
+* Allow making an empty string a valid paymentID false
+
 ### v4.0.3
 
 * Update turtlecoin-utils
