@@ -176,6 +176,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.6
+
+* Bump `turtlecoin-utils` to fix issue in some environments
+
 ### v4.0.5
 
 * Add a subwallets beta. API may change. Functionality may be buggy.
