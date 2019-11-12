@@ -176,6 +176,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.7
+
+* Bump `turtlecoin-utils` to fix issue where transaction signatures would be misordered when supplying a custom `generateRingSignatures` function
+
 ### v4.0.6
 
 * Bump `turtlecoin-utils` to fix issue in some environments
