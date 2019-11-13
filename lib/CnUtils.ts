@@ -21,6 +21,7 @@ export function CryptoUtils(config: Config): CryptoNote {
         generateKeyDerivation: config.generateKeyDerivation,
         generateKeyImage: config.generateKeyImage,
         generateRingSignatures: config.generateRingSignatures,
+        checkRingSignatures: config.checkRingSignatures,
         keccakIterations: 1,
         secretKeyToPublicKey: config.secretKeyToPublicKey,
         underivePublicKey: config.underivePublicKey,

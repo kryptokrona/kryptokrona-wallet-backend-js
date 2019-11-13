@@ -138,6 +138,14 @@ export interface IConfig {
                               realIndex: number) => string[];
 
     /**
+     * A replacement function for the JS/C++ checkRingSignatures.
+     */
+    checkRingSignatures?: (transactionPrefixHash: string,
+                           keyImage: string,
+                           publicKeys: string[],
+                           signatures: string[]) => boolean;
+
+    /**
      * A replacement function for the JS/C++ generateKeyDerivation.
      */
     generateKeyDerivation?: (transactionPublicKey: string,
@@ -324,6 +332,13 @@ export class Config implements IConfig {
                                      inputKeys: string[],
                                      privateKey: string,
                                      realIndex: number) => string[] = undefined;
+    /**
+     * A replacement function for the JS/C++ checkRingSignatures.
+     */
+    public checkRingSignatures?: (transactionPrefixHash: string,
+                           keyImage: string,
+                           publicKeys: string[],
+                           signatures: string[]) => boolean = undefined;
 
     /**
      * A replacement function for the JS/C++ generateKeyDerivation.
