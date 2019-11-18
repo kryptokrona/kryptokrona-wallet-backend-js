@@ -231,12 +231,23 @@ export class WalletError {
             case WalletErrorCode.NON_INTEGER_GIVEN: {
                 return 'The number given was a float, not an integer.';
             }
+            case WalletErrorCode.INVALID_PUBLIC_KEY: {
+                return 'The public key given is not a valid ed25519 public key.';
+            }
+            case WalletErrorCode.INVALID_PRIVATE_KEY: {
+                return 'The private key given is not a valid ed25519 private key.';
+            }
+            case WalletErrorCode.INVALID_EXTRA_DATA: {
+                return 'The extra data given for the transaction could not be decoded.';
+            }
             case WalletErrorCode.UNKNOWN_ERROR: {
                 return 'An unknown error occured.';
             }
             case WalletErrorCode.DAEMON_STILL_PROCESSING: {
-                return 'The daemon received our request but did not respond before ' +
-                       'the timeout expired. The request may or may not have succeeded.';
+                return 'The transaction was sent to the daemon, but the connection timed out ' +
+                       'before we could determine if the transaction succeeded. ' +
+                       'Wait a few minutes before retrying the transaction, as it ' +
+                       'may still succeed.';
             }
         }
     }
@@ -434,12 +445,21 @@ export enum WalletErrorCode {
     /* Input is a float not an int */
     NON_INTEGER_GIVEN = 50,
 
+    /* Not on ed25519 curve */
+    INVALID_PUBLIC_KEY = 51,
+
+    /* Not on ed25519 curve */
+    INVALID_PRIVATE_KEY = 52,
+
+    /* Extra data for transaction is not a valid hexadecimal string */
+    INVALID_EXTRA_DATA = 53,
+
     /* An unknown error occured */
-    UNKNOWN_ERROR = 51,
+    UNKNOWN_ERROR = 54,
 
     /* The daemon received our request but we timed out before we could figure
      * out if it completed */
-    DAEMON_STILL_PROCESSING = 52,
+    DAEMON_STILL_PROCESSING = 55,
 }
 
 /**
