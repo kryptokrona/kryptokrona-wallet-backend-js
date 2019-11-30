@@ -176,6 +176,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.9
+
+* Bump `turtlecoin-utils`
+
 ### v4.0.8
 
 * Allow passing custom `checkRingSignatures` to `turtlecoin-utils`
