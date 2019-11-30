@@ -25,17 +25,17 @@
     "pbkdf2": "^3.0.17",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.8",
-    "turtlecoin-utils": "^1.0.14",
+    "turtlecoin-utils": "^1.0.15",
     "typescript": "^3.7.2"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.147",
-    "@types/node": "^12.12.7",
+    "@types/lodash": "^4.14.149",
+    "@types/node": "^12.12.14",
     "@types/pbkdf2": "^3.0.0",
     "@types/request-promise-native": "^1.0.17",
     "colors": "^1.4.0",
     "tslint": "^5.20.1",
-    "typedoc": "^0.15.1",
+    "typedoc": "^0.15.3",
     "typedoc-plugin-no-inherit": "^1.1.10"
   }
 }
