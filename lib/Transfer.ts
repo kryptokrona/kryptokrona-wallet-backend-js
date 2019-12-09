@@ -89,21 +89,51 @@ export async function sendFusionTransactionAdvanced(
         ([undefined, undefined, WalletError])
     > {
 
+    logger.log(
+        'Starting sendFusionTransaction process',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     if (mixin === undefined) {
         mixin = config.mixinLimits.getDefaultMixinByHeight(
             daemon.getNetworkBlockCount(),
+        );
+
+        logger.log(
+            `Mixin not given, defaulting to mixin of ${mixin}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
         );
     }
 
     /* Take from all subaddresses if none given */
     if (subWalletsToTakeFrom === undefined || subWalletsToTakeFrom.length === 0) {
         subWalletsToTakeFrom = subWallets.getAddresses();
+
+        logger.log(
+            `Subwallets to take from not given, defaulting to all subwallets (${subWalletsToTakeFrom})`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
     }
 
     /* Use primary address as change address if not given */
     if (destination === undefined || destination === '') {
         destination = subWallets.getPrimaryAddress();
+
+        logger.log(
+            `Destination address not given, defaulting to destination address of ${destination}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
     }
+
+    logger.log(
+        'Prevalidating fusion transaction',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
 
     /* Verify it's all valid */
     const error: WalletError = validateFusionTransaction(
@@ -112,12 +142,24 @@ export async function sendFusionTransactionAdvanced(
     );
 
     if (!_.isEqual(error, SUCCESS)) {
+        logger.log(
+            `Failed to validate fusion transaction: ${error.toString()}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         return [undefined, undefined, error];
     }
 
     /* Get the random inputs for this tx */
     const [ourInputs, foundMoney] = subWallets.getFusionTransactionInputs(
         subWalletsToTakeFrom, mixin, daemon.getNetworkBlockCount(),
+    );
+
+    logger.log(
+        `Selected ${ourInputs.length} inputs for fusion transaction, for total amount of ${prettyPrintAmount(foundMoney)}`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
     );
 
     /* Payment ID's are not needed with fusion transactions */
@@ -129,8 +171,20 @@ export async function sendFusionTransactionAdvanced(
     let fusionTX: CreatedTransaction;
 
     while (true) {
+        logger.log(
+            `Verifying fusion transaction is reasonable size`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         /* Not enough unspent inputs for a fusion TX, we're fully optimized */
         if (ourInputs.length < FUSION_TX_MIN_INPUT_COUNT) {
+            logger.log(
+                'Wallet is fully optimized, cancelling fusion transaction',
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
+
             return [undefined, undefined, new WalletError(WalletErrorCode.FULLY_OPTIMIZED)];
         }
 
@@ -140,9 +194,21 @@ export async function sendFusionTransactionAdvanced(
         /* Number of outputs this transaction will create */
         const numOutputs = splitAmountIntoDenominations(amount).length;
 
+        logger.log(
+            `Sum of tmp transaction: ${prettyPrintAmount(amount)}, num outputs: ${numOutputs}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         /* Need to have at least 4x more inputs than outputs */
         if (numOutputs === 0
         || (ourInputs.length / numOutputs) < FUSION_TX_MIN_IN_OUT_COUNT_RATIO) {
+            logger.log(
+                `Too many outputs, decreasing number of inputs`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
+
             /* Remove last input */
             ourInputs.pop();
 
@@ -164,11 +230,23 @@ export async function sendFusionTransactionAdvanced(
         );
 
         if (creationError || tx === undefined) {
+            logger.log(
+                `Failed to create fusion transaction, ${(creationError as WalletError).toString()}`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
+
             return [undefined, undefined, creationError as WalletError];
         }
 
         /* Divided by two because it's represented as hex */
         if (tx.rawTransaction.length / 2 > MAX_FUSION_TX_SIZE) {
+            logger.log(
+                `Fusion tx is too large, decreasing number of inputs`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
+
             /* Transaction too large, remove last input */
             ourInputs.pop();
 
@@ -183,7 +261,13 @@ export async function sendFusionTransactionAdvanced(
         break;
     }
 
-    return verifyAndSendTransaction(
+    logger.log(
+        `Successfully created fusion transaction, proceeding to validating and sending`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
+    const result = await verifyAndSendTransaction(
         fusionTX,
         fee,
         paymentID,
@@ -194,6 +278,18 @@ export async function sendFusionTransactionAdvanced(
         daemon,
         config,
     );
+
+    const [, , err] = result;
+
+    if (!_.isEqual(err, SUCCESS)) {
+        logger.log(
+            `Failed to verify and send transaction: ${(err as WalletError).toString()}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+    }
+
+    return result;
 }
 
 /**
@@ -267,14 +363,32 @@ export async function sendTransactionAdvanced(
         ([undefined, undefined, WalletError])
     > {
 
+    logger.log(
+        'Starting sendTransaction process',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     if (mixin === undefined) {
         mixin = config.mixinLimits.getDefaultMixinByHeight(
             daemon.getNetworkBlockCount(),
+        );
+
+        logger.log(
+            `Mixin not given, defaulting to mixin of ${mixin}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
         );
     }
 
     if (fee === undefined) {
         fee = config.minimumFee;
+
+        logger.log(
+            `Fee not given, defaulting to fee of ${fee}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
     }
 
     if (paymentID === undefined) {
@@ -283,10 +397,22 @@ export async function sendTransactionAdvanced(
 
     if (subWalletsToTakeFrom === undefined || subWalletsToTakeFrom.length === 0) {
         subWalletsToTakeFrom = subWallets.getAddresses();
+
+        logger.log(
+            `Subwallets to take from not given, defaulting to all subwallets (${subWalletsToTakeFrom})`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
     }
 
     if (changeAddress === undefined || changeAddress === '') {
         changeAddress = subWallets.getPrimaryAddress();
+
+        logger.log(
+            `Change address not given, defaulting to change address of ${changeAddress}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
     }
 
     const [feeAddress, feeAmount] = daemon.nodeFee();
@@ -294,7 +420,19 @@ export async function sendTransactionAdvanced(
     /* Add the node fee, if it exists */
     if (feeAmount !== 0) {
         addressesAndAmounts.push([feeAddress, feeAmount]);
+
+        logger.log(
+            `Node fee is not zero, adding node fee of ${prettyPrintAmount(feeAmount)} with destination of ${feeAddress}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
     }
+
+    logger.log(
+        'Prevalidating transaction',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
 
     const error: WalletError = validateTransaction(
         addressesAndAmounts, mixin, fee, paymentID, subWalletsToTakeFrom,
@@ -302,6 +440,12 @@ export async function sendTransactionAdvanced(
     );
 
     if (!_.isEqual(error, SUCCESS)) {
+        logger.log(
+            `Failed to validate transaction: ${error.toString()}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         return [undefined, undefined, error];
     }
 
@@ -310,8 +454,20 @@ export async function sendTransactionAdvanced(
         addressesAndAmounts, ([address, amount]) => amount,
     ) + fee;
 
+    logger.log(
+        `Total amount to send: ${totalAmount}`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     const [inputs, foundMoney] = subWallets.getTransactionInputsForAmount(
         totalAmount, subWalletsToTakeFrom, daemon.getNetworkBlockCount(),
+    );
+
+    logger.log(
+        `Selected ${inputs.length} inputs for transaction, for total amount of ${prettyPrintAmount(foundMoney)}`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
     );
 
     /* Amount to send back to ourself */
@@ -319,6 +475,12 @@ export async function sendTransactionAdvanced(
 
     if (changeRequired > 0) {
         addressesAndAmounts.push([changeAddress, changeRequired]);
+
+        logger.log(
+            `Change required = ${prettyPrintAmount(changeRequired)}, adding change destination`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
     }
 
     const [tx, creationError] = await makeTransaction(
@@ -334,11 +496,23 @@ export async function sendTransactionAdvanced(
 
     /* Checking for undefined to keep the compiler from complaining later.. */
     if (creationError || tx === undefined) {
+        logger.log(
+            `Failed to create transaction, ${(creationError as WalletError).toString()}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         return [undefined, undefined, creationError as WalletError];
     }
 
+    logger.log(
+        `Successfully created transaction, proceeding to validating and sending`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     /* Perform some final checks, and send the transaction */
-    return verifyAndSendTransaction(
+    const result = await verifyAndSendTransaction(
         tx,
         fee,
         paymentID,
@@ -349,6 +523,18 @@ export async function sendTransactionAdvanced(
         daemon,
         config,
     );
+
+    const [, , err] = result;
+
+    if (!_.isEqual(err, SUCCESS)) {
+        logger.log(
+            `Failed to verify and send fusion transaction: ${(err as WalletError).toString()}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+    }
+
+    return result;
 }
 
 async function makeTransaction(
@@ -370,6 +556,12 @@ async function makeTransaction(
         }
     });
 
+    logger.log(
+        `Split destinations into ${amounts.length} outputs`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     amounts = _.sortBy(amounts, ([address, amount]) => amount);
 
     /* Prepare destinations keys */
@@ -389,11 +581,23 @@ async function makeTransaction(
 
     ourInputs = _.sortBy(ourInputs, (input) => input.input.amount);
 
+    logger.log(
+        `Collecting ring participants`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     const randomOuts: WalletError | RandomOutput[][] = await getRingParticipants(
         ourInputs, mixin, daemon, config,
     );
 
     if (randomOuts instanceof WalletError) {
+        logger.log(
+            `Failed to get ring participants: ${randomOuts.toString()}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         return [undefined, randomOuts as WalletError];
     }
 
@@ -437,13 +641,31 @@ async function makeTransaction(
     );
 
     try {
+        logger.log(
+            `Asynchronously creating transaction with turtlecoin-utils`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         const tx = await CryptoUtils(config).createTransactionAsync(
             transfers, ourOutputs, randomOuts as RandomOutput[][], mixin, fee,
             paymentID,
         );
 
+        logger.log(
+            `Transaction creation succeeded`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         return [tx, undefined];
     } catch (err) {
+        logger.log(
+            `Error while creating transaction with turtlecoin-utils: ${err.toString()}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         return [undefined, new WalletError(WalletErrorCode.UNKNOWN_ERROR, err.toString())];
     }
 }
@@ -465,6 +687,12 @@ async function verifyAndSendTransaction(
         LogCategory.TRANSACTIONS
     );
 
+    logger.log(
+        'Verifying size of transaction',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     /* Check the transaction isn't too large to fit in a block */
     const tooBigErr: WalletError = isTransactionPayloadTooBig(
         tx.rawTransaction, daemon.getNetworkBlockCount(), config
@@ -474,11 +702,23 @@ async function verifyAndSendTransaction(
         return [undefined, undefined, tooBigErr];
     }
 
+    logger.log(
+        'Verifying amounts of transaction',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
        they will not be mixable */
     if (!verifyAmounts(tx.transaction.outputs)) {
         return [undefined, undefined, new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY)];
     }
+
+    logger.log(
+        'Verifying transaction fee',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
 
     /* Check the transaction has the fee that we expect (0 for fusion) */
     if (!verifyTransactionFee(tx.transaction, fee)) {
@@ -487,6 +727,12 @@ async function verifyAndSendTransaction(
 
     let relaySuccess: boolean;
     let errorMessage: string | undefined;
+
+    logger.log(
+        'Relaying transaction',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
 
     try {
         [relaySuccess, errorMessage] = await daemon.sendTransaction(tx.rawTransaction);
@@ -508,16 +754,34 @@ async function verifyAndSendTransaction(
         return [undefined, undefined, new WalletError(WalletErrorCode.DAEMON_ERROR, customMessage)];
     }
 
+    logger.log(
+        'Storing sent transaction',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     /* Store the unconfirmed transaction, update our balance */
     const returnTX: TX = await storeSentTransaction(
         tx.hash, tx.transaction.outputs, tx.transaction.transactionKeys.publicKey, 
         fee, paymentID, inputs, subWallets, config
     );
 
+    logger.log(
+        'Marking sent inputs as locked',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
     /* Lock the input for spending till confirmed/cancelled */
     for (const input of inputs) {
         subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage);
     }
+
+    logger.log(
+        'Transaction process complete.',
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
 
     return [returnTX, tx.hash, undefined];
 }
@@ -663,6 +927,12 @@ async function getRingParticipants(
     config: Config): Promise<WalletError | RandomOutput[][]> {
 
     if (mixin === 0) {
+        logger.log(
+            `Mixin = 0, no ring participants needed`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         return [];
     }
 
@@ -675,6 +945,12 @@ async function getRingParticipants(
     const outs = await daemon.getRandomOutputsByAmount(amounts, requestedOuts);
 
     if (outs.length === 0) {
+        logger.log(
+            `Failed to get any random outputs from the daemon`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         return new WalletError(WalletErrorCode.DAEMON_OFFLINE);
     }
 
@@ -736,6 +1012,12 @@ async function getRingParticipants(
             };
         }));
     }
+
+    logger.log(
+        `Finished gathering ring participants`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
 
     return randomOuts;
 }
