@@ -569,10 +569,14 @@ export class Daemon extends EventEmitter implements IDaemon {
         };
 
         try {
+            /* Start by trying HTTPS if we haven't determined whether it's
+               HTTPS or HTTP yet. */
             const protocol = this.sslDetermined ? (this.ssl ? 'https' : 'http') : 'https';
 
+            const url: string = `${protocol}://${this.host}:${this.port}${endpoint}`;
+
             logger.log(
-                `Making request to ${endpoint} with params ${body ? JSON.stringify(body) : '{}'}`,
+                `Making request to ${url} with params ${body ? JSON.stringify(body) : '{}'}`,
                 LogLevel.TRACE,
                 [LogCategory.DAEMON],
             );
@@ -580,9 +584,7 @@ export class Daemon extends EventEmitter implements IDaemon {
             const data = await request({
                 ...options,
                 ...this.config.customRequestOptions,
-                /* Start by trying HTTPS if we haven't determined whether it's
-                   HTTPS or HTTP yet. */
-                url: `${protocol}://${this.host}:${this.port}${endpoint}`,
+                url,
                 agent: protocol === 'https' ? this.httpsAgent : this.httpAgent,
             });
 
@@ -598,7 +600,7 @@ export class Daemon extends EventEmitter implements IDaemon {
             }
 
             logger.log(
-                `Got response from ${endpoint} with body ${JSON.stringify(data)}`,
+                `Got response from ${url} with body ${JSON.stringify(data)}`,
                 LogLevel.TRACE,
                 [LogCategory.DAEMON],
             );
@@ -617,10 +619,19 @@ export class Daemon extends EventEmitter implements IDaemon {
             }
 
             try {
+                /* Lets try HTTP now. */
+                const url: string = `http://${this.host}:${this.port}${endpoint}`;
+
+                logger.log(
+                    `Making request to ${url} with params ${body ? JSON.stringify(body) : '{}'}`,
+                    LogLevel.TRACE,
+                    [LogCategory.DAEMON],
+                );
+
                 const data = await request({
                     ...options,
                     /* Lets try HTTP now. */
-                    url: `http://${this.host}:${this.port}${endpoint}`,
+                    url,
                     agent: this.httpAgent,
                 });
 
@@ -633,7 +644,7 @@ export class Daemon extends EventEmitter implements IDaemon {
                 }
 
                 logger.log(
-                    `Got response from ${method} with body ${JSON.stringify(data)}`,
+                    `Got response from ${url} with body ${JSON.stringify(data)}`,
                     LogLevel.TRACE,
                     [LogCategory.DAEMON],
                 );
