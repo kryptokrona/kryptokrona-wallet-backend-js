@@ -823,6 +823,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public async swapNode(newDaemon: IDaemon): Promise<void> {
+        logger.log(
+            `Swapping node from ${this.daemon.getConnectionString()} to ${newDaemon.getConnectionString()}`,
+            LogLevel.DEBUG,
+            LogCategory.DAEMON,
+        );
+
         const shouldRestart: boolean = this.started;
 
         await this.stop();
