@@ -164,6 +164,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.10
+
+* Amount of blocks per request will ramp up/down as requests succeed/fail.
+
 ### v4.0.9
 
 * Bump `turtlecoin-utils`
