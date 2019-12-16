@@ -840,6 +840,7 @@ export class WalletBackend extends EventEmitter {
         }
 
         this.daemon = newDaemon;
+        this.daemon.updateConfig(this.config);
 
         this.walletSynchronizer.swapNode(newDaemon);
 
