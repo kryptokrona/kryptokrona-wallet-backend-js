@@ -67,22 +67,27 @@ export class Daemon extends EventEmitter implements IDaemon {
     /**
      * The amount of blocks the daemon we're connected to has
      */
-    private localDaemonBlockCount = 0;
+    private localDaemonBlockCount: number = 0;
 
     /**
      * The amount of blocks the network has
      */
-    private networkBlockCount = 0;
+    private networkBlockCount: number = 0;
 
     /**
      * The amount of peers we have, incoming+outgoing
      */
-    private peerCount = 0;
+    private peerCount: number = 0;
 
     /**
      * The hashrate of the last known local block
      */
-    private lastKnownHashrate = 0;
+    private lastKnownHashrate: number = 0;
+
+    /**
+     * The number of blocks to download per /getwalletsyncdata request
+     */
+    private blockCount: number = 100;
 
     private config: Config = new Config();
 
@@ -165,6 +170,7 @@ export class Daemon extends EventEmitter implements IDaemon {
 
     public updateConfig(config: IConfig) {
         this.config = MergeConfig(config);
+        this.blockCount = this.config.blocksPerDaemonRequest;
     }
 
     /**
@@ -300,22 +306,23 @@ export class Daemon extends EventEmitter implements IDaemon {
     public async getWalletSyncData(
         blockHashCheckpoints: string[],
         startHeight: number,
-        startTimestamp: number,
-        blockCount: number): Promise<[Block[], TopBlock | boolean]> {
+        startTimestamp: number): Promise<[Block[], TopBlock | boolean]> {
 
         let data;
 
         try {
             data = await this.makePostRequest('/getwalletsyncdata', {
-                blockCount,
+                blockCount: this.blockCount,
                 blockHashCheckpoints,
                 skipCoinbaseTransactions: !this.config.scanCoinbaseTransactions,
                 startHeight,
                 startTimestamp,
             });
         } catch (err) {
+            this.blockCount = Math.ceil(this.blockCount / 4);
+
             logger.log(
-                'Failed to get wallet sync data: ' + err.toString(),
+                `Failed to get wallet sync data: ${err.toString()}. Lowering block count to ${this.blockCount}`,
                 LogLevel.INFO,
                 [LogCategory.DAEMON],
             );
@@ -325,6 +332,22 @@ export class Daemon extends EventEmitter implements IDaemon {
 
         /* The node is not dead if we're fetching blocks. */
         if (data.items.length >= 0) {
+            logger.log(
+                `Fetched ${data.items.length} blocks from the daemon`,
+                LogLevel.DEBUG,
+                [LogCategory.DAEMON],
+            );
+
+            if (this.blockCount !== this.config.blocksPerDaemonRequest) {
+                this.blockCount = Math.min(this.config.blocksPerDaemonRequest, this.blockCount * 2);
+
+                logger.log(
+                    `Successfully fetched sync data, raising block count to ${this.blockCount}`,
+                    LogLevel.DEBUG,
+                    [LogCategory.DAEMON],
+                );
+            }
+
             this.lastUpdatedNetworkHeight = new Date();
             this.lastUpdatedLocalHeight = new Date();
         }

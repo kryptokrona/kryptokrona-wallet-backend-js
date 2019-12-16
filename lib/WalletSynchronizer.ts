@@ -503,7 +503,6 @@ export class WalletSynchronizer extends EventEmitter {
         try {
             [blocks, topBlock] = await this.daemon.getWalletSyncData(
                 blockCheckpoints, this.startHeight, this.startTimestamp,
-                this.config.blocksPerDaemonRequest,
             );
         } catch (err) {
             logger.log(

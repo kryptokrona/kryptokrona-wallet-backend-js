@@ -79,8 +79,7 @@ export interface IDaemon {
     getWalletSyncData(
         blockHashCheckpoints: string[],
         startHeight: number,
-        startTimestamp: number,
-        blockCount: number): Promise<[Block[], TopBlock | boolean]>;
+        startTimestamp: number): Promise<[Block[], TopBlock | boolean]>;
 
     /**
      * Gets the node fee address and amount. Will be `['', 0]` if none/invalid
