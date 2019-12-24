@@ -281,7 +281,7 @@ export async function sendFusionTransactionAdvanced(
 
     const [, , err] = result;
 
-    if (!_.isEqual(err, SUCCESS)) {
+    if (err) {
         logger.log(
             `Failed to verify and send transaction: ${(err as WalletError).toString()}`,
             LogLevel.DEBUG,
@@ -526,7 +526,7 @@ export async function sendTransactionAdvanced(
 
     const [, , err] = result;
 
-    if (!_.isEqual(err, SUCCESS)) {
+    if (err) {
         logger.log(
             `Failed to verify and send fusion transaction: ${(err as WalletError).toString()}`,
             LogLevel.DEBUG,
