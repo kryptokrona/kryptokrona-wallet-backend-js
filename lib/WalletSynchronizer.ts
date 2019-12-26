@@ -110,7 +110,8 @@ export class WalletSynchronizer extends EventEmitter {
         startTimestamp: number,
         startHeight: number,
         privateViewKey: string,
-        config: Config) {
+        config: Config,
+        synchronizationStatus: SynchronizationStatus = new SynchronizationStatus()) {
 
         super();
 
@@ -120,10 +121,7 @@ export class WalletSynchronizer extends EventEmitter {
         this.privateViewKey = privateViewKey;
         this.subWallets = subWallets;
         this.config = config;
-    }
-
-    public swapNode(newDaemon: IDaemon): void {
-        this.daemon = newDaemon;
+        this.synchronizationStatus = synchronizationStatus;
     }
 
     public getScanHeights(): [number, number] {
@@ -461,7 +459,15 @@ export class WalletSynchronizer extends EventEmitter {
         return false;
     }
 
-    private getBlockCheckpoints(): string[] {
+    public getBlockCheckpoints(): string[] {
+        return this.synchronizationStatus.getBlockCheckpoints();
+    }
+
+    public getRecentBlockHashes(): string[] {
+        return this.synchronizationStatus.getRecentBlockHashes();
+    }
+
+    private getWalletSyncDataHashes(): string[] {
         const unprocessedBlockHashes: string[] = this.getStoredBlockCheckpoints();
 
         const recentProcessedBlockHashes: string[] = this.synchronizationStatus.getRecentBlockHashes();
@@ -495,7 +501,7 @@ export class WalletSynchronizer extends EventEmitter {
         /* Get the checkpoints of the blocks we've got stored, so we can fetch
            later ones. Also use the checkpoints of the previously processed
            ones, in case we don't have any blocks yet. */
-        const blockCheckpoints: string[] = this.getBlockCheckpoints();
+        const blockCheckpoints: string[] = this.getWalletSyncDataHashes();
 
         let blocks: Block[] = [];
         let topBlock: TopBlock | boolean;

@@ -18,6 +18,7 @@ import { validateAddresses } from './ValidateParameters';
 import { WalletSynchronizer } from './WalletSynchronizer';
 import { Config, MergeConfig, IConfig } from './Config';
 import { LogCategory, logger, LogLevel } from './Logger';
+import { SynchronizationStatus } from './SynchronizationStatus';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import {
@@ -848,7 +849,18 @@ export class WalletBackend extends EventEmitter {
         this.daemon = newDaemon;
         this.daemon.updateConfig(this.config);
 
-        this.walletSynchronizer.swapNode(newDaemon);
+        const [scanHeight, scanTimestamp] = this.walletSynchronizer.getScanHeights();
+
+        const newSynchronizationStatus: SynchronizationStatus = new SynchronizationStatus(
+            this.walletSynchronizer.getHeight(),
+            this.walletSynchronizer.getBlockCheckpoints(),
+            this.walletSynchronizer.getRecentBlockHashes()
+        );
+
+        this.walletSynchronizer = new WalletSynchronizer(
+            this.daemon, this.subWallets, scanTimestamp, scanHeight, 
+            this.subWallets.getPrivateViewKey(), this.config, newSynchronizationStatus,
+        );
 
         this.haveEmittedDeadNode = false;
 
