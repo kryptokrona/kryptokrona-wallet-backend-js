@@ -1243,6 +1243,13 @@ export class WalletBackend extends EventEmitter {
     public scanCoinbaseTransactions(shouldScan: boolean): void {
         assertBoolean(shouldScan, 'shouldScan');
 
+        /* We are not currently scanning coinbase transactions, and the caller
+         * just turned it on. So, we need to discard stored blocks that don't
+         * have the coinbase transaction property. */
+        if (!this.config.scanCoinbaseTransactions && shouldScan) {
+            this.discardStoredBlocks();
+        }
+
         this.config.scanCoinbaseTransactions = shouldScan;
     }
 
