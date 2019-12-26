@@ -823,6 +823,25 @@ export class WalletBackend extends EventEmitter {
             this.daemon, this.subWallets, scanTimestamp, scanHeight, 
             this.subWallets.getPrivateViewKey(), this.config, newSynchronizationStatus,
         );
+
+        /* Resetup event handlers */
+        this.walletSynchronizer.on('heightchange', (walletHeight) => {
+            this.emit(
+                'heightchange',
+                walletHeight,
+                this.daemon.getLocalDaemonBlockCount(),
+                this.daemon.getNetworkBlockCount()
+            );
+
+            this.haveEmittedDeadNode = false;
+        });
+
+        this.walletSynchronizer.on('deadnode', () => {
+            if (!this.haveEmittedDeadNode) {
+                this.haveEmittedDeadNode = true;
+                this.emit('deadnode');
+            }
+        });
     }
 
     /**
