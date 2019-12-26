@@ -810,6 +810,21 @@ export class WalletBackend extends EventEmitter {
         this.setupMetronomes();
     }
 
+    private discardStoredBlocks(): void {
+        const [scanHeight, scanTimestamp] = this.walletSynchronizer.getScanHeights();
+
+        const newSynchronizationStatus: SynchronizationStatus = new SynchronizationStatus(
+            this.walletSynchronizer.getHeight(),
+            this.walletSynchronizer.getBlockCheckpoints(),
+            this.walletSynchronizer.getRecentBlockHashes()
+        );
+
+        this.walletSynchronizer = new WalletSynchronizer(
+            this.daemon, this.subWallets, scanTimestamp, scanHeight, 
+            this.subWallets.getPrivateViewKey(), this.config, newSynchronizationStatus,
+        );
+    }
+
     /**
      * Swaps the currently connected daemon with a different one. If the wallet
      * is currently started, it will remain started after the node is swapped,
@@ -849,19 +864,11 @@ export class WalletBackend extends EventEmitter {
         this.daemon = newDaemon;
         this.daemon.updateConfig(this.config);
 
-        const [scanHeight, scanTimestamp] = this.walletSynchronizer.getScanHeights();
-
-        const newSynchronizationStatus: SynchronizationStatus = new SynchronizationStatus(
-            this.walletSynchronizer.getHeight(),
-            this.walletSynchronizer.getBlockCheckpoints(),
-            this.walletSynchronizer.getRecentBlockHashes()
-        );
-
-        this.walletSynchronizer = new WalletSynchronizer(
-            this.daemon, this.subWallets, scanTimestamp, scanHeight, 
-            this.subWallets.getPrivateViewKey(), this.config, newSynchronizationStatus,
-        );
-
+        /* Discard blocks which are stored which may cause issues, for example,
+         * if we swap from a cache node to a non cache node,
+         * /getGlobalIndexesForRange will fail. */
+        this.discardStoredBlocks();
+        
         this.haveEmittedDeadNode = false;
 
         if (shouldRestart) {
