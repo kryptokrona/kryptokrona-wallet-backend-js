@@ -353,11 +353,13 @@ export class WalletSynchronizer extends EventEmitter {
     public async fetchBlocks(blockCount: number): Promise<[Block[], number]> {
         /* Fetch more blocks if we haven't got any downloaded yet */
         if (this.storedBlocks.length === 0) {
-            logger.log(
-                'No blocks stored, attempting to fetch more.',
-                LogLevel.DEBUG,
-                LogCategory.SYNC,
-            );
+            if (!this.fetchingBlocks) {
+                logger.log(
+                    'No blocks stored, attempting to fetch more.',
+                    LogLevel.DEBUG,
+                    LogCategory.SYNC,
+                );
+            }
 
             const [check, downloadSuccess] = await this.downloadBlocks();
 

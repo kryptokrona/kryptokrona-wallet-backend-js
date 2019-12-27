@@ -2241,7 +2241,9 @@ export class WalletBackend extends EventEmitter {
             }
 
             if (sleep) {
+                /* Temporarily disabled
                 await delay(sleepMultiplier * this.config.daemonUpdateInterval);
+                */
             }
 
             return false;
