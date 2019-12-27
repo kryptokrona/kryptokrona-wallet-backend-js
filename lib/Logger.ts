@@ -144,6 +144,7 @@ export enum LogCategory {
     FILESYSTEM,
     SAVE,
     DAEMON,
+    GENERAL,
 }
 
 /**
@@ -165,6 +166,9 @@ function logCategoryToString(category: LogCategory) {
         }
         case LogCategory.DAEMON: {
             return 'Daemon';
+        }
+        case LogCategory.GENERAL: {
+            return 'General';
         }
     }
 }

@@ -309,6 +309,12 @@ export class WalletBackend extends EventEmitter {
         password: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
+        logger.log(
+            'Function openWalletFromFile called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertString(filename, 'filename');
         assertString(password, 'password');
 
@@ -355,6 +361,12 @@ export class WalletBackend extends EventEmitter {
         data: string,
         password: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
+
+        logger.log(
+            'Function openWalletFromEncryptedString called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         assertString(data, 'data');
         assertString(password, 'password');
@@ -403,6 +415,12 @@ export class WalletBackend extends EventEmitter {
         json: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
+        logger.log(
+            'Function loadWalletFromJSON called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertString(json, 'json');
 
         try {
@@ -448,6 +466,12 @@ export class WalletBackend extends EventEmitter {
         scanHeight: number = 0,
         mnemonicSeed: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
+
+        logger.log(
+            'Function importWalletFromSeed called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         assertNumber(scanHeight, 'scanHeight');
         assertString(mnemonicSeed, 'mnemonicSeed');
@@ -514,6 +538,12 @@ export class WalletBackend extends EventEmitter {
         privateViewKey: string,
         privateSpendKey: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
+
+        logger.log(
+            'Function importWalletFromKeys called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         assertNumber(scanHeight, 'scanHeight');
         assertString(privateViewKey, 'privateViewKey');
@@ -591,6 +621,12 @@ export class WalletBackend extends EventEmitter {
         address: string,
         config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
+        logger.log(
+            'Function importViewWallet called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertNumber(scanHeight, 'scanHeight');
         assertString(privateViewKey, 'privateViewKey');
         assertString(address, 'address');
@@ -645,6 +681,12 @@ export class WalletBackend extends EventEmitter {
     public static createWallet(
         daemon: IDaemon,
         config?: IConfig): WalletBackend {
+
+        logger.log(
+            'Function createWallet called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         const newWallet: boolean = true;
 
@@ -859,6 +901,12 @@ export class WalletBackend extends EventEmitter {
      */
     public async swapNode(newDaemon: IDaemon): Promise<void> {
         logger.log(
+            'Function swapNode called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
+        logger.log(
             `Swapping node from ${this.daemon.getConnectionString()} to ${newDaemon.getConnectionString()}`,
             LogLevel.DEBUG,
             LogCategory.DAEMON,
@@ -916,6 +964,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public getDaemonConnectionInfo(): DaemonConnection {
+        logger.log(
+            'Function getDaemonConnectionInfo called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return this.daemon.getConnectionInfo();
     }
 
@@ -933,6 +987,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public rescan(): Promise<void> {
+        logger.log(
+            'Function rescan called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         const [scanHeight, scanTimestamp] = this.walletSynchronizer.getScanHeights();
 
         return this.reset(scanHeight, scanTimestamp);
@@ -956,6 +1016,12 @@ export class WalletBackend extends EventEmitter {
      * @param timestamp The timestamp to being scanning transactions from
      */
     public async reset(scanHeight: number = 0, scanTimestamp: number = 0): Promise<void> {
+        logger.log(
+            'Function reset called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertNumber(scanHeight, 'scanHeight');
         assertNumber(scanTimestamp, 'scanTimestamp');
 
@@ -998,6 +1064,12 @@ export class WalletBackend extends EventEmitter {
      * @param scanHeight The scan height to rewind to 
      */
     public async rewind(scanHeight: number = 0): Promise<void> {
+        logger.log(
+            'Function rewind called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertNumber(scanHeight, 'scanHeight');
 
         const shouldRestart: boolean = this.started;
@@ -1036,6 +1108,12 @@ export class WalletBackend extends EventEmitter {
      * @returns Returns the newly created address or an error.
      */
     public addSubWallet(): ([string, undefined] | [undefined, WalletError]) {
+        logger.log(
+            'Function addSubWallet called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         const currentHeight: number = this.walletSynchronizer.getHeight();
 
         return this.subWallets.addSubWallet(currentHeight);
@@ -1067,6 +1145,12 @@ export class WalletBackend extends EventEmitter {
     public async importSubWallet(
         privateSpendKey: string,
         scanHeight?: number): Promise<([string, undefined] | [undefined, WalletError])> {
+
+        logger.log(
+            'Function importSubWallet called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         const currentHeight: number = this.walletSynchronizer.getHeight();
 
@@ -1125,6 +1209,12 @@ export class WalletBackend extends EventEmitter {
         publicSpendKey: string,
         scanHeight?: number): Promise<([string, undefined] | [undefined, WalletError])> {
 
+        logger.log(
+            'Function importViewSubWallet called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         const currentHeight: number = this.walletSynchronizer.getHeight();
 
         if (scanHeight === undefined) {
@@ -1171,6 +1261,12 @@ export class WalletBackend extends EventEmitter {
      * @param address The subwallet address to remove
      */
     public deleteSubWallet(address: string): WalletError {
+        logger.log(
+            'Function deleteSubWallet called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertString(address, 'address');
 
         const err: WalletError = validateAddresses(
@@ -1195,6 +1291,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public getWalletCount(): number {
+        logger.log(
+            'Function getWalletCount called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return this.subWallets.getWalletCount();
     }
 
@@ -1208,6 +1310,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public getSyncStatus(): [number, number, number] {
+        logger.log(
+            'Function getSyncStatus called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return [
             this.walletSynchronizer.getHeight(),
             this.daemon.getLocalDaemonBlockCount(),
@@ -1225,6 +1333,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public toJSONString(): string {
+        logger.log(
+            'Function toJSONString called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return JSON.stringify(this, null, 4);
     }
 
@@ -1241,6 +1355,12 @@ export class WalletBackend extends EventEmitter {
      * @param shouldScan Should we scan coinbase transactions?
      */
     public scanCoinbaseTransactions(shouldScan: boolean): void {
+        logger.log(
+            'Function scanCoinbaseTransactions called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertBoolean(shouldScan, 'shouldScan');
 
         /* We are not currently scanning coinbase transactions, and the caller
@@ -1267,6 +1387,12 @@ export class WalletBackend extends EventEmitter {
      * @param logLevel The level to log messages at.
      */
     public setLogLevel(logLevel: LogLevel): void {
+        logger.log(
+            'Function setLogLevel called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         logger.setLogLevel(logLevel);
     }
 
@@ -1290,6 +1416,12 @@ export class WalletBackend extends EventEmitter {
      * @param shouldAutoOptimize Should we automatically keep the wallet optimized?
      */
     public enableAutoOptimization(shouldAutoOptimize: boolean): void {
+        logger.log(
+            'Function enableAutoOptimization called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertBoolean(shouldAutoOptimize, 'shouldAutoOptimize');
 
         this.autoOptimize = shouldAutoOptimize;
@@ -1322,6 +1454,12 @@ export class WalletBackend extends EventEmitter {
                    message: string,
                    level: LogLevel,
                    categories: LogCategory[]) => any): void {
+
+        logger.log(
+            'Function setLoggerCallback called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         logger.setLoggerCallback(callback);
     }
@@ -1368,6 +1506,13 @@ export class WalletBackend extends EventEmitter {
             isViewWallet: boolean,
             processCoinbaseTransactions: boolean,
         ) => Array<[string, TransactionInput]>): void {
+
+        logger.log(
+            'Function setBlockOutputProcessFunc called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         this.externalBlockProcessFunction = func;
     }
 
@@ -1382,6 +1527,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public async start(): Promise<void> {
+        logger.log(
+            'Function start called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         if (!this.started) {
             this.started = true;
 
@@ -1407,6 +1558,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public async stop(): Promise<void> {
+        logger.log(
+            'Function stop called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         this.started = false;
         await this.syncThread.stop();
         await this.daemonUpdateThread.stop();
@@ -1429,6 +1586,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public getNodeFee(): [string, number] {
+        logger.log(
+            'Function getNodeFee called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return this.daemon.nodeFee();
     }
 
@@ -1441,6 +1604,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public getPrivateViewKey(): string {
+        logger.log(
+            'Function getPrivateViewKey called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return this.subWallets.getPrivateViewKey();
     }
 
@@ -1459,6 +1628,12 @@ export class WalletBackend extends EventEmitter {
         sync: (sleep: boolean) => Promise<boolean>;
         updateDaemonInfo: () => Promise<void>;
     } {
+        logger.log(
+            'Function internal called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return {
             sync: (sleep) => this.sync(sleep),
             updateDaemonInfo: () => this.updateDaemonInfo(),
@@ -1483,6 +1658,12 @@ export class WalletBackend extends EventEmitter {
      * @param address A valid address in this container, to get the spend keys of
      */
     public getSpendKeys(address: string): ([string, string, undefined] | [undefined, undefined, WalletError]) {
+        logger.log(
+            'Function getSpendKeys called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertString(address, 'address');
 
         const integratedAddressesAllowed: boolean = false;
@@ -1516,6 +1697,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public getPrimaryAddressPrivateKeys(): [string, string] {
+        logger.log(
+            'Function getPrimaryAddressPrivateKeys called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return [this.subWallets.getPrimaryPrivateSpendKey(), this.getPrivateViewKey()];
     }
 
@@ -1533,6 +1720,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public getMnemonicSeed(): ([string, undefined] | [undefined, WalletError]) {
+        logger.log(
+            'Function getMnemonicSeed called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return this.getMnemonicSeedForAddress(this.subWallets.getPrimaryAddress());
     }
 
@@ -1553,6 +1746,12 @@ export class WalletBackend extends EventEmitter {
      * @param address A valid address that exists in this container
      */
     public getMnemonicSeedForAddress(address: string): ([string, undefined] | [undefined, WalletError]) {
+        logger.log(
+            'Function getMnemonicSeedForAddress called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertString(address, 'address');
 
         const privateViewKey: string = this.getPrivateViewKey();
@@ -1585,6 +1784,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public getPrimaryAddress(): string {
+        logger.log(
+            'Function getPrimaryAddress called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return this.subWallets.getPrimaryAddress();
     }
 
@@ -1605,6 +1810,12 @@ export class WalletBackend extends EventEmitter {
      * @return Returns the encrypted wallet as astring.
      */
     public encryptWalletToString(password: string): string {
+        logger.log(
+            'Function encryptWalletToString called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertString(password, 'password');
 
         const walletJson: string = JSON.stringify(this);
@@ -1634,6 +1845,12 @@ export class WalletBackend extends EventEmitter {
      * @return Returns a boolean indicating success.
      */
     public saveWalletToFile(filename: string, password: string): boolean {
+        logger.log(
+            'Function saveWalletToFile called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertString(filename, 'filename');
         assertString(password, 'password');
 
@@ -1668,6 +1885,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public getAddresses(): string[] {
+        logger.log(
+            'Function getAddresses called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return this.subWallets.getAddresses();
     }
 
@@ -1696,6 +1919,12 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public async optimize(): Promise<[number, string[]]> {
+        logger.log(
+            'Function optimize called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         let numTransactionsSent: number = 0;
         let hashes: string[] = [];
 
@@ -1727,6 +1956,11 @@ export class WalletBackend extends EventEmitter {
      * ```
      */
     public async sendFusionTransactionBasic(): Promise<(TransactionHash | TransactionError)> {
+        logger.log(
+            'Function sendFusionTransactionBasic called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         this.currentlyTransacting = true;
 
@@ -1790,6 +2024,12 @@ export class WalletBackend extends EventEmitter {
         mixin?: number,
         subWalletsToTakeFrom?: string[],
         destination?: string): Promise<(TransactionHash | TransactionError)> {
+
+        logger.log(
+            'Function sendFusionTransactionAdvanced called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         assertNumberOrUndefined(mixin, 'mixin');
         assertArrayOrUndefined(subWalletsToTakeFrom, 'subWalletsToTakeFrom');
@@ -1856,6 +2096,12 @@ export class WalletBackend extends EventEmitter {
         destination: string,
         amount: number,
         paymentID?: string): Promise<(TransactionHash | TransactionError)> {
+
+        logger.log(
+            'Function sendTransactionBasic called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         assertString(destination, 'destination');
         assertNumber(amount, 'amount');
@@ -1931,6 +2177,12 @@ export class WalletBackend extends EventEmitter {
         subWalletsToTakeFrom?: string[],
         changeAddress?: string): Promise<(TransactionHash | TransactionError)> {
 
+        logger.log(
+            'Function sendTransactionAdvanced called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertArray(destinations, 'destinations');
         assertNumberOrUndefined(mixin, 'mixin');
         assertNumberOrUndefined(fee, 'fee');
@@ -1982,6 +2234,12 @@ export class WalletBackend extends EventEmitter {
      *                             not given, defaults to all addresses.
      */
     public getBalance(subWalletsToTakeFrom?: string[]): [number, number] {
+        logger.log(
+            'Function getBalance called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertArrayOrUndefined(subWalletsToTakeFrom, 'subWalletsToTakeFrom');
 
         return this.subWallets.getBalance(
@@ -2014,6 +2272,12 @@ export class WalletBackend extends EventEmitter {
         numTransactions?: number,
         includeFusions = true,
         subWallet?: string): Transaction[] {
+
+        logger.log(
+            'Function getTransactions called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
 
         assertNumberOrUndefined(startIndex, 'startIndex');
         assertNumberOrUndefined(numTransactions, 'numTransactions');
@@ -2058,6 +2322,12 @@ export class WalletBackend extends EventEmitter {
      * @param hash The hash of the transaction to get
      */
     public getTransaction(hash: string): Transaction | undefined {
+        logger.log(
+            'Function getTransaction called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         assertString(hash, 'hash');
 
         const txs = this.getTransactions();
@@ -2092,6 +2362,12 @@ export class WalletBackend extends EventEmitter {
      * @param subWallet Should we only count transactions of the specified subWallet?
      */
     public getNumTransactions(subWallet?: string): number {
+        logger.log(
+            'Function getNumTransactions called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
         return this.subWallets.getNumTransactions(subWallet)
              + this.subWallets.getNumUnconfirmedTransactions(subWallet);
     }
