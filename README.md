@@ -164,6 +164,14 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v4.0.11
+
+* Fix rare failure to sync when swapping from non cache node to cache node with blocks stored
+* Fix failure to sync when enabling coinbase transaction scanning with blocks stored
+* Disable sleeping between block download failures
+* Log all public function calls in WalletBackend class
+* Fix issue where transactions would be incorrectly reported as errored
+
 ### v4.0.10
 
 * Amount of blocks per request will ramp up/down as requests succeed/fail.
