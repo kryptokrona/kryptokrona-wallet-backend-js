@@ -1,3 +1,7 @@
+// Copyright (c) 2019-2020, Zpalmtree
+//
+// Please see the included LICENSE file for more information.
+
 import { CryptoUtils } from './CnUtils';
 import { Config } from './Config';
 

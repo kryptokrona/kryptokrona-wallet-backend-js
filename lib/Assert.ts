@@ -1,4 +1,4 @@
-// Copyright (C) 2019, Zpalmtree
+// Copyright (C) 2019-2020, Zpalmtree
 //
 // Please see the included LICENSE file for more information.
 

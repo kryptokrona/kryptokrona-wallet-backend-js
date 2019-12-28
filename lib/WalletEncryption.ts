@@ -1,3 +1,7 @@
+// Copyright (c) 2019-2020, Zpalmtree
+//
+// Please see the included LICENSE file for more information.
+
 import * as crypto from 'crypto';
 import * as pbkdf2 from 'pbkdf2';
 import { IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER, PBKDF2_ITERATIONS } from './Constants';
