@@ -32,9 +32,9 @@ export function createIntegratedAddress(
     assertString(address, 'address');
     assertString(paymentID, 'paymentID');
 
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
-    let error = validateAddresses([address], false, _config);
+    let error = validateAddresses([address], false, tempConfig);
 
     if (!_.isEqual(error, SUCCESS)) {
         throw error;
@@ -51,7 +51,7 @@ export function createIntegratedAddress(
         throw new Error('Payment ID is empty string!');
     }
 
-    return CryptoUtils(_config).createIntegratedAddress(address, paymentID);
+    return CryptoUtils(tempConfig).createIntegratedAddress(address, paymentID);
 }
 
 /**
@@ -71,9 +71,9 @@ export function isHex64(val: string): boolean {
  * @hidden
  */
 export function addressToKeys(address: string, config: IConfig = new Config()): [string, string] {
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
-    const parsed = CryptoUtils(_config).decodeAddress(address);
+    const parsed = CryptoUtils(tempConfig).decodeAddress(address);
 
     return [parsed.publicViewKey, parsed.publicSpendKey];
 }
@@ -136,20 +136,20 @@ export function isInputUnlocked(unlockTime: number, currentHeight: number): bool
 export function prettyPrintAmount(amount: number, config: IConfig = new Config()): string {
     assertNumber(amount, 'amount');
 
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
     /* Get the amount we need to divide atomic units by. 2 decimal places = 100 */
-    const divisor: number = Math.pow(10, _config.decimalPlaces);
+    const divisor: number = Math.pow(10, tempConfig.decimalPlaces);
 
     const dollars: number = amount >= 0 ? Math.floor(amount / divisor) : Math.ceil(amount / divisor);
 
     /* Make sure 1 is displaced as 01 */
-    const cents: string = (Math.abs(amount % divisor)).toString().padStart(_config.decimalPlaces, '0');
+    const cents: string = (Math.abs(amount % divisor)).toString().padStart(tempConfig.decimalPlaces, '0');
 
     /* Makes our numbers thousand separated. https://stackoverflow.com/a/2901298/8737306 */
     const formatted: string = dollars.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    return formatted + '.' + cents + ' ' + _config.ticker;
+    return formatted + '.' + cents + ' ' + tempConfig.ticker;
 }
 
 /**
@@ -186,10 +186,7 @@ export function splitAmountIntoDenominations(amount: number, preventTooLargeOutp
             }
 
             splitAmounts = splitAmounts.concat(Array(numSplitAmounts).fill(splitAmount));
-        }
-        /* If we have for example, 1010 - we want 1000 + 10,
-           not 1000 + 0 + 10 + 0 */
-        else if (denomination !== 0) {
+        } else if (denomination !== 0) {
             splitAmounts.push(denomination);
         }
 
@@ -276,7 +273,7 @@ export function isValidMnemonicWord(word: string): boolean {
 export function isValidMnemonic(mnemonic: string, config: IConfig = new Config()): [boolean, string] {
     assertString(mnemonic, 'mnemonic');
 
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
     const words = mnemonic.split(' ').map((x) => x.toLowerCase());
 
@@ -301,7 +298,7 @@ export function isValidMnemonic(mnemonic: string, config: IConfig = new Config()
     }
 
     try {
-        CryptoUtils(_config).createAddressFromMnemonic(words.join(' '));
+        CryptoUtils(tempConfig).createAddressFromMnemonic(words.join(' '));
         return [true, ''];
     } catch (err) {
         return [false, 'Mnemonic checksum word is invalid'];

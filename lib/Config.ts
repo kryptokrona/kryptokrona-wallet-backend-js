@@ -336,9 +336,9 @@ export class Config implements IConfig {
      * A replacement function for the JS/C++ checkRingSignatures.
      */
     public checkRingSignatures?: (transactionPrefixHash: string,
-                           keyImage: string,
-                           publicKeys: string[],
-                           signatures: string[]) => boolean = undefined;
+                                  keyImage: string,
+                                  publicKeys: string[],
+                                  signatures: string[]) => boolean = undefined;
 
     /**
      * A replacement function for the JS/C++ generateKeyDerivation.

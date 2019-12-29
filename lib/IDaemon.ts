@@ -58,8 +58,8 @@ export interface IDaemon {
      *
      * @event
      */
-    on(event: 'heightchange', 
-        callback: (localDaemonBlockCount: number, networkDaemonBlockCount: number) => void
+    on(event: 'heightchange',
+       callback: (localDaemonBlockCount: number, networkDaemonBlockCount: number) => void,
     ): this;
 
     /**

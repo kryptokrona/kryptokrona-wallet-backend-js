@@ -15,7 +15,7 @@ export async function generateKeyDerivation(
     try {
         const key = await CryptoUtils(config).generateKeyDerivation(
             transactionPublicKey,
-            privateViewKey
+            privateViewKey,
         );
         return key;
     } catch (err) {

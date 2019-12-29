@@ -93,14 +93,14 @@ export class Daemon extends EventEmitter implements IDaemon {
 
     private httpAgent: http.Agent = new http.Agent({
         keepAlive: true,
-        maxSockets: Infinity,
         keepAliveMsecs: 20000,
+        maxSockets: Infinity,
     });
 
     private httpsAgent: https.Agent = new https.Agent({
         keepAlive: true,
-        maxSockets: Infinity,
         keepAliveMsecs: 20000,
+        maxSockets: Infinity,
     });
 
     /**
@@ -156,7 +156,7 @@ export class Daemon extends EventEmitter implements IDaemon {
         if (/^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/.test(this.host) && ssl === undefined) {
             ssl = false;
         }
-        
+
         if (isCacheApi !== undefined) {
             this.isCacheApi = isCacheApi;
             this.isCacheApiDetermined = true;
@@ -261,7 +261,7 @@ export class Daemon extends EventEmitter implements IDaemon {
             info.network_height--;
         }
 
-        if (this.localDaemonBlockCount !== info.height 
+        if (this.localDaemonBlockCount !== info.height
          || this.networkBlockCount !== info.network_height) {
             this.emit('heightchange', info.height, info.network_height);
 
@@ -279,7 +279,7 @@ export class Daemon extends EventEmitter implements IDaemon {
 
         this.localDaemonBlockCount = info.height;
         this.networkBlockCount = info.network_height;
-        
+
         this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
         this.lastKnownHashrate = info.difficulty / this.config.blockTargetTime;
@@ -378,8 +378,8 @@ export class Daemon extends EventEmitter implements IDaemon {
 
         try {
             const data = await this.makePostRequest('/get_global_indexes_for_range', {
-                startHeight,
                 endHeight,
+                startHeight,
             });
 
             const indexes: Map<string, number[]> = new Map();
@@ -492,10 +492,10 @@ export class Daemon extends EventEmitter implements IDaemon {
 
     public getConnectionInfo(): DaemonConnection {
         return {
-            host: this.host,
-            port: this.port,
             daemonType: this.isCacheApi ? DaemonType.BlockchainCacheApi : DaemonType.ConventionalDaemon,
             daemonTypeDetermined: this.isCacheApiDetermined,
+            host: this.host,
+            port: this.port,
             ssl: this.ssl,
             sslDetermined: this.sslDetermined,
         };
@@ -562,10 +562,10 @@ export class Daemon extends EventEmitter implements IDaemon {
     private async makeRequest(endpoint: string, method: string, body?: any): Promise<any> {
         const options = {
             body,
+            headers: { 'User-Agent': this.config.customUserAgentString },
             json: true,
             method,
             timeout: this.config.requestTimeout,
-            headers: { 'User-Agent': this.config.customUserAgentString },
         };
 
         try {
@@ -582,10 +582,10 @@ export class Daemon extends EventEmitter implements IDaemon {
             );
 
             const data = await request({
+                agent: protocol === 'https' ? this.httpsAgent : this.httpAgent,
                 ...options,
                 ...this.config.customRequestOptions,
                 url,
-                agent: protocol === 'https' ? this.httpsAgent : this.httpAgent,
             });
 
             /* Cool, https works. Store for later. */
@@ -629,10 +629,10 @@ export class Daemon extends EventEmitter implements IDaemon {
                 );
 
                 const data = await request({
+                    agent: this.httpAgent,
                     ...options,
                     /* Lets try HTTP now. */
                     url,
-                    agent: this.httpAgent,
                 });
 
                 this.ssl = false;

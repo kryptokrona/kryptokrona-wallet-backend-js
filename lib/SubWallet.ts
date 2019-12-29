@@ -328,7 +328,9 @@ export class SubWallet {
             return input.spendHeight >= forkHeight;
         });
 
-        this.unspentInputs = this.unspentInputs.concat(nowUnspent.map((input) => { input.spendHeight = 0; return input }));
+        this.unspentInputs = this.unspentInputs.concat(
+            nowUnspent.map((input) => { input.spendHeight = 0; return input; }),
+        );
 
         /* Could do this with concat+map.. but i think this is a little more
            readable */
@@ -407,7 +409,7 @@ export class SubWallet {
     }
 
     /**
-     * Gets the amount of funds returning to us as change from outgoing 
+     * Gets the amount of funds returning to us as change from outgoing
      * unconfirmed transactions
      */
     public getUnconfirmedChange(): number {
