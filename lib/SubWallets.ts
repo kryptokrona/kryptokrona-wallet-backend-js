@@ -561,7 +561,9 @@ export class SubWallets {
         let availableInputs: TxInputAndOwner[] = [];
 
         /* Loop through each subwallet that we can take from */
-        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map((address) => addressToKeys(address, this.config))) {
+        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(
+            (address) => addressToKeys(address, this.config),
+        )) {
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
             if (!subWallet) {
@@ -600,7 +602,9 @@ export class SubWallets {
         let availableInputs: TxInputAndOwner[] = [];
 
         /* Loop through each subwallet we can take from */
-        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map((address) => addressToKeys(address, this.config))) {
+        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(
+            (address) => addressToKeys(address, this.config),
+        )) {
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
             if (!subWallet) {
@@ -659,6 +663,7 @@ export class SubWallets {
 
         const inputsToUse: TxInputAndOwner[] = [];
 
+        // tslint:disable-next-line: max-line-length
         /* See https://github.com/turtlecoin/turtlecoin/blob/153c08c3a046434522f7ac3ddd043037888b2bf5/src/CryptoNoteCore/Currency.cpp#L629 */
         /* With 3 mixin == 314 bytes. */
         const inputSize = 1 + (6 + 2) + 32 + 64 + 1 + 4 + mixin * (4 + 64);
@@ -769,7 +774,7 @@ export class SubWallets {
         const publicViewKey = CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
 
         const newAddress = CryptoUtils(this.config).encodeAddress(
-            publicViewKey, publicSpendKey
+            publicViewKey, publicSpendKey,
         );
 
         this.publicSpendKeys.push(publicSpendKey);
@@ -778,7 +783,7 @@ export class SubWallets {
 
         const subWallet = new SubWallet(
             this.config, newAddress, scanHeight, 0, publicSpendKey,
-            privateSpendKey, false
+            privateSpendKey, false,
         );
 
         this.subWallets.set(publicSpendKey, subWallet);
@@ -804,7 +809,7 @@ export class SubWallets {
         const publicViewKey = CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
 
         const newAddress = CryptoUtils(this.config).encodeAddress(
-            publicViewKey, publicSpendKey
+            publicViewKey, publicSpendKey,
         );
 
         this.publicSpendKeys.push(publicSpendKey);
@@ -813,7 +818,7 @@ export class SubWallets {
 
         const subWallet = new SubWallet(
             this.config, newAddress, scanHeight, 0, publicSpendKey,
-            privateSpendKey, false
+            privateSpendKey, false,
         );
 
         this.subWallets.set(publicSpendKey, subWallet);
@@ -837,7 +842,7 @@ export class SubWallets {
         const publicViewKey = CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
 
         const newAddress = CryptoUtils(this.config).encodeAddress(
-            publicViewKey, publicSpendKey
+            publicViewKey, publicSpendKey,
         );
 
         this.publicSpendKeys.push(publicSpendKey);
@@ -846,7 +851,7 @@ export class SubWallets {
 
         const subWallet = new SubWallet(
             this.config, newAddress, scanHeight, 0, publicSpendKey,
-            undefined, false
+            undefined, false,
         );
 
         this.subWallets.set(publicSpendKey, subWallet);

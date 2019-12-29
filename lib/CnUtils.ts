@@ -14,6 +14,7 @@ import { Config } from './Config';
 export function CryptoUtils(config: Config): CryptoNote {
     return new CryptoNote({
         addressPrefix: config.addressPrefix,
+        checkRingSignatures: config.checkRingSignatures,
         cnFastHash: config.cnFastHash,
         coinUnitPlaces: config.decimalPlaces,
         derivePublicKey: config.derivePublicKey,
@@ -21,7 +22,6 @@ export function CryptoUtils(config: Config): CryptoNote {
         generateKeyDerivation: config.generateKeyDerivation,
         generateKeyImage: config.generateKeyImage,
         generateRingSignatures: config.generateRingSignatures,
-        checkRingSignatures: config.checkRingSignatures,
         keccakIterations: 1,
         secretKeyToPublicKey: config.secretKeyToPublicKey,
         underivePublicKey: config.underivePublicKey,

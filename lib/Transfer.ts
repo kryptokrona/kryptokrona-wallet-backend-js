@@ -422,7 +422,9 @@ export async function sendTransactionAdvanced(
         addressesAndAmounts.push([feeAddress, feeAmount]);
 
         logger.log(
-            `Node fee is not zero, adding node fee of ${prettyPrintAmount(feeAmount)} with destination of ${feeAddress}`,
+            `Node fee is not zero, adding node fee of ${
+                prettyPrintAmount(feeAmount)
+            } with destination of ${feeAddress}`,
             LogLevel.DEBUG,
             LogCategory.TRANSACTIONS,
         );
@@ -684,7 +686,7 @@ async function verifyAndSendTransaction(
     logger.log(
         `Created transaction: ${JSON.stringify(tx.transaction)}`,
         LogLevel.TRACE,
-        LogCategory.TRANSACTIONS
+        LogCategory.TRANSACTIONS,
     );
 
     logger.log(
@@ -695,7 +697,7 @@ async function verifyAndSendTransaction(
 
     /* Check the transaction isn't too large to fit in a block */
     const tooBigErr: WalletError = isTransactionPayloadTooBig(
-        tx.rawTransaction, daemon.getNetworkBlockCount(), config
+        tx.rawTransaction, daemon.getNetworkBlockCount(), config,
     );
 
     if (!_.isEqual(tooBigErr, SUCCESS)) {
@@ -747,7 +749,7 @@ async function verifyAndSendTransaction(
     }
 
     if (!relaySuccess) {
-        const customMessage = errorMessage === undefined 
+        const customMessage = errorMessage === undefined
             ? ''
             : `The daemon did not accept our transaction. Error: ${errorMessage}. You may need to resync your wallet.`;
 
@@ -762,8 +764,8 @@ async function verifyAndSendTransaction(
 
     /* Store the unconfirmed transaction, update our balance */
     const returnTX: TX = await storeSentTransaction(
-        tx.hash, tx.transaction.outputs, tx.transaction.transactionKeys.publicKey, 
-        fee, paymentID, inputs, subWallets, config
+        tx.hash, tx.transaction.outputs, tx.transaction.transactionKeys.publicKey,
+        fee, paymentID, inputs, subWallets, config,
     );
 
     logger.log(
@@ -799,7 +801,7 @@ async function storeSentTransaction(
     const transfers: Map<string, number> = new Map();
 
     const derivation: string = await generateKeyDerivation(
-        txPublicKey, subWallets.getPrivateViewKey(), config
+        txPublicKey, subWallets.getPrivateViewKey(), config,
     );
 
     const spendKeys: string[] = subWallets.getPublicSpendKeys();
@@ -808,7 +810,7 @@ async function storeSentTransaction(
         /* Derive the spend key from the transaction, using the previous
            derivation */
         const derivedSpendKey = await underivePublicKey(
-            derivation, outputIndex, output.key, config
+            derivation, outputIndex, output.key, config,
         );
 
         /* See if the derived spend key matches any of our spend keys */
@@ -824,7 +826,7 @@ async function storeSentTransaction(
 
         transfers.set(
             derivedSpendKey,
-            output.amount + (transfers.get(derivedSpendKey) || 0)
+            output.amount + (transfers.get(derivedSpendKey) || 0),
         );
     }
 
