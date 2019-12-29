@@ -2284,11 +2284,11 @@ export class WalletBackend extends EventEmitter {
         assertBoolean(includeFusions, 'includeFusions');
 
         /* Clone the array and reverse it, newer txs first */
-        const unconfirmed = this.subWallets.getUnconfirmedTransactions(subWallet).slice().reverse();
+        const unconfirmed = this.subWallets.getUnconfirmedTransactions(subWallet, includeFusions).slice().reverse();
         /* Clone the array and reverse it, newer txs first */
-        const confirmed = this.subWallets.getTransactions(subWallet).slice().reverse();
+        const confirmed = this.subWallets.getTransactions(subWallet, includeFusions).slice().reverse();
 
-        const allTransactions: Transaction[] = unconfirmed.concat(confirmed).filter((x) => includeFusions ? true : x.totalAmount() !== 0);
+        const allTransactions: Transaction[] = unconfirmed.concat(confirmed);
 
         if (startIndex === undefined) {
             startIndex = 0;
@@ -2360,16 +2360,20 @@ export class WalletBackend extends EventEmitter {
      * ```
      *
      * @param subWallet Should we only count transactions of the specified subWallet?
+     * @param includeFusions Should we count fusion transactions? Defaults to true.
      */
-    public getNumTransactions(subWallet?: string): number {
+    public getNumTransactions(subWallet?: string, includeFusions: boolean = true): number {        
         logger.log(
             'Function getNumTransactions called',
             LogLevel.DEBUG,
             LogCategory.GENERAL,
         );
 
-        return this.subWallets.getNumTransactions(subWallet)
-             + this.subWallets.getNumUnconfirmedTransactions(subWallet);
+        assertStringOrUndefined(subWallet, 'subWallet')
+        assertBoolean(includeFusions, 'includeFusions');
+
+        return this.subWallets.getNumTransactions(subWallet, includeFusions)
+             + this.subWallets.getNumUnconfirmedTransactions(subWallet, includeFusions);
     }
 
     /**

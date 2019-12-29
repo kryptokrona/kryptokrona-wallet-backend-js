@@ -714,14 +714,8 @@ export class SubWallets {
      * Get the transactions of the given subWallet address. If no subWallet address is given,
      * gets all transactions.
      */
-    public getTransactions(address?: string): Transaction[] {
-        if (address) {
-            const [, publicSpendKey] = addressToKeys(address, this.config);
-
-            return this.transactions.filter((tx) => tx.transfers.has(publicSpendKey));
-        } else {
-            return this.transactions;
-        }
+    public getTransactions(address?: string, includeFusions?: boolean): Transaction[] {
+        return this.filterTransactions(this.transactions, address, includeFusions);
     }
 
     /**
@@ -730,22 +724,16 @@ export class SubWallets {
      * if you want to avoid fetching every transactions repeatedly when nothing
      * has changed.
      */
-    public getNumTransactions(address?: string): number {
-        return this.getTransactions(address).length;
+    public getNumTransactions(address?: string, includeFusions: boolean = true): number {
+        return this.getTransactions(address, includeFusions).length;
     }
 
     /**
      * Get the unconfirmed transactions of the given subwallet address. If no subwallet address
      * is given, gets all unconfirmed transactions.
      */
-    public getUnconfirmedTransactions(address?: string): Transaction[] {
-        if (address) {
-            const [, publicSpendKey] = addressToKeys(address, this.config);
-
-            return this.lockedTransactions.filter((tx) => tx.transfers.has(publicSpendKey));
-        } else {
-            return this.lockedTransactions;
-        }
+    public getUnconfirmedTransactions(address?: string, includeFusions: boolean = true): Transaction[] {
+        return this.filterTransactions(this.lockedTransactions, address, includeFusions);
     }
 
     /**
@@ -754,8 +742,8 @@ export class SubWallets {
      * if you want to avoid fetching every transactions repeatedly when nothing
      * has changed.
      */
-    public getNumUnconfirmedTransactions(address?: string): number {
-        return this.getUnconfirmedTransactions(address).length;
+    public getNumUnconfirmedTransactions(address?: string, includeFusions?: boolean): number {
+        return this.getUnconfirmedTransactions(address, includeFusions).length;
     }
 
     public initAfterLoad(config: Config): void {
@@ -906,5 +894,20 @@ export class SubWallets {
 
             return false;
         });
+    }
+
+    private filterTransactions(txs: Transaction[], address?: string, includeFusions: boolean = true) {
+        const filters: Array<(tx: Transaction) => boolean> = [];
+
+        if (address) {
+            const [, publicSpendKey] = addressToKeys(address, this.config);
+            filters.push((tx: Transaction) => tx.transfers.has(publicSpendKey));
+        }
+
+        if (!includeFusions) {
+            filters.push((tx: Transaction) => !tx.isFusionTransaction());
+        }
+
+        return txs.filter((tx) => filters.every((f) => f(tx)));
     }
 }
