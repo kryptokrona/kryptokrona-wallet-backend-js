@@ -26,7 +26,7 @@ export function validateAddresses(
     assertArray(addresses, 'addresses');
     assertBoolean(integratedAddressesAllowed, 'integratedAddressesAllowed');
 
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
     const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
@@ -44,10 +44,10 @@ export function validateAddresses(
             }
 
             /* Verify checksum */
-            const parsed = CryptoUtils(_config).decodeAddress(address);
+            const parsed = CryptoUtils(tempConfig).decodeAddress(address);
 
             /* Verify the prefix is correct */
-            if (parsed.prefix !== _config.addressPrefix) {
+            if (parsed.prefix !== tempConfig.addressPrefix) {
                 return new WalletError(WalletErrorCode.ADDRESS_WRONG_PREFIX);
             }
 
@@ -94,7 +94,7 @@ export function validateDestinations(
     destinations: Array<[string, number]>,
     config: IConfig = new Config()): WalletError {
 
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
     if (destinations.length === 0) {
         return new WalletError(WalletErrorCode.NO_DESTINATIONS_GIVEN);
@@ -119,7 +119,7 @@ export function validateDestinations(
     }
 
     /* Validate the addresses, integrated addresses allowed */
-    return validateAddresses(destinationAddresses, true, _config);
+    return validateAddresses(destinationAddresses, true, tempConfig);
 }
 
 /**
@@ -136,15 +136,15 @@ export function validateIntegratedAddresses(
     paymentID: string,
     config: IConfig = new Config()): WalletError {
 
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
     for (const [destination, amount] of destinations) {
-        if (destination.length !== _config.integratedAddressLength) {
+        if (destination.length !== tempConfig.integratedAddressLength) {
             continue;
         }
 
         /* Extract the payment ID */
-        const parsedAddress = CryptoUtils(_config).decodeAddress(destination);
+        const parsedAddress = CryptoUtils(tempConfig).decodeAddress(destination);
 
         if (paymentID === '') {
             paymentID = parsedAddress.paymentId;
@@ -168,16 +168,16 @@ export function validateOurAddresses(
     subWallets: SubWallets,
     config: IConfig = new Config()): WalletError {
 
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
-    const error: WalletError = validateAddresses(addresses, false, _config);
+    const error: WalletError = validateAddresses(addresses, false, tempConfig);
 
     if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     for (const address of addresses) {
-        const parsedAddress = CryptoUtils(_config).decodeAddress(address);
+        const parsedAddress = CryptoUtils(tempConfig).decodeAddress(address);
 
         const keys: string[] = subWallets.getPublicSpendKeys();
 
@@ -210,9 +210,9 @@ export function validateAmount(
     currentHeight: number,
     config: IConfig = new Config()): WalletError {
 
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
-    if (fee < _config.minimumFee) {
+    if (fee < tempConfig.minimumFee) {
         return new WalletError(WalletErrorCode.FEE_TOO_SMALL);
     }
 
@@ -253,7 +253,7 @@ export function validateMixin(
     height: number,
     config: IConfig = new Config()): WalletError {
 
-    const _config: Config = MergeConfig(config);
+    const tempConfig: Config = MergeConfig(config);
 
     if (mixin < 0) {
         return new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN);
@@ -263,7 +263,7 @@ export function validateMixin(
         return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
     }
 
-    const [minMixin, maxMixin] = _config.mixinLimits.getMixinLimitsByHeight(height);
+    const [minMixin, maxMixin] = tempConfig.mixinLimits.getMixinLimitsByHeight(height);
 
     if (mixin < minMixin) {
         return new WalletError(

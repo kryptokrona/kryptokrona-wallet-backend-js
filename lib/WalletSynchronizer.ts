@@ -101,7 +101,7 @@ export class WalletSynchronizer extends EventEmitter {
      * configured limit, we'll emit deadnode.
      */
     private lastDownloadedBlocks: Date = new Date();
-    
+
     private config: Config = new Config();
 
     constructor(
@@ -421,6 +421,14 @@ export class WalletSynchronizer extends EventEmitter {
         }
     }
 
+    public getBlockCheckpoints(): string[] {
+        return this.synchronizationStatus.getBlockCheckpoints();
+    }
+
+    public getRecentBlockHashes(): string[] {
+        return this.synchronizationStatus.getRecentBlockHashes();
+    }
+
     private getStoredBlockCheckpoints(): string[] {
         const hashes = [];
 
@@ -459,14 +467,6 @@ export class WalletSynchronizer extends EventEmitter {
         }
 
         return false;
-    }
-
-    public getBlockCheckpoints(): string[] {
-        return this.synchronizationStatus.getBlockCheckpoints();
-    }
-
-    public getRecentBlockHashes(): string[] {
-        return this.synchronizationStatus.getRecentBlockHashes();
     }
 
     private getWalletSyncDataHashes(): string[] {

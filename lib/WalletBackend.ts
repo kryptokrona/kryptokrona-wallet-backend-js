@@ -2,6 +2,8 @@
 //
 // Please see the included LICENSE file for more information.
 
+// tslint:disable: max-line-length
+
 import { EventEmitter } from 'events';
 
 import * as fs from 'fs';
@@ -22,7 +24,7 @@ import { SynchronizationStatus } from './SynchronizationStatus';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import {
-    Block, Transaction, TransactionData, TransactionInput, DaemonConnection
+    Block, Transaction, TransactionData, TransactionInput, DaemonConnection,
 } from './Types';
 
 import {
@@ -230,7 +232,7 @@ export declare interface WalletBackend {
      * Example:
      *
      * ```javascript
-     * 
+     *
      * wallet.on('heightchange', (walletBlockCount, localDaemonBlockCount, networkBlockCount) => {
      *     console.log(`New sync status: ${walletBlockCount} / ${localDaemonBlockCount}`);
      * });
@@ -852,40 +854,6 @@ export class WalletBackend extends EventEmitter {
         this.setupMetronomes();
     }
 
-    private discardStoredBlocks(): void {
-        const [scanHeight, scanTimestamp] = this.walletSynchronizer.getScanHeights();
-
-        const newSynchronizationStatus: SynchronizationStatus = new SynchronizationStatus(
-            this.walletSynchronizer.getHeight(),
-            this.walletSynchronizer.getBlockCheckpoints(),
-            this.walletSynchronizer.getRecentBlockHashes()
-        );
-
-        this.walletSynchronizer = new WalletSynchronizer(
-            this.daemon, this.subWallets, scanTimestamp, scanHeight, 
-            this.subWallets.getPrivateViewKey(), this.config, newSynchronizationStatus,
-        );
-
-        /* Resetup event handlers */
-        this.walletSynchronizer.on('heightchange', (walletHeight) => {
-            this.emit(
-                'heightchange',
-                walletHeight,
-                this.daemon.getLocalDaemonBlockCount(),
-                this.daemon.getNetworkBlockCount()
-            );
-
-            this.haveEmittedDeadNode = false;
-        });
-
-        this.walletSynchronizer.on('deadnode', () => {
-            if (!this.haveEmittedDeadNode) {
-                this.haveEmittedDeadNode = true;
-                this.emit('deadnode');
-            }
-        });
-    }
-
     /**
      * Swaps the currently connected daemon with a different one. If the wallet
      * is currently started, it will remain started after the node is swapped,
@@ -935,7 +903,7 @@ export class WalletBackend extends EventEmitter {
          * if we swap from a cache node to a non cache node,
          * /getGlobalIndexesForRange will fail. */
         this.discardStoredBlocks();
-        
+
         this.haveEmittedDeadNode = false;
 
         if (shouldRestart) {
@@ -952,7 +920,7 @@ export class WalletBackend extends EventEmitter {
      * note that the `ssl` and `daemonType` variables may have not been
      * determined yet - If you have not awaited [[start]] yet, or if the daemon
      * is having connection issues.
-     * 
+     *
      * For this reason, there are two additional properties - `sslDetermined`,
      * and `daemonTypeDetermined` which let you verify that we have managed
      * to contact the daemon and detect it's specifics.
@@ -1041,7 +1009,7 @@ export class WalletBackend extends EventEmitter {
             'heightchange',
             this.walletSynchronizer.getHeight(),
             this.daemon.getLocalDaemonBlockCount(),
-            this.daemon.getNetworkBlockCount()
+            this.daemon.getNetworkBlockCount(),
         );
     }
 
@@ -1061,7 +1029,7 @@ export class WalletBackend extends EventEmitter {
      * await wallet.rewind(123456);
      * ```
      *
-     * @param scanHeight The scan height to rewind to 
+     * @param scanHeight The scan height to rewind to
      */
     public async rewind(scanHeight: number = 0): Promise<void> {
         logger.log(
@@ -1088,7 +1056,7 @@ export class WalletBackend extends EventEmitter {
             'heightchange',
             this.walletSynchronizer.getHeight(),
             this.daemon.getLocalDaemonBlockCount(),
-            this.daemon.getNetworkBlockCount()
+            this.daemon.getNetworkBlockCount(),
         );
     }
 
@@ -2362,18 +2330,52 @@ export class WalletBackend extends EventEmitter {
      * @param subWallet Should we only count transactions of the specified subWallet?
      * @param includeFusions Should we count fusion transactions? Defaults to true.
      */
-    public getNumTransactions(subWallet?: string, includeFusions: boolean = true): number {        
+    public getNumTransactions(subWallet?: string, includeFusions: boolean = true): number {
         logger.log(
             'Function getNumTransactions called',
             LogLevel.DEBUG,
             LogCategory.GENERAL,
         );
 
-        assertStringOrUndefined(subWallet, 'subWallet')
+        assertStringOrUndefined(subWallet, 'subWallet');
         assertBoolean(includeFusions, 'includeFusions');
 
         return this.subWallets.getNumTransactions(subWallet, includeFusions)
              + this.subWallets.getNumUnconfirmedTransactions(subWallet, includeFusions);
+    }
+
+    private discardStoredBlocks(): void {
+        const [scanHeight, scanTimestamp] = this.walletSynchronizer.getScanHeights();
+
+        const newSynchronizationStatus: SynchronizationStatus = new SynchronizationStatus(
+            this.walletSynchronizer.getHeight(),
+            this.walletSynchronizer.getBlockCheckpoints(),
+            this.walletSynchronizer.getRecentBlockHashes(),
+        );
+
+        this.walletSynchronizer = new WalletSynchronizer(
+            this.daemon, this.subWallets, scanTimestamp, scanHeight,
+            this.subWallets.getPrivateViewKey(), this.config, newSynchronizationStatus,
+        );
+
+        /* Resetup event handlers */
+        this.walletSynchronizer.on('heightchange', (walletHeight) => {
+            this.emit(
+                'heightchange',
+                walletHeight,
+                this.daemon.getLocalDaemonBlockCount(),
+                this.daemon.getNetworkBlockCount(),
+            );
+
+            this.haveEmittedDeadNode = false;
+        });
+
+        this.walletSynchronizer.on('deadnode', () => {
+            if (!this.haveEmittedDeadNode) {
+                this.haveEmittedDeadNode = true;
+                this.emit('deadnode');
+            }
+        });
     }
 
     /**
@@ -2612,9 +2614,9 @@ export class WalletBackend extends EventEmitter {
 
             this.emit(
                 'heightchange',
-                block.blockHeight, 
+                block.blockHeight,
                 this.daemon.getLocalDaemonBlockCount(),
-                this.daemon.getNetworkBlockCount()
+                this.daemon.getNetworkBlockCount(),
             );
         }
 
@@ -2707,7 +2709,7 @@ export class WalletBackend extends EventEmitter {
                 'heightchange',
                 walletHeight,
                 this.daemon.getLocalDaemonBlockCount(),
-                this.daemon.getNetworkBlockCount()
+                this.daemon.getNetworkBlockCount(),
             );
 
             this.haveEmittedDeadNode = false;

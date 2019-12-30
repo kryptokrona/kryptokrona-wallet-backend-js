@@ -488,10 +488,10 @@ function roundTrip(
         await wallet.stop();
 
         return _.isEqual(info, {
-            host: daemonAddress,
-            port: daemonPort,
             daemonType: DaemonType.BlockchainCacheApi,
             daemonTypeDetermined: true,
+            host: daemonAddress,
+            port: daemonPort,
             ssl: true,
             sslDetermined: true,
         });
@@ -547,7 +547,7 @@ function roundTrip(
 
         const d = unlockedBalance === 1234 && lockedBalance === 0;
 
-        return a && b && c && d; 
+        return a && b && c && d;
 
     }, 'Testing rewind',
        'Rewind succeeded',
@@ -576,7 +576,7 @@ function roundTrip(
 
     }, 'Testing subwallets',
        'Subwallets work',
-       'Subwallet tests don\'t work!'); 
+       'Subwallet tests don\'t work!');
 
     await tester.test(async () => {
         const wallet = WalletBackend.createWallet(daemon);

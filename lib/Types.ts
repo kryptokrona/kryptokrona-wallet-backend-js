@@ -351,7 +351,7 @@ export class TransactionInput {
     }
 
     public toJSON(): TransactionInputJSON {
-        let json: TransactionInputJSON = {
+        const json: TransactionInputJSON = {
             keyImage: this.keyImage,
 
             amount: this.amount,
