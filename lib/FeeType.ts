@@ -2,14 +2,16 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { IConfig, Config } from './Config';
+import { IConfig, Config, MergeConfig } from './Config';
 
 export class FeeType {
     /**
      * Uses the lowest fee possible. Currently is a fee per byte of 1.953125.
      */
     public static MinimumFee(config: IConfig = new Config()): FeeType {
-        return FeeType.FeePerByte(config.minimumFeePerByte);
+        const tempConfig: Config = MergeConfig(config);
+
+        return FeeType.FeePerByte(tempConfig.minimumFeePerByte);
     }
 
     /**

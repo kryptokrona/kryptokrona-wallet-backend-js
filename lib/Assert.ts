@@ -36,6 +36,14 @@ export function assertArray(param: unknown, name: string): void {
     return assertType(param, name, 'array', _.isArray, false);
 }
 
+export function assertObjectOrUndefined(param: unknown, name: string): void {
+    return assertType(param, name, 'object', _.isObject, true);
+}
+
+export function assertObject(param: unknown, name: string): void {
+    return assertType(param, name, 'object', _.isObject, false);
+}
+
 export function assertType(
     param: unknown,
     name: string,

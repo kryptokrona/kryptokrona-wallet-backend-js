@@ -304,3 +304,85 @@ export function isValidMnemonic(mnemonic: string, config: IConfig = new Config()
         return [false, 'Mnemonic checksum word is invalid'];
     }
 }
+
+export function getMinimumTransactionFee(
+    transactionSize: number,
+    height: number,
+    config: IConfig = new Config()) {
+
+    const tempConfig: Config = MergeConfig(config);
+
+    return getTransactionFee(
+        transactionSize,
+        height,
+        tempConfig.minimumFeePerByte,
+        tempConfig,
+    );
+}
+
+export function getTransactionFee(
+    transactionSize: number,
+    height: number,
+    feePerByte: number,
+    config: IConfig = new Config()) {
+
+    const tempConfig: Config = MergeConfig(config);
+
+    const numChunks: number = Math.ceil(
+        transactionSize / tempConfig.feePerByteChunkSize,
+    );
+
+    return numChunks * feePerByte * tempConfig.feePerByteChunkSize;
+}
+
+export function estimateTransactionSize(
+    mixin: number,
+    numInputs: number,
+    numOutputs: number,
+    havePaymentID: boolean,
+    extraDataSize: number): number {
+
+    const KEY_IMAGE_SIZE: number = 32;
+    const OUTPUT_KEY_SIZE: number = 32;
+    const AMOUNT_SIZE = 8 + 2; // varint
+    const GLOBAL_INDEXES_VECTOR_SIZE_SIZE: number = 1 // varint
+    const GLOBAL_INDEXES_INITIAL_VALUE_SIZE: number = 4; // varint
+    const GLOBAL_INDEXES_DIFFERENCE_SIZE: number = 4; // varint
+    const SIGNATURE_SIZE: number = 64;
+    const EXTRA_TAG_SIZE: number = 1;
+    const INPUT_TAG_SIZE: number = 1;
+    const OUTPUT_TAG_SIZE: number = 1;
+    const PUBLIC_KEY_SIZE: number = 32;
+    const TRANSACTION_VERSION_SIZE: number = 1;
+    const TRANSACTION_UNLOCK_TIME_SIZE: number = 8 + 2; // varint
+    const EXTRA_DATA_SIZE: number = extraDataSize > 0 ? extraDataSize + 4 : 0;
+    const PAYMENT_ID_SIZE: number = havePaymentID ? 34 : 0;
+
+    /* The size of the transaction header */
+    const headerSize: number = TRANSACTION_VERSION_SIZE
+                             + TRANSACTION_UNLOCK_TIME_SIZE
+                             + EXTRA_TAG_SIZE
+                             + EXTRA_DATA_SIZE
+                             + PUBLIC_KEY_SIZE
+                             + PAYMENT_ID_SIZE;
+
+    /* The size of each transaction input */
+    const inputSize: number = INPUT_TAG_SIZE
+                            + AMOUNT_SIZE
+                            + KEY_IMAGE_SIZE
+                            + SIGNATURE_SIZE
+                            + GLOBAL_INDEXES_VECTOR_SIZE_SIZE
+                            + GLOBAL_INDEXES_INITIAL_VALUE_SIZE
+                            + mixin * SIGNATURE_SIZE;
+
+    const inputsSize: number = inputSize * numInputs;
+
+    /* The size of each transaction output. */
+    const outputSize: number = OUTPUT_TAG_SIZE
+                             + OUTPUT_KEY_SIZE
+                             + AMOUNT_SIZE;
+
+    const outputsSize: number = outputSize * numOutputs;
+
+    return headerSize + inputsSize + outputsSize;
+}

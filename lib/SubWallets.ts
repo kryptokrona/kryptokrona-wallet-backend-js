@@ -553,10 +553,9 @@ export class SubWallets {
      *
      * @returns Returns the inputs and their owners, and the sum of their money
      */
-    public getTransactionInputsForAmount(
-        amount: number,
+    public getSpendableTransactionInputs(
         subWalletsToTakeFrom: string[],
-        currentHeight: number): [TxInputAndOwner[], number] {
+        currentHeight: number): TxInputAndOwner[] {
 
         let availableInputs: TxInputAndOwner[] = [];
 
@@ -574,24 +573,51 @@ export class SubWallets {
             availableInputs = availableInputs.concat(subWallet.getSpendableInputs(currentHeight));
         }
 
-        /* Shuffle the inputs */
-        availableInputs = _.shuffle(availableInputs);
+        /* Sort by amount, largest first */
+        availableInputs = _.orderBy(availableInputs, [(x) => x.input.amount], ['desc']);
 
-        let foundMoney: number = 0;
-
-        const inputsToUse: TxInputAndOwner[] = [];
+        /* Push into base 10 buckets. Smallest amount buckets will come first, and
+         * largest amounts within those buckets come first */
+        let buckets: Map<number, Array<TxInputAndOwner>> = new Map();
 
         for (const input of availableInputs) {
-            inputsToUse.push(input);
 
-            foundMoney += input.input.amount;
+            /* Find out how many digits the amount has, i.e. 1337 has 4 digits,
+               420 has 3 digits */
+            const numberOfDigits = Math.floor(Math.log10(input.input.amount)) + 1;
 
-            if (foundMoney >= amount) {
-                return [_.sortBy(inputsToUse, (x) => x.input.amount), foundMoney];
+            /* Grab existing array or make a new one */
+            const tmpArr: TxInputAndOwner[] = buckets.get(numberOfDigits) || [];
+
+            /* Add input to array */
+            tmpArr.push(input);
+
+            /* Update bucket with new array */
+            buckets.set(numberOfDigits, tmpArr);
+        }
+
+        /* ES6 maps are sorted by insertion order, so we create a new map, sorting
+         * the buckets we want first in the resulting map, first. */
+        buckets = new Map<number, Array<TxInputAndOwner>>([...buckets].sort((a, b) => {
+            return a[0] > b[0] ? 1 : -1;
+        }));
+
+        const ordered: TxInputAndOwner[] = [];
+
+        while (buckets.size > 0) {
+            for (const [amount, bucket] of buckets) {
+                /* Bucket has been exhausted, remove from list */
+                if (bucket.length === 0) {
+                    buckets.delete(amount);
+                } else {
+                    /* Add the final (smallest amount in this bucket) to the
+                     * result, and remove it */
+                    ordered.push(bucket.pop() as TxInputAndOwner);
+                }
             }
         }
 
-        throw new Error(`Failed to find enough money! Needed: ${amount}, found: ${foundMoney}`);
+        return ordered;
     }
 
     public getFusionTransactionInputs(

@@ -4,6 +4,7 @@
 
 import * as _ from 'lodash';
 
+import { FeeType } from './FeeType';
 import { CryptoUtils} from './CnUtils';
 import { SubWallets } from './SubWallets';
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
@@ -92,12 +93,17 @@ export function validateAddress(
  */
 export function validateDestinations(
     destinations: Array<[string, number]>,
+    sendAll: boolean,
     config: IConfig = new Config()): WalletError {
 
     const tempConfig: Config = MergeConfig(config);
 
     if (destinations.length === 0) {
         return new WalletError(WalletErrorCode.NO_DESTINATIONS_GIVEN);
+    }
+
+    if (destinations.length > 1 && sendAll) {
+        return new WalletError(WalletErrorCode.SEND_ALL_IMPOSSIBLE);
     }
 
     const destinationAddresses: string[] = [];
@@ -204,7 +210,7 @@ export function validateOurAddresses(
  */
 export function validateAmount(
     destinations: Array<[string, number]>,
-    fee: number,
+    fee: FeeType,
     subWalletsToTakeFrom: string[],
     subWallets: SubWallets,
     currentHeight: number,
@@ -212,11 +218,17 @@ export function validateAmount(
 
     const tempConfig: Config = MergeConfig(config);
 
-    if (fee < tempConfig.minimumFee) {
+    if (!fee.isFeePerByte && !fee.isFixedFee) {
+        throw new Error('Programmer error: Fee type not specified!');
+    }
+
+    /* Using a fee per byte, and doesn't meet the min fee per byte requirement. */
+    if (fee.isFeePerByte && fee.feePerByte < tempConfig.minimumFeePerByte) {
         return new WalletError(WalletErrorCode.FEE_TOO_SMALL);
     }
 
-    if (!Number.isInteger(fee)) {
+    /* Cannot have a non integer fixed fee */
+    if (fee.isFixedFee && !Number.isInteger(fee.fixedFee)) {
         return new WalletError(WalletErrorCode.NON_INTEGER_GIVEN);
     }
 
@@ -226,7 +238,15 @@ export function validateAmount(
     );
 
     /* Get the sum of the transaction */
-    const totalAmount: number = _.sumBy(destinations, ([destination, amount]) => amount) + fee;
+    let totalAmount: number = _.sumBy(destinations, ([destination, amount]) => amount);
+
+    /* Can only accurately calculate if we've got enough funds for the tx if
+     * using a fixed fee. If using a fee per byte, we'll verify when constructing
+     * the transaction. */
+    if (fee.isFixedFee)
+    {
+        totalAmount += fee.fixedFee;
+    }
 
     if (totalAmount > availableBalance) {
         return new WalletError(WalletErrorCode.NOT_ENOUGH_BALANCE);

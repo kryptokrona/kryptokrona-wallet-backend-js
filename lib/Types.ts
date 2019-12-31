@@ -2,6 +2,10 @@
 //
 // Please see the included LICENSE file for more information.
 
+import { CreatedTransaction } from 'turtlecoin-utils';
+
+import { WalletError } from './WalletError';
+
 import {
     TransactionInputJSON, TransactionJSON, transfersToVector,
     UnconfirmedInputJSON,
@@ -547,6 +551,64 @@ export class TopBlock {
         this.hash = hash;
         this.height = height;
     }
+}
+
+export interface PreparedTransaction {
+    fee: number;
+    paymentID: string;
+    inputs: TxInputAndOwner[];
+    changeAddress: string;
+    changeRequired: number;
+    rawTransaction: CreatedTransaction;
+}
+
+/**
+ * @hidden
+ */
+export interface PreparedTransactionInfo {
+    success: boolean;
+    error: WalletError;
+    fee?: number;
+    paymentID?: string;
+    inputs?: TxInputAndOwner[];
+    changeAddress?: string;
+    changeRequired?: number;
+    rawTransaction?: CreatedTransaction;
+    transactionHash?: string;
+    prettyTransaction?: Transaction;
+}
+
+export interface SendTransactionResult {
+    /**
+     * Did the transaction creation / sending succeed?
+     */
+    success: boolean;
+
+    /**
+     * If the transaction did not succeed, this will hold the error. Will be
+     * SUCCESS if the transaction succeeded.
+     */
+    error: WalletError;
+
+    /**
+     * If the transaction was sent, or it failed after the fee needed was
+     * determined, this will hold the fee used or required for the transaction.
+     */
+    fee?: number;
+
+    /**
+     * Whether the transaction was relayed to the network. Will be `true` if
+     * using sendTransactionBasic, or sendTransactionAdvanced with the `relayToNetwork`
+     * parameter set to true or not given.
+     * Will be undefined if transaction was not successful.
+     */
+    relayedToNetwork?: boolean;
+
+    /**
+     * The transaction hash of the resulting transaction. Will be set if success
+     * is true.
+     */
+    transactionHash?: string;
 }
 
 export enum DaemonType {

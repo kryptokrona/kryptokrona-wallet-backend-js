@@ -9,6 +9,7 @@ import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import * as _ from 'lodash';
 
+import { FeeType } from './FeeType';
 import { IDaemon } from './IDaemon';
 import { Metronome } from './Metronome';
 import { SubWallets } from './SubWallets';
@@ -25,6 +26,7 @@ import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import {
     Block, Transaction, TransactionData, TransactionInput, DaemonConnection,
+    SendTransactionResult, PreparedTransaction,
 } from './Types';
 
 import {
@@ -42,12 +44,8 @@ import {
 import {
     assertStringOrUndefined, assertString, assertNumberOrUndefined, assertNumber,
     assertBooleanOrUndefined, assertBoolean, assertArrayOrUndefined, assertArray,
+    assertObjectOrUndefined,
 } from './Assert';
-
-/* Typedoc is stupid and can't work out our sendTransaction??? types - using
-   these aliases helps it figure it out */
-type TransactionHash = [string, undefined];
-type TransactionError = [undefined, WalletError];
 
 export declare interface WalletBackend {
 
@@ -804,6 +802,11 @@ export class WalletBackend extends EventEmitter {
      * swap node or the node comes back online.
      */
     private haveEmittedDeadNode: boolean = false;
+
+    /**
+     * Previously prepared transactions for later sending.
+     */
+    private preparedTransactions: Map<string, PreparedTransaction> = new Map();
 
     /**
      * @param newWallet Are we creating a new wallet? If so, it will start
@@ -1916,50 +1919,33 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * const [hash, err] = await wallet.sendFusionTransactionBasic();
+     * const result = await wallet.sendFusionTransactionBasic();
      *
-     * if (err) {
-     *      console.log('Failed to send fusion transaction: ' + err.toString());
+     * if (result.success) {
+     *      console.log(`Sent transaction, hash ${result.transactionHash}`);
+     * } else {
+     *      console.log(`Failed to send transaction: ${result.error.toString()}`);
      * }
      * ```
      */
-    public async sendFusionTransactionBasic(): Promise<(TransactionHash | TransactionError)> {
+    public async sendFusionTransactionBasic(): Promise<SendTransactionResult> {
         logger.log(
             'Function sendFusionTransactionBasic called',
             LogLevel.DEBUG,
             LogCategory.GENERAL,
         );
 
-        this.currentlyTransacting = true;
-
-        const f = async (): Promise<(TransactionHash | TransactionError)> => {
-            const [transaction, hash, error] = await sendFusionTransactionBasic(
-                this.config, this.daemon, this.subWallets,
-            );
-
-            if (transaction) {
-                this.emit('createdfusiontx', transaction);
-            }
-
-            /* Typescript is too dumb for return [hash, error] to work.. */
-            if (hash) {
-                logger.log(
-                    'Sent fusion transaction ' + hash,
-                    LogLevel.INFO,
-                    LogCategory.TRANSACTIONS,
+        return this.sendTransactionInternal(
+            () => {
+                return sendFusionTransactionBasic(
+                    this.config,
+                    this.daemon,
+                    this.subWallets,
                 );
-
-                return [hash as string, undefined];
-            } else {
-                return [undefined, error as WalletError];
-            }
-        };
-
-        const result = await f();
-
-        this.currentlyTransacting = false;
-
-        return result;
+            },
+            true,
+            true,
+        );
     }
 
     /**
@@ -1975,10 +1961,12 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * const [hash, err] = await wallet.sendFusionTransactionAdvanced(3, undefined, 'TRTLxyz..');
+     * const result = await wallet.sendFusionTransactionAdvanced(3, undefined, 'TRTLxyz..');
      *
-     * if (err) {
-     *      console.log('Failed to send transaction: ' + err.toString());
+     * if (result.success) {
+     *      console.log(`Sent transaction, hash ${result.transactionHash}, fee ${WB.prettyPrintAmount(result.fee)}`);
+     * } else {
+     *      console.log(`Failed to send transaction: ${result.error.toString()}`);
      * }
      * ```
      *
@@ -1991,7 +1979,7 @@ export class WalletBackend extends EventEmitter {
     public async sendFusionTransactionAdvanced(
         mixin?: number,
         subWalletsToTakeFrom?: string[],
-        destination?: string): Promise<(TransactionHash | TransactionError)> {
+        destination?: string): Promise<SendTransactionResult> {
 
         logger.log(
             'Function sendFusionTransactionAdvanced called',
@@ -2003,37 +1991,20 @@ export class WalletBackend extends EventEmitter {
         assertArrayOrUndefined(subWalletsToTakeFrom, 'subWalletsToTakeFrom');
         assertStringOrUndefined(destination, 'destination');
 
-        this.currentlyTransacting = true;
-
-        const f = async (): Promise<(TransactionHash | TransactionError)> => {
-            const [transaction, hash, error] = await sendFusionTransactionAdvanced(
-                this.config, this.daemon, this.subWallets, mixin,
-                subWalletsToTakeFrom, destination,
-            );
-
-            if (transaction) {
-                this.emit('createdfusiontx', transaction);
-            }
-
-            /* Typescript is too dumb for return [hash, error] to work.. */
-            if (hash) {
-                logger.log(
-                    'Sent fusion transaction ' + hash,
-                    LogLevel.INFO,
-                    LogCategory.TRANSACTIONS,
+        return this.sendTransactionInternal(
+            () => {
+                return sendFusionTransactionAdvanced(
+                    this.config,
+                    this.daemon,
+                    this.subWallets,
+                    mixin,
+                    subWalletsToTakeFrom,
+                    destination
                 );
-
-                return [hash as string, undefined];
-            } else {
-                return [undefined, error as WalletError];
-            }
-        };
-
-        const result = await f();
-
-        this.currentlyTransacting = false;
-
-        return result;
+            },
+            true,
+            true,
+        );
     }
 
     /**
@@ -2047,10 +2018,12 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * const [hash, err] = await wallet.sendTransactionBasic('TRTLxyz...', 1234);
+     * const result = await wallet.sendTransactionBasic('TRTLxyz...', 1234);
      *
-     * if (err) {
-     *      console.log('Failed to send transaction: ' + err.toString());
+     * if (result.success) {
+     *      console.log(`Sent transaction, hash ${result.transactionHash}, fee ${WB.prettyPrintAmount(result.fee)}`);
+     * } else {
+     *      console.log(`Failed to send transaction: ${result.error.toString()}`);
      * }
      * ```
      *
@@ -2063,7 +2036,7 @@ export class WalletBackend extends EventEmitter {
     public async sendTransactionBasic(
         destination: string,
         amount: number,
-        paymentID?: string): Promise<(TransactionHash | TransactionError)> {
+        paymentID?: string): Promise<SendTransactionResult> {
 
         logger.log(
             'Function sendTransactionBasic called',
@@ -2075,37 +2048,20 @@ export class WalletBackend extends EventEmitter {
         assertNumber(amount, 'amount');
         assertStringOrUndefined(paymentID, 'paymentID');
 
-        this.currentlyTransacting = true;
-
-        const f = async (): Promise<([string, undefined]) | ([undefined, WalletError])> => {
-            const [transaction, hash, error] = await sendTransactionBasic(
-                this.config, this.daemon, this.subWallets, destination, amount,
-                paymentID,
-            );
-
-            if (transaction) {
-                this.emit('createdtx', transaction);
-            }
-
-            /* Typescript is too dumb for return [hash, error] to work.. */
-            if (hash) {
-                logger.log(
-                    'Sent transaction ' + hash,
-                    LogLevel.INFO,
-                    LogCategory.TRANSACTIONS,
+        return this.sendTransactionInternal(
+            () => {
+                return sendTransactionBasic(
+                    this.config,
+                    this.daemon,
+                    this.subWallets,
+                    destination,
+                    amount,
+                    paymentID,
                 );
-
-                return [hash as string, undefined];
-            } else {
-                return [undefined, error as WalletError];
-            }
-        };
-
-        const result = await f();
-
-        this.currentlyTransacting = false;
-
-        return result;
+            },
+            false,
+            true
+        );
     }
 
     /**
@@ -2121,10 +2077,17 @@ export class WalletBackend extends EventEmitter {
      *      ['TRTLzyx...', 10000],
      * ];
      *
-     * const [hash, err] = await wallet.sendTransactionAdvanced(destinations, undefined, 100, 'c59d157d1d96f280ece0816a8925cae8232432b7235d1fa92c70faf3064434b3');
+     * const result = await wallet.sendTransactionAdvanced(
+     *      destinations,
+     *      undefined,
+     *      undefined,
+     *      'c59d157d1d96f280ece0816a8925cae8232432b7235d1fa92c70faf3064434b3'
+     * );
      *
-     * if (err) {
-     *      console.log('Failed to send transaction: ' + err.toString());
+     * if (result.success) {
+     *      console.log(`Sent transaction, hash ${result.transactionHash}, fee ${WB.prettyPrintAmount(result.fee)}`);
+     * } else {
+     *      console.log(`Failed to send transaction: ${result.error.toString()}`);
      * }
      * ```
      *
@@ -2132,18 +2095,34 @@ export class WalletBackend extends EventEmitter {
      *                              destination. Amounts are in ATOMIC units.
      * @param mixin                 The amount of input keys to hide your input with.
      *                              Your network may enforce a static mixin.
-     * @param fee                   The network fee to use with this transaction. In ATOMIC units.
+     * @param fee                   The network fee, fee per byte, or minimum fee to use with this transaction. Defaults to minimum fee.
      * @param paymentID             The payment ID to include with this transaction. Defaults to none.
      * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from. Defaults to all addresses.
      * @param changeAddress         The address to send any returned change to. Defaults to the primary address.
+     *
+     * @param relayToNetwork        Whether we should submit the transaction to the network or not.
+     *                              If set to false, allows you to review the transaction fee before sending it.
+     *                              Use [[sendPreparedTransaction]] to send a transaction that you have not
+     *                              relayed to the network. Defaults to true.
+     *
+     * @param sendAll               Whether we should send the entire balance available. Since fee per
+     *                              byte means estimating fees is difficult, we can handle that process
+     *                              on your behalf. The entire balance minus fees will be sent to the
+     *                              destination. Note that you can only set this parameter to `true`
+     *                              when sending to a single destination, otherwise we will not know
+     *                              how to split up the transfer. The amount in the `destinations`
+     *                              parameter will be ignored when this value is set to true.
+     *                              Defaults to false.
      */
     public async sendTransactionAdvanced(
         destinations: Array<[string, number]>,
         mixin?: number,
-        fee?: number,
+        fee?: FeeType,
         paymentID?: string,
         subWalletsToTakeFrom?: string[],
-        changeAddress?: string): Promise<(TransactionHash | TransactionError)> {
+        changeAddress?: string,
+        relayToNetwork?: boolean,
+        sendAll?: boolean): Promise<SendTransactionResult> {
 
         logger.log(
             'Function sendTransactionAdvanced called',
@@ -2153,41 +2132,32 @@ export class WalletBackend extends EventEmitter {
 
         assertArray(destinations, 'destinations');
         assertNumberOrUndefined(mixin, 'mixin');
-        assertNumberOrUndefined(fee, 'fee');
+        assertObjectOrUndefined(fee, 'fee');
         assertStringOrUndefined(paymentID, 'paymentID');
         assertArrayOrUndefined(subWalletsToTakeFrom, 'subWalletsToTakeFrom');
         assertStringOrUndefined(changeAddress, 'changeAddress');
+        assertBooleanOrUndefined(relayToNetwork, 'relayToNetwork');
+        assertBooleanOrUndefined(sendAll, 'sendAll');
 
-        this.currentlyTransacting = true;
-
-        const f = async (): Promise<(TransactionHash | TransactionError)> => {
-            const [transaction, hash, error] = await sendTransactionAdvanced(
-                this.config, this.daemon, this.subWallets, destinations, mixin,
-                fee, paymentID, subWalletsToTakeFrom, changeAddress,
-            );
-
-            if (transaction) {
-                this.emit('createdtx', transaction);
-            }
-
-            /* Typescript is too dumb for return [hash, error] to work.. */
-            if (hash) {
-                logger.log(
-                    'Sent transaction ' + hash,
-                    LogLevel.INFO,
-                    LogCategory.TRANSACTIONS,
+        return this.sendTransactionInternal(
+            () => {
+                return sendTransactionAdvanced(
+                    this.config,
+                    this.daemon,
+                    this.subWallets,
+                    destinations,
+                    mixin,
+                    fee,
+                    paymentID,
+                    subWalletsToTakeFrom,
+                    changeAddress,
+                    relayToNetwork,
+                    sendAll
                 );
-                return [hash as string, undefined];
-            } else {
-                return [undefined, error as WalletError];
-            }
-        };
-
-        const result = await f();
-
-        this.currentlyTransacting = false;
-
-        return result;
+            },
+            false,
+            relayToNetwork,
+        );
     }
 
     /**
@@ -2342,6 +2312,51 @@ export class WalletBackend extends EventEmitter {
 
         return this.subWallets.getNumTransactions(subWallet, includeFusions)
              + this.subWallets.getNumUnconfirmedTransactions(subWallet, includeFusions);
+    }
+
+    private async sendTransactionInternal(
+        sendTransactionFunc: any,
+        fusion: boolean,
+        relayToNetwork: boolean = true): Promise<SendTransactionResult> {
+
+        this.currentlyTransacting = true;
+
+        const result = await sendTransactionFunc();
+
+        if (result.success) {
+            if (result.prettyTransaction) {
+                const eventName: string = fusion ? 'createdfusiontx' : 'createdtx';
+
+                this.emit(eventName, result.prettyTransaction);
+
+                logger.log(
+                    'Sent transaction ' + result.transactionHash,
+                    LogLevel.INFO,
+                    LogCategory.TRANSACTIONS,
+                );
+            } else {
+                logger.log(
+                    'Created transaction ' + result.transactionHash,
+                    LogLevel.INFO,
+                    LogCategory.TRANSACTIONS,
+                );
+            }
+        }
+
+        /* Store prepared transaction for later relaying */
+        if (result.success && !relayToNetwork) {
+            this.preparedTransactions.set(result.transactionHash, result.rawTransaction);
+        }
+
+        this.currentlyTransacting = false;
+
+        return {
+            success: result.success,
+            error: result.error,
+            fee: result.fee,
+            relayedToNetwork: result.success ? relayToNetwork : undefined,
+            transactionHash: result.transactionHash,
+        };
     }
 
     private discardStoredBlocks(): void {
@@ -2763,18 +2778,18 @@ export class WalletBackend extends EventEmitter {
            stopping */
         while (failCount < 5) {
             /* Draw from address, and return funds to address */
-            const [hash, error] = await this.sendFusionTransactionAdvanced(
+            const result = await this.sendFusionTransactionAdvanced(
                 undefined,
                 [ address ],
                 address,
             );
 
-            if (error) {
+            if (!result.success) {
                 failCount++;
-            } else if (hash) {
+            } else if (result.transactionHash) {
                 failCount = 0;
                 sentTransactions++;
-                hashes.push(hash);
+                hashes.push(result.transactionHash);
             }
         }
 

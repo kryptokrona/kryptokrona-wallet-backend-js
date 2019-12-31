@@ -249,6 +249,22 @@ export class WalletError {
                        'Wait a few minutes before retrying the transaction, as it ' +
                        'may still succeed.';
             }
+            case WalletErrorCode.OUTPUT_DECOMPOSITION: {
+                return 'The transaction will create too many outputs to be accepted by ' +
+                       'the network. Decrease the number of destinations or use rounder ' +
+                       'amounts.';
+            }
+            case WalletErrorCode.PREPARED_TRANSACTION_EXPIRED: {
+                return 'The prepared transaction is no longer valid, likely because ' +
+                       'another transaction was sent using some of the same inputs.';
+            }
+            case WalletErrorCode.PREPARED_TRANSACTION_NOT_FOUND: {
+                return 'The prepared transaction given could not be found. Note ' +
+                       'that prepared transactions are lost upon restarting the wallet.';
+            }
+            case WalletErrorCode.SEND_ALL_IMPOSSIBLE: {
+                return 'Send all is not possible when specifying multiple destinations.';
+            }
         }
     }
 }
@@ -460,6 +476,18 @@ export enum WalletErrorCode {
     /* The daemon received our request but we timed out before we could figure
      * out if it completed */
     DAEMON_STILL_PROCESSING = 55,
+
+    /* Transaction has too many outputs to be accepted by the network */
+    OUTPUT_DECOMPOSITION = 56,
+
+    /* Prepared transaction is no longer valid, inputs have been consumed by other transactions. */
+    PREPARED_TRANSACTION_EXPIRED = 57,
+
+    /* Prepared transaction cannot be found, perhaps wallet application has been restarted */
+    PREPARED_TRANSACTION_NOT_FOUND = 58,
+
+    /* Cannot send all to multiple destinations */
+    SEND_ALL_IMPOSSIBLE = 59,
 }
 
 /**
