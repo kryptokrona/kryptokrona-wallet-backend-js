@@ -32,6 +32,7 @@ import {
 import {
     sendTransactionAdvanced, sendTransactionBasic,
     sendFusionTransactionAdvanced, sendFusionTransactionBasic,
+    sendPreparedTransaction,
 } from './Transfer';
 
 import { WALLET_FILE_FORMAT_VERSION, GLOBAL_INDEXES_OBSCURITY } from './Constants';
@@ -2157,6 +2158,43 @@ export class WalletBackend extends EventEmitter {
             },
             false,
             relayToNetwork,
+        );
+    }
+
+    public sendPreparedTransaction(transactionHash: string): Promise<SendTransactionResult> {
+
+        logger.log(
+            'Function sendPreparedTransaction called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
+        assertString(transactionHash, 'transactionHash');
+
+        const tx: PreparedTransaction | undefined = this.preparedTransactions.get(transactionHash);
+
+        if (!tx) {
+            return Promise.resolve({
+                success: false,
+                error: new WalletError(WalletErrorCode.PREPARED_TRANSACTION_NOT_FOUND),
+            });
+        }
+
+        return this.sendTransactionInternal(
+            async () => {
+                const res = await sendPreparedTransaction(
+                    tx,
+                    this.subWallets,
+                    this.daemon,
+                    this.config,
+                );
+
+                res.transactionHash = transactionHash;
+
+                return res;
+            },
+            false,
+            true
         );
     }
 

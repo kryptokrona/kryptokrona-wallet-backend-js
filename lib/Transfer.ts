@@ -18,7 +18,8 @@ import { SubWallets } from './SubWallets';
 import { LogCategory, logger, LogLevel } from './Logger';
 
 import {
-    Transaction as TX, TxInputAndOwner, UnconfirmedInput, PreparedTransactionInfo
+    Transaction as TX, TxInputAndOwner, UnconfirmedInput, PreparedTransactionInfo,
+    PreparedTransaction,
 } from './Types';
 
 import {
@@ -881,6 +882,47 @@ async function tryMakeFeePerByteTransaction(
          * or we need to gather more inputs. */
         amountIncludingFee = amountPreFee + requiredFee;
     }
+}
+
+export async function sendPreparedTransaction(
+    transaction: PreparedTransaction,
+    subWallets: SubWallets,
+    daemon: IDaemon,
+    config: Config): Promise<PreparedTransactionInfo> {
+
+    const returnValue: PreparedTransactionInfo = {
+        success: false,
+        error: SUCCESS,
+        ...transaction,
+    };
+
+    const [prettyTX, err] = await relayTransaction(
+        transaction.rawTransaction,
+        transaction.fee,
+        transaction.paymentID,
+        transaction.inputs,
+        transaction.changeAddress,
+        transaction.changeRequired,
+        subWallets,
+        daemon,
+        config,
+    );
+
+    if (err) {
+        logger.log(
+            `Failed to verify and send transaction: ${(err as WalletError).toString()}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
+        returnValue.error = err;
+        return returnValue;
+    }
+
+    returnValue.prettyTransaction = prettyTX;
+    returnValue.success = true;
+
+    return returnValue;
 }
 
 function setupDestinations(
