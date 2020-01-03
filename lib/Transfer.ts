@@ -602,7 +602,7 @@ export async function sendTransactionAdvanced(
 
         if (sumOfInputs >= totalAmount) {
             logger.log(
-                `Selected enough inputs (${ourInputs.length}) with sum of ${sumOfInputs}` +
+                `Selected enough inputs (${ourInputs.length}) with sum of ${sumOfInputs} ` +
                 `to exceed total amount required: ${totalAmount} (not including fee), ` +
                 `attempting to estimate transaction fee`,
                 LogLevel.DEBUG,
@@ -703,7 +703,7 @@ export async function sendTransactionAdvanced(
                  * go ahead and try and make the transaction. */
                 if (sumOfInputs >= estimatedAmount) {
                     logger.log(
-                        `Selected enough inputs to exceed total amount required,` +
+                        `Selected enough inputs to exceed total amount required, ` +
                         `attempting to estimate transaction fee`,
                         LogLevel.DEBUG,
                         LogCategory.TRANSACTIONS,
