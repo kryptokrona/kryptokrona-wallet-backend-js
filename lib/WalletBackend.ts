@@ -2961,6 +2961,7 @@ export class WalletBackend extends EventEmitter {
         this.currentlyOptimizing = false;
         this.currentlyTransacting = false;
         this.haveEmittedDeadNode = false;
+        this.preparedTransactions = new Map();
 
         this.config = config;
         this.daemon = daemon;
