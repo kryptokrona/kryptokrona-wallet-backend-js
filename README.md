@@ -164,6 +164,20 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v5.0.0
+
+* Add fee per byte support
+* Add `sendPreparedTransaction`
+* Add `sendRawPreparedTransaction`
+* Add `deletePreparedTransaction`
+* Add `includeFusions` param to `getNumTransactions`
+* Improved transaction logging
+
+#### Breaking Changes
+
+The return type of both `sendTransactionBasic` and `sendTransactionAdvanced` has
+changed. The type of the `fee` parameter for `sendTransactionAdvanced` has changed.
+
 ### v4.0.11
 
 * Fix rare failure to sync when swapping from non cache node to cache node with blocks stored
