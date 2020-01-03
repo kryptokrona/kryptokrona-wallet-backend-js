@@ -345,8 +345,6 @@ export async function sendFusionTransactionAdvanced(
  * @param destination       The address to send the funds to
  * @param amount            The amount to send, in ATOMIC units
  * @param paymentID         The payment ID to include with this transaction. Optional.
- *
- * @return Returns either [transaction info, transaction hash, undefined], or [undefined, undefined, error]
  */
 export async function sendTransactionBasic(
     config: Config,
@@ -399,8 +397,6 @@ export async function sendTransactionBasic(
  *                              how to split up the transfer. The amount in the `addressAndAmounts`
  *                              parameter will be ignored when this value is set to true.
  *                              Defaults to false.
- *
- * @return Returns either [transaction info, transaction hash, undefined], or [undefined, undefined, error]
  */
 export async function sendTransactionAdvanced(
     config: Config,
