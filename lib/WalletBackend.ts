@@ -1675,7 +1675,10 @@ export class WalletBackend extends EventEmitter {
             LogCategory.GENERAL,
         );
 
-        return [this.subWallets.getPrimaryPrivateSpendKey(), this.getPrivateViewKey()];
+        return [
+            this.subWallets.getPrimaryPrivateSpendKey(),
+            this.subWallets.getPrivateViewKey(),
+        ];
     }
 
     /**
@@ -1726,7 +1729,7 @@ export class WalletBackend extends EventEmitter {
 
         assertString(address, 'address');
 
-        const privateViewKey: string = this.getPrivateViewKey();
+        const privateViewKey: string = this.subWallets.getPrivateViewKey();
 
         const [publicSpendKey, privateSpendKey, error] = this.getSpendKeys(address);
 
@@ -2000,7 +2003,7 @@ export class WalletBackend extends EventEmitter {
                     this.subWallets,
                     mixin,
                     subWalletsToTakeFrom,
-                    destination
+                    destination,
                 );
             },
             true,
@@ -2061,7 +2064,7 @@ export class WalletBackend extends EventEmitter {
                 );
             },
             false,
-            true
+            true,
         );
     }
 
@@ -2153,7 +2156,7 @@ export class WalletBackend extends EventEmitter {
                     subWalletsToTakeFrom,
                     changeAddress,
                     relayToNetwork,
-                    sendAll
+                    sendAll,
                 );
             },
             false,
@@ -2163,7 +2166,7 @@ export class WalletBackend extends EventEmitter {
 
     /**
      * Relays a previously prepared transaction to the network.
-     * 
+     *
      * Example:
      * ```javascript
      * const destinations = [
@@ -2199,7 +2202,7 @@ export class WalletBackend extends EventEmitter {
      *      wallet.deletePreparedTransaction(creation.transactionHash);
      *      console.log(`Failed to send transaction: ${creation.error.toString()}`);
      * }
-     * 
+     *
      */
     public sendPreparedTransaction(transactionHash: string): Promise<SendTransactionResult> {
 
@@ -2215,8 +2218,8 @@ export class WalletBackend extends EventEmitter {
 
         if (tx === undefined) {
             return Promise.resolve({
-                success: false,
                 error: new WalletError(WalletErrorCode.PREPARED_TRANSACTION_NOT_FOUND),
+                success: false,
             });
         }
 
@@ -2238,7 +2241,7 @@ export class WalletBackend extends EventEmitter {
                 return res;
             },
             false,
-            true
+            true,
         );
     }
 
@@ -2246,7 +2249,7 @@ export class WalletBackend extends EventEmitter {
      * Relays a previously prepared transaction to the network. Data can be stored
      * client side if you wish for prepared transactions to still be usable after
      * restarting the wallet app, for example.
-     * 
+     *
      * Example:
      * ```javascript
      * const destinations = [
@@ -2282,7 +2285,7 @@ export class WalletBackend extends EventEmitter {
      *      console.log(`Failed to send transaction: ${creation.error.toString()}`);
      *      wallet.deletePreparedTransaction(creation.transactionHash);
      * }
-     * 
+     *
      */
 
     public sendRawPreparedTransaction(rawTransaction: PreparedTransaction) {
@@ -2311,7 +2314,7 @@ export class WalletBackend extends EventEmitter {
                 return res;
             },
             false,
-            true
+            true,
         );
     }
 
@@ -2559,12 +2562,12 @@ export class WalletBackend extends EventEmitter {
         this.currentlyTransacting = false;
 
         return {
-            success: result.success,
             error: result.error,
             fee: result.fee,
-            relayedToNetwork: result.success ? relayToNetwork : undefined,
-            transactionHash: result.transactionHash,
             preparedTransaction: result.rawTransaction,
+            relayedToNetwork: result.success ? relayToNetwork : undefined,
+            success: result.success,
+            transactionHash: result.transactionHash,
         };
     }
 
@@ -2786,7 +2789,7 @@ export class WalletBackend extends EventEmitter {
 
             const blockInputs: Array<[string, TransactionInput]> = await processFunction(
                 block,
-                this.getPrivateViewKey(),
+                this.subWallets.getPrivateViewKey(),
                 this.subWallets.getAllSpendKeys(),
                 this.subWallets.isViewWallet,
                 this.config.scanCoinbaseTransactions,
