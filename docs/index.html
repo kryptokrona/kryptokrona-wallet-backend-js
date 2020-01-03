@@ -89,14 +89,6 @@
 				<p><code>npm install turtlecoin-wallet-backend --save</code></p>
 				<p>Yarn:</p>
 				<p><code>yarn add turtlecoin-wallet-backend</code></p>
-				<a href="#installation-from-github" id="installation-from-github" style="color: inherit; text-decoration: none;">
-					<h2>Installation from GitHub</h2>
-				</a>
-				<p>If you need features which have not yet made it into a release, you can install from GitHub.</p>
-				<p>NPM:</p>
-				<p><code>npm install https://github.com/turtlecoin/turtlecoin-wallet-backend-js --save</code></p>
-				<p>Yarn:</p>
-				<p><code>yarn add https://github.com/turtlecoin/turtlecoin-wallet-backend-js</code></p>
 				<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
 					<h2>Documentation</h2>
 				</a>
@@ -203,6 +195,29 @@
 				<a href="#changelog" id="changelog" style="color: inherit; text-decoration: none;">
 					<h2>Changelog</h2>
 				</a>
+				<a href="#v4011" id="v4011" style="color: inherit; text-decoration: none;">
+					<h3>v4.0.11</h3>
+				</a>
+				<ul>
+					<li>Fix rare failure to sync when swapping from non cache node to cache node with blocks stored</li>
+					<li>Fix failure to sync when enabling coinbase transaction scanning with blocks stored</li>
+					<li>Disable sleeping between block download failures</li>
+					<li>Log all public function calls in WalletBackend class</li>
+					<li>Fix issue where transactions would be incorrectly reported as errored</li>
+				</ul>
+				<a href="#v4010" id="v4010" style="color: inherit; text-decoration: none;">
+					<h3>v4.0.10</h3>
+				</a>
+				<ul>
+					<li>Amount of blocks per request will ramp up/down as requests succeed/fail.</li>
+					<li>More detailed logging</li>
+				</ul>
+				<a href="#v409" id="v409" style="color: inherit; text-decoration: none;">
+					<h3>v4.0.9</h3>
+				</a>
+				<ul>
+					<li>Bump <code>turtlecoin-utils</code></li>
+				</ul>
 				<a href="#v408" id="v408" style="color: inherit; text-decoration: none;">
 					<h3>v4.0.8</h3>
 				</a>
@@ -463,6 +478,9 @@
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/_daemon_.html">&quot;<wbr>Daemon&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_feetype_.html">&quot;<wbr>Fee<wbr>Type&quot;</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/_idaemon_.html">&quot;IDaemon&quot;</a>

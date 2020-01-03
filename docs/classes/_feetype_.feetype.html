@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MixinLimit | turtlecoin-wallet-backend</title>
+	<title>FeeType | turtlecoin-wallet-backend</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -52,42 +52,24 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_mixinlimits_.html">&quot;MixinLimits&quot;</a>
+					<a href="../modules/_feetype_.html">&quot;FeeType&quot;</a>
 				</li>
 				<li>
-					<a href="_mixinlimits_.mixinlimit.html">MixinLimit</a>
+					<a href="_feetype_.feetype.html">FeeType</a>
 				</li>
 			</ul>
-			<h1>Class MixinLimit</h1>
+			<h1>Class FeeType</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<dl class="tsd-comment-tags">
-						<dt>param</dt>
-						<dd><p>Height this mixin limit becomes active at</p>
-						</dd>
-						<dt>param</dt>
-						<dd><p>Minimum mixin allowed at this height</p>
-						</dd>
-						<dt>param</dt>
-						<dd><p>Maximum mixin allowed at this height</p>
-						</dd>
-						<dt>param</dt>
-						<dd><p>Default mixin to use at this height (should be in min/max bounds)</p>
-						</dd>
-					</dl>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">MixinLimit</span>
+						<span class="target">FeeType</span>
 					</li>
 				</ul>
 			</section>
@@ -96,99 +78,168 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Constructors</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="_mixinlimits_.mixinlimit.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_feetype_.feetype.html#feeperbyte" class="tsd-kind-icon">fee<wbr>Per<wbr>Byte</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_feetype_.feetype.html#fixedfee" class="tsd-kind-icon">fixed<wbr>Fee</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_feetype_.feetype.html#isfeeperbyte" class="tsd-kind-icon">is<wbr>Fee<wbr>Per<wbr>Byte</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_feetype_.feetype.html#isfixedfee" class="tsd-kind-icon">is<wbr>Fixed<wbr>Fee</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
+							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_mixinlimits_.mixinlimit.html#defaultmixin" class="tsd-kind-icon">default<wbr>Mixin</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_mixinlimits_.mixinlimit.html#height" class="tsd-kind-icon">height</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_mixinlimits_.mixinlimit.html#maxmixin" class="tsd-kind-icon">max<wbr>Mixin</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_mixinlimits_.mixinlimit.html#minmixin" class="tsd-kind-icon">min<wbr>Mixin</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="_feetype_.feetype.html#feeperbyte-1" class="tsd-kind-icon">Fee<wbr>Per<wbr>Byte</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="_feetype_.feetype.html#fixedfee-1" class="tsd-kind-icon">Fixed<wbr>Fee</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="_feetype_.feetype.html#minimumfee" class="tsd-kind-icon">Minimum<wbr>Fee</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Constructors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
-					<a name="constructor" class="tsd-anchor"></a>
-					<h3>constructor</h3>
-					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Mixin<wbr>Limit<span class="tsd-signature-symbol">(</span>height<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, minMixin<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, maxMixin<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span>, defaultMixin<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_mixinlimits_.mixinlimit.html" class="tsd-signature-type">MixinLimit</a></li>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="feeperbyte" class="tsd-anchor"></a>
+					<h3>fee<wbr>Per<wbr>Byte</h3>
+					<div class="tsd-signature tsd-kind-icon">fee<wbr>Per<wbr>Byte<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/FeeType.ts#L61">lib/FeeType.ts:61</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="fixedfee" class="tsd-anchor"></a>
+					<h3>fixed<wbr>Fee</h3>
+					<div class="tsd-signature tsd-kind-icon">fixed<wbr>Fee<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/FeeType.ts#L59">lib/FeeType.ts:59</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="isfeeperbyte" class="tsd-anchor"></a>
+					<h3>is<wbr>Fee<wbr>Per<wbr>Byte</h3>
+					<div class="tsd-signature tsd-kind-icon">is<wbr>Fee<wbr>Per<wbr>Byte<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;false</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/FeeType.ts#L57">lib/FeeType.ts:57</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="isfixedfee" class="tsd-anchor"></a>
+					<h3>is<wbr>Fixed<wbr>Fee</h3>
+					<div class="tsd-signature tsd-kind-icon">is<wbr>Fixed<wbr>Fee<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;false</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/FeeType.ts#L55">lib/FeeType.ts:55</a></li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="feeperbyte-1" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> Fee<wbr>Per<wbr>Byte</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">Fee<wbr>Per<wbr>Byte<span class="tsd-signature-symbol">(</span>feePerByte<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_feetype_.feetype.html" class="tsd-signature-type">FeeType</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/MixinLimits.ts#L17">lib/MixinLimits.ts:17</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/FeeType.ts#L30">lib/FeeType.ts:30</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Specify a custom fee per byte to use. Can be a fractional amount.
+										Should be in atomic units.
+									Can not be lower than the minimum fee per byte allowed (currently 1.953125)</p>
+								</div>
+								<p>Note that the fee per byte of the resulting transaction may be higher
+									than the specified fee per byte, but it will not be lower. It will also
+									not be any more than 2x higher than the specified fee per byte.
+									The fee per byte being potentially higher is due to how the transaction
+								size estimate process works.</p>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>height: <span class="tsd-signature-type">number</span></h5>
-								</li>
-								<li>
-									<h5>minMixin: <span class="tsd-signature-type">number</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> maxMixin: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> defaultMixin: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
+									<h5>feePerByte: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The custom fee per byte value to use.</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_mixinlimits_.mixinlimit.html" class="tsd-signature-type">MixinLimit</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="_feetype_.feetype.html" class="tsd-signature-type">FeeType</a></h4>
 						</li>
 					</ul>
 				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="defaultmixin" class="tsd-anchor"></a>
-					<h3>default<wbr>Mixin</h3>
-					<div class="tsd-signature tsd-kind-icon">default<wbr>Mixin<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/MixinLimits.ts#L17">lib/MixinLimits.ts:17</a></li>
-						</ul>
-					</aside>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="fixedfee-1" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> Fixed<wbr>Fee</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">Fixed<wbr>Fee<span class="tsd-signature-symbol">(</span>fixedFee<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_feetype_.feetype.html" class="tsd-signature-type">FeeType</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/FeeType.ts#L46">lib/FeeType.ts:46</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Specify a fixed fee to use. The transaction will fail if the calculated
+										minimum fee per byte for the transaction is lower than the specified
+									fixed fee.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fixedFee: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The fixed fee to use</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_feetype_.feetype.html" class="tsd-signature-type">FeeType</a></h4>
+						</li>
+					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="height" class="tsd-anchor"></a>
-					<h3>height</h3>
-					<div class="tsd-signature tsd-kind-icon">height<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/MixinLimits.ts#L14">lib/MixinLimits.ts:14</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="maxmixin" class="tsd-anchor"></a>
-					<h3>max<wbr>Mixin</h3>
-					<div class="tsd-signature tsd-kind-icon">max<wbr>Mixin<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/MixinLimits.ts#L16">lib/MixinLimits.ts:16</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="minmixin" class="tsd-anchor"></a>
-					<h3>min<wbr>Mixin</h3>
-					<div class="tsd-signature tsd-kind-icon">min<wbr>Mixin<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/MixinLimits.ts#L15">lib/MixinLimits.ts:15</a></li>
-						</ul>
-					</aside>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="minimumfee" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> Minimum<wbr>Fee</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">Minimum<wbr>Fee<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_feetype_.feetype.html" class="tsd-signature-type">FeeType</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/FeeType.ts#L11">lib/FeeType.ts:11</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Uses the lowest fee possible. Currently is a fee per byte of 1.953125.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol"> =&nbsp;new Config()</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_feetype_.feetype.html" class="tsd-signature-type">FeeType</a></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -204,7 +255,7 @@
 					<li class=" tsd-kind-external-module">
 						<a href="../modules/_daemon_.html">&quot;<wbr>Daemon&quot;</a>
 					</li>
-					<li class=" tsd-kind-external-module">
+					<li class="current tsd-kind-external-module">
 						<a href="../modules/_feetype_.html">&quot;<wbr>Fee<wbr>Type&quot;</a>
 					</li>
 					<li class=" tsd-kind-external-module">
@@ -213,7 +264,7 @@
 					<li class=" tsd-kind-external-module">
 						<a href="../modules/_logger_.html">&quot;<wbr>Logger&quot;</a>
 					</li>
-					<li class="current tsd-kind-external-module">
+					<li class=" tsd-kind-external-module">
 						<a href="../modules/_mixinlimits_.html">&quot;<wbr>Mixin<wbr>Limits&quot;</a>
 					</li>
 					<li class=" tsd-kind-external-module">
@@ -238,30 +289,33 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_mixinlimits_.mixinlimit.html" class="tsd-kind-icon">Mixin<wbr>Limit</a>
+						<a href="_feetype_.feetype.html" class="tsd-kind-icon">Fee<wbr>Type</a>
 						<ul>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="_mixinlimits_.mixinlimit.html#constructor" class="tsd-kind-icon">constructor</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_feetype_.feetype.html#feeperbyte" class="tsd-kind-icon">fee<wbr>Per<wbr>Byte</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_mixinlimits_.mixinlimit.html#defaultmixin" class="tsd-kind-icon">default<wbr>Mixin</a>
+								<a href="_feetype_.feetype.html#fixedfee" class="tsd-kind-icon">fixed<wbr>Fee</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_mixinlimits_.mixinlimit.html#height" class="tsd-kind-icon">height</a>
+								<a href="_feetype_.feetype.html#isfeeperbyte" class="tsd-kind-icon">is<wbr>Fee<wbr>Per<wbr>Byte</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_mixinlimits_.mixinlimit.html#maxmixin" class="tsd-kind-icon">max<wbr>Mixin</a>
+								<a href="_feetype_.feetype.html#isfixedfee" class="tsd-kind-icon">is<wbr>Fixed<wbr>Fee</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_mixinlimits_.mixinlimit.html#minmixin" class="tsd-kind-icon">min<wbr>Mixin</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="_feetype_.feetype.html#feeperbyte-1" class="tsd-kind-icon">Fee<wbr>Per<wbr>Byte</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="_feetype_.feetype.html#fixedfee-1" class="tsd-kind-icon">Fixed<wbr>Fee</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="_feetype_.feetype.html#minimumfee" class="tsd-kind-icon">Minimum<wbr>Fee</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_mixinlimits_.mixinlimits.html" class="tsd-kind-icon">Mixin<wbr>Limits</a>
-					</li>
 				</ul>
 			</nav>
 		</div>

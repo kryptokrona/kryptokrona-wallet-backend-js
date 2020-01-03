@@ -70,6 +70,9 @@
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#createintegratedaddress" class="tsd-kind-icon">create<wbr>Integrated<wbr>Address</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#estimatetransactionsize" class="tsd-kind-icon">estimate<wbr>Transaction<wbr>Size</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#getminimumtransactionfee" class="tsd-kind-icon">get<wbr>Minimum<wbr>Transaction<wbr>Fee</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#gettransactionfee" class="tsd-kind-icon">get<wbr>Transaction<wbr>Fee</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#ishex64" class="tsd-kind-icon">is<wbr>Hex64</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#isvalidmnemonic" class="tsd-kind-icon">is<wbr>Valid<wbr>Mnemonic</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_utilities_.html#isvalidmnemonicword" class="tsd-kind-icon">is<wbr>Valid<wbr>Mnemonic<wbr>Word</a></li>
@@ -91,7 +94,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/5574e08/lib/Utilities.ts#L27">Utilities.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/Utilities.ts#L27">lib/Utilities.ts:27</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -117,6 +120,102 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="estimatetransactionsize" class="tsd-anchor"></a>
+					<h3>estimate<wbr>Transaction<wbr>Size</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">estimate<wbr>Transaction<wbr>Size<span class="tsd-signature-symbol">(</span>mixin<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, numInputs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, numOutputs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, havePaymentID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, extraDataSize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/Utilities.ts#L338">lib/Utilities.ts:338</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>mixin: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>numInputs: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>numOutputs: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>havePaymentID: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+								<li>
+									<h5>extraDataSize: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="getminimumtransactionfee" class="tsd-anchor"></a>
+					<h3>get<wbr>Minimum<wbr>Transaction<wbr>Fee</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Minimum<wbr>Transaction<wbr>Fee<span class="tsd-signature-symbol">(</span>transactionSize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, height<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/Utilities.ts#L308">lib/Utilities.ts:308</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>transactionSize: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>height: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol"> =&nbsp;new Config()</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="gettransactionfee" class="tsd-anchor"></a>
+					<h3>get<wbr>Transaction<wbr>Fee</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Transaction<wbr>Fee<span class="tsd-signature-symbol">(</span>transactionSize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, height<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, feePerByte<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, config<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/Utilities.ts#L323">lib/Utilities.ts:323</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>transactionSize: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>height: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>feePerByte: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> config: <a href="../interfaces/_config_.iconfig.html" class="tsd-signature-type">IConfig</a><span class="tsd-signature-symbol"> =&nbsp;new Config()</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
 					<a name="ishex64" class="tsd-anchor"></a>
 					<h3>is<wbr>Hex64</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
@@ -126,7 +225,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/5574e08/lib/Utilities.ts#L60">Utilities.ts:60</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/Utilities.ts#L60">lib/Utilities.ts:60</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -154,7 +253,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/5574e08/lib/Utilities.ts#L276">Utilities.ts:276</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/Utilities.ts#L273">lib/Utilities.ts:273</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -186,7 +285,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/5574e08/lib/Utilities.ts#L266">Utilities.ts:266</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/Utilities.ts#L263">lib/Utilities.ts:263</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -216,7 +315,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/5574e08/lib/Utilities.ts#L136">Utilities.ts:136</a></li>
+									<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/29f1d31/lib/Utilities.ts#L136">lib/Utilities.ts:136</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -253,6 +352,9 @@
 						<a href="_daemon_.html">&quot;<wbr>Daemon&quot;</a>
 					</li>
 					<li class=" tsd-kind-external-module">
+						<a href="_feetype_.html">&quot;<wbr>Fee<wbr>Type&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module">
 						<a href="_idaemon_.html">&quot;IDaemon&quot;</a>
 					</li>
 					<li class=" tsd-kind-external-module">
@@ -282,6 +384,15 @@
 				<ul class="before-current">
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_utilities_.html#createintegratedaddress" class="tsd-kind-icon">create<wbr>Integrated<wbr>Address</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_utilities_.html#estimatetransactionsize" class="tsd-kind-icon">estimate<wbr>Transaction<wbr>Size</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_utilities_.html#getminimumtransactionfee" class="tsd-kind-icon">get<wbr>Minimum<wbr>Transaction<wbr>Fee</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_utilities_.html#gettransactionfee" class="tsd-kind-icon">get<wbr>Transaction<wbr>Fee</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_utilities_.html#ishex64" class="tsd-kind-icon">is<wbr>Hex64</a>
