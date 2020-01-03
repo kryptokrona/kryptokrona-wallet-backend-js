@@ -2196,6 +2196,7 @@ export class WalletBackend extends EventEmitter {
      *          console.log(`Failed to relay transaction: ${result.error.toString()}`);
      *      }
      * } else {
+     *      wallet.deletePreparedTransaction(creation.transactionHash);
      *      console.log(`Failed to send transaction: ${creation.error.toString()}`);
      * }
      * 
@@ -2279,12 +2280,19 @@ export class WalletBackend extends EventEmitter {
      *      }
      * } else {
      *      console.log(`Failed to send transaction: ${creation.error.toString()}`);
+     *      wallet.deletePreparedTransaction(creation.transactionHash);
      * }
      * 
      */
 
     public sendRawPreparedTransaction(rawTransaction: PreparedTransaction) {
-        assertObject(rawTransaction, 'transactionHash');
+        logger.log(
+            'Function sendRawPreparedTransaction called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
+        assertObject(rawTransaction, 'rawTransaction');
 
         return this.sendTransactionInternal(
             async () => {
@@ -2294,8 +2302,6 @@ export class WalletBackend extends EventEmitter {
                     this.daemon,
                     this.config,
                 );
-
-
 
                 if (res.success && res.rawTransaction) {
                     res.transactionHash = res.rawTransaction.hash;
@@ -2307,6 +2313,59 @@ export class WalletBackend extends EventEmitter {
             false,
             true
         );
+    }
+
+    /**
+     * Delete a prepared transaction stored to free up RAM. Returns whether
+     * the transaction was found and has been removed, or false if it was not
+     * found.
+     *
+     * Example:
+     * ```javascript
+     * const destinations = [
+     *      ['TRTLxyz...', 1000],
+     *      ['TRTLzyx...', 10000],
+     * ];
+     *
+     * const creation = await wallet.sendTransactionAdvanced(
+     *      destinations,
+     *      undefined, // mixin
+     *      undefined, // fee
+     *      undefined, // payment ID
+     *      undefined, // subWalletsToTakeFrom
+     *      undefined, // changeAddress
+     *      false // relay to network
+     * );
+     *
+     * if (creation.success)
+     *      // Inspect certain transaction properties before sending if desired
+     *      if (creation.fee > 100000) {
+     *          console.log('Fee is quite high! You may wish to attempt optimizing your wallet');
+     *          return;
+     *      }
+     *
+     *      const result = await wallet.sendRawPreparedTransaction(creation.preparedTransaction);
+     *
+     *      if (result.success) {
+     *          console.log(`Sent transaction, hash ${result.transactionHash}, fee ${WB.prettyPrintAmount(result.fee)}`);
+     *      } else {
+     *          console.log(`Failed to relay transaction: ${result.error.toString()}`);
+     *      }
+     * } else {
+     *      console.log(`Failed to send transaction: ${creation.error.toString()}`);
+     *      wallet.deletePreparedTransaction(creation.transactionHash);
+     * }
+     */
+    public deletePreparedTransaction(transactionHash: string): boolean {
+        logger.log(
+            'Function deletePreparedTransaction called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
+        assertString(transactionHash, 'transactionHash');
+
+        return this.preparedTransactions.delete(transactionHash);
     }
 
     /**
