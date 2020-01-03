@@ -164,6 +164,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v5.0.1
+
+* Fix storing prepared transactions not working after loading from file
+
 ### v5.0.0
 
 * Add fee per byte support
