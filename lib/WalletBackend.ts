@@ -45,7 +45,7 @@ import {
 import {
     assertStringOrUndefined, assertString, assertNumberOrUndefined, assertNumber,
     assertBooleanOrUndefined, assertBoolean, assertArrayOrUndefined, assertArray,
-    assertObjectOrUndefined,
+    assertObjectOrUndefined, assertObject,
 } from './Assert';
 
 export declare interface WalletBackend {
@@ -2161,6 +2161,45 @@ export class WalletBackend extends EventEmitter {
         );
     }
 
+    /**
+     * Relays a previously prepared transaction to the network.
+     * 
+     * Example:
+     * ```javascript
+     * const destinations = [
+     *      ['TRTLxyz...', 1000],
+     *      ['TRTLzyx...', 10000],
+     * ];
+     *
+     * const creation = await wallet.sendTransactionAdvanced(
+     *      destinations,
+     *      undefined, // mixin
+     *      undefined, // fee
+     *      undefined, // payment ID
+     *      undefined, // subWalletsToTakeFrom
+     *      undefined, // changeAddress
+     *      false // relay to network
+     * );
+     *
+     * if (creation.success)
+     *      // Inspect certain transaction properties before sending if desired
+     *      if (creation.fee > 100000) {
+     *          console.log('Fee is quite high! You may wish to attempt optimizing your wallet');
+     *          return;
+     *      }
+     *
+     *      const result = await wallet.sendPreparedTransaction(creation.transactionHash);
+     *
+     *      if (result.success) {
+     *          console.log(`Sent transaction, hash ${result.transactionHash}, fee ${WB.prettyPrintAmount(result.fee)}`);
+     *      } else {
+     *          console.log(`Failed to relay transaction: ${result.error.toString()}`);
+     *      }
+     * } else {
+     *      console.log(`Failed to send transaction: ${creation.error.toString()}`);
+     * }
+     * 
+     */
     public sendPreparedTransaction(transactionHash: string): Promise<SendTransactionResult> {
 
         logger.log(
@@ -2173,7 +2212,7 @@ export class WalletBackend extends EventEmitter {
 
         const tx: PreparedTransaction | undefined = this.preparedTransactions.get(transactionHash);
 
-        if (!tx) {
+        if (tx === undefined) {
             return Promise.resolve({
                 success: false,
                 error: new WalletError(WalletErrorCode.PREPARED_TRANSACTION_NOT_FOUND),
@@ -2190,6 +2229,78 @@ export class WalletBackend extends EventEmitter {
                 );
 
                 res.transactionHash = transactionHash;
+
+                if (res.success) {
+                    this.preparedTransactions.delete(transactionHash);
+                }
+
+                return res;
+            },
+            false,
+            true
+        );
+    }
+
+    /**
+     * Relays a previously prepared transaction to the network. Data can be stored
+     * client side if you wish for prepared transactions to still be usable after
+     * restarting the wallet app, for example.
+     * 
+     * Example:
+     * ```javascript
+     * const destinations = [
+     *      ['TRTLxyz...', 1000],
+     *      ['TRTLzyx...', 10000],
+     * ];
+     *
+     * const creation = await wallet.sendTransactionAdvanced(
+     *      destinations,
+     *      undefined, // mixin
+     *      undefined, // fee
+     *      undefined, // payment ID
+     *      undefined, // subWalletsToTakeFrom
+     *      undefined, // changeAddress
+     *      false // relay to network
+     * );
+     *
+     * if (creation.success)
+     *      // Inspect certain transaction properties before sending if desired
+     *      if (creation.fee > 100000) {
+     *          console.log('Fee is quite high! You may wish to attempt optimizing your wallet');
+     *          return;
+     *      }
+     *
+     *      const result = await wallet.sendRawPreparedTransaction(creation.preparedTransaction);
+     *
+     *      if (result.success) {
+     *          console.log(`Sent transaction, hash ${result.transactionHash}, fee ${WB.prettyPrintAmount(result.fee)}`);
+     *      } else {
+     *          console.log(`Failed to relay transaction: ${result.error.toString()}`);
+     *      }
+     * } else {
+     *      console.log(`Failed to send transaction: ${creation.error.toString()}`);
+     * }
+     * 
+     */
+
+    public sendRawPreparedTransaction(rawTransaction: PreparedTransaction) {
+        assertObject(rawTransaction, 'transactionHash');
+
+        return this.sendTransactionInternal(
+            async () => {
+                const res = await sendPreparedTransaction(
+                    rawTransaction,
+                    this.subWallets,
+                    this.daemon,
+                    this.config,
+                );
+
+
+
+                if (res.success && res.rawTransaction) {
+                    res.transactionHash = res.rawTransaction.hash;
+                    this.preparedTransactions.delete(res.transactionHash);
+                }
 
                 return res;
             },
@@ -2394,6 +2505,7 @@ export class WalletBackend extends EventEmitter {
             fee: result.fee,
             relayedToNetwork: result.success ? relayToNetwork : undefined,
             transactionHash: result.transactionHash,
+            preparedTransaction: result.rawTransaction,
         };
     }
 

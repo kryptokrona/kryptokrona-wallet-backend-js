@@ -896,6 +896,19 @@ export async function sendPreparedTransaction(
         ...transaction,
     };
 
+    for (const input of transaction.inputs) {
+        if (!subWallets.haveSpendableInput(input.input, daemon.getNetworkBlockCount())) {
+            logger.log(
+                `Prepared transaction ${transaction.rawTransaction.hash} expired, input ${input.input.key}`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
+
+            returnValue.error = new WalletError(WalletErrorCode.PREPARED_TRANSACTION_EXPIRED);
+            return returnValue;
+        }
+    }
+
     const [prettyTX, err] = await relayTransaction(
         transaction.rawTransaction,
         transaction.fee,

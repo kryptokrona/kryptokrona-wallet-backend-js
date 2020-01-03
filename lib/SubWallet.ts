@@ -416,6 +416,16 @@ export class SubWallet {
         return _.sumBy(this.unconfirmedIncomingAmounts, 'amount');
     }
 
+    public haveSpendableInput(input: TransactionInput, currentHeight: number): boolean {
+        for (const i of this.unspentInputs) {
+            if (input.key == i.key) {
+                return isInputUnlocked(i.unlockTime, currentHeight);
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Get inputs that are available to be spent, and their keys
      */

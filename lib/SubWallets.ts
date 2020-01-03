@@ -399,6 +399,16 @@ export class SubWallets {
         }
     }
 
+    public haveSpendableInput(input: TransactionInput, height: number): boolean {
+        for (const [publicKey, subWallet] of this.subWallets) {
+            if (subWallet.haveSpendableInput(input, height)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Get the owner (i.e., the public spend key of the subwallet) of this
      * keyImage

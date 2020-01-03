@@ -609,6 +609,11 @@ export interface SendTransactionResult {
      * is true.
      */
     transactionHash?: string;
+
+    /**
+     * The object that can be stored client side to then relayed with sendRawPreparedTransaction
+     */
+    preparedTransaction?: PreparedTransaction;
 }
 
 export enum DaemonType {
