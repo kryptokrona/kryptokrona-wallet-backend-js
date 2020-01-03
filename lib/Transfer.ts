@@ -97,7 +97,7 @@ export async function sendFusionTransactionAdvanced(
     const returnValue: PreparedTransactionInfo = {
         success: false,
         error: SUCCESS,
-    }
+    };
 
     if (mixin === undefined) {
         mixin = config.mixinLimits.getDefaultMixinByHeight(
@@ -312,7 +312,7 @@ export async function sendFusionTransactionAdvanced(
         config,
     );
 
-    const [tx, err] = result;
+    const [prettyTransaction, err] = result;
 
     if (err) {
         logger.log(
@@ -325,7 +325,7 @@ export async function sendFusionTransactionAdvanced(
         return returnValue;
     }
 
-    returnValue.prettyTransaction = tx;
+    returnValue.prettyTransaction = prettyTransaction;
     returnValue.success = true;
 
     return returnValue;
@@ -380,7 +380,8 @@ export async function sendTransactionBasic(
  *                              destination.
  * @param mixin                 The amount of input keys to hide your input with.
  *                              Your network may enforce a static mixin.
- * @param fee                   The network fee, fee per byte, or minimum fee to use with this transaction. Defaults to minimum fee.
+ * @param fee                   The network fee, fee per byte, or minimum fee to use
+ *                              with this transaction. Defaults to minimum fee.
  * @param paymentID             The payment ID to include with this transaction.
  * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
  * @param changeAddress         The address to send any returned change to.
@@ -549,7 +550,13 @@ export async function sendTransactionAdvanced(
                 decoded.publicViewKey,
                 decoded.publicSpendKey,
                 undefined,
-                decoded.prefix as any /* TODO, types are wrong */
+                decoded.prefix as any, /* TODO, types are wrong */
+            );
+
+            logger.log(
+                `Extracted payment ID of ${paymentID} from address ${address}, resulting non integrated address: ${address}`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
             );
         }
     }
@@ -569,25 +576,39 @@ export async function sendTransactionAdvanced(
     const ourInputs: TxInputAndOwner[] = [];
 
     if (fee.isFixedFee) {
-        totalAmount += fee.fixedFee;
-    }
+        logger.log(
+            `Total amount to send: ${totalAmount}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
 
-    logger.log(
-        `Total amount to send (Not including fee per byte): ${totalAmount}`,
-        LogLevel.DEBUG,
-        LogCategory.TRANSACTIONS,
-    );
+        totalAmount += fee.fixedFee;
+    } else {
+        logger.log(
+            `Total amount to send (Not including fee per byte): ${totalAmount}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+    }
 
     let changeRequired: number = 0;
     let requiredAmount: number = totalAmount;
     let txResult: [undefined, WalletError] | [CreatedTransaction, undefined] = [ undefined, SUCCESS ];
-    let txInfo: PreparedTransactionInfo = {} as any;
+    const txInfo: PreparedTransactionInfo = {} as any;
 
     for (const input of availableInputs) {
         ourInputs.push(input);
         sumOfInputs += input.input.amount;
 
         if (sumOfInputs >= totalAmount) {
+            logger.log(
+                `Selected enough inputs (${ourInputs.length}) with sum of ${sumOfInputs}` +
+                `to exceed total amount required: ${totalAmount} (not including fee), ` +
+                `attempting to estimate transaction fee`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
+
             /* If sum of inputs is > totalAmount, we need to send some back to
              * ourselves */
             changeRequired = sumOfInputs - totalAmount;
@@ -597,7 +618,7 @@ export async function sendTransactionAdvanced(
                 addressesAndAmounts,
                 changeRequired,
                 changeAddress,
-                config
+                config,
             );
 
             /* Using fee per byte, lets take a guess at how large our fee is
@@ -608,43 +629,86 @@ export async function sendTransactionAdvanced(
                     ourInputs.length,
                     destinations.length,
                     paymentID !== '',
-                    0
+                    0,
+                );
+
+                logger.log(
+                    `Estimated transaction size: ${prettyPrintBytes(transactionSize)}`,
+                    LogLevel.DEBUG,
+                    LogCategory.TRANSACTIONS,
                 );
 
                 const estimatedFee: number = getTransactionFee(
                     transactionSize,
                     daemon.getNetworkBlockCount(),
                     fee.feePerByte,
-                    config
+                    config,
+                );
+
+                logger.log(
+                    `Estimated required transaction fee using fee per byte of ${fee.feePerByte}: ${estimatedFee}`,
+                    LogLevel.DEBUG,
+                    LogCategory.TRANSACTIONS,
                 );
 
                 if (sendAll) {
-                    const [address, amount] = addressesAndAmounts[0];
+                    /* Subtract node fee if present to work out total available
+                     * before fee per byte */
+                    const amount = sumOfInputs - feeAmount;
 
                     if (estimatedFee > amount) {
+                        logger.log(
+                            `Node fee + transaction fee is greater than available balance`,
+                            LogLevel.DEBUG,
+                            LogCategory.TRANSACTIONS,
+                        );
+
                         returnValue.fee = estimatedFee;
                         returnValue.error = new WalletError(WalletErrorCode.NOT_ENOUGH_BALANCE);
 
                         return returnValue;
                     }
 
-                    totalAmount -= estimatedFee;
-                    /* TODO: We should ignore the amount given? */
-                    addressesAndAmounts[0] = [ address, amount - estimatedFee ];
+                    totalAmount = amount - estimatedFee;
+
+                    logger.log(
+                        `Sending all, estimated max send minus fees: ${totalAmount}`,
+                        LogLevel.DEBUG,
+                        LogCategory.TRANSACTIONS,
+                    );
+
+                    /* Amount to send is sum of inputs (full balance), minus
+                     * node fee, minus estimated fee. */
+                    addressesAndAmounts[0][1] = amount - estimatedFee;
+
+                    changeRequired = 0;
 
                     destinations = setupDestinations(
                         addressesAndAmounts,
                         changeRequired,
                         changeAddress,
-                        config
+                        config,
                     );
                 }
 
                 const estimatedAmount: number = totalAmount + estimatedFee;
 
+                logger.log(
+                    `Total amount to send (including fee per byte): ${estimatedAmount}`,
+                    LogLevel.DEBUG,
+                    LogCategory.TRANSACTIONS,
+                );
+
                 /* Ok, we have enough inputs to add our estimated fee, lets
                  * go ahead and try and make the transaction. */
                 if (sumOfInputs >= estimatedAmount) {
+                    logger.log(
+                        `Selected enough inputs to exceed total amount required,` +
+                        `attempting to estimate transaction fee`,
+                        LogLevel.DEBUG,
+                        LogCategory.TRANSACTIONS,
+                    );
+
                     const [success, result, change, needed] = await tryMakeFeePerByteTransaction(
                         sumOfInputs,
                         totalAmount,
@@ -671,9 +735,22 @@ export async function sendTransactionAdvanced(
                         continue;
                     }
                 } else {
+                    logger.log(
+                        `Did not select enough inputs to exceed total amount required, ` +
+                        `selecting more if available.`,
+                        LogLevel.DEBUG,
+                        LogCategory.TRANSACTIONS,
+                    );
+
                     requiredAmount = estimatedAmount;
                 }
             } else {
+                logger.log(
+                    `Making non fee per byte transaction with fixed fee of ${fee.fixedFee}`,
+                    LogLevel.DEBUG,
+                    LogCategory.TRANSACTIONS,
+                );
+
                 txResult = await makeTransaction(
                     mixin,
                     fee.fixedFee,
@@ -687,20 +764,43 @@ export async function sendTransactionAdvanced(
 
                 const [tx, err] = txResult;
 
-                if (err || tx === undefined) {
+                if (err) {
+                    logger.log(
+                        `Error creating transaction, ${err.toString()}`,
+                        LogLevel.DEBUG,
+                        LogCategory.TRANSACTIONS,
+                    );
+
                     break;
                 }
 
                 const minFee: number = getMinimumTransactionFee(
-                    tx.rawTransaction.length / 2 ,
+                    tx!.rawTransaction.length / 2 ,
                     daemon.getNetworkBlockCount(),
                     config,
                 );
 
+                logger.log(
+                    `Min fee required for generated transaction: ${minFee}`,
+                    LogLevel.DEBUG,
+                    LogCategory.TRANSACTIONS,
+                );
+
                 if (fee.fixedFee >= minFee) {
+                    logger.log(
+                        `Fee of generated transaction is greater than min fee, creation succeeded.`,
+                        LogLevel.DEBUG,
+                        LogCategory.TRANSACTIONS,
+                    );
+
                     break;
-                }
-                else {
+                } else {
+                    logger.log(
+                        `Fee of generated transaction is less than min fee, creation failed.`,
+                        LogLevel.DEBUG,
+                        LogCategory.TRANSACTIONS,
+                    );
+
                     returnValue.error = new WalletError(WalletErrorCode.FEE_TOO_SMALL);
                     return returnValue;
                 }
@@ -711,13 +811,21 @@ export async function sendTransactionAdvanced(
     if (sumOfInputs < requiredAmount) {
         returnValue.fee = requiredAmount - totalAmount;
         returnValue.error = new WalletError(WalletErrorCode.NOT_ENOUGH_BALANCE);
+
+        logger.log(
+            `Not enough balance to cover transaction, required: ${requiredAmount}, ` +
+            `fee: ${returnValue.fee}, available: ${sumOfInputs}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         return returnValue;
     }
 
-    const [tx, creationError] = txResult;
+    const [createdTX, creationError] = txResult;
 
     /* Checking for undefined to keep the compiler from complaining later.. */
-    if (creationError || tx === undefined) {
+    if (creationError || createdTX === undefined) {
         logger.log(
             `Failed to create transaction, ${(creationError as WalletError).toString()}`,
             LogLevel.DEBUG,
@@ -728,15 +836,15 @@ export async function sendTransactionAdvanced(
         return returnValue;
     }
 
-    const actualFee: number = sumTransactionFee(tx.transaction);
+    const actualFee: number = sumTransactionFee(createdTX.transaction);
 
     returnValue.fee = actualFee;
     returnValue.paymentID = paymentID;
     returnValue.inputs = ourInputs;
     returnValue.changeAddress = changeAddress;
     returnValue.changeRequired = changeRequired;
-    returnValue.rawTransaction = tx;
-    returnValue.transactionHash = tx.hash;
+    returnValue.rawTransaction = createdTX;
+    returnValue.transactionHash = createdTX.hash;
 
     logger.log(
         `Successfully created transaction, proceeding to validating and sending`,
@@ -745,13 +853,13 @@ export async function sendTransactionAdvanced(
     );
 
     logger.log(
-        `Created transaction: ${JSON.stringify(tx.transaction)}`,
+        `Created transaction: ${JSON.stringify(createdTX.transaction)}`,
         LogLevel.TRACE,
         LogCategory.TRANSACTIONS,
     );
 
     const verifyErr: WalletError = verifyTransaction(
-        tx,
+        createdTX,
         fee,
         daemon,
         config,
@@ -764,7 +872,7 @@ export async function sendTransactionAdvanced(
 
     if (relayTransaction) {
         const [prettyTX, err] = await relayTransaction(
-            tx,
+            createdTX,
             actualFee,
             paymentID,
             ourInputs,
@@ -785,7 +893,7 @@ export async function sendTransactionAdvanced(
             returnValue.error = err;
             return returnValue;
         }
-        
+
         returnValue.prettyTransaction = prettyTX;
     }
 
@@ -808,18 +916,36 @@ async function tryMakeFeePerByteTransaction(
     subWallets: SubWallets,
     extraData: string,
     sendAll: boolean,
-    config: Config): Promise<[boolean, ([ CreatedTransaction, undefined ] | [undefined, WalletError ]), number, number]> {
+    config: Config): Promise<[
+        boolean,
+        ([ CreatedTransaction, undefined ] | [undefined, WalletError ]),
+        number,
+        number
+]> {
 
-    while (true)
-    {
+    let attempt: number = 0;
+
+    while (true) {
+        logger.log(
+            `Attempting fee per byte transaction construction, attempt ${attempt}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         const changeRequired: number = sumOfInputs - amountIncludingFee;
+
+        logger.log(
+            `Change required: ${changeRequired}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
 
         /* Need to recalculate destinations since amount of change, err, changed! */
         const destinations = setupDestinations(
             addressesAndAmounts,
             changeRequired,
             changeAddress,
-            config
+            config,
         );
 
         const result = await makeTransaction(
@@ -835,11 +961,23 @@ async function tryMakeFeePerByteTransaction(
 
         const [ tx, creationError ] = result;
 
-        if (creationError || tx === undefined) {
+        if (creationError) {
+            logger.log(
+                `Error creating transaction, ${creationError.toString()}`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
+
             return [ true, result, 0, 0 ];
         }
 
-        const actualTxSize = tx.rawTransaction.length / 2;
+        const actualTxSize = tx!.rawTransaction.length / 2;
+
+        logger.log(
+            `Size of generated transaction: ${prettyPrintBytes(actualTxSize)}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
 
         const requiredFee: number = getTransactionFee(
             actualTxSize,
@@ -848,32 +986,69 @@ async function tryMakeFeePerByteTransaction(
             config,
         );
 
+        logger.log(
+            `Required transaction fee using fee per byte of ${feePerByte}: ${requiredFee}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         /* Great! The fee we estimated is greater than or equal
          * to the min/specified fee per byte for a transaction
          * of this size, so we can continue with sending the
          * transaction. */
-        if (amountIncludingFee - amountPreFee >= requiredFee)
-        {
+        if (amountIncludingFee - amountPreFee >= requiredFee) {
+            logger.log(
+                `Estimated fee of ${amountIncludingFee - amountPreFee} is greater ` +
+                `than or equal to required fee of ${requiredFee}, creation succeeded.`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
+
             return [ true, result, changeRequired, 0 ];
         }
 
+        logger.log(
+            `Estimated fee of ${amountIncludingFee - amountPreFee} is less` +
+            `than required fee of ${requiredFee}.`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         /* If we're sending all, then we adjust the amount we're sending,
          * rather than the change we're returning. */
-        if (sendAll)
-        {
+        if (sendAll) {
             amountPreFee = amountIncludingFee - requiredFee;
             const [ address, amount ] = addressesAndAmounts[0];
             addressesAndAmounts[0] = [ address, amountPreFee ];
+
+            logger.log(
+                `Sending all, adjusting transaction amount down to ${amountPreFee}`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
         }
 
         /* The actual fee required for a tx of this size is not
          * covered by the amount of inputs we have so far, lets
          * go select some more then try again. */
-        if (amountPreFee + requiredFee > sumOfInputs)
-        {
+        if (amountPreFee + requiredFee > sumOfInputs) {
+            logger.log(
+                `Do not have enough inputs selected to cover required fee. Returning ` +
+                `to select more inputs if available.`,
+                LogLevel.DEBUG,
+                LogCategory.TRANSACTIONS,
+            );
+
             return [ false, result, changeRequired, amountPreFee + requiredFee ];
         }
-        
+
+        logger.log(
+            `Updating estimated fee to ${requiredFee} and attempting transaction ` +
+            `construction again.`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         /* Our fee was too low. Lets try making the transaction again,
          * this time using the actual fee calculated. Note that this still
          * may fail, since we are possibly adding more outputs, and so have
@@ -881,6 +1056,8 @@ async function tryMakeFeePerByteTransaction(
          * failing, eventually we'll hit a point where we either succeed
          * or we need to gather more inputs. */
         amountIncludingFee = amountPreFee + requiredFee;
+
+        attempt++;
     }
 }
 
@@ -1127,7 +1304,6 @@ function verifyTransaction(
     return SUCCESS;
 }
 
-
 async function relayTransaction(
     tx: CreatedTransaction,
     fee: number,
@@ -1153,6 +1329,12 @@ async function relayTransaction(
 
     /* Timeout */
     } catch (err) {
+        logger.log(
+            `Caught exception relaying transaction, error: ${err.toString()}, return code: ${err.statusCode}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
         if (err.statusCode === 504) {
             return [undefined, new WalletError(WalletErrorCode.DAEMON_STILL_PROCESSING)];
         }
@@ -1164,6 +1346,12 @@ async function relayTransaction(
         const customMessage = errorMessage === undefined
             ? ''
             : `The daemon did not accept our transaction. Error: ${errorMessage}.`;
+
+        logger.log(
+            `Failed to relay transaction. ${customMessage}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
 
         return [undefined, new WalletError(WalletErrorCode.DAEMON_ERROR, customMessage)];
     }
@@ -1333,12 +1521,9 @@ function verifyTransactionFee(
     expectedFee: FeeType,
     actualFee: number): boolean {
 
-    if (expectedFee.isFixedFee)
-    {
+    if (expectedFee.isFixedFee) {
         return expectedFee.fixedFee === actualFee;
-    }
-    else
-    {
+    } else {
         /* Divided by two because it's represented as hex */
         const txSize: number = transaction.rawTransaction.length / 2;
 
