@@ -65,12 +65,12 @@ function sleep(ms) {
     } else {
         console.log('Attempting to send a transaction');
 
-        const [hash, err] = await wallet.sendTransactionBasic('TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW', 1);
+        const result = await wallet.sendTransactionBasic('TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW', 1);
 
-        if (err) {
-            console.log('Failed to send transaction: ' + err.toString());
+        if (result.success) {
+            console.log(`Sent transaction, hash ${result.transactionHash}, fee ${WB.prettyPrintAmount(result.fee)}`);
         } else {
-            console.log('Sent transaction: ' + hash);
+            console.log(`Failed to send transaction: ${result.error.toString()}`);
         }
     }
 
