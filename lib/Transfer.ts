@@ -866,7 +866,7 @@ export async function sendTransactionAdvanced(
         return returnValue;
     }
 
-    if (relayTransaction) {
+    if (relayToNetwork) {
         const [prettyTX, err] = await relayTransaction(
             createdTX,
             actualFee,
