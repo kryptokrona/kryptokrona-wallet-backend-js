@@ -5,6 +5,7 @@
 // tslint:disable: max-line-length
 
 import { EventEmitter } from 'events';
+import { CreatedTransaction } from 'turtlecoin-utils';
 
 import * as fs from 'fs';
 import * as _ from 'lodash';
@@ -26,7 +27,8 @@ import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import {
     Block, Transaction, TransactionData, TransactionInput, DaemonConnection,
-    SendTransactionResult, PreparedTransaction,
+    SendTransactionResult, PreparedTransaction, PreparedTransactionInfo,
+    TxInputAndOwner,
 } from './Types';
 
 import {
@@ -2526,7 +2528,7 @@ export class WalletBackend extends EventEmitter {
     }
 
     private async sendTransactionInternal(
-        sendTransactionFunc: any,
+        sendTransactionFunc: () => Promise<PreparedTransactionInfo>,
         fusion: boolean,
         relayToNetwork: boolean = true): Promise<SendTransactionResult> {
 
@@ -2554,9 +2556,18 @@ export class WalletBackend extends EventEmitter {
             }
         }
 
+        const preparedTransaction: PreparedTransaction = {
+            fee: result.fee as number,
+            paymentID: result.paymentID as string,
+            inputs: result.inputs as TxInputAndOwner[],
+            changeAddress: result.changeAddress as string,
+            changeRequired: result.changeRequired as number,
+            rawTransaction: result.rawTransaction as CreatedTransaction,
+        };
+
         /* Store prepared transaction for later relaying */
-        if (result.success && !relayToNetwork) {
-            this.preparedTransactions.set(result.transactionHash, result.rawTransaction);
+        if (result.success && result.transactionHash && !relayToNetwork) {
+            this.preparedTransactions.set(result.transactionHash, preparedTransaction);
         }
 
         this.currentlyTransacting = false;
@@ -2564,7 +2575,7 @@ export class WalletBackend extends EventEmitter {
         return {
             error: result.error,
             fee: result.fee,
-            preparedTransaction: result.rawTransaction,
+            preparedTransaction: result.success ? preparedTransaction : undefined,
             relayedToNetwork: result.success ? relayToNetwork : undefined,
             success: result.success,
             transactionHash: result.transactionHash,
