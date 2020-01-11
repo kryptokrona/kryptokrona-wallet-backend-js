@@ -2114,10 +2114,15 @@ export class WalletBackend extends EventEmitter {
      * @param sendAll               Whether we should send the entire balance available. Since fee per
      *                              byte means estimating fees is difficult, we can handle that process
      *                              on your behalf. The entire balance minus fees will be sent to the
-     *                              destination. Note that you can only set this parameter to `true`
-     *                              when sending to a single destination, otherwise we will not know
-     *                              how to split up the transfer. The amount in the `destinations`
-     *                              parameter will be ignored when this value is set to true.
+     *                              first destination address. The amount given in the first destination
+     *                              address will be ignored. Any following destinations will have
+     *                              the given amount sent. For example, if your destinations array was
+     *                              ```
+     *                              [['address1', 0], ['address2', 50], ['address3', 100]]
+     *                              ```
+     *                              Then address2 would be sent 50, address3 would be sent 100,
+     *                              and address1 would get whatever remains of the balance
+     *                              after paying node/network fees.
      *                              Defaults to false.
      */
     public async sendTransactionAdvanced(
