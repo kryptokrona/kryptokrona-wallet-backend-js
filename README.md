@@ -164,6 +164,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v5.0.3
+
+* It is now possible to specify multiple destinations when setting `sendAll`. See the new docs for more information.
+
 ### v5.0.2
 
 * Fix prepared transactions being incorrectly stored
