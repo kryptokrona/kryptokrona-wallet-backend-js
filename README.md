@@ -164,6 +164,10 @@ You can view available categories and log levels in the documentation.
 
 ## Changelog
 
+### v5.0.4
+
+* Sleeping between block download failures or when fully synced has been re-added, in a more effective way.
+
 ### v5.0.3
 
 * It is now possible to specify multiple destinations when setting `sendAll`. See the new docs for more information.
