@@ -195,6 +195,41 @@
 				<a href="#changelog" id="changelog" style="color: inherit; text-decoration: none;">
 					<h2>Changelog</h2>
 				</a>
+				<a href="#v503" id="v503" style="color: inherit; text-decoration: none;">
+					<h3>v5.0.3</h3>
+				</a>
+				<ul>
+					<li>It is now possible to specify multiple destinations when setting <code>sendAll</code>. See the new docs for more information.</li>
+				</ul>
+				<a href="#v502" id="v502" style="color: inherit; text-decoration: none;">
+					<h3>v5.0.2</h3>
+				</a>
+				<ul>
+					<li>Fix prepared transactions being incorrectly stored</li>
+				</ul>
+				<a href="#v501" id="v501" style="color: inherit; text-decoration: none;">
+					<h3>v5.0.1</h3>
+				</a>
+				<ul>
+					<li>Fix storing prepared transactions not working after loading from file</li>
+					<li>Fix relayToNetwork parameter not being respected</li>
+				</ul>
+				<a href="#v500" id="v500" style="color: inherit; text-decoration: none;">
+					<h3>v5.0.0</h3>
+				</a>
+				<ul>
+					<li>Add fee per byte support</li>
+					<li>Add <code>sendPreparedTransaction</code></li>
+					<li>Add <code>sendRawPreparedTransaction</code></li>
+					<li>Add <code>deletePreparedTransaction</code></li>
+					<li>Add <code>includeFusions</code> param to <code>getNumTransactions</code></li>
+					<li>Improved transaction logging</li>
+				</ul>
+				<a href="#breaking-changes" id="breaking-changes" style="color: inherit; text-decoration: none;">
+					<h4>Breaking Changes</h4>
+				</a>
+				<p>The return type of both <code>sendTransactionBasic</code> and <code>sendTransactionAdvanced</code> has
+				changed. The type of the <code>fee</code> parameter for <code>sendTransactionAdvanced</code> has changed.</p>
 				<a href="#v4011" id="v4011" style="color: inherit; text-decoration: none;">
 					<h3>v4.0.11</h3>
 				</a>
