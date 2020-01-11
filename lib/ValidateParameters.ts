@@ -93,17 +93,12 @@ export function validateAddress(
  */
 export function validateDestinations(
     destinations: Array<[string, number]>,
-    sendAll: boolean,
     config: IConfig = new Config()): WalletError {
 
     const tempConfig: Config = MergeConfig(config);
 
     if (destinations.length === 0) {
         return new WalletError(WalletErrorCode.NO_DESTINATIONS_GIVEN);
-    }
-
-    if (destinations.length > 1 && sendAll) {
-        return new WalletError(WalletErrorCode.SEND_ALL_IMPOSSIBLE);
     }
 
     const destinationAddresses: string[] = [];
@@ -243,8 +238,7 @@ export function validateAmount(
     /* Can only accurately calculate if we've got enough funds for the tx if
      * using a fixed fee. If using a fee per byte, we'll verify when constructing
      * the transaction. */
-    if (fee.isFixedFee)
-    {
+    if (fee.isFixedFee) {
         totalAmount += fee.fixedFee;
     }
 

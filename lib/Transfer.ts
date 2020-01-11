@@ -392,10 +392,15 @@ export async function sendTransactionBasic(
  * @param sendAll               Whether we should send the entire balance available. Since fee per
  *                              byte means estimating fees is difficult, we can handle that process
  *                              on your behalf. The entire balance minus fees will be sent to the
- *                              destination. Note that you can only set this parameter to `true`
- *                              when sending to a single destination, otherwise we will not know
- *                              how to split up the transfer. The amount in the `addressAndAmounts`
- *                              parameter will be ignored when this value is set to true.
+ *                              first destination address. The amount given in the first destination
+ *                              address will be ignored. Any following destinations will have
+ *                              the given amount sent. For example, if your destinations array was
+ *                              ```
+ *                              [['address1', 0], ['address2', 50], ['address3', 100]]
+ *                              ```
+ *                              Then address2 would be sent 50, address3 would be sent 100,
+ *                              and address1 would get whatever remains of the balance
+ *                              after paying node/network fees.
  *                              Defaults to false.
  */
 export async function sendTransactionAdvanced(
@@ -592,11 +597,16 @@ export async function sendTransactionAdvanced(
     let txResult: [undefined, WalletError] | [CreatedTransaction, undefined] = [ undefined, SUCCESS ];
     const txInfo: PreparedTransactionInfo = {} as any;
 
-    for (const input of availableInputs) {
+    for (const [i, input] of availableInputs.entries()) {
         ourInputs.push(input);
         sumOfInputs += input.input.amount;
 
-        if (sumOfInputs >= totalAmount) {
+        /* If we're sending all, we want every input, so wait for last iteration */
+        if (sendAll && i < availableInputs.length - 1) {
+            continue;
+        }
+
+        if (sumOfInputs >= totalAmount || sendAll) {
             logger.log(
                 `Selected enough inputs (${ourInputs.length}) with sum of ${sumOfInputs} ` +
                 `to exceed total amount required: ${totalAmount} (not including fee), ` +
@@ -648,13 +658,19 @@ export async function sendTransactionAdvanced(
                 );
 
                 if (sendAll) {
-                    /* Subtract node fee if present to work out total available
-                     * before fee per byte */
-                    const amount = sumOfInputs - feeAmount;
+                    /* The amount available to be sent to the 1st destination,
+                     * not including fee per byte */
+                    let remainingFunds = sumOfInputs;
 
-                    if (estimatedFee > amount) {
+                    /* Remove amounts for fixed destinations. Skipping first
+                     * (send all) target. */
+                    for (let j = 1; j < addressesAndAmounts.length; j++) {
+                        remainingFunds -= addressesAndAmounts[j][1];
+                    }
+
+                    if (estimatedFee > remainingFunds) {
                         logger.log(
-                            `Node fee + transaction fee is greater than available balance`,
+                            `Node fee + transaction fee + fixed destinations is greater than available balance`,
                             LogLevel.DEBUG,
                             LogCategory.TRANSACTIONS,
                         );
@@ -665,17 +681,17 @@ export async function sendTransactionAdvanced(
                         return returnValue;
                     }
 
-                    totalAmount = amount - estimatedFee;
+                    totalAmount = remainingFunds - estimatedFee;
 
                     logger.log(
-                        `Sending all, estimated max send minus fees: ${totalAmount}`,
+                        `Sending all, estimated max send minus fees and fixed destinations: ${totalAmount}`,
                         LogLevel.DEBUG,
                         LogCategory.TRANSACTIONS,
                     );
 
                     /* Amount to send is sum of inputs (full balance), minus
                      * node fee, minus estimated fee. */
-                    addressesAndAmounts[0][1] = amount - estimatedFee;
+                    addressesAndAmounts[0][1] = remainingFunds - estimatedFee;
 
                     changeRequired = 0;
 
@@ -687,7 +703,15 @@ export async function sendTransactionAdvanced(
                     );
                 }
 
-                const estimatedAmount: number = totalAmount + estimatedFee;
+                let estimatedAmount: number = totalAmount + estimatedFee;
+
+                /* Re-add total amount going to fixed destinations */
+                if (sendAll) {
+                    /* Estimated amount should now equal total balance. */
+                    for (let j = 1; j < addressesAndAmounts.length; j++) {
+                        estimatedAmount += addressesAndAmounts[j][1];
+                    }
+                }
 
                 logger.log(
                     `Total amount to send (including fee per byte): ${estimatedAmount}`,
@@ -708,7 +732,7 @@ export async function sendTransactionAdvanced(
                     const [success, result, change, needed] = await tryMakeFeePerByteTransaction(
                         sumOfInputs,
                         totalAmount,
-                        estimatedAmount,
+                        estimatedFee,
                         fee.feePerByte,
                         addressesAndAmounts,
                         changeAddress,
@@ -901,7 +925,7 @@ export async function sendTransactionAdvanced(
 async function tryMakeFeePerByteTransaction(
     sumOfInputs: number,
     amountPreFee: number,
-    amountIncludingFee: number,
+    estimatedFee: number,
     feePerByte: number,
     addressesAndAmounts: Array<[string, number]>,
     changeAddress: string,
@@ -928,7 +952,9 @@ async function tryMakeFeePerByteTransaction(
             LogCategory.TRANSACTIONS,
         );
 
-        const changeRequired: number = sumOfInputs - amountIncludingFee;
+        const changeRequired: number = sendAll
+            ? 0
+            : sumOfInputs - amountPreFee - estimatedFee;
 
         logger.log(
             `Change required: ${changeRequired}`,
@@ -946,7 +972,7 @@ async function tryMakeFeePerByteTransaction(
 
         const result = await makeTransaction(
             mixin,
-            amountIncludingFee - amountPreFee,
+            estimatedFee,
             paymentID,
             ourInputs,
             destinations,
@@ -992,9 +1018,9 @@ async function tryMakeFeePerByteTransaction(
          * to the min/specified fee per byte for a transaction
          * of this size, so we can continue with sending the
          * transaction. */
-        if (amountIncludingFee - amountPreFee >= requiredFee) {
+        if (estimatedFee >= requiredFee) {
             logger.log(
-                `Estimated fee of ${amountIncludingFee - amountPreFee} is greater ` +
+                `Estimated fee of ${estimatedFee} is greater ` +
                 `than or equal to required fee of ${requiredFee}, creation succeeded.`,
                 LogLevel.DEBUG,
                 LogCategory.TRANSACTIONS,
@@ -1004,7 +1030,7 @@ async function tryMakeFeePerByteTransaction(
         }
 
         logger.log(
-            `Estimated fee of ${amountIncludingFee - amountPreFee} is less` +
+            `Estimated fee of ${estimatedFee} is less` +
             `than required fee of ${requiredFee}.`,
             LogLevel.DEBUG,
             LogCategory.TRANSACTIONS,
@@ -1013,12 +1039,16 @@ async function tryMakeFeePerByteTransaction(
         /* If we're sending all, then we adjust the amount we're sending,
          * rather than the change we're returning. */
         if (sendAll) {
-            amountPreFee = amountIncludingFee - requiredFee;
-            const [ address, amount ] = addressesAndAmounts[0];
-            addressesAndAmounts[0] = [ address, amountPreFee ];
+            /* Update the amount we're sending, by readding the too small fee,
+             * and taking off the requiredFee. I.e., if estimated was 35,
+             * required was 40, then we'd end up sending 5 less to the destination
+             * to cover the new fee required. */
+            addressesAndAmounts[0][1] = addressesAndAmounts[0][1] + estimatedFee - requiredFee;
+
+            estimatedFee = requiredFee;
 
             logger.log(
-                `Sending all, adjusting transaction amount down to ${amountPreFee}`,
+                `Sending all, adjusting primary transaction amount down to ${addressesAndAmounts[0][1]}`,
                 LogLevel.DEBUG,
                 LogCategory.TRANSACTIONS,
             );
@@ -1044,14 +1074,6 @@ async function tryMakeFeePerByteTransaction(
             LogLevel.DEBUG,
             LogCategory.TRANSACTIONS,
         );
-
-        /* Our fee was too low. Lets try making the transaction again,
-         * this time using the actual fee calculated. Note that this still
-         * may fail, since we are possibly adding more outputs, and so have
-         * a large transaction size. If we keep increasing the fee and keep
-         * failing, eventually we'll hit a point where we either succeed
-         * or we need to gather more inputs. */
-        amountIncludingFee = amountPreFee + requiredFee;
 
         attempt++;
     }
@@ -1655,7 +1677,7 @@ function validateTransaction(
     config: Config): WalletError {
 
     /* Validate the destinations are valid */
-    let error: WalletError = validateDestinations(destinations, sendAll, config);
+    let error: WalletError = validateDestinations(destinations, config);
 
     if (!_.isEqual(error, SUCCESS)) {
         return error;

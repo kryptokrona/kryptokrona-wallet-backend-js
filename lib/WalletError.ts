@@ -262,9 +262,6 @@ export class WalletError {
                 return 'The prepared transaction given could not be found. Note ' +
                        'that prepared transactions are lost upon restarting the wallet.';
             }
-            case WalletErrorCode.SEND_ALL_IMPOSSIBLE: {
-                return 'Send all is not possible when specifying multiple destinations.';
-            }
         }
     }
 }
@@ -485,9 +482,6 @@ export enum WalletErrorCode {
 
     /* Prepared transaction cannot be found, perhaps wallet application has been restarted */
     PREPARED_TRANSACTION_NOT_FOUND = 58,
-
-    /* Cannot send all to multiple destinations */
-    SEND_ALL_IMPOSSIBLE = 59,
 }
 
 /**
