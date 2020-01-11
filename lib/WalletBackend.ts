@@ -2756,26 +2756,17 @@ export class WalletBackend extends EventEmitter {
      */
     private async processBlocks(sleep: boolean): Promise<boolean> {
         /* Take the blocks to process for this tick */
-        const [blocks, failCount] = await this.walletSynchronizer.fetchBlocks(this.config.blocksPerTick);
+        const [blocks, shouldSleep] = await this.walletSynchronizer.fetchBlocks(this.config.blocksPerTick);
 
         if (blocks.length === 0) {
-            let sleepMultiplier: number = failCount === 0 ? 1 : failCount;
-
-            if (sleepMultiplier > 10) {
-                sleepMultiplier = 10;
-            }
-
-            if (sleep) {
-                /* Temporarily disabled
-                await delay(sleepMultiplier * this.config.daemonUpdateInterval);
-                */
+            if (sleep && shouldSleep) {
+                await delay(1000);
             }
 
             return false;
         }
 
         for (const block of blocks) {
-
             logger.log(
                 'Processing block ' + block.blockHeight,
                 LogLevel.DEBUG,

@@ -92,11 +92,6 @@ export class WalletSynchronizer extends EventEmitter {
     private finishedFunc: (() => void) | undefined = undefined;
 
     /**
-     * Number of times we've failed to fetch blocks.
-     */
-    private failCount: number = 0;
-
-    /**
      * Last time we fetched blocks from the daemon. If this goes over the
      * configured limit, we'll emit deadnode.
      */
@@ -138,7 +133,6 @@ export class WalletSynchronizer extends EventEmitter {
         this.config = config;
         this.cancelledTransactionsFailCount = new Map();
         this.lastDownloadedBlocks = new Date();
-        this.failCount = 0;
     }
 
     /**
@@ -350,7 +344,9 @@ export class WalletSynchronizer extends EventEmitter {
      * Retrieve blockCount blocks from the internal store. Does not remove
      * them.
      */
-    public async fetchBlocks(blockCount: number): Promise<[Block[], number]> {
+    public async fetchBlocks(blockCount: number): Promise<[Block[], boolean]> {
+        let shouldSleep = false;
+
         /* Fetch more blocks if we haven't got any downloaded yet */
         if (this.storedBlocks.length === 0) {
             if (!this.fetchingBlocks) {
@@ -361,28 +357,24 @@ export class WalletSynchronizer extends EventEmitter {
                 );
             }
 
-            const [check, downloadSuccess] = await this.downloadBlocks();
+            const [successOrBusy, shouldSleepTmp] = await this.downloadBlocks();
 
-            /* In the middle of fetching blocks, don't need to fetch blocks, etc */
-            if (check) {
-                if (!downloadSuccess) {
-                    this.failCount++;
+            shouldSleep = shouldSleepTmp;
 
-                    /* Seconds since we last got a block */
-                    const diff = (new Date().getTime() - this.lastDownloadedBlocks.getTime()) / 1000;
+            /* Not in the middle of fetching blocks. */
+            if (!successOrBusy) {
+                /* Seconds since we last got a block */
+                const diff = (new Date().getTime() - this.lastDownloadedBlocks.getTime()) / 1000;
 
-                    if (diff > this.config.maxLastFetchedBlockInterval) {
-                        this.emit('deadnode');
-                    }
-
-                } else {
-                    this.lastDownloadedBlocks = new Date();
-                    this.failCount = 0;
+                if (diff > this.config.maxLastFetchedBlockInterval) {
+                    this.emit('deadnode');
                 }
+            } else {
+                this.lastDownloadedBlocks = new Date();
             }
         }
 
-        return [_.take(this.storedBlocks, blockCount), this.failCount];
+        return [_.take(this.storedBlocks, blockCount), shouldSleep];
     }
 
     public dropBlock(blockHeight: number, blockHash: string): void {
@@ -401,21 +393,16 @@ export class WalletSynchronizer extends EventEmitter {
         /* sizeof() gets a tad expensive... */
         if (blockHeight % 10 === 0 && this.shouldFetchMoreBlocks()) {
             /* Note - not awaiting here */
-            this.downloadBlocks().then(([check, downloadSuccess]) => {
-                if (check) {
-                    if (!downloadSuccess) {
-                        this.failCount++;
+            this.downloadBlocks().then(([successOrBusy, shouldSleep]) => {
+                if (!successOrBusy) {
+                    /* Seconds since we last got a block */
+                    const diff = (new Date().getTime() - this.lastDownloadedBlocks.getTime()) / 1000;
 
-                        /* Seconds since we last got a block */
-                        const diff = (new Date().getTime() - this.lastDownloadedBlocks.getTime()) / 1000;
-
-                        if (diff > this.config.maxLastFetchedBlockInterval) {
-                            this.emit('deadnode');
-                        }
-                    } else {
-                        this.lastDownloadedBlocks = new Date();
-                        this.failCount = 0;
+                    if (diff > this.config.maxLastFetchedBlockInterval) {
+                        this.emit('deadnode');
                     }
+                } else {
+                    this.lastDownloadedBlocks = new Date();
                 }
             });
         }
@@ -449,11 +436,6 @@ export class WalletSynchronizer extends EventEmitter {
             return false;
         }
 
-        /* Don't fetch more blocks if we've failed to fetch blocks multiple times */
-        if (this.failCount > 2) {
-            return false;
-        }
-
         const ramUsage = sizeof(this.storedBlocks);
 
         if (ramUsage < this.config.blockStoreMemoryLimit) {
@@ -484,10 +466,12 @@ export class WalletSynchronizer extends EventEmitter {
                 .concat(blockHashCheckpoints);
     }
 
+    /* Returns [successOrBusy, shouldSleep] */
     private async downloadBlocks(): Promise<[boolean, boolean]> {
-        /* Don't make more than one fetch request at once */
+        /* Middle of fetching blocks, wait for previous request to complete.
+         * Don't need to sleep. */
         if (this.fetchingBlocks) {
-            return [false, true];
+            return [true, false];
         }
 
         this.fetchingBlocks = true;
@@ -497,7 +481,7 @@ export class WalletSynchronizer extends EventEmitter {
 
         if (localDaemonBlockCount < walletBlockCount) {
             this.fetchingBlocks = false;
-            return [false, true];
+            return [true, true];
         }
 
         /* Get the checkpoints of the blocks we've got stored, so we can fetch
@@ -525,7 +509,7 @@ export class WalletSynchronizer extends EventEmitter {
 
             this.fetchingBlocks = false;
 
-            return [true, false];
+            return [false, true];
         }
 
         if (typeof topBlock === 'object' && blocks.length === 0) {
@@ -570,7 +554,7 @@ export class WalletSynchronizer extends EventEmitter {
 
             this.fetchingBlocks = false;
 
-            return [true, topBlock as boolean];
+            return [false, false];
         }
 
         /* Timestamp is transient and can change - block height is constant. */
@@ -592,7 +576,7 @@ export class WalletSynchronizer extends EventEmitter {
 
         this.fetchingBlocks = false;
 
-        return [true, true];
+        return [true, false];
     }
 
     /**
