@@ -576,6 +576,33 @@ export interface PreparedTransactionInfo {
     rawTransaction?: CreatedTransaction;
     transactionHash?: string;
     prettyTransaction?: Transaction;
+    destinations?: Destinations;
+    nodeFee?: number;
+}
+
+export interface Destination {
+    address: string;
+    amount: number;
+}
+
+export interface Destinations {
+    /**
+     * The address and amount of the node fee. Will not be present if no node
+     * fee was charged.
+     */
+    nodeFee?: Destination;
+
+    /**
+     * The amount sent to ourselves as change.
+     */
+    change?: Destination;
+
+    /**
+     * The amounts we sent to each destination/destinations given in the
+     * sendTransactionBasic/sendTransactionAdvanced call. Can be helpful
+     * to determine how much was sent when using `sendAll`.
+     */
+    userDestinations: Destination[];
 }
 
 export interface SendTransactionResult {
@@ -614,6 +641,18 @@ export interface SendTransactionResult {
      * The object that can be stored client side to then relayed with sendRawPreparedTransaction
      */
     preparedTransaction?: PreparedTransaction;
+
+    /**
+     * The amounts and addresses of node fee, change address, and user destinations.
+     * Will be present if success is true.
+     */
+    destinations?: Destinations;
+
+    /**
+     * The node fee we were charged. Will be present if success is true. In
+     * atomic units.
+     */
+    nodeFee?: number;
 }
 
 export enum DaemonType {

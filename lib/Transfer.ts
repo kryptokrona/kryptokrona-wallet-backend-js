@@ -19,7 +19,7 @@ import { LogCategory, logger, LogLevel } from './Logger';
 
 import {
     Transaction as TX, TxInputAndOwner, UnconfirmedInput, PreparedTransactionInfo,
-    PreparedTransaction,
+    PreparedTransaction, Destination,
 } from './Types';
 
 import {
@@ -275,13 +275,6 @@ export async function sendFusionTransactionAdvanced(
         break;
     }
 
-    returnValue.fee = fee;
-    returnValue.paymentID = paymentID;
-    returnValue.inputs = ourInputs;
-    returnValue.changeAddress = destination;
-    returnValue.rawTransaction = fusionTX;
-    returnValue.transactionHash = fusionTX.hash;
-
     logger.log(
         `Successfully created fusion transaction, proceeding to validating and sending`,
         LogLevel.DEBUG,
@@ -325,8 +318,23 @@ export async function sendFusionTransactionAdvanced(
         return returnValue;
     }
 
-    returnValue.prettyTransaction = prettyTransaction;
     returnValue.success = true;
+    returnValue.fee = fee;
+    returnValue.paymentID = paymentID;
+    returnValue.inputs = ourInputs;
+    returnValue.changeAddress = destination;
+    returnValue.changeRequired = 0;
+    returnValue.rawTransaction = fusionTX;
+    returnValue.transactionHash = fusionTX.hash;
+    returnValue.prettyTransaction = prettyTransaction;
+    returnValue.destinations = {
+        nodeFee: undefined, /* technically this line is not needed, will def to undef */
+        change: undefined,
+        userDestinations: [{
+            address: destination,
+            amount: _.sumBy(ourInputs, (input) => input.input.amount),
+        }],
+    };
 
     return returnValue;
 }
@@ -858,14 +866,6 @@ export async function sendTransactionAdvanced(
 
     const actualFee: number = sumTransactionFee(createdTX.transaction);
 
-    returnValue.fee = actualFee;
-    returnValue.paymentID = paymentID;
-    returnValue.inputs = ourInputs;
-    returnValue.changeAddress = changeAddress;
-    returnValue.changeRequired = changeRequired;
-    returnValue.rawTransaction = createdTX;
-    returnValue.transactionHash = createdTX.hash;
-
     logger.log(
         `Successfully created transaction, proceeding to validating and sending`,
         LogLevel.DEBUG,
@@ -918,6 +918,30 @@ export async function sendTransactionAdvanced(
     }
 
     returnValue.success = true;
+    returnValue.fee = actualFee;
+    returnValue.paymentID = paymentID;
+    returnValue.inputs = ourInputs;
+    returnValue.changeAddress = changeAddress;
+    returnValue.changeRequired = changeRequired;
+    returnValue.rawTransaction = createdTX;
+    returnValue.transactionHash = createdTX.hash;
+    returnValue.destinations = {
+        nodeFee: feeAmount === 0 ? undefined : {
+            address: feeAddress,
+            amount: feeAmount,
+        },
+        change: changeRequired === 0 ? undefined : {
+            address: changeAddress,
+            amount: changeRequired,
+        },
+        userDestinations: addressesAndAmounts.map(([address, amount]) => {
+            return {
+                address,
+                amount,
+            };
+        }),
+    };
+    returnValue.nodeFee = feeAmount;
 
     return returnValue;
 }

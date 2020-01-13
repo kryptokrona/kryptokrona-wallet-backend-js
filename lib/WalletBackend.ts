@@ -2578,12 +2578,14 @@ export class WalletBackend extends EventEmitter {
         this.currentlyTransacting = false;
 
         return {
+            success: result.success,
             error: result.error,
             fee: result.fee,
-            preparedTransaction: result.success ? preparedTransaction : undefined,
             relayedToNetwork: result.success ? relayToNetwork : undefined,
-            success: result.success,
             transactionHash: result.transactionHash,
+            preparedTransaction: result.success ? preparedTransaction : undefined,
+            destinations: result.destinations,
+            nodeFee: result.nodeFee,
         };
     }
 
