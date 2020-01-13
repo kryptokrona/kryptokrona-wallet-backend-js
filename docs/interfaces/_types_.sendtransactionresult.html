@@ -80,8 +80,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.sendtransactionresult.html#destinations" class="tsd-kind-icon">destinations</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.sendtransactionresult.html#error" class="tsd-kind-icon">error</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.sendtransactionresult.html#fee" class="tsd-kind-icon">fee</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.sendtransactionresult.html#nodefee" class="tsd-kind-icon">node<wbr>Fee</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.sendtransactionresult.html#preparedtransaction" class="tsd-kind-icon">prepared<wbr>Transaction</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.sendtransactionresult.html#relayedtonetwork" class="tsd-kind-icon">relayed<wbr>ToNetwork</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_types_.sendtransactionresult.html#success" class="tsd-kind-icon">success</a></li>
@@ -94,12 +96,28 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="destinations" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> destinations</h3>
+					<div class="tsd-signature tsd-kind-icon">destinations<span class="tsd-signature-symbol">:</span> <a href="_types_.destinations.html" class="tsd-signature-type">Destinations</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/6f364e1/lib/Types.ts#L649">lib/Types.ts:649</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The amounts and addresses of node fee, change address, and user destinations.
+							Will be present if success is true.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="error" class="tsd-anchor"></a>
 					<h3>error</h3>
 					<div class="tsd-signature tsd-kind-icon">error<span class="tsd-signature-symbol">:</span> <a href="../classes/_walleterror_.walleterror.html" class="tsd-signature-type">WalletError</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/574a25d/lib/Types.ts#L591">lib/Types.ts:591</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/6f364e1/lib/Types.ts#L618">lib/Types.ts:618</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -115,7 +133,7 @@
 					<div class="tsd-signature tsd-kind-icon">fee<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/574a25d/lib/Types.ts#L597">lib/Types.ts:597</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/6f364e1/lib/Types.ts#L624">lib/Types.ts:624</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -126,12 +144,28 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="nodefee" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> node<wbr>Fee</h3>
+					<div class="tsd-signature tsd-kind-icon">node<wbr>Fee<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/6f364e1/lib/Types.ts#L655">lib/Types.ts:655</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The node fee we were charged. Will be present if success is true. In
+							atomic units.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="preparedtransaction" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> prepared<wbr>Transaction</h3>
 					<div class="tsd-signature tsd-kind-icon">prepared<wbr>Transaction<span class="tsd-signature-symbol">:</span> <a href="_types_.preparedtransaction.html" class="tsd-signature-type">PreparedTransaction</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/574a25d/lib/Types.ts#L616">lib/Types.ts:616</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/6f364e1/lib/Types.ts#L643">lib/Types.ts:643</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -146,7 +180,7 @@
 					<div class="tsd-signature tsd-kind-icon">relayed<wbr>ToNetwork<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/574a25d/lib/Types.ts#L605">lib/Types.ts:605</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/6f364e1/lib/Types.ts#L632">lib/Types.ts:632</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -164,7 +198,7 @@
 					<div class="tsd-signature tsd-kind-icon">success<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/574a25d/lib/Types.ts#L585">lib/Types.ts:585</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/6f364e1/lib/Types.ts#L612">lib/Types.ts:612</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -179,7 +213,7 @@
 					<div class="tsd-signature tsd-kind-icon">transaction<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/574a25d/lib/Types.ts#L611">lib/Types.ts:611</a></li>
+							<li>Defined in <a href="https://github.com/turtlecoin/turtlecoin-wallet-backend-js/blob/6f364e1/lib/Types.ts#L638">lib/Types.ts:638</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -247,6 +281,12 @@
 						<a href="_types_.daemonconnection.html" class="tsd-kind-icon">Daemon<wbr>Connection</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+						<a href="_types_.destination.html" class="tsd-kind-icon">Destination</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+						<a href="_types_.destinations.html" class="tsd-kind-icon">Destinations</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="_types_.preparedtransaction.html" class="tsd-kind-icon">Prepared<wbr>Transaction</a>
 					</li>
 				</ul>
@@ -255,10 +295,16 @@
 						<a href="_types_.sendtransactionresult.html" class="tsd-kind-icon">Send<wbr>Transaction<wbr>Result</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="_types_.sendtransactionresult.html#destinations" class="tsd-kind-icon">destinations</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="_types_.sendtransactionresult.html#error" class="tsd-kind-icon">error</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="_types_.sendtransactionresult.html#fee" class="tsd-kind-icon">fee</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="_types_.sendtransactionresult.html#nodefee" class="tsd-kind-icon">node<wbr>Fee</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="_types_.sendtransactionresult.html#preparedtransaction" class="tsd-kind-icon">prepared<wbr>Transaction</a>
