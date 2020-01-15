@@ -167,6 +167,8 @@ You can view available categories and log levels in the documentation.
 ### v5.0.4
 
 * Sleeping between block download failures or when fully synced has been re-added, in a more effective way.
+* `sendTransactionBasic` and `sendTransactionAdvanced` now also returns the node fee and destinations sent to.
+* Fusion transactions are now fixed
 
 ### v5.0.3
 
