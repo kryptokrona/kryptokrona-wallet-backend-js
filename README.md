@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js.svg?branch=master)](https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js)
 
 #### NPM
-[![NPM](https://nodei.co/npm/turtlecoin-wallet-backend.png?compact=true)](https://www.npmjs.com/package/kryptokrona-wallet-backend-js)
+[![NPM](https://www.npmjs.com/package/kryptokrona-wallet-backend-js)](https://www.npmjs.com/package/kryptokrona-wallet-backend-js)
 
 #### Github
 
