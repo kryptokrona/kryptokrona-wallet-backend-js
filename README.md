@@ -1,18 +1,18 @@
-![image](https://user-images.githubusercontent.com/34389545/35821974-62e0e25c-0a70-11e8-87dd-2cfffeb6ed47.png)
+![image](https://kryptokrona.se/wp-content/uploads/2019/04/logo-text-light-new.svg)
 
 #### Master Build Status
 [![Build Status](https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js.svg?branch=master)](https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js)
 
 #### NPM
-[![NPM](https://nodei.co/npm/turtlecoin-wallet-backend.png?compact=true)](https://npmjs.org/package/turtlecoin-wallet-backend)
+[![NPM](https://nodei.co/npm/turtlecoin-wallet-backend.png?compact=true)](https://www.npmjs.com/package/kryptokrona-wallet-backend-js)
 
 #### Github
 
 https://github.com/turtlecoin/turtlecoin-wallet-backend-js
 
-# turtlecoin-wallet-backend
+# Kryptokrona-wallet-backend
 
-Provides an interface to the TurtleCoin network, allowing wallet applications to be built.
+Provides an interface to the Kryptokrona network, allowing wallet applications to be built.
 
 * Downloads blocks from the network, either through a traditional daemon, or a blockchain cache for increased speed
 * Processes blocks, decrypting transactions that belong to the user
@@ -22,27 +22,24 @@ Provides an interface to the TurtleCoin network, allowing wallet applications to
 
 NPM:
 
-`npm install turtlecoin-wallet-backend --save`
+`npm install kryptokrona-wallet-backend-js --save`
 
 Yarn:
 
-`yarn add turtlecoin-wallet-backend`
+`yarn add kryptokrona-wallet-backend-js`
 
 ## Documentation
 
-[You can view the documentation here](https://turtlecoin.github.io/turtlecoin-wallet-backend-js/classes/_walletbackend_.walletbackend.html)
+[You can view the documentation here](https://github.com/kryptokrona/kryptokrona-wallet-backend-js/blob/master/docs/classes/_walletbackend_.walletbackend.html)
 
 You can see a list of all the other classes on the right side of the screen.
-Note that you will need to prefix them all with `WB.` to access them, if you are not using typescript style imports, assuming you imported with `const WB = require('turtlecoin-wallet-backend')`.
+Note that you will need to prefix them all with `WB.` to access them, if you are not using typescript style imports, assuming you imported with `const WB = require('kryptokrona-wallet-backend-js')`.
 
-## Quick Start
-
-You can find an [example project in the examples](https://github.com/turtlecoin/turtlecoin-wallet-backend-js/tree/master/examples/example1) folder.
 
 ### Javascript
 
 ```javascript
-const WB = require('turtlecoin-wallet-backend');
+const WB = require('kryptokrona-wallet-backend-js');
 
 (async () => {
     const daemon = new WB.Daemon('127.0.0.1', 11898);
@@ -70,7 +67,7 @@ const WB = require('turtlecoin-wallet-backend');
 ### Typescript
 
 ```typescript
-import { WalletBackend, Daemon, IDaemon } from 'turtlecoin-wallet-backend';
+import { WalletBackend, Daemon, IDaemon } from 'kryptokrona-wallet-backend-js';
 
 (async () => {
     const daemon: IDaemon = new Daemon('127.0.0.1', 11898);
