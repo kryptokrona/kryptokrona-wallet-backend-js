@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import {
     CreatedTransaction, DecodedAddress, Output, RandomOutput, Transaction,
     TxDestination, Vout, Wallet,
-} from 'turtlecoin-utils';
+} from 'kryptokrona-utils';
 
 import { Config } from './Config';
 import { FeeType } from './FeeType';
@@ -1271,7 +1271,7 @@ async function makeTransaction(
 
     try {
         logger.log(
-            `Asynchronously creating transaction with turtlecoin-utils`,
+            `Asynchronously creating transaction with kryptokrona-utils`,
             LogLevel.DEBUG,
             LogCategory.TRANSACTIONS,
         );
@@ -1290,7 +1290,7 @@ async function makeTransaction(
         return [tx, undefined];
     } catch (err) {
         logger.log(
-            `Error while creating transaction with turtlecoin-utils: ${err.toString()}`,
+            `Error while creating transaction with kryptokrona-utils: ${err.toString()}`,
             LogLevel.DEBUG,
             LogCategory.TRANSACTIONS,
         );

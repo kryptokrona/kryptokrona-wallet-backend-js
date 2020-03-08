@@ -5,7 +5,7 @@
 // tslint:disable: max-line-length
 
 import { EventEmitter } from 'events';
-import { CreatedTransaction } from 'turtlecoin-utils';
+import { CreatedTransaction } from 'kryptokrona-utils';
 
 import * as fs from 'fs';
 import * as _ from 'lodash';
