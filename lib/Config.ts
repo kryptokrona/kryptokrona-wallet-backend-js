@@ -259,7 +259,7 @@ export class Config implements IConfig {
     /**
      * The minimum fee allowed for transactions, in ATOMIC units
      */
-    public minimumFee: number = 0.1;
+    public minimumFee: number = 10;
 
     /* Fee per byte is rounded up in chunks. This helps makes estimates
      * more accurate. It's suggested to make this a power of two, to relate
