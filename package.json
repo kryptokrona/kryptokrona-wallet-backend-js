@@ -1,7 +1,7 @@
 {
   "name": "kryptokrona-wallet-backend-js",
-  "version": "6.3.1",
-  "description": "",
+  "version": "7.3.1",
+  "description": "backend service for kryptokrona wallets",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
