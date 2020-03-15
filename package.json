@@ -1,6 +1,6 @@
 {
   "name": "kryptokrona-wallet-backend-js",
-  "version": "3.4.0",
+  "version": "1.6.0",
   "description": "",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -20,7 +20,7 @@
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
-    "kryptokrona-utils": "^1.0.0",
+    "kryptokrona-utils": "^1.1.0",
     "lodash": "^4.17.15",
     "object-sizeof": "^1.5.2",
     "pbkdf2": "^3.0.17",
