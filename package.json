@@ -1,6 +1,6 @@
 {
   "name": "kryptokrona-wallet-backend-js",
-  "version": "6.3.1",
+  "version": "4.3.1",
   "description": "",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -26,6 +26,7 @@
     "pbkdf2": "^3.0.17",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.8",
+    "turtlecoin-utils": "1.0.20",
     "typescript": "^3.7.2"
   },
   "devDependencies": {
