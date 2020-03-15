@@ -1185,19 +1185,6 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-kryptokrona-utils@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/kryptokrona-utils/-/kryptokrona-utils-2.0.0.tgz#477a4cd42e4a9b2e5c401ec7b387d7e2669d3ebb"
-  integrity sha512-tAyMx2RJpJxJHRh9RxwZEREWablf66NYc1bkpvp8cwnhxkVJ7QYaAe+yFU/jg4XePMyicSLQfLhjl5SuVk+spQ==
-  dependencies:
-    crc "^3.8.0"
-    get-random-values "^1.2.0"
-    numeral "^2.0.6"
-    secure-random-string "^1.1.0"
-    varint "^5.0.0"
-  optionalDependencies:
-    turtlecoin-crypto "^3.1.3"
-
 lines-and-columns@^1.1.6:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.1.6.tgz#1c00c743b433cd0a4e80758f7b64a57440d9ff00"
@@ -2234,6 +2221,19 @@ turtlecoin-crypto@^3.1.3:
     bindings "^1.5.0"
     nan "^2.14.0"
     prebuild-install "^5.3.3"
+
+turtlecoin-utils@1.0.20:
+  version "1.0.20"
+  resolved "https://registry.yarnpkg.com/turtlecoin-utils/-/turtlecoin-utils-1.0.20.tgz#9a00251009ffaf4939d6e1bc69aec2e0a25a9fd6"
+  integrity sha512-PcTPaNIPNY8yOKvnsMeQ2TZnRmftwFryjC/AW7dWx/qJCCiIOM1p5klPdNmvqk2E9CShPhOT7w7ZjBwz+tLStg==
+  dependencies:
+    crc "^3.8.0"
+    get-random-values "^1.2.0"
+    numeral "^2.0.6"
+    secure-random-string "^1.1.0"
+    varint "^5.0.0"
+  optionalDependencies:
+    turtlecoin-crypto "^3.1.3"
 
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
