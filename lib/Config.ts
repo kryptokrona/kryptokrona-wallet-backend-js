@@ -205,7 +205,7 @@ export class Config implements IConfig {
      * The amount of decimal places your coin has, e.g. TurtleCoin has two
      * decimals
      */
-    public decimalPlaces: number = 2;
+    public decimalPlaces: number = 5;
 
     /**
      * The address prefix your coin uses - you can find this in CryptoNoteConfig.h.
