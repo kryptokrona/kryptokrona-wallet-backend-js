@@ -8,8 +8,6 @@ import {
 
 import { SynchronizationStatusJSON } from './JsonSerialization';
 
-import { LogCategory, LogLevel, logger } from './Logger';
-
 export class SynchronizationStatus {
     public static fromJSON(json: SynchronizationStatusJSON): SynchronizationStatus {
         const synchronizationStatus = Object.create(SynchronizationStatus.prototype);
@@ -21,9 +19,9 @@ export class SynchronizationStatus {
         });
     }
 
-    private blockHashCheckpoints: string[] = [];
+    private readonly blockHashCheckpoints: string[] = [];
 
-    private lastKnownBlockHashes: string[] = [];
+    private readonly lastKnownBlockHashes: string[] = [];
 
     private lastKnownBlockHeight: number = 0;
 

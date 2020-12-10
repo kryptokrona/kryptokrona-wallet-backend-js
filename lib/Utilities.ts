@@ -3,6 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import * as _ from 'lodash';
+import { Address } from 'turtlecoin-utils';
 
 import { IConfig, Config, MergeConfig } from './Config';
 import { CryptoUtils} from './CnUtils';
@@ -24,17 +25,17 @@ import { assertString, assertNumber } from './Assert';
  *
  * Throws if either address or payment ID is invalid.
  */
-export function createIntegratedAddress(
+export async function createIntegratedAddress(
     address: string,
     paymentID: string,
-    config: IConfig = new Config()): string {
+    config: IConfig = new Config()): Promise<string> {
 
     assertString(address, 'address');
     assertString(paymentID, 'paymentID');
 
     const tempConfig: Config = MergeConfig(config);
 
-    let error = validateAddresses([address], false, tempConfig);
+    let error = await validateAddresses([address], false, tempConfig);
 
     if (!_.isEqual(error, SUCCESS)) {
         throw error;
@@ -70,12 +71,12 @@ export function isHex64(val: string): boolean {
  *
  * @hidden
  */
-export function addressToKeys(address: string, config: IConfig = new Config()): [string, string] {
+export async function addressToKeys(address: string, config: IConfig = new Config()): Promise<[string, string]> {
     const tempConfig: Config = MergeConfig(config);
 
-    const parsed = CryptoUtils(tempConfig).decodeAddress(address);
+    const parsed = await Address.fromAddress(address, tempConfig.addressPrefix);
 
-    return [parsed.publicViewKey, parsed.publicSpendKey];
+    return [parsed.view.publicKey, parsed.spend.publicKey];
 }
 
 /**
@@ -103,10 +104,10 @@ export function getUpperBound(val: number, nearestMultiple: number): number {
  *
  * @hidden
  */
-export function getCurrentTimestampAdjusted(blockTargetTime: number = 30): number {
+export function getCurrentTimestampAdjusted(): number {
     const timestamp = Math.floor(Date.now() / 1000);
 
-    return timestamp - (100 * blockTargetTime);
+    return timestamp - (60 * 60 * 6);
 }
 
 /**
@@ -270,7 +271,7 @@ export function isValidMnemonicWord(word: string): boolean {
  * Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage
  * describing what is invalid.
  */
-export function isValidMnemonic(mnemonic: string, config: IConfig = new Config()): [boolean, string] {
+export async function isValidMnemonic(mnemonic: string, config: IConfig = new Config()): Promise<[boolean, string]> {
     assertString(mnemonic, 'mnemonic');
 
     const tempConfig: Config = MergeConfig(config);
@@ -298,7 +299,7 @@ export function isValidMnemonic(mnemonic: string, config: IConfig = new Config()
     }
 
     try {
-        CryptoUtils(tempConfig).createAddressFromMnemonic(words.join(' '));
+        await Address.fromMnemonic(words.join(' '), undefined, tempConfig.addressPrefix);
         return [true, ''];
     } catch (err) {
         return [false, 'Mnemonic checksum word is invalid'];
@@ -308,7 +309,7 @@ export function isValidMnemonic(mnemonic: string, config: IConfig = new Config()
 export function getMinimumTransactionFee(
     transactionSize: number,
     height: number,
-    config: IConfig = new Config()) {
+    config: IConfig = new Config()): number {
 
     const tempConfig: Config = MergeConfig(config);
 
@@ -324,7 +325,7 @@ export function getTransactionFee(
     transactionSize: number,
     height: number,
     feePerByte: number,
-    config: IConfig = new Config()) {
+    config: IConfig = new Config()): number {
 
     const tempConfig: Config = MergeConfig(config);
 
@@ -347,7 +348,6 @@ export function estimateTransactionSize(
     const AMOUNT_SIZE = 8 + 2; // varint
     const GLOBAL_INDEXES_VECTOR_SIZE_SIZE: number = 1 // varint
     const GLOBAL_INDEXES_INITIAL_VALUE_SIZE: number = 4; // varint
-    const GLOBAL_INDEXES_DIFFERENCE_SIZE: number = 4; // varint
     const SIGNATURE_SIZE: number = 64;
     const EXTRA_TAG_SIZE: number = 1;
     const INPUT_TAG_SIZE: number = 1;

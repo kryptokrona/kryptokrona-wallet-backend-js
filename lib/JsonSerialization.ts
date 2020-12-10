@@ -2,9 +2,6 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { SubWallet } from './SubWallet';
-import { Transaction, UnconfirmedInput } from './Types';
-
 export interface WalletBackendJSON {
     walletFileFormatVersion: number;
 
