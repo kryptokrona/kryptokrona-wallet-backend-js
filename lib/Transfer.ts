@@ -5,13 +5,13 @@
 import * as _ from 'lodash';
 
 import {
-    Transaction as CreatedTransaction, TransactionOutputs,
-    Address, Interfaces,
-} from 'turtlecoin-utils';
+    CreatedTransaction, DecodedAddress, Output, RandomOutput, Transaction,
+    TxDestination, Vout, Wallet,
+} from 'kryptokrona-utils';
 
 import { Config } from './Config';
 import { FeeType } from './FeeType';
-import { Daemon } from './Daemon';
+import { IDaemon } from './IDaemon';
 import { CryptoUtils} from './CnUtils';
 import { SubWallets } from './SubWallets';
 
@@ -19,7 +19,7 @@ import { LogCategory, logger, LogLevel } from './Logger';
 
 import {
     Transaction as TX, TxInputAndOwner, UnconfirmedInput, PreparedTransactionInfo,
-    PreparedTransaction
+    PreparedTransaction, Destination,
 } from './Types';
 
 import {
@@ -27,13 +27,13 @@ import {
 } from './CryptoWrapper';
 
 import {
-    getMaxTxSize, prettyPrintAmount, prettyPrintBytes,
+    addressToKeys, getMaxTxSize, prettyPrintAmount, prettyPrintBytes,
     splitAmountIntoDenominations, isHex64, estimateTransactionSize,
     getMinimumTransactionFee, getTransactionFee,
 } from './Utilities';
 
 import {
-    validateAmount, validateDestinations,
+    validateAddresses, validateAmount, validateDestinations,
     validateIntegratedAddresses, validateMixin, validateOurAddresses,
     validatePaymentID,
 } from './ValidateParameters';
@@ -55,7 +55,7 @@ import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
  */
 export async function sendFusionTransactionBasic(
     config: Config,
-    daemon: Daemon,
+    daemon: IDaemon,
     subWallets: SubWallets): Promise<PreparedTransactionInfo> {
 
     return sendFusionTransactionAdvanced(
@@ -70,7 +70,6 @@ export async function sendFusionTransactionBasic(
  * specifying the mixin, fee, subwallets to draw funds from, and change address.
  *
  * All parameters are optional aside from daemon and subWallets.
- * @param config
  * @param daemon                A daemon instance we can send the transaction to
  * @param subWallets            The subwallets instance to draw funds from
  * @param mixin                 The amount of input keys to hide your input with.
@@ -78,18 +77,16 @@ export async function sendFusionTransactionBasic(
  * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
  * @param destination           The destination for the fusion transactions to be sent to.
  *                              Must be a subwallet in this container.
- * @param extraData             Extra arbitrary data to include in the transaction
  *
  * @return Returns either [transaction, transaction hash, undefined], or [undefined, undefined, error]
  */
 export async function sendFusionTransactionAdvanced(
     config: Config,
-    daemon: Daemon,
+    daemon: IDaemon,
     subWallets: SubWallets,
     mixin?: number,
     subWalletsToTakeFrom?: string[],
-    destination?: string,
-    extraData?: string): Promise<PreparedTransactionInfo> {
+    destination?: string): Promise<PreparedTransactionInfo> {
 
     logger.log(
         'Starting sendFusionTransaction process',
@@ -143,7 +140,7 @@ export async function sendFusionTransactionAdvanced(
     );
 
     /* Verify it's all valid */
-    const error: WalletError = await validateFusionTransaction(
+    const error: WalletError = validateFusionTransaction(
         mixin, subWalletsToTakeFrom, destination,
         daemon.getNetworkBlockCount(), subWallets, config,
     );
@@ -160,7 +157,7 @@ export async function sendFusionTransactionAdvanced(
     }
 
     /* Get the random inputs for this tx */
-    const [ourInputs, foundMoney] = await subWallets.getFusionTransactionInputs(
+    const [ourInputs, foundMoney] = subWallets.getFusionTransactionInputs(
         subWalletsToTakeFrom, mixin, daemon.getNetworkBlockCount(),
     );
 
@@ -225,9 +222,9 @@ export async function sendFusionTransactionAdvanced(
             continue;
         }
 
-        const addressesAndAmounts: [string, number][] = [[destination, amount]];
+        const addressesAndAmounts: Array<[string, number]> = [[destination, amount]];
 
-        const destinations = await setupDestinations(
+        const destinations = setupDestinations(
             addressesAndAmounts,
             0,
             destination,
@@ -243,7 +240,6 @@ export async function sendFusionTransactionAdvanced(
             subWallets,
             daemon,
             config,
-            extraData
         );
 
         if (creationError || tx === undefined) {
@@ -257,7 +253,8 @@ export async function sendFusionTransactionAdvanced(
             return returnValue;
         }
 
-        if (tx.size > MAX_FUSION_TX_SIZE) {
+        /* Divided by two because it's represented as hex */
+        if (tx.rawTransaction.length / 2 > MAX_FUSION_TX_SIZE) {
             logger.log(
                 `Fusion tx is too large, decreasing number of inputs`,
                 LogLevel.DEBUG,
@@ -328,7 +325,7 @@ export async function sendFusionTransactionAdvanced(
     returnValue.changeAddress = destination;
     returnValue.changeRequired = 0;
     returnValue.rawTransaction = fusionTX;
-    returnValue.transactionHash = await fusionTX.hash();
+    returnValue.transactionHash = fusionTX.hash;
     returnValue.prettyTransaction = prettyTransaction;
     returnValue.destinations = {
         nodeFee: undefined, /* technically this line is not needed, will def to undef */
@@ -351,18 +348,15 @@ export async function sendFusionTransactionAdvanced(
  *
  * If you need more control, use [[sendTransactionAdvanced]]
  *
- * @param config
  * @param daemon            A daemon instance we can send the transaction to
  * @param subWallets        The subwallets instance to draw funds from
  * @param destination       The address to send the funds to
  * @param amount            The amount to send, in ATOMIC units
  * @param paymentID         The payment ID to include with this transaction. Optional.
- * @param relayToNetwork
- * @param sendAll
  */
 export async function sendTransactionBasic(
     config: Config,
-    daemon: Daemon,
+    daemon: IDaemon,
     subWallets: SubWallets,
     destination: string,
     amount: number,
@@ -378,10 +372,6 @@ export async function sendTransactionBasic(
         undefined,
         undefined,
         paymentID,
-        undefined,
-        undefined,
-        relayToNetwork,
-        sendAll,
     );
 }
 
@@ -390,7 +380,6 @@ export async function sendTransactionBasic(
  * specifying the mixin, fee, subwallets to draw funds from, and change address.
  *
  * All parameters are optional aside from daemon, subWallets, and addressesAndAmounts.
- * @param config
  * @param daemon                A daemon instance we can send the transaction to
  * @param subWallets            The subwallets instance to draw funds from
  * @param addressesAndAmounts   An array of destinations, and amounts to send to that
@@ -421,21 +410,19 @@ export async function sendTransactionBasic(
  *                              and address1 would get whatever remains of the balance
  *                              after paying node/network fees.
  *                              Defaults to false.
- * @param extraData             Extra arbitrary data to include in the transaction
  */
 export async function sendTransactionAdvanced(
     config: Config,
-    daemon: Daemon,
+    daemon: IDaemon,
     subWallets: SubWallets,
-    addressesAndAmounts: [string, number][],
+    addressesAndAmounts: Array<[string, number]>,
     mixin?: number,
     fee?: FeeType,
     paymentID?: string,
     subWalletsToTakeFrom?: string[],
     changeAddress?: string,
     relayToNetwork?: boolean,
-    sendAll?: boolean,
-    extraData?: string): Promise<PreparedTransactionInfo> {
+    sendAll?: boolean): Promise<PreparedTransactionInfo> {
 
     logger.log(
         'Starting sendTransaction process',
@@ -535,7 +522,7 @@ export async function sendTransactionAdvanced(
         LogCategory.TRANSACTIONS,
     );
 
-    const error: WalletError = await validateTransaction(
+    const error: WalletError = validateTransaction(
         addressesAndAmounts,
         mixin,
         fee,
@@ -560,18 +547,23 @@ export async function sendTransactionAdvanced(
         return returnValue;
     }
 
-    for (let [address] of addressesAndAmounts) {
-        const decoded = await Address.fromAddress(address, config.addressPrefix);
+    for (let [address, amount] of addressesAndAmounts) {
+        const decoded: DecodedAddress = CryptoUtils(config).decodeAddress(address);
 
         /* Assign payment ID from integrated address if present */
         if (decoded.paymentId !== '') {
             paymentID = decoded.paymentId;
 
             /* Turn integrated address into standard address */
-            address = await (await Address.fromPublicKeys(decoded.spend.publicKey, decoded.view.publicKey, undefined, config.addressPrefix)).address();
+            address = CryptoUtils(config).encodeAddress(
+                decoded.publicViewKey,
+                decoded.publicSpendKey,
+                undefined,
+                decoded.prefix as any, /* TODO, types are wrong */
+            );
 
             logger.log(
-                `Extracted payment ID of ${paymentID} from address ${decoded.address}, resulting non integrated address: ${address}`,
+                `Extracted payment ID of ${paymentID} from address ${address}, resulting non integrated address: ${address}`,
                 LogLevel.DEBUG,
                 LogCategory.TRANSACTIONS,
             );
@@ -580,10 +572,10 @@ export async function sendTransactionAdvanced(
 
     /* Total amount we're sending */
     let totalAmount: number = _.sumBy(
-        addressesAndAmounts, ([, amount]) => amount,
+        addressesAndAmounts, ([address, amount]) => amount,
     );
 
-    const availableInputs: TxInputAndOwner[] = await subWallets.getSpendableTransactionInputs(
+    const availableInputs: TxInputAndOwner[] = subWallets.getSpendableTransactionInputs(
         subWalletsToTakeFrom,
         daemon.getNetworkBlockCount(),
     );
@@ -611,6 +603,7 @@ export async function sendTransactionAdvanced(
     let changeRequired: number = 0;
     let requiredAmount: number = totalAmount;
     let txResult: [undefined, WalletError] | [CreatedTransaction, undefined] = [ undefined, SUCCESS ];
+    const txInfo: PreparedTransactionInfo = {} as any;
 
     for (const [i, input] of availableInputs.entries()) {
         ourInputs.push(input);
@@ -635,7 +628,7 @@ export async function sendTransactionAdvanced(
             changeRequired = sumOfInputs - totalAmount;
 
             /* Split transfers up into amounts and keys */
-            let destinations = await setupDestinations(
+            let destinations = setupDestinations(
                 addressesAndAmounts,
                 changeRequired,
                 changeAddress,
@@ -710,7 +703,7 @@ export async function sendTransactionAdvanced(
 
                     changeRequired = 0;
 
-                    destinations = await setupDestinations(
+                    destinations = setupDestinations(
                         addressesAndAmounts,
                         changeRequired,
                         changeAddress,
@@ -756,7 +749,7 @@ export async function sendTransactionAdvanced(
                         ourInputs,
                         paymentID,
                         subWallets,
-                        extraData,
+                        '',
                         sendAll,
                         config,
                     );
@@ -767,6 +760,7 @@ export async function sendTransactionAdvanced(
                         break;
                     } else {
                         requiredAmount = needed;
+                        continue;
                     }
                 } else {
                     logger.log(
@@ -788,13 +782,12 @@ export async function sendTransactionAdvanced(
                 txResult = await makeTransaction(
                     mixin,
                     fee.fixedFee,
-                    paymentID as string,
+                    paymentID,
                     ourInputs,
                     destinations,
                     subWallets,
                     daemon,
                     config,
-                    extraData
                 );
 
                 const [tx, err] = txResult;
@@ -810,7 +803,7 @@ export async function sendTransactionAdvanced(
                 }
 
                 const minFee: number = getMinimumTransactionFee(
-                    tx!.size,
+                    tx!.rawTransaction.length / 2 ,
                     daemon.getNetworkBlockCount(),
                     config,
                 );
@@ -871,7 +864,7 @@ export async function sendTransactionAdvanced(
         return returnValue;
     }
 
-    const actualFee: number = sumTransactionFee(createdTX);
+    const actualFee: number = sumTransactionFee(createdTX.transaction);
 
     logger.log(
         `Successfully created transaction, proceeding to validating and sending`,
@@ -880,7 +873,7 @@ export async function sendTransactionAdvanced(
     );
 
     logger.log(
-        `Created transaction: ${JSON.stringify(createdTX.toString())}`,
+        `Created transaction: ${JSON.stringify(createdTX.transaction)}`,
         LogLevel.TRACE,
         LogCategory.TRANSACTIONS,
     );
@@ -901,7 +894,7 @@ export async function sendTransactionAdvanced(
         const [prettyTX, err] = await relayTransaction(
             createdTX,
             actualFee,
-            paymentID as string,
+            paymentID,
             ourInputs,
             changeAddress,
             changeRequired,
@@ -931,7 +924,7 @@ export async function sendTransactionAdvanced(
     returnValue.changeAddress = changeAddress;
     returnValue.changeRequired = changeRequired;
     returnValue.rawTransaction = createdTX;
-    returnValue.transactionHash = await createdTX.hash();
+    returnValue.transactionHash = createdTX.hash;
     returnValue.destinations = {
         nodeFee: feeAmount === 0 ? undefined : {
             address: feeAddress,
@@ -958,14 +951,14 @@ async function tryMakeFeePerByteTransaction(
     amountPreFee: number,
     estimatedFee: number,
     feePerByte: number,
-    addressesAndAmounts: [string, number][],
+    addressesAndAmounts: Array<[string, number]>,
     changeAddress: string,
     mixin: number,
-    daemon: Daemon,
+    daemon: IDaemon,
     ourInputs: TxInputAndOwner[],
     paymentID: string,
     subWallets: SubWallets,
-    extraData: string = '',
+    extraData: string,
     sendAll: boolean,
     config: Config): Promise<[
         boolean,
@@ -994,7 +987,7 @@ async function tryMakeFeePerByteTransaction(
         );
 
         /* Need to recalculate destinations since amount of change, err, changed! */
-        const destinations = await setupDestinations(
+        const destinations = setupDestinations(
             addressesAndAmounts,
             changeRequired,
             changeAddress,
@@ -1010,7 +1003,6 @@ async function tryMakeFeePerByteTransaction(
             subWallets,
             daemon,
             config,
-            extraData
         );
 
         const [ tx, creationError ] = result;
@@ -1025,7 +1017,7 @@ async function tryMakeFeePerByteTransaction(
             return [ true, result, 0, 0 ];
         }
 
-        const actualTxSize = tx!.size;
+        const actualTxSize = tx!.rawTransaction.length / 2;
 
         logger.log(
             `Size of generated transaction: ${prettyPrintBytes(actualTxSize)}`,
@@ -1114,7 +1106,7 @@ async function tryMakeFeePerByteTransaction(
 export async function sendPreparedTransaction(
     transaction: PreparedTransaction,
     subWallets: SubWallets,
-    daemon: Daemon,
+    daemon: IDaemon,
     config: Config): Promise<PreparedTransactionInfo> {
 
     const returnValue: PreparedTransactionInfo = {
@@ -1165,20 +1157,20 @@ export async function sendPreparedTransaction(
     return returnValue;
 }
 
-async function setupDestinations(
-    addressesAndAmountsTmp: [string, number][],
+function setupDestinations(
+    addressesAndAmountsTmp: Array<[string, number]>,
     changeRequired: number,
     changeAddress: string,
-    config: Config): Promise<Interfaces.GeneratedOutput[]> {
+    config: Config): TxDestination[] {
 
     /* Clone array so we don't manipulate it outside the function */
-    const addressesAndAmounts: [string, number][] = addressesAndAmountsTmp.slice();
+    const addressesAndAmounts: Array<[string, number]> = addressesAndAmountsTmp.slice();
 
     if (changeRequired !== 0) {
         addressesAndAmounts.push([changeAddress, changeRequired]);
     }
 
-    let amounts: [string, number][] = [];
+    let amounts: Array<[string, number]> = [];
 
     /* Split amounts into denominations */
     addressesAndAmounts.map(([address, amount]) => {
@@ -1193,20 +1185,17 @@ async function setupDestinations(
         LogCategory.TRANSACTIONS,
     );
 
-    amounts = _.sortBy(amounts, ([, amount]) => amount);
+    amounts = _.sortBy(amounts, ([address, amount]) => amount);
 
     /* Prepare destinations keys */
+    return amounts.map(([address, amount]) => {
+        const decoded: DecodedAddress = CryptoUtils(config).decodeAddress(address);
 
-    const result: Interfaces.GeneratedOutput[] = [];
-
-    for (const [address, amount] of amounts) {
-        result.push({
+        return {
             amount: amount,
-            destination: await Address.fromAddress(address, config.addressPrefix)
-        })
-    }
-
-    return result;
+            keys: decoded,
+        };
+    });
 }
 
 async function makeTransaction(
@@ -1214,11 +1203,10 @@ async function makeTransaction(
     fee: number,
     paymentID: string,
     ourInputs: TxInputAndOwner[],
-    destinations: Interfaces.GeneratedOutput[],
+    destinations: TxDestination[],
     subWallets: SubWallets,
-    daemon: Daemon,
-    config: Config,
-    extraData?: string): Promise<([CreatedTransaction, undefined]) | ([undefined, WalletError])> {
+    daemon: IDaemon,
+    config: Config): Promise<([CreatedTransaction, undefined]) | ([undefined, WalletError])> {
 
     ourInputs = _.sortBy(ourInputs, (input) => input.input.amount);
 
@@ -1228,7 +1216,7 @@ async function makeTransaction(
         LogCategory.TRANSACTIONS,
     );
 
-    const randomOuts: WalletError | Interfaces.RandomOutput[][] = await getRingParticipants(
+    const randomOuts: WalletError | RandomOutput[][] = await getRingParticipants(
         ourInputs, mixin, daemon, config,
     );
 
@@ -1245,9 +1233,9 @@ async function makeTransaction(
     let numPregenerated = 0;
     let numGeneratedOnDemand = 0;
 
-    const ourOutputs: Interfaces.Output[] = await Promise.all(ourInputs.map(async (input) => {
-        if (!input.input.privateEphemeral || !isHex64(input.input.privateEphemeral)) {
-            const [, tmpSecretKey] = await generateKeyImage(
+    const ourOutputs: Output[] = await Promise.all(ourInputs.map(async (input) => {
+        if (typeof input.input.privateEphemeral !== 'string' || !isHex64(input.input.privateEphemeral)) {
+            const [keyImage, tmpSecretKey] = await generateKeyImage(
                 input.input.transactionPublicKey,
                 subWallets.getPrivateViewKey(),
                 input.publicSpendKey,
@@ -1269,12 +1257,6 @@ async function makeTransaction(
             index: input.input.transactionIndex,
             input: {
                 privateEphemeral: input.input.privateEphemeral,
-                publicEphemeral: '', // Required by compiler, not used in func
-                transactionKeys: {
-                    derivedKey: '',
-                    outputIndex: input.input.transactionIndex,
-                    publicKey: input.input.transactionPublicKey,
-                },
             },
             key: input.input.key,
             keyImage: input.input.keyImage,
@@ -1289,14 +1271,14 @@ async function makeTransaction(
 
     try {
         logger.log(
-            `Asynchronously creating transaction with turtlecoin-utils`,
+            `Asynchronously creating transaction with kryptokrona-utils`,
             LogLevel.DEBUG,
             LogCategory.TRANSACTIONS,
         );
 
-        const tx = await CryptoUtils(config).createTransaction(
-            destinations, ourOutputs, randomOuts as Interfaces.RandomOutput[][], mixin, fee,
-            paymentID, undefined, extraData
+        const tx = await CryptoUtils(config).createTransactionAsync(
+            destinations, ourOutputs, randomOuts as RandomOutput[][], mixin, fee,
+            paymentID,
         );
 
         logger.log(
@@ -1308,7 +1290,7 @@ async function makeTransaction(
         return [tx, undefined];
     } catch (err) {
         logger.log(
-            `Error while creating transaction with turtlecoin-utils: ${err.toString()}`,
+            `Error while creating transaction with kryptokrona-utils: ${err.toString()}`,
             LogLevel.DEBUG,
             LogCategory.TRANSACTIONS,
         );
@@ -1320,7 +1302,7 @@ async function makeTransaction(
 function verifyTransaction(
     tx: CreatedTransaction,
     fee: FeeType,
-    daemon: Daemon,
+    daemon: IDaemon,
     config: Config): WalletError {
 
     logger.log(
@@ -1331,7 +1313,7 @@ function verifyTransaction(
 
     /* Check the transaction isn't too large to fit in a block */
     const tooBigErr: WalletError = isTransactionPayloadTooBig(
-        tx.size, daemon.getNetworkBlockCount(), config,
+        tx.rawTransaction, daemon.getNetworkBlockCount(), config,
     );
 
     if (!_.isEqual(tooBigErr, SUCCESS)) {
@@ -1346,7 +1328,7 @@ function verifyTransaction(
 
     /* Check all the output amounts are members of 'PRETTY_AMOUNTS', otherwise
        they will not be mixable */
-    if (!verifyAmounts(tx.outputs)) {
+    if (!verifyAmounts(tx.transaction.outputs)) {
         return new WalletError(WalletErrorCode.AMOUNTS_NOT_PRETTY);
     }
 
@@ -1357,7 +1339,7 @@ function verifyTransaction(
     );
 
     /* Check the transaction has the fee that we expect (0 for fusion) */
-    if (!verifyTransactionFee(tx.size, fee, sumTransactionFee(tx))) {
+    if (!verifyTransactionFee(tx, fee, sumTransactionFee(tx.transaction))) {
         return new WalletError(WalletErrorCode.UNEXPECTED_FEE);
     }
 
@@ -1372,8 +1354,11 @@ async function relayTransaction(
     changeAddress: string,
     changeRequired: number,
     subWallets: SubWallets,
-    daemon: Daemon,
+    daemon: IDaemon,
     config: Config): Promise<[TX, undefined] | [undefined, WalletError]> {
+
+    let relaySuccess: boolean;
+    let errorMessage: string | undefined;
 
     logger.log(
         'Relaying transaction',
@@ -1381,16 +1366,36 @@ async function relayTransaction(
         LogCategory.TRANSACTIONS,
     );
 
-    const error = await daemon.sendTransaction(tx.toString());
+    try {
+        [relaySuccess, errorMessage] = await daemon.sendTransaction(tx.rawTransaction);
 
-    if (!_.isEqual(error, SUCCESS)) {
+    /* Timeout */
+    } catch (err) {
         logger.log(
-            `Failed to relay transaction. ${error}`,
+            `Caught exception relaying transaction, error: ${err.toString()}, return code: ${err.statusCode}`,
             LogLevel.DEBUG,
             LogCategory.TRANSACTIONS,
         );
 
-        return [undefined, error];
+        if (err.statusCode === 504) {
+            return [undefined, new WalletError(WalletErrorCode.DAEMON_STILL_PROCESSING)];
+        }
+
+        return [undefined, new WalletError(WalletErrorCode.DAEMON_OFFLINE)];
+    }
+
+    if (!relaySuccess) {
+        const customMessage = errorMessage === undefined
+            ? ''
+            : `The daemon did not accept our transaction. Error: ${errorMessage}.`;
+
+        logger.log(
+            `Failed to relay transaction. ${customMessage}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
+        return [undefined, new WalletError(WalletErrorCode.DAEMON_ERROR, customMessage)];
     }
 
     logger.log(
@@ -1401,7 +1406,7 @@ async function relayTransaction(
 
     /* Store the unconfirmed transaction, update our balance */
     const returnTX: TX = await storeSentTransaction(
-        await tx.hash(), tx.outputs, tx.transactionKeys.publicKey,
+        tx.hash, tx.transaction.outputs, tx.transaction.transactionKeys.publicKey,
         fee, paymentID, inputs, subWallets, config,
     );
 
@@ -1427,7 +1432,7 @@ async function relayTransaction(
 
 async function storeSentTransaction(
     hash: string,
-    keyOutputs: TransactionOutputs.ITransactionOutput[],
+    keyOutputs: Vout[],
     txPublicKey: string,
     fee: number,
     paymentID: string,
@@ -1444,31 +1449,27 @@ async function storeSentTransaction(
     const spendKeys: string[] = subWallets.getPublicSpendKeys();
 
     for (const [outputIndex, output] of keyOutputs.entries()) {
-        if (output.type === TransactionOutputs.OutputType.KEY) {
-            const o = output as TransactionOutputs.KeyOutput;
+        /* Derive the spend key from the transaction, using the previous
+           derivation */
+        const derivedSpendKey = await underivePublicKey(
+            derivation, outputIndex, output.key, config,
+        );
 
-            /* Derive the spend key from the transaction, using the previous
-               derivation */
-            const derivedSpendKey = await underivePublicKey(
-                derivation, outputIndex, o.key, config,
-            );
-
-            /* See if the derived spend key matches any of our spend keys */
-            if (!_.includes(spendKeys, derivedSpendKey)) {
-                continue;
-            }
-
-            const input: UnconfirmedInput = new UnconfirmedInput(
-                o.amount.toJSNumber(), o.key, hash,
-            );
-
-            subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
-
-            transfers.set(
-                derivedSpendKey,
-                o.amount.add(transfers.get(derivedSpendKey) || 0).toJSNumber(),
-            );
+        /* See if the derived spend key matches any of our spend keys */
+        if (!_.includes(spendKeys, derivedSpendKey)) {
+            continue;
         }
+
+        const input: UnconfirmedInput = new UnconfirmedInput(
+            output.amount, output.key, hash,
+        );
+
+        subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
+
+        transfers.set(
+            derivedSpendKey,
+            output.amount + (transfers.get(derivedSpendKey) || 0),
+        );
     }
 
     for (const input of ourInputs) {
@@ -1504,9 +1505,12 @@ async function storeSentTransaction(
  * Verify the transaction is small enough to fit in a block
  */
 function isTransactionPayloadTooBig(
-    txSize: number,
+    rawTransaction: string,
     currentHeight: number,
     config: Config): WalletError {
+
+    /* Divided by two because it's represented as hex */
+    const txSize: number = rawTransaction.length / 2;
 
     const maxTxSize: number = getMaxTxSize(currentHeight, config.blockTargetTime);
 
@@ -1526,26 +1530,26 @@ function isTransactionPayloadTooBig(
  * Verify all the output amounts are members of PRETTY_AMOUNTS, otherwise they
  * will not be mixable
  */
-function verifyAmounts(amounts: TransactionOutputs.ITransactionOutput[]): boolean {
-    for (const output of amounts) {
-        if (output.type === TransactionOutputs.OutputType.KEY) {
-            if (!PRETTY_AMOUNTS.includes((output as TransactionOutputs.KeyOutput).amount.toJSNumber())) {
-                return false;
-            }
+function verifyAmounts(amounts: Vout[]): boolean {
+    for (const vout of amounts) {
+        if (!PRETTY_AMOUNTS.includes(vout.amount)) {
+            return false;
         }
     }
 
     return true;
 }
 
-function sumTransactionFee(transaction: CreatedTransaction): number {
-    const inputTotal: number = transaction.amount;
+function sumTransactionFee(transaction: Transaction): number {
+    let inputTotal: number = 0;
     let outputTotal: number = 0;
 
+    for (const input of transaction.inputs) {
+        inputTotal += input.amount;
+    }
+
     for (const output of transaction.outputs) {
-        if (output.type === TransactionOutputs.OutputType.KEY) {
-            outputTotal += (output as TransactionOutputs.KeyOutput).amount.toJSNumber();
-        }
+        outputTotal += output.amount;
     }
 
     return inputTotal - outputTotal;
@@ -1555,14 +1559,17 @@ function sumTransactionFee(transaction: CreatedTransaction): number {
  * Verify the transaction fee is the same as the requested transaction fee
  */
 function verifyTransactionFee(
-    transactionSize: number,
+    transaction: CreatedTransaction,
     expectedFee: FeeType,
     actualFee: number): boolean {
 
     if (expectedFee.isFixedFee) {
         return expectedFee.fixedFee === actualFee;
     } else {
-        const calculatedFee: number = expectedFee.feePerByte * transactionSize;
+        /* Divided by two because it's represented as hex */
+        const txSize: number = transaction.rawTransaction.length / 2;
+
+        const calculatedFee: number = expectedFee.feePerByte * txSize;
 
          /* Ensure fee is greater or equal to the fee per byte specified,
           * and no more than two times the fee per byte specified. */
@@ -1577,8 +1584,8 @@ function verifyTransactionFee(
 async function getRingParticipants(
     inputs: TxInputAndOwner[],
     mixin: number,
-    daemon: Daemon,
-    config: Config): Promise<WalletError | Interfaces.RandomOutput[][]> {
+    daemon: IDaemon,
+    config: Config): Promise<WalletError | RandomOutput[][]> {
 
     if (mixin === 0) {
         logger.log(
@@ -1610,7 +1617,7 @@ async function getRingParticipants(
 
     for (const amount of amounts) {
         /* Check each amount is present in outputs */
-        const foundOutputs = _.find(outs, ([outAmount, ]) => amount === outAmount);
+        const foundOutputs = _.find(outs, ([outAmount, ignore]) => amount === outAmount);
 
         if (foundOutputs === undefined) {
             return new WalletError(
@@ -1638,7 +1645,7 @@ async function getRingParticipants(
         return new WalletError(WalletErrorCode.NOT_ENOUGH_FAKE_OUTPUTS);
     }
 
-    const randomOuts: Interfaces.RandomOutput[][] = [];
+    const randomOuts: RandomOutput[][] = [];
 
      /* Do the same check as above here, again. The reason being that
         we just find the first set of outputs matching the amount above,
@@ -1681,8 +1688,8 @@ async function getRingParticipants(
  *
  * @return Returns either SUCCESS or an error representing the issue
  */
-async function validateTransaction(
-    destinations: [string, number][],
+function validateTransaction(
+    destinations: Array<[string, number]>,
     mixin: number,
     fee: FeeType,
     paymentID: string,
@@ -1691,31 +1698,31 @@ async function validateTransaction(
     sendAll: boolean,
     currentHeight: number,
     subWallets: SubWallets,
-    config: Config): Promise<WalletError> {
+    config: Config): WalletError {
 
     /* Validate the destinations are valid */
-    let error: WalletError = await validateDestinations(destinations, config);
+    let error: WalletError = validateDestinations(destinations, config);
 
     if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     /* Validate stored payment ID's in integrated addresses don't conflict */
-    error = await validateIntegratedAddresses(destinations, paymentID, config);
+    error = validateIntegratedAddresses(destinations, paymentID, config);
 
     if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     /* Verify the subwallets to take from exist */
-    error = await validateOurAddresses(subWalletsToTakeFrom, subWallets, config);
+    error = validateOurAddresses(subWalletsToTakeFrom, subWallets, config);
 
     if (!_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     /* Verify we have enough money for the transaction */
-    error = await validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight, config);
+    error = validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight, config);
 
     if (!_.isEqual(error, SUCCESS)) {
         return error;
@@ -1734,7 +1741,7 @@ async function validateTransaction(
         return error;
     }
 
-    error = await validateOurAddresses([changeAddress], subWallets, config);
+    error = validateOurAddresses([changeAddress], subWallets, config);
 
     if (!_.isEqual(error, SUCCESS)) {
         return error;
@@ -1748,13 +1755,13 @@ async function validateTransaction(
  *
  * @return Returns either SUCCESS or an error representing the issue
  */
-async function validateFusionTransaction(
+function validateFusionTransaction(
     mixin: number,
     subWalletsToTakeFrom: string[],
     destination: string,
     currentHeight: number,
     subWallets: SubWallets,
-    config: Config): Promise<WalletError> {
+    config: Config): WalletError {
 
     /* Validate mixin is within the bounds for the current height */
     let error: WalletError = validateMixin(mixin, currentHeight, config);
@@ -1764,14 +1771,14 @@ async function validateFusionTransaction(
     }
 
     /* Verify the subwallets to take from exist */
-    error = await validateOurAddresses(subWalletsToTakeFrom, subWallets, config);
+    error = validateOurAddresses(subWalletsToTakeFrom, subWallets, config);
 
     if (_.isEqual(error, SUCCESS)) {
         return error;
     }
 
     /* Verify the destination address is valid and exists in the subwallets */
-    error = await validateOurAddresses([destination], subWallets, config);
+    error = validateOurAddresses([destination], subWallets, config);
 
     if (_.isEqual(error, SUCCESS)) {
         return error;

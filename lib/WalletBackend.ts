@@ -2,71 +2,52 @@
 //
 // Please see the included LICENSE file for more information.
 
-/* eslint-disable max-len */
+// tslint:disable: max-line-length
 
-import {EventEmitter} from 'events';
-import {
-    Address,
-    Block as UtilsBlock,
-    Crypto,
-    CryptoType,
-    Transaction as CreatedTransaction,
-    Transaction as UtilsTransaction
-} from 'turtlecoin-utils';
+import { EventEmitter } from 'events';
+import { CreatedTransaction } from 'kryptokrona-utils';
 
 import * as fs from 'fs';
 import * as _ from 'lodash';
 
-import {FeeType} from './FeeType';
-import {Daemon} from './Daemon';
-import {Metronome} from './Metronome';
-import {SubWallets} from './SubWallets';
-import {openWallet} from './OpenWallet';
-import {WalletEncryption} from './WalletEncryption';
-import {WalletBackendJSON} from './JsonSerialization';
-import {validateAddresses} from './ValidateParameters';
-import {WalletSynchronizer} from './WalletSynchronizer';
-import {Config, IConfig, MergeConfig} from './Config';
-import {LogCategory, logger, LogLevel} from './Logger';
-import {SynchronizationStatus} from './SynchronizationStatus';
-import {SUCCESS, WalletError, WalletErrorCode} from './WalletError';
-import {CryptoUtils} from './CnUtils';
+import { FeeType } from './FeeType';
+import { IDaemon } from './IDaemon';
+import { Metronome } from './Metronome';
+import { SubWallets } from './SubWallets';
+import { openWallet } from './OpenWallet';
+import { WalletEncryption } from './WalletEncryption';
+import { CryptoUtils} from './CnUtils';
+import { WalletBackendJSON } from './JsonSerialization';
+import { validateAddresses } from './ValidateParameters';
+import { WalletSynchronizer } from './WalletSynchronizer';
+import { Config, MergeConfig, IConfig } from './Config';
+import { LogCategory, logger, LogLevel } from './Logger';
+import { SynchronizationStatus } from './SynchronizationStatus';
+import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import {
-    Block,
-    DaemonConnection,
-    PreparedTransaction,
-    PreparedTransactionInfo,
-    SendTransactionResult,
-    Transaction,
-    TransactionData,
-    TransactionInput,
+    Block, Transaction, TransactionData, TransactionInput, DaemonConnection,
+    SendTransactionResult, PreparedTransaction, PreparedTransactionInfo,
     TxInputAndOwner,
 } from './Types';
 
 import {
-    sendFusionTransactionAdvanced,
-    sendFusionTransactionBasic,
+    sendTransactionAdvanced, sendTransactionBasic,
+    sendFusionTransactionAdvanced, sendFusionTransactionBasic,
     sendPreparedTransaction,
-    sendTransactionAdvanced,
-    sendTransactionBasic,
 } from './Transfer';
 
-import {GLOBAL_INDEXES_OBSCURITY, WALLET_FILE_FORMAT_VERSION} from './Constants';
-
-import {addressToKeys, delay, getCurrentTimestampAdjusted, getLowerBound, getUpperBound, isHex64} from './Utilities';
+import { WALLET_FILE_FORMAT_VERSION, GLOBAL_INDEXES_OBSCURITY } from './Constants';
 
 import {
-    assertArray,
-    assertArrayOrUndefined,
-    assertBoolean,
-    assertBooleanOrUndefined,
-    assertNumber,
-    assertNumberOrUndefined,
-    assertObject,
-    assertObjectOrUndefined,
-    assertString,
-    assertStringOrUndefined,
+    addressToKeys, delay, getCurrentTimestampAdjusted, isHex64,
+    getLowerBound, getUpperBound,
+} from './Utilities';
+
+import {
+    assertStringOrUndefined, assertString, assertNumberOrUndefined, assertNumber,
+    assertBooleanOrUndefined, assertBoolean, assertArrayOrUndefined, assertArray,
+    assertObjectOrUndefined, assertObject,
 } from './Assert';
 
 export declare interface WalletBackend {
@@ -84,7 +65,7 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     * @event This is emitted whenever the wallet finds a new transaction.
+     * @event
      */
     on(event: 'transaction', callback: (transaction: Transaction) => void): this;
 
@@ -99,7 +80,7 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     * @event This is emitted whenever the wallet finds an incoming transaction.
+     * @event
      */
     on(event: 'incomingtx', callback: (transaction: Transaction) => void): this;
 
@@ -114,8 +95,7 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     *
-     * @event This is emitted whenever the wallet finds an outgoing transaction.
+     * @event
      */
     on(event: 'outgoingtx', callback: (transaction: Transaction) => void): this;
 
@@ -130,7 +110,7 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     * @event This is emitted whenever the wallet finds a fusion transaction.
+     * @event
      */
     on(event: 'fusiontx', callback: (transaction: Transaction) => void): this;
 
@@ -149,7 +129,7 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     * @event This is emitted whenever the wallet creates and sends a transaction.
+     * @event
      */
     on(event: 'createdtx', callback: (transaction: Transaction) => void): this;
 
@@ -164,7 +144,7 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     * @event This is emitted whenever the wallet creates and sends a fusion transaction.
+     * @event
      */
     on(event: 'createdfusiontx', callback: (transaction: Transaction) => void): this;
 
@@ -180,7 +160,7 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     * @event This is emitted whenever the wallet first syncs with the network.
+     * @event
      */
     on(event: 'sync', callback: (walletHeight: number, networkHeight: number) => void): this;
 
@@ -196,7 +176,7 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     * @event This is emitted whenever the wallet first desyncs with the network.
+     * @event
      */
     on(event: 'desync', callback: (walletHeight: number, networkHeight: number) => void): this;
 
@@ -217,7 +197,7 @@ export declare interface WalletBackend {
      * type, as the other daemon types are considered legacy and are not having
      * new features added.
      *
-     * @event This is emitted whenever the wallet fails to contact the underlying daemon.
+     * @event
      */
     on(event: 'disconnect', callback: (error: Error) => void): this;
 
@@ -239,7 +219,7 @@ export declare interface WalletBackend {
      * type, as the other daemon types are considered legacy and are not having
      * new features added.
      *
-     * @event This is emitted whenever the wallet previously failed to contact the underlying daemon, and has now reconnected.
+     * @event
      */
     on(event: 'connect', callback: () => void): this;
 
@@ -259,7 +239,7 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     * @event This is emitted whenever the walletBlockCount, localDaemonBlockCount, or networkBlockCount changes.
+     * @event
      */
     on(event: 'heightchange', callback: (
         walletBlockCount: number,
@@ -287,112 +267,9 @@ export declare interface WalletBackend {
      * });
      * ```
      *
-     * @event This is emitted when we consider the node to no longer be online.
+     * @event
      */
     on(event: 'deadnode', callback: () => void): this;
-
-    /**
-     * This is emitted every time we download a block from the daemon. Will
-     * only be emitted if the daemon is using /getrawblocks (All non blockchain
-     * cache daemons should support this).
-     *
-     * This block object is an instance of the [Block turtlecoin-utils class](https://utils.turtlecoin.dev/classes/block.html).
-     * See the Utils docs for further info on using this value.
-     *
-     * Note that a block emitted after a previous one could potentially have a lower
-     * height, if a blockchain fork took place.
-     *
-     * Example:
-     *
-     * ```javascript
-     * daemon.on('rawblock', (block) => {
-     *      console.log(`Downloaded new block ${block.hash}`);
-     * });
-     * ```
-     *
-     * @event This is emitted every time we download a block from the daemon.
-     */
-    on(event: 'rawblock', callback: (block: UtilsBlock) => void): this;
-
-    /**
-     * This is emitted every time we download a transaction from the daemon. Will
-     * only be emitted if the daemon is using /getrawblocks (All non blockchain
-     * cache daemons should support this).
-     *
-     * This transaction object is an instance of the [Transaction turtlecoin-utils class](https://utils.turtlecoin.dev/classes/transaction.html).
-     * See the Utils docs for further info on using this value.
-     *
-     * Note that a transaction emitted after a previous one could potentially have a lower
-     * height in the chain, if a blockchain fork took place.
-     *
-     * Example:
-     *
-     * ```javascript
-     * daemon.on('rawtransaction', (block) => {
-     *      console.log(`Downloaded new transaction ${transaction.hash}`);
-     * });
-     * ```
-     *
-     * @event This is emitted every time we download a transaction from the daemon.
-     */
-    on(event: 'rawtransaction', callback: (transaction: UtilsTransaction) => void): this;
-
-    /**
-     * This is emitted when an error occurs during auto optimization
-     *
-     * Example:
-     * ```javascript
-     * wallet.on('autooptimizeError', (error) => {
-     *     console.error('Error: ', error);
-     * });
-     *```
-     *
-     * @event This is emitted when an error occurs during auto optimization
-     */
-    on(event: 'autoOptimizeError', callback: (error: Error) => void): this;
-
-    /**
-     * This is emitted when the underlying cryptographic primitives (aka. Ledger Device) is likely waiting for the user to manually confirm a request
-     *
-     * Example:
-     * ```javascript
-     * wallet.on('user_confirm', () => {
-     *     console.warn('Awaiting manual user intervention');
-     * });
-     * ```
-     * @param event
-     * @param callback
-     */
-    on(event: 'user_confirm', callback: () => void): this;
-
-    /**
-     * This is emitted when the underlying cryptographic primitives (aka. Ledger Device) returns data to us
-     *
-     * Example:
-     * ```javascript
-     * wallet.on('transport_send', (data) => {
-     *     console.warn('Received data: %s', data);;
-     * });
-     * ```
-     *
-     * @param event
-     * @param callback
-     */
-    on(event: 'transport_receive', callback: (data: string) => void): this;
-
-    /**
-     * This is emitted when we send data to the underlying cryptographic primitives (aka. Ledger Device)
-     *
-     * Example:
-     * ```javascript
-     * wallet.on('transport_send', (data) => {
-     *     console.warn('Sent data: %s', data);;
-     * });
-     * ```
-     * @param event
-     * @param callback
-     */
-    on(event: 'transport_send', callback: (data:string) => void): this;
 }
 
 /**
@@ -419,22 +296,21 @@ export class WalletBackend extends EventEmitter {
      *
      * const daemon = new WB.Daemon('127.0.0.1', 11898);
      *
-     * const [wallet, error] = await WB.WalletBackend.openWalletFromFile(daemon, 'mywallet.wallet', 'hunter2');
+     * const [wallet, error] = WB.WalletBackend.openWalletFromFile(daemon, 'mywallet.wallet', 'hunter2');
      *
      * if (err) {
      *      console.log('Failed to open wallet: ' + err.toString());
      * }
      * ```
-     * @param daemon
      * @param filename  The location of the wallet file on disk
+     *
      * @param password  The password to use to decrypt the wallet. May be blank.
-     * @param config
      */
-    public static async openWalletFromFile(
-        daemon: Daemon,
+    public static openWalletFromFile(
+        daemon: IDaemon,
         filename: string,
         password: string,
-        config?: IConfig): Promise<[WalletBackend, undefined] | [undefined, WalletError]> {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         logger.log(
             'Function openWalletFromFile called',
@@ -473,24 +349,21 @@ export class WalletBackend extends EventEmitter {
      * const daemon = new WB.Daemon('127.0.0.1', 11898);
      * const data = 'ENCRYPTED_WALLET_STRING';
      *
-     * const [wallet, error] = await WB.WalletBackend.openWalletFromEncryptedString(daemon, data, 'hunter2');
+     * const [wallet, error] = WB.WalletBackend.openWalletFromEncryptedString(daemon, data, 'hunter2');
      *
      * if (err) {
      *      console.log('Failed to open wallet: ' + err.toString());
      * }
      * ```
-     *
-     * @param daemon
      * @param data  The encrypted string representing the wallet data
      *
      * @param password  The password to use to decrypt the wallet. May be blank.
-     * @param config
      */
-    public static async openWalletFromEncryptedString(
-        daemon: Daemon,
+    public static openWalletFromEncryptedString(
+        deamon: IDaemon,
         data: string,
         password: string,
-        config?: IConfig): Promise<[WalletBackend, undefined] | [undefined, WalletError]> {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         logger.log(
             'Function openWalletFromEncryptedString called',
@@ -508,7 +381,7 @@ export class WalletBackend extends EventEmitter {
         }
 
         return WalletBackend.loadWalletFromJSON(
-            daemon,
+            deamon,
             walletJSON,
             config,
         );
@@ -526,25 +399,24 @@ export class WalletBackend extends EventEmitter {
      *
      * const daemon = new WB.Daemon('127.0.0.1', 11898);
      *
-     * const [wallet, err] = await WB.WalletBackend.loadWalletFromJSON(daemon, json);
+     * const [wallet, err] = WB.WalletBackend.loadWalletFromJSON(daemon, json);
      *
      * if (err) {
      *      console.log('Failed to load wallet: ' + err.toString());
      * }
      * ```
      *
-     * @param daemon
+     * @param daemon        An implementation of the IDaemon interface.
      *
      * @param json          Wallet info encoded as a JSON encoded string. Note
      *                      that this should be a *string*, NOT a JSON object.
      *                      This function will call `JSON.parse()`, so you should
      *                      not do that yourself.
-     * @param config
      */
-    public static async loadWalletFromJSON(
-        daemon: Daemon,
+    public static loadWalletFromJSON(
+        daemon: IDaemon,
         json: string,
-        config?: IConfig): Promise<[WalletBackend, undefined] | [undefined, WalletError]> {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         logger.log(
             'Function loadWalletFromJSON called',
@@ -552,38 +424,11 @@ export class WalletBackend extends EventEmitter {
             LogCategory.GENERAL,
         );
 
-        const merged: Config = MergeConfig(config);
-
         assertString(json, 'json');
 
         try {
-            const wallet: WalletBackend = JSON.parse(json, WalletBackend.reviver);
-
-            if (await wallet.isLedgerRequired()) {
-                if (!merged.ledgerTransport) {
-                    return [undefined, new WalletError(WalletErrorCode.LEDGER_TRANSPORT_REQUIRED)];
-                }
-
-                try {
-                    await CryptoUtils(merged).init();
-
-                    await CryptoUtils(merged).fetchKeys();
-
-                    const ledgerAddress = CryptoUtils(merged).address;
-
-                    if (!ledgerAddress) {
-                        return [undefined, new WalletError(WalletErrorCode.LEDGER_COULD_NOT_GET_KEYS)];
-                    }
-
-                    if (wallet.getPrimaryAddress() !== await ledgerAddress.address()) {
-                        return [undefined, new WalletError(WalletErrorCode.LEDGER_WRONG_DEVICE_FOR_WALLET_FILE)];
-                    }
-                } catch (e) {
-                    return [undefined, new WalletError(WalletErrorCode.LEDGER_COULD_NOT_GET_KEYS)];
-                }
-            }
-
-            wallet.initAfterLoad(daemon, merged);
+            const wallet = JSON.parse(json, WalletBackend.reviver);
+            wallet.initAfterLoad(daemon, MergeConfig(config));
             return [wallet, undefined];
         } catch (err) {
             return [undefined, new WalletError(WalletErrorCode.WALLET_FILE_CORRUPTED)];
@@ -604,27 +449,26 @@ export class WalletBackend extends EventEmitter {
      *              'puddle looking orbit rest agenda jukebox opened sarcasm ' +
      *              'solved eskimos';
      *
-     * const [wallet, err] = await WB.WalletBackend.importWalletFromSeed(daemon, 100000, seed);
+     * const [wallet, err] = WB.WalletBackend.importWalletFromSeed(daemon, 100000, seed);
      *
      * if (err) {
      *      console.log('Failed to load wallet: ' + err.toString());
      * }
      * ```
      *
-     * @param daemon
+     * @param daemon        An implementation of the IDaemon interface.
      *
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
      *                      Defaults to zero if not given.
      *
      * @param mnemonicSeed  The mnemonic seed to import. Should be a 25 word string.
-     * @param config
      */
-    public static async importWalletFromSeed(
-        daemon: Daemon,
+    public static importWalletFromSeed(
+        daemon: IDaemon,
         scanHeight: number = 0,
         mnemonicSeed: string,
-        config?: IConfig): Promise<[WalletBackend, undefined] | [undefined, WalletError]> {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         logger.log(
             'Function importWalletFromSeed called',
@@ -635,12 +479,10 @@ export class WalletBackend extends EventEmitter {
         assertNumber(scanHeight, 'scanHeight');
         assertString(mnemonicSeed, 'mnemonicSeed');
 
-        const merged = MergeConfig(config);
-
         let keys;
 
         try {
-            keys = await Address.fromMnemonic(mnemonicSeed, undefined, merged.addressPrefix);
+            keys = CryptoUtils(MergeConfig(config)).createAddressFromMnemonic(mnemonicSeed);
         } catch (err) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_MNEMONIC, err.toString())];
         }
@@ -656,8 +498,8 @@ export class WalletBackend extends EventEmitter {
         /* Can't sync from the current scan height, not newly created */
         const newWallet: boolean = false;
 
-        const wallet = await WalletBackend.init(
-            merged, daemon, await keys.address(), scanHeight, newWallet,
+        const wallet = new WalletBackend(
+            MergeConfig(config), daemon, keys.address, scanHeight, newWallet,
             keys.view.privateKey, keys.spend.privateKey,
         );
 
@@ -676,14 +518,14 @@ export class WalletBackend extends EventEmitter {
      * const privateViewKey = 'ce4c27d5b135dc5310669b35e53efc9d50d92438f00c76442adf8c85f73f1a01';
      * const privateSpendKey = 'f1b1e9a6f56241594ddabb243cdb39355a8b4a1a1c0343dde36f3b57835fe607';
      *
-     * const [wallet, err] = await WB.WalletBackend.importWalletFromSeed(daemon, 100000, privateViewKey, privateSpendKey);
+     * const [wallet, err] = WB.WalletBackend.importWalletFromSeed(daemon, 100000, privateViewKey, privateSpendKey);
      *
      * if (err) {
      *      console.log('Failed to load wallet: ' + err.toString());
      * }
      * ```
      *
-     * @param daemon
+     * @param daemon        An implementation of the IDaemon interface.
      *
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -692,14 +534,13 @@ export class WalletBackend extends EventEmitter {
      * @param privateViewKey    The private view key to import. Should be a 64 char hex string.
      *
      * @param privateSpendKey   The private spend key to import. Should be a 64 char hex string.
-     * @param config
      */
-    public static async importWalletFromKeys(
-        daemon: Daemon,
+    public static importWalletFromKeys(
+        daemon: IDaemon,
         scanHeight: number = 0,
         privateViewKey: string,
         privateSpendKey: string,
-        config?: IConfig): Promise<[WalletBackend, undefined] | [undefined, WalletError]> {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         logger.log(
             'Function importWalletFromKeys called',
@@ -715,12 +556,10 @@ export class WalletBackend extends EventEmitter {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
         }
 
-        const merged = MergeConfig(config);
-
         let keys;
 
         try {
-            keys = await Address.fromKeys(privateSpendKey, privateViewKey, merged.addressPrefix);
+            keys = CryptoUtils(MergeConfig(config)).createAddressFromKeys(privateSpendKey, privateViewKey);
         } catch (err) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT, err.toString())];
         }
@@ -736,94 +575,9 @@ export class WalletBackend extends EventEmitter {
         /* Can't sync from the current scan height, not newly created */
         const newWallet: boolean = false;
 
-        const wallet = await WalletBackend.init(
-            merged, daemon, await keys.address(), scanHeight, newWallet,
+        const wallet = new WalletBackend(
+            MergeConfig(config), daemon, keys.address, scanHeight, newWallet,
             keys.view.privateKey, keys.spend.privateKey,
-        );
-
-        return [wallet, undefined];
-    }
-
-    /**
-     * Imports a wallet from a Ledger hardware wallet
-     *
-     * Example:
-     * ```javascript
-     * const WB = require('turtlecoin-wallet-backend');
-     * const TransportNodeHID = require('@ledgerhq/hw-transport-node-hid').default
-     *
-     * const daemon = new WB.Daemon('127.0.0.1', 11898);
-     *
-     * const transport = await TransportNodeHID.create();
-     *
-     * const [wallet, err] = await WB.WalletBackend.importWalletFromLedger(daemon, 100000, {
-     *     ledgerTransport: transport
-     * });
-     *
-     * if (err) {
-     *      console.log('Failed to load wallet: ' + err.toString());
-     * }
-     * ```
-     *
-     * @param daemon
-     *
-     * @param scanHeight    The height to begin scanning the blockchain from.
-     *                      This can greatly increase sync speeds if given.
-     *                      Defaults to zero.
-     *
-     * @param config
-     */
-    public static async importWalletFromLedger(
-        daemon: Daemon,
-        scanHeight: number = 0,
-        config: IConfig): Promise<[WalletBackend, undefined] | [undefined, WalletError]> {
-
-        logger.log(
-            'Function importWalletFromLedger called',
-            LogLevel.DEBUG,
-            LogCategory.GENERAL,
-        );
-
-        if (!config.ledgerTransport) {
-            return [undefined, new WalletError(WalletErrorCode.LEDGER_TRANSPORT_REQUIRED)];
-        }
-
-        assertNumber(scanHeight, 'scanHeight');
-
-        if (scanHeight < 0) {
-            return [undefined, new WalletError(WalletErrorCode.NEGATIVE_VALUE_GIVEN)];
-        }
-
-        if (!Number.isInteger(scanHeight)) {
-            return [undefined, new WalletError(WalletErrorCode.NON_INTEGER_GIVEN)];
-        }
-
-        const merged = MergeConfig(config);
-
-        let address: Address;
-
-        try {
-            await CryptoUtils(merged).init();
-
-            await CryptoUtils(merged).fetchKeys();
-
-            const tmpAddress = CryptoUtils(merged).address;
-
-            if (tmpAddress) {
-                address = tmpAddress;
-            } else {
-                return [undefined, new WalletError(WalletErrorCode.LEDGER_COULD_NOT_GET_KEYS)];
-            }
-        } catch (e) {
-            return [undefined, new WalletError(WalletErrorCode.LEDGER_COULD_NOT_GET_KEYS)];
-        }
-
-        /* Can't sync from the current scan height, not newly created */
-        const newWallet: boolean = false;
-
-        const wallet = await WalletBackend.init(
-            merged, daemon, await address.address(), scanHeight, newWallet,
-            address.view.privateKey, '0'.repeat(64),
         );
 
         return [wallet, undefined];
@@ -847,14 +601,14 @@ export class WalletBackend extends EventEmitter {
      *
      * const address = 'TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW';
      *
-     * const [wallet, err] = await WB.WalletBackend.importViewWallet(daemon, 100000, privateViewKey, address);
+     * const [wallet, err] = WB.WalletBackend.importViewWallet(daemon, 100000, privateViewKey, address);
      *
      * if (err) {
      *      console.log('Failed to load wallet: ' + err.toString());
      * }
      * ```
      *
-     * @param daemon
+     * @param daemon        An implementation of the IDaemon interface.
      *
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
@@ -862,14 +616,13 @@ export class WalletBackend extends EventEmitter {
      * @param privateViewKey    The private view key of this view wallet. Should be a 64 char hex string.
      *
      * @param address       The public address of this view wallet.
-     * @param config
      */
-    public static async importViewWallet(
-        daemon: Daemon,
+    public static importViewWallet(
+        daemon: IDaemon,
         scanHeight: number = 0,
         privateViewKey: string,
         address: string,
-        config?: IConfig): Promise<[WalletBackend, undefined] | [undefined, WalletError]> {
+        config?: IConfig): [WalletBackend, undefined] | [undefined, WalletError] {
 
         logger.log(
             'Function importViewWallet called',
@@ -887,7 +640,7 @@ export class WalletBackend extends EventEmitter {
 
         const integratedAddressesAllowed: boolean = false;
 
-        const err: WalletError = await validateAddresses(
+        const err: WalletError = validateAddresses(
             new Array(address), integratedAddressesAllowed, MergeConfig(config),
         );
 
@@ -906,7 +659,7 @@ export class WalletBackend extends EventEmitter {
         /* Can't sync from the current scan height, not newly created */
         const newWallet: boolean = false;
 
-        const wallet = await WalletBackend.init(
+        const wallet = new WalletBackend(
             MergeConfig(config), daemon, address, scanHeight, newWallet,
             privateViewKey,
         );
@@ -923,15 +676,14 @@ export class WalletBackend extends EventEmitter {
      *
      * const daemon = new WB.Daemon('127.0.0.1', 11898);
      *
-     * const wallet = await WB.WalletBackend.createWallet(daemon);
+     * const wallet = WB.WalletBackend.createWallet(daemon);
      * ```
      *
-     * @param daemon
-     * @param config
+     * @param daemon        An implementation of the IDaemon interface.
      */
-    public static async createWallet(
-        daemon: Daemon,
-        config?: IConfig): Promise<WalletBackend> {
+    public static createWallet(
+        daemon: IDaemon,
+        config?: IConfig): WalletBackend {
 
         logger.log(
             'Function createWallet called',
@@ -943,28 +695,14 @@ export class WalletBackend extends EventEmitter {
 
         const scanHeight: number = 0;
 
-        const merged = MergeConfig(config);
+        const keys = CryptoUtils(MergeConfig(config)).createNewAddress();
 
-        let address = await Address.fromEntropy(undefined, undefined, merged.addressPrefix);
-
-        if (merged.ledgerTransport) {
-            await CryptoUtils(merged).init();
-
-            await CryptoUtils(merged).fetchKeys();
-
-            const ledgerAddress = CryptoUtils(merged).address;
-
-            if (ledgerAddress) {
-                address = ledgerAddress;
-            } else {
-                throw new Error('Could not create wallet from Ledger transport');
-            }
-        }
-
-        return WalletBackend.init(
-            merged, daemon, await address.address(), scanHeight, newWallet,
-            address.view.privateKey, address.spend.privateKey,
+        const wallet = new WalletBackend(
+            MergeConfig(config), daemon, keys.address, scanHeight, newWallet,
+            keys.view.privateKey, keys.spend.privateKey,
         );
+
+        return wallet;
     }
 
     /* Utility function for nicer JSON parsing function */
@@ -996,7 +734,7 @@ export class WalletBackend extends EventEmitter {
     /**
      * Interface to either a regular daemon or a blockchain cache api
      */
-    private daemon: Daemon;
+    private daemon: IDaemon;
 
     /**
      * Wallet synchronization state
@@ -1035,10 +773,10 @@ export class WalletBackend extends EventEmitter {
     private externalBlockProcessFunction?: (
         block: Block,
         privateViewKey: string,
-        spendKeys: [string, string][],
+        spendKeys: Array<[string, string]>,
         isViewWallet: boolean,
         processCoinbaseTransactions: boolean,
-    ) => [string, TransactionInput][];
+    ) => Array<[string, TransactionInput]>;
 
     /**
      * Whether we should automatically keep the wallet optimized
@@ -1073,48 +811,33 @@ export class WalletBackend extends EventEmitter {
      */
     private preparedTransactions: Map<string, PreparedTransaction> = new Map();
 
-    private constructor(config: Config, daemon: Daemon, subWallets: SubWallets, walletSynchronizer: WalletSynchronizer) {
-        super();
-
-        this.config = config;
-
-        this.daemon = daemon;
-
-        this.subWallets = subWallets;
-
-        this.walletSynchronizer = walletSynchronizer;
-
-        this.setupEventHandlers();
-
-        this.setupMetronomes();
-    }
-
     /**
-     * @param config
-     * @param daemon
-     * @param address
      * @param newWallet Are we creating a new wallet? If so, it will start
      *                  syncing from the current time.
      *
      * @param scanHeight    The height to begin scanning the blockchain from.
      *                      This can greatly increase sync speeds if given.
      *                      Set to zero if `newWallet` is `true`.
-     * @param privateViewKey
+     *
      * @param privateSpendKey   Omit this parameter to create a view wallet.
      *
      */
-    private static async init (
+    private constructor(
         config: Config,
-        daemon: Daemon,
+        daemon: IDaemon,
         address: string,
         scanHeight: number,
         newWallet: boolean,
         privateViewKey: string,
-        privateSpendKey?: string
-    ): Promise<WalletBackend> {
+        privateSpendKey?: string) {
+
+        super();
+
+        this.config = config;
+
         daemon.updateConfig(config);
 
-        const subWallets =  await SubWallets.init(
+        this.subWallets = new SubWallets(
             config, address, scanHeight, newWallet, privateViewKey,
             privateSpendKey,
         );
@@ -1122,25 +845,19 @@ export class WalletBackend extends EventEmitter {
         let timestamp = 0;
 
         if (newWallet) {
-            timestamp = getCurrentTimestampAdjusted();
+            timestamp = getCurrentTimestampAdjusted(this.config.blockTargetTime);
         }
 
-        const walletSynchronizer = new WalletSynchronizer(
-            daemon, subWallets, timestamp, scanHeight,
-            privateViewKey, config,
+        this.daemon = daemon;
+
+        this.walletSynchronizer = new WalletSynchronizer(
+            daemon, this.subWallets, timestamp, scanHeight,
+            privateViewKey, this.config,
         );
 
-        const result = new WalletBackend(config, daemon, subWallets, walletSynchronizer);
+        this.setupEventHandlers();
 
-        if (!result.usingNativeCrypto()) {
-            logger.log(
-                'Wallet is not using native crypto. Syncing could be much slower than normal.',
-                LogLevel.WARNING,
-                LogCategory.GENERAL,
-            );
-        }
-
-        return result;
+        this.setupMetronomes();
     }
 
     /**
@@ -1156,7 +873,7 @@ export class WalletBackend extends EventEmitter {
      * console.log(`Connected to ${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`);
      * ```
      */
-    public async swapNode(newDaemon: Daemon): Promise<void> {
+    public async swapNode(newDaemon: IDaemon): Promise<void> {
         logger.log(
             'Function swapNode called',
             LogLevel.DEBUG,
@@ -1270,7 +987,7 @@ export class WalletBackend extends EventEmitter {
      * ```
      *
      * @param scanHeight The scan height to begin scanning transactions from
-     * @param scanTimestamp The timestamp to being scanning transactions from
+     * @param timestamp The timestamp to being scanning transactions from
      */
     public async reset(scanHeight: number = 0, scanTimestamp: number = 0): Promise<void> {
         logger.log(
@@ -1355,7 +1072,7 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * const [address, error] = await wallet.addSubWallet();
+     * const [address, error] = wallet.addSubWallet();
      *
      * if (!error) {
      *      console.log(`Created subwallet with address of ${address}`);
@@ -1364,16 +1081,12 @@ export class WalletBackend extends EventEmitter {
      *
      * @returns Returns the newly created address or an error.
      */
-    public async addSubWallet(): Promise<([string, undefined] | [undefined, WalletError])> {
+    public addSubWallet(): ([string, undefined] | [undefined, WalletError]) {
         logger.log(
             'Function addSubWallet called',
             LogLevel.DEBUG,
             LogCategory.GENERAL,
         );
-
-        if (!await this.subwalletsSupported()) {
-            return [undefined, new WalletError(WalletErrorCode.LEDGER_SUBWALLETS_NOT_SUPPORTED)];
-        }
 
         const currentHeight: number = this.walletSynchronizer.getHeight();
 
@@ -1413,10 +1126,6 @@ export class WalletBackend extends EventEmitter {
             LogCategory.GENERAL,
         );
 
-        if (!await this.subwalletsSupported()) {
-            return [undefined, new WalletError(WalletErrorCode.LEDGER_SUBWALLETS_NOT_SUPPORTED)];
-        }
-
         const currentHeight: number = this.walletSynchronizer.getHeight();
 
         if (scanHeight === undefined) {
@@ -1430,7 +1139,7 @@ export class WalletBackend extends EventEmitter {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
         }
 
-        const [error, address] = await this.subWallets.importSubWallet(privateSpendKey, scanHeight);
+        const [error, address] = this.subWallets.importSubWallet(privateSpendKey, scanHeight);
 
         /* If the import height is lower than the current height then we need
          * to go back and rescan those blocks with the new subwallet. */
@@ -1480,10 +1189,6 @@ export class WalletBackend extends EventEmitter {
             LogCategory.GENERAL,
         );
 
-        if (!await this.subwalletsSupported()) {
-            return [undefined, new WalletError(WalletErrorCode.LEDGER_SUBWALLETS_NOT_SUPPORTED)];
-        }
-
         const currentHeight: number = this.walletSynchronizer.getHeight();
 
         if (scanHeight === undefined) {
@@ -1497,7 +1202,7 @@ export class WalletBackend extends EventEmitter {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
         }
 
-        const [error, address] = await this.subWallets.importViewSubWallet(publicSpendKey, scanHeight);
+        const [error, address] = this.subWallets.importViewSubWallet(publicSpendKey, scanHeight);
 
         /* If the import height is lower than the current height then we need
          * to go back and rescan those blocks with the new subwallet. */
@@ -1520,7 +1225,7 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * const error = await wallet.deleteSubWallet('TRTLv2txGW8daTunmAVV6dauJgEv1LezM2Hse7EUD5c11yKHsNDrzQ5UWNRmu2ToQVhDcr82ZPVXy4mU5D7w9RmfR747KeXD3UF');
+     * const error = wallet.deleteSubWallet('TRTLv2txGW8daTunmAVV6dauJgEv1LezM2Hse7EUD5c11yKHsNDrzQ5UWNRmu2ToQVhDcr82ZPVXy4mU5D7w9RmfR747KeXD3UF');
      *
      * if (error) {
      *      console.log(`Failed to delete subwallet: ${error.toString()}`);
@@ -1529,20 +1234,16 @@ export class WalletBackend extends EventEmitter {
      *
      * @param address The subwallet address to remove
      */
-    public async deleteSubWallet(address: string): Promise<WalletError> {
+    public deleteSubWallet(address: string): WalletError {
         logger.log(
             'Function deleteSubWallet called',
             LogLevel.DEBUG,
             LogCategory.GENERAL,
         );
 
-        if (!await this.subwalletsSupported()) {
-            return new WalletError(WalletErrorCode.LEDGER_SUBWALLETS_NOT_SUPPORTED);
-        }
-
         assertString(address, 'address');
 
-        const err: WalletError = await validateAddresses(
+        const err: WalletError = validateAddresses(
             new Array(address), false, this.config,
         );
 
@@ -1644,7 +1345,6 @@ export class WalletBackend extends EventEmitter {
         }
 
         this.config.scanCoinbaseTransactions = shouldScan;
-        this.daemon.updateConfig(this.config);
     }
 
     /**
@@ -1700,67 +1400,6 @@ export class WalletBackend extends EventEmitter {
 
         this.autoOptimize = shouldAutoOptimize;
     }
-
-    /**
-     * Returns a string indicating the type of cryptographic functions being used.
-     *
-     * Example:
-     * ```javascript
-     * const cryptoType = wallet.getCryptoType();
-     *
-     * console.log(`Wallet is using the ${cryptoType} cryptographic library.`);
-     * ```
-     */
-    public getCryptoType(): string {
-        logger.log(
-            'Function getCryptoType called',
-            LogLevel.DEBUG,
-            LogCategory.GENERAL,
-        );
-
-        const type = new Crypto().type;
-
-        switch (type) {
-            case CryptoType.NODEADDON:
-                return 'C++';
-            case CryptoType.JS:
-                return 'js';
-            case CryptoType.WASM:
-                return 'wasm';
-            case CryptoType.WASMJS:
-                return 'wasmjs';
-            case CryptoType.EXTERNAL:
-                return 'user-defined';
-            case CryptoType.MIXED:
-                return 'mixed';
-            case CryptoType.UNKNOWN:
-            default:
-                return 'unknown';
-        }
-    }
-
-    /**
-     * Returns a boolean indicating whether or not the wallet is using native crypto
-     *
-     * Example:
-     * ```javascript
-     * const native = wallet.usingNativeCrypto();
-     *
-     * if (native) {
-     *     console.log('Wallet is using native cryptographic code.');
-     * }
-     * ```
-     */
-    public usingNativeCrypto(): boolean {
-        logger.log(
-            'Function usingNativeCrypto called',
-            LogLevel.DEBUG,
-            LogCategory.GENERAL,
-        );
-
-        return Crypto.isNative;
-    }
-
 
     /**
      * Sets a callback to be used instead of console.log for more fined control
@@ -1837,10 +1476,10 @@ export class WalletBackend extends EventEmitter {
     public setBlockOutputProcessFunc(func: (
             block: Block,
             privateViewKey: string,
-            spendKeys: [string, string][],
+            spendKeys: Array<[string, string]>,
             isViewWallet: boolean,
             processCoinbaseTransactions: boolean,
-        ) => [string, TransactionInput][]): void {
+        ) => Array<[string, TransactionInput]>): void {
 
         logger.log(
             'Function setBlockOutputProcessFunc called',
@@ -1873,11 +1512,9 @@ export class WalletBackend extends EventEmitter {
 
             await this.daemon.init();
 
-            await Promise.all([
-                this.syncThread.start(),
-                this.daemonUpdateThread.start(),
-                this.lockedTransactionsCheckThread.start()
-            ]);
+            this.syncThread.start();
+            this.daemonUpdateThread.start();
+            this.lockedTransactionsCheckThread.start();
         }
     }
 
@@ -1985,7 +1622,7 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * const [publicSpendKey, privateSpendKey, err] = await wallet.getSpendKeys('TRTLxyz...');
+     * const [publicSpendKey, privateSpendKey, err] = wallet.getSpendKeys('TRTLxyz...');
      *
      * if (err) {
      *      console.log('Failed to get spend keys for address: ' + err.toString());
@@ -1994,7 +1631,7 @@ export class WalletBackend extends EventEmitter {
      *
      * @param address A valid address in this container, to get the spend keys of
      */
-    public async getSpendKeys(address: string): Promise<([string, string, undefined] | [undefined, undefined, WalletError])> {
+    public getSpendKeys(address: string): ([string, string, undefined] | [undefined, undefined, WalletError]) {
         logger.log(
             'Function getSpendKeys called',
             LogLevel.DEBUG,
@@ -2005,7 +1642,7 @@ export class WalletBackend extends EventEmitter {
 
         const integratedAddressesAllowed: boolean = false;
 
-        const err: WalletError = await validateAddresses(
+        const err: WalletError = validateAddresses(
             new Array(address), integratedAddressesAllowed, this.config,
         );
 
@@ -2013,7 +1650,7 @@ export class WalletBackend extends EventEmitter {
             return [undefined, undefined, err];
         }
 
-        const [, publicSpendKey] = await addressToKeys(address, this.config);
+        const [publicViewKey, publicSpendKey] = addressToKeys(address, this.config);
 
         const [err2, privateSpendKey] = this.subWallets.getPrivateSpendKey(publicSpendKey);
 
@@ -2052,14 +1689,14 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * const [seed, err] = await wallet.getMnemonicSeed();
+     * const [seed, err] = wallet.getMnemonicSeed();
      *
      * if (err) {
      *      console.log('Wallet is not a deterministic wallet: ' + err.toString());
      * }
      * ```
      */
-    public async getMnemonicSeed(): Promise<([string, undefined] | [undefined, WalletError])> {
+    public getMnemonicSeed(): ([string, undefined] | [undefined, WalletError]) {
         logger.log(
             'Function getMnemonicSeed called',
             LogLevel.DEBUG,
@@ -2076,7 +1713,7 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * const [seed, err] = await wallet.getMnemonicSeedForAddress('TRTLxyz...');
+     * const [seed, err] = wallet.getMnemonicSeedForAddress('TRTLxyz...');
      *
      * if (err) {
      *      console.log('Address does not belong to a deterministic wallet: ' + err.toString());
@@ -2085,7 +1722,7 @@ export class WalletBackend extends EventEmitter {
      *
      * @param address A valid address that exists in this container
      */
-    public async getMnemonicSeedForAddress(address: string): Promise<([string, undefined] | [undefined, WalletError])> {
+    public getMnemonicSeedForAddress(address: string): ([string, undefined] | [undefined, WalletError]) {
         logger.log(
             'Function getMnemonicSeedForAddress called',
             LogLevel.DEBUG,
@@ -2096,16 +1733,14 @@ export class WalletBackend extends EventEmitter {
 
         const privateViewKey: string = this.subWallets.getPrivateViewKey();
 
-        const [, privateSpendKey, error] = await this.getSpendKeys(address);
+        const [publicSpendKey, privateSpendKey, error] = this.getSpendKeys(address);
 
         if (error) {
             return [undefined, error];
         }
 
-        const parsedAddr = await Address.fromKeys(
-            privateSpendKey as string,
-            privateViewKey as string,
-            this.config.addressPrefix
+        const parsedAddr = CryptoUtils(this.config).createAddressFromKeys(
+            privateSpendKey as string, privateViewKey as string,
         );
 
         if (!parsedAddr.mnemonic) {
@@ -2346,13 +1981,11 @@ export class WalletBackend extends EventEmitter {
      * @param subWalletsToTakeFrom  The addresses of the subwallets to draw funds from.
      * @param destination           The destination for the fusion transaction to be sent to.
      *                              Must be an address existing in this container.
-     * @param extraData             Extra arbitrary data to include in the transaction
      */
     public async sendFusionTransactionAdvanced(
         mixin?: number,
         subWalletsToTakeFrom?: string[],
-        destination?: string,
-        extraData?: string): Promise<SendTransactionResult> {
+        destination?: string): Promise<SendTransactionResult> {
 
         logger.log(
             'Function sendFusionTransactionAdvanced called',
@@ -2373,7 +2006,6 @@ export class WalletBackend extends EventEmitter {
                     mixin,
                     subWalletsToTakeFrom,
                     destination,
-                    extraData
                 );
             },
             true,
@@ -2492,18 +2124,16 @@ export class WalletBackend extends EventEmitter {
      *                              and address1 would get whatever remains of the balance
      *                              after paying node/network fees.
      *                              Defaults to false.
-     * @param extraData             Extra arbitrary data to include in the transaction
      */
     public async sendTransactionAdvanced(
-        destinations: [string, number][],
+        destinations: Array<[string, number]>,
         mixin?: number,
         fee?: FeeType,
         paymentID?: string,
         subWalletsToTakeFrom?: string[],
         changeAddress?: string,
         relayToNetwork?: boolean,
-        sendAll?: boolean,
-        extraData?: string): Promise<SendTransactionResult> {
+        sendAll?: boolean): Promise<SendTransactionResult> {
 
         logger.log(
             'Function sendTransactionAdvanced called',
@@ -2534,7 +2164,6 @@ export class WalletBackend extends EventEmitter {
                     changeAddress,
                     relayToNetwork,
                     sendAll,
-                    extraData
                 );
             },
             false,
@@ -2665,7 +2294,8 @@ export class WalletBackend extends EventEmitter {
      * }
      *
      */
-    public async sendRawPreparedTransaction(rawTransaction: PreparedTransaction): Promise<SendTransactionResult> {
+
+    public sendRawPreparedTransaction(rawTransaction: PreparedTransaction) {
         logger.log(
             'Function sendRawPreparedTransaction called',
             LogLevel.DEBUG,
@@ -2683,9 +2313,9 @@ export class WalletBackend extends EventEmitter {
                     this.config,
                 );
 
-                if (res.success && res.rawTransaction && res.rawTransaction.hash) {
-                    res.transactionHash = await res.rawTransaction.hash();
-                    this.preparedTransactions.delete(res.transactionHash!);
+                if (res.success && res.rawTransaction) {
+                    res.transactionHash = res.rawTransaction.hash;
+                    this.preparedTransactions.delete(res.transactionHash);
                 }
 
                 return res;
@@ -2749,55 +2379,17 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Deletes all prepared transactions.
-     *
-     * Example:
-     * ```javascript
-     * wallet.deletePreparedTransactions();
-     * ```
-     *
-     */
-    public deletePreparedTransactions(): void {
-        logger.log(
-            'Function deletePreparedTransactions called',
-            LogLevel.DEBUG,
-            LogCategory.GENERAL,
-        );
-
-        this.preparedTransactions.clear();
-    }
-
-    /**
-     * Gets all prepared transactions.
-     *
-     * Example:
-     * ```javascript
-     * const preparedTransactions = wallet.getPreparedTransactions();
-     * ```
-     *
-     */
-    public getPreparedTransactions(): PreparedTransaction[] {
-        logger.log(
-            'Function getPreparedTransactions called',
-            LogLevel.DEBUG,
-            LogCategory.GENERAL,
-        );
-
-        return Array.from(this.preparedTransactions.values());
-    }
-
-    /**
      * Get the unlocked and locked balance for the wallet container.
      *
      * Example:
      * ```javascript
-     * const [unlockedBalance, lockedBalance] = await wallet.getBalance();
+     * const [unlockedBalance, lockedBalance] = wallet.getBalance();
      * ```
      *
      * @param subWalletsToTakeFrom The addresses to check the balance of. If
      *                             not given, defaults to all addresses.
      */
-    public async getBalance(subWalletsToTakeFrom?: string[]): Promise<[number, number]> {
+    public getBalance(subWalletsToTakeFrom?: string[]): [number, number] {
         logger.log(
             'Function getBalance called',
             LogLevel.DEBUG,
@@ -2821,7 +2413,7 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * for (const tx of await wallet.getTransactions()) {
+     * for (const tx of wallet.getTransactions()) {
      *      console.log(`Transaction ${tx.hash} - ${WB.prettyPrintAmount(tx.totalAmount())} - ${tx.timestamp}`);
      * }
      * ```
@@ -2831,11 +2423,11 @@ export class WalletBackend extends EventEmitter {
      * @param includeFusions Should we include fusion transactions?
      * @param subWallet Should we only include transactions of the specified subWallet?
      */
-    public async getTransactions(
+    public getTransactions(
         startIndex?: number,
         numTransactions?: number,
         includeFusions = true,
-        subWallet?: string): Promise<Transaction[]> {
+        subWallet?: string): Transaction[] {
 
         logger.log(
             'Function getTransactions called',
@@ -2848,9 +2440,9 @@ export class WalletBackend extends EventEmitter {
         assertBoolean(includeFusions, 'includeFusions');
 
         /* Clone the array and reverse it, newer txs first */
-        const unconfirmed = (await this.subWallets.getUnconfirmedTransactions(subWallet, includeFusions)).slice().reverse();
+        const unconfirmed = this.subWallets.getUnconfirmedTransactions(subWallet, includeFusions).slice().reverse();
         /* Clone the array and reverse it, newer txs first */
-        const confirmed = (await this.subWallets.getTransactions(subWallet, includeFusions)).slice().reverse();
+        const confirmed = this.subWallets.getTransactions(subWallet, includeFusions).slice().reverse();
 
         const allTransactions: Transaction[] = unconfirmed.concat(confirmed);
 
@@ -2874,7 +2466,7 @@ export class WalletBackend extends EventEmitter {
      *
      * Example:
      * ```javascript
-     * const tx = await wallet.getTransaction('693950eeec41dc36cfc5109eba15807ce3d63eff21f1eec20a7d1bda99563b1c');
+     * const tx = wallet.getTransaction('693950eeec41dc36cfc5109eba15807ce3d63eff21f1eec20a7d1bda99563b1c');
      *
      * if (tx) {
      *      console.log(`Tx ${tx.hash} is worth ${WB.prettyPrintAmount(tx.totalAmount())}`);
@@ -2885,7 +2477,7 @@ export class WalletBackend extends EventEmitter {
      *
      * @param hash The hash of the transaction to get
      */
-    public async getTransaction(hash: string): Promise<Transaction | undefined> {
+    public getTransaction(hash: string): Transaction | undefined {
         logger.log(
             'Function getTransaction called',
             LogLevel.DEBUG,
@@ -2894,7 +2486,7 @@ export class WalletBackend extends EventEmitter {
 
         assertString(hash, 'hash');
 
-        const txs = await this.getTransactions();
+        const txs = this.getTransactions();
 
         return txs.find((tx) => tx.hash === hash);
     }
@@ -2914,7 +2506,7 @@ export class WalletBackend extends EventEmitter {
      * let numTransactions = 0;
      *
      * while (true) {
-     *      const tmpNumTransactions = await wallet.getNumTransactions();
+     *      const tmpNumTransactions = wallet.getNumTransactions();
      *
      *      if (numTransactions != tmpNumTransactions) {
      *          console.log(tmpNumTransactions - numTransactions + ' new transactions found!');
@@ -2926,7 +2518,7 @@ export class WalletBackend extends EventEmitter {
      * @param subWallet Should we only count transactions of the specified subWallet?
      * @param includeFusions Should we count fusion transactions? Defaults to true.
      */
-    public async getNumTransactions(subWallet?: string, includeFusions: boolean = true): Promise<number> {
+    public getNumTransactions(subWallet?: string, includeFusions: boolean = true): number {
         logger.log(
             'Function getNumTransactions called',
             LogLevel.DEBUG,
@@ -2936,8 +2528,8 @@ export class WalletBackend extends EventEmitter {
         assertStringOrUndefined(subWallet, 'subWallet');
         assertBoolean(includeFusions, 'includeFusions');
 
-        return (await this.subWallets.getNumTransactions(subWallet, includeFusions))
-             + (await this.subWallets.getNumUnconfirmedTransactions(subWallet, includeFusions));
+        return this.subWallets.getNumTransactions(subWallet, includeFusions)
+             + this.subWallets.getNumUnconfirmedTransactions(subWallet, includeFusions);
     }
 
     private async sendTransactionInternal(
@@ -3074,9 +2666,8 @@ export class WalletBackend extends EventEmitter {
                 this.synced = true;
             }
 
-            if (this.shouldPerformAutoOptimize && this.autoOptimize) {
-                this.performAutoOptimize()
-                    .catch(error => this.emit('autoOptimizeError', error));
+            if (this.shouldPerformAutoOptimize) {
+                this.performAutoOptimize();
             }
         } else {
 
@@ -3137,7 +2728,7 @@ export class WalletBackend extends EventEmitter {
             }
         }
 
-        if (txData.transactionsToAdd.length > 0) {
+        if (txData.transactionsToAdd.length > 0 && this.autoOptimize) {
             this.shouldPerformAutoOptimize = true;
         }
     }
@@ -3205,7 +2796,7 @@ export class WalletBackend extends EventEmitter {
             const processFunction = this.externalBlockProcessFunction
                                  || this.walletSynchronizer.processBlockOutputs.bind(this.walletSynchronizer);
 
-            const blockInputs: [string, TransactionInput][] = await processFunction(
+            const blockInputs: Array<[string, TransactionInput]> = await processFunction(
                 block,
                 this.subWallets.getPrivateViewKey(),
                 this.subWallets.getAllSpendKeys(),
@@ -3216,7 +2807,7 @@ export class WalletBackend extends EventEmitter {
             let globalIndexes: Map<string, number[]> = new Map();
 
             /* Fill in output indexes if not returned from daemon */
-            for (const [, input] of blockInputs) {
+            for (const [publicKey, input] of blockInputs) {
                 /* Using a daemon type which doesn't provide output indexes,
                    and not in a view wallet */
                 if (!this.subWallets.isViewWallet && input.globalOutputIndex === undefined) {
@@ -3328,14 +2919,6 @@ export class WalletBackend extends EventEmitter {
             this.emit('connect');
         });
 
-        this.daemon.on('rawblock', (block) => {
-            this.emit('rawblock', block);
-        });
-
-        this.daemon.on('rawtransaction', (transaction) => {
-            this.emit('rawtransaction', transaction);
-        });
-
         this.daemon.on('heightchange', (localDaemonBlockCount, networkDaemonBlockCount) => {
             this.emit(
                 'heightchange',
@@ -3374,28 +2957,12 @@ export class WalletBackend extends EventEmitter {
                 this.emit('deadnode');
             }
         });
-
-        /**
-         *  Bubble up the events from the utils library; however, first
-         *  we need to clear any existing listeners for this method as we don't want
-         *  to create a memory leak if the setupEventHandlers method is called
-         *  multiple times
-         */
-        CryptoUtils(this.config).removeAllListeners();
-
-        CryptoUtils(this.config).on('user_confirm', () => this.emit('user_confirm'));
-
-        CryptoUtils(this.config).on('transport_receive',
-            (data: string) => this.emit('transport_receive', data));
-
-        CryptoUtils(this.config).on('transport_send',
-            (data: string) => this.emit('transport_send', data));
     }
 
     /**
      * Initialize stuff not stored in the JSON.
      */
-    private initAfterLoad(daemon: Daemon, config: Config): void {
+    private initAfterLoad(daemon: IDaemon, config: Config): void {
         this.synced = false;
         this.started = false;
         this.autoOptimize = true;
@@ -3415,6 +2982,7 @@ export class WalletBackend extends EventEmitter {
         this.subWallets.initAfterLoad(this.config);
 
         this.setupMetronomes();
+
     }
 
     /**
@@ -3486,15 +3054,5 @@ export class WalletBackend extends EventEmitter {
 
         /* We're done. */
         this.currentlyOptimizing = false;
-    }
-
-    private async isLedgerRequired(): Promise<boolean> {
-        const [privateSpendKey] = await this.getPrimaryAddressPrivateKeys();
-
-        return !this.subWallets.isViewWallet && privateSpendKey === '0'.repeat(64);
-    }
-
-    private async subwalletsSupported(): Promise<boolean> {
-        return !(await this.isLedgerRequired() && this.config.ledgerTransport);
     }
 }

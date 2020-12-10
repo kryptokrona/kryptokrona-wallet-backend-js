@@ -4,8 +4,8 @@
 
 import * as crypto from 'crypto';
 import * as pbkdf2 from 'pbkdf2';
-import {IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER, PBKDF2_ITERATIONS} from './Constants';
-import {WalletError, WalletErrorCode} from './WalletError';
+import { IS_A_WALLET_IDENTIFIER, IS_CORRECT_PASSWORD_IDENTIFIER, PBKDF2_ITERATIONS } from './Constants';
+import { WalletError, WalletErrorCode } from './WalletError';
 
 export class WalletEncryption {
     /**
@@ -20,7 +20,6 @@ export class WalletEncryption {
      *
      * ```
      *
-     * @param walletJson
      * @param password The password to encrypt the wallet with
      *
      * @return Returns a string containing the encrypted fileData.
@@ -42,7 +41,6 @@ export class WalletEncryption {
      *
      * ```
      *
-     * @param walletJson
      * @param password The password to encrypt the wallet with
      *
      * @return Returns a Buffer containing the encrypted fileData.
@@ -71,11 +69,13 @@ export class WalletEncryption {
 
         /* Write the wallet identifier to the file so we know it's a wallet file.
             Write the salt so it can be decrypted again */
-        return Buffer.concat([
+        const fileData: Buffer = Buffer.concat([
             IS_A_WALLET_IDENTIFIER,
             salt,
             encryptedData,
         ]);
+
+        return fileData;
     }
 
     /**

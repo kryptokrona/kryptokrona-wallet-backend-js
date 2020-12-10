@@ -3,14 +3,14 @@
 // Please see the included LICENSE file for more information.
 
 import * as _ from 'lodash';
-import { sizeof } from 'object-sizeof';
+const sizeof = require('object-sizeof');
 
 import { EventEmitter } from 'events';
 
 import { Config } from './Config';
-import { Daemon } from './Daemon';
+import { IDaemon } from './IDaemon';
 import { SubWallets } from './SubWallets';
-import { prettyPrintBytes } from './Utilities';
+import { delay, prettyPrintBytes } from './Utilities';
 import { LAST_KNOWN_BLOCK_HASHES_SIZE } from './Constants';
 import { SynchronizationStatus } from './SynchronizationStatus';
 import { WalletSynchronizerJSON } from './JsonSerialization';
@@ -18,7 +18,7 @@ import { LogCategory, logger, LogLevel } from './Logger';
 import { underivePublicKey, generateKeyDerivation } from './CryptoWrapper';
 
 import {
-    Block, RawCoinbaseTransaction, RawTransaction, Transaction,
+    Block, KeyInput, RawCoinbaseTransaction, RawTransaction, Transaction,
     TransactionData, TransactionInput, TopBlock,
 } from './Types';
 
@@ -42,7 +42,7 @@ export class WalletSynchronizer extends EventEmitter {
     /**
      * The daemon instance to retrieve blocks from
      */
-    private daemon: Daemon;
+    private daemon: IDaemon;
 
     /**
      * The timestamp to start taking blocks from
@@ -100,7 +100,7 @@ export class WalletSynchronizer extends EventEmitter {
     private config: Config = new Config();
 
     constructor(
-        daemon: Daemon,
+        daemon: IDaemon,
         subWallets: SubWallets,
         startTimestamp: number,
         startHeight: number,
@@ -126,7 +126,7 @@ export class WalletSynchronizer extends EventEmitter {
     /**
      * Initialize things we can't initialize from the JSON
      */
-    public initAfterLoad(subWallets: SubWallets, daemon: Daemon, config: Config): void {
+    public initAfterLoad(subWallets: SubWallets, daemon: IDaemon, config: Config): void {
         this.subWallets = subWallets;
         this.daemon = daemon;
         this.storedBlocks = [];
@@ -149,7 +149,7 @@ export class WalletSynchronizer extends EventEmitter {
 
     public processBlock(
         block: Block,
-        ourInputs: [string, TransactionInput][]): TransactionData {
+        ourInputs: Array<[string, TransactionInput]>) {
 
         const txData: TransactionData = new TransactionData();
 
@@ -185,20 +185,16 @@ export class WalletSynchronizer extends EventEmitter {
      * Process transaction outputs of the given block. No external dependencies,
      * lets us easily swap out with a C++ replacement for SPEEEED
      *
-     * @param block
-     * @param privateViewKey
-     * @param spendKeys Array of spend keys in the format [publicKey, privateKey]
-     * @param isViewWallet
-     * @param processCoinbaseTransactions
+     * @param keys Array of spend keys in the format [publicKey, privateKey]
      */
     public async processBlockOutputs(
         block: Block,
         privateViewKey: string,
-        spendKeys: [string, string][],
+        spendKeys: Array<[string, string]>,
         isViewWallet: boolean,
-        processCoinbaseTransactions: boolean): Promise<[string, TransactionInput][]> {
+        processCoinbaseTransactions: boolean): Promise<Array<[string, TransactionInput]>> {
 
-        let inputs: [string, TransactionInput][] = [];
+        let inputs: Array<[string, TransactionInput]> = [];
 
         /* Process the coinbase tx if we're not skipping them for speed */
         if (processCoinbaseTransactions && block.coinbaseTransaction) {
@@ -397,7 +393,7 @@ export class WalletSynchronizer extends EventEmitter {
         /* sizeof() gets a tad expensive... */
         if (blockHeight % 10 === 0 && this.shouldFetchMoreBlocks()) {
             /* Note - not awaiting here */
-            this.downloadBlocks().then(([successOrBusy]) => {
+            this.downloadBlocks().then(([successOrBusy, shouldSleep]) => {
                 if (!successOrBusy) {
                     /* Seconds since we last got a block */
                     const diff = (new Date().getTime() - this.lastDownloadedBlocks.getTime()) / 1000;
@@ -502,7 +498,7 @@ export class WalletSynchronizer extends EventEmitter {
             );
         } catch (err) {
             logger.log(
-                'Failed to get blocks from daemon: ' + err.toString(),
+                'Failed to get blocks from daemon',
                 LogLevel.DEBUG,
                 LogCategory.SYNC,
             );
@@ -588,13 +584,9 @@ export class WalletSynchronizer extends EventEmitter {
      */
     private async processTransactionOutputs(
         rawTX: RawCoinbaseTransaction,
-        blockHeight: number): Promise<[string, TransactionInput][]> {
+        blockHeight: number): Promise<Array<[string, TransactionInput]>> {
 
-        const inputs: [string, TransactionInput][] = [];
-
-        if (rawTX.transactionPublicKey === undefined) {
-            return inputs;
-        }
+        const inputs: Array<[string, TransactionInput]> = [];
 
         const derivation: string = await generateKeyDerivation(
             rawTX.transactionPublicKey, this.privateViewKey, this.config,
@@ -639,15 +631,15 @@ export class WalletSynchronizer extends EventEmitter {
 
     private processCoinbaseTransaction(
         block: Block,
-        ourInputs: [string, TransactionInput][]): Transaction | undefined {
+        ourInputs: Array<[string, TransactionInput]>): Transaction | undefined {
 
         /* Should be guaranteed to be defined here */
         const rawTX: RawCoinbaseTransaction = block.coinbaseTransaction as RawCoinbaseTransaction;
 
         const transfers: Map<string, number> = new Map();
 
-        const relevantInputs: [string, TransactionInput][]
-            = _.filter(ourInputs, ([, input]) => {
+        const relevantInputs: Array<[string, TransactionInput]>
+            = _.filter(ourInputs, ([key, input]) => {
             return input.parentTransactionHash === rawTX.hash;
         });
 
@@ -678,13 +670,13 @@ export class WalletSynchronizer extends EventEmitter {
 
     private processTransaction(
         block: Block,
-        ourInputs: [string, TransactionInput][],
-        rawTX: RawTransaction): [Transaction | undefined, [string, string][]] {
+        ourInputs: Array<[string, TransactionInput]>,
+        rawTX: RawTransaction): [Transaction | undefined, Array<[string, string]>] {
 
         const transfers: Map<string, number> = new Map();
 
-        const relevantInputs: [string, TransactionInput][]
-            = _.filter(ourInputs, ([, input]) => {
+        const relevantInputs: Array<[string, TransactionInput]>
+            = _.filter(ourInputs, ([key, input]) => {
             return input.parentTransactionHash === rawTX.hash;
         });
 
@@ -695,7 +687,7 @@ export class WalletSynchronizer extends EventEmitter {
             );
         }
 
-        const spentKeyImages: [string, string][] = [];
+        const spentKeyImages: Array<[string, string]> = [];
 
         for (const input of rawTX.keyInputs) {
             const [found, publicSpendKey] = this.subWallets.getKeyImageOwner(
