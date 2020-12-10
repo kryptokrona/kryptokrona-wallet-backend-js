@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { CreatedTransaction } from 'kryptokrona-utils';
+import { Transaction as CreatedTransaction } from 'kryptokrona-utils';
 
 import { WalletError } from './WalletError';
 
@@ -19,15 +19,15 @@ export class Block {
         const block = Object.create(Block.prototype);
 
         return Object.assign(block, {
-            coinbaseTransaction: json.coinbaseTX ? RawCoinbaseTransaction.fromJSON(json.coinbaseTX) : undefined,
+            coinbaseTransaction: json.coinbaseTx ? RawCoinbaseTransaction.fromJSON(json.coinbaseTx) : undefined,
 
             transactions: json.transactions.map(RawTransaction.fromJSON),
 
-            blockHeight: Number(json.blockHeight),
+            blockHeight: Number(json.height),
 
-            blockHash: json.blockHash,
+            blockHash: json.hash,
 
-            blockTimestamp: Number(json.blockTimestamp),
+            blockTimestamp: Number(json.timestamp),
         });
     }
 
@@ -48,12 +48,11 @@ export class Block {
     public readonly blockTimestamp: number;
 
     constructor(
-        coinbaseTransaction: RawCoinbaseTransaction,
         transactions: RawTransaction[],
         blockHeight: number,
         blockHash: string,
-        blockTimestamp: number) {
-
+        blockTimestamp: number,
+        coinbaseTransaction?: RawCoinbaseTransaction) {
         this.coinbaseTransaction = coinbaseTransaction;
         this.transactions = transactions;
         this.blockHeight = blockHeight;
@@ -74,7 +73,7 @@ export class RawCoinbaseTransaction {
 
             hash: json.hash,
 
-            transactionPublicKey: json.txPublicKey,
+            transactionPublicKey: json.publicKey,
 
             unlockTime: Number(json.unlockTime),
         });
@@ -118,11 +117,11 @@ export class RawTransaction extends RawCoinbaseTransaction {
 
             hash: json.hash,
 
-            transactionPublicKey: json.txPublicKey,
+            transactionPublicKey: json.publicKey,
 
             unlockTime: Number(json.unlockTime),
 
-            paymentID: json.paymentID,
+            paymentID: json.paymentId,
 
             keyInputs: json.inputs.map(KeyInput.fromJSON),
         });
@@ -226,7 +225,7 @@ export class Transaction {
     public totalAmount(): number {
         let sum: number = 0;
 
-        for (const [publicKey, amount] of this.transfers) {
+        for (const [, amount] of this.transfers) {
             sum += amount;
         }
 
@@ -339,7 +338,7 @@ export class TransactionInput {
         spendHeight: number,
         unlockTime: number,
         parentTransactionHash: string,
-        privateEphemeral: string) {
+        privateEphemeral?: string) {
 
         this.keyImage = keyImage;
         this.amount = amount;
@@ -444,7 +443,6 @@ export class KeyOutput {
 
         return Object.assign(keyOutput, {
             amount: json.amount,
-            globalIndex: json.globalIndex,
             key: json.key,
         });
     }
@@ -455,8 +453,7 @@ export class KeyOutput {
     /* The output amount */
     public readonly amount: number;
 
-    /* The index of the amount in the DB. The blockchain cache api returns
-       this, but the regular daemon does not. */
+    /* The index of the amount in the DB. */
     public readonly globalIndex?: number;
 
     constructor(
@@ -477,8 +474,7 @@ export class KeyInput {
 
         return Object.assign(keyInput, {
             amount: json.amount,
-            keyImage: json.k_image,
-            outputIndexes: json.key_offsets,
+            keyImage: json.keyImage,
         });
     }
 
@@ -488,18 +484,12 @@ export class KeyInput {
     /* The key image of this input */
     public readonly keyImage: string;
 
-    /* The output indexes of the fake and real outputs this input was created
-       from, in the global 'DB' */
-    public readonly outputIndexes: number[];
-
     constructor(
         amount: number,
-        keyImage: string,
-        outputIndexes: number[]) {
+        keyImage: string) {
 
         this.amount = amount;
         this.keyImage = keyImage;
-        this.outputIndexes = outputIndexes;
     }
 }
 
@@ -510,10 +500,10 @@ export class TransactionData {
     public transactionsToAdd: Transaction[] = [];
 
     /* Mapping of public spend key to inputs */
-    public inputsToAdd: Array<[string, TransactionInput]> = [];
+    public inputsToAdd: [string, TransactionInput][] = [];
 
     /* Mapping of public spend key to key image */
-    public keyImagesToMarkSpent: Array<[string, string]> = [];
+    public keyImagesToMarkSpent: [string, string][] = [];
 }
 
 /**
@@ -655,22 +645,11 @@ export interface SendTransactionResult {
     nodeFee?: number;
 }
 
-export enum DaemonType {
-    ConventionalDaemon = 0,
-    BlockchainCacheApi = 1,
-}
-
 export interface DaemonConnection {
     /* What is the host/ip of this daemon */
     host: string;
     /* What is the port of this daemon */
     port: number;
-
-    /* Is this daemon a conventional daemon or a blockchain cache API */
-    daemonType: DaemonType;
-    /* Have we worked out if this daemon is a conventional daemon or a cache
-       API yet */
-    daemonTypeDetermined: boolean;
 
     /* Is this daemon connection served over HTTPS or HTTP */
     ssl: boolean;

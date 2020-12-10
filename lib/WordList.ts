@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-export let English: string[] = [
+export const English: string[] = [
     'abbey',
     'abducts',
     'ability',

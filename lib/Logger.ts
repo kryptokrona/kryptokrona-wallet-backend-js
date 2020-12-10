@@ -20,6 +20,10 @@ class Logger {
         if (level) {
             this.logLevel = level;
         }
+
+        if (callback) {
+            this.callback = callback;
+        }
     }
 
     /**
@@ -173,4 +177,4 @@ function logCategoryToString(category: LogCategory) {
     }
 }
 
-export let logger = new Logger();
+export const logger = new Logger();

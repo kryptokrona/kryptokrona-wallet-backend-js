@@ -28,15 +28,15 @@ function sleep(ms) {
 
     /* Initialise our blockchain cache api. Can use a public node or local node
        with `const daemon = new WB.Daemon('127.0.0.1', 11898);` */
-    const daemon = new WB.Daemon('blockapi.turtlepay.io', 443);
+    const daemon = new WB.Daemon('public.turtlenode.net', 11898);
 
     if (response === 'c') {
-        const newWallet = WB.WalletBackend.createWallet(daemon);
+        const newWallet = await WB.WalletBackend.createWallet(daemon);
 
         wallet = newWallet;
     } else if (response === 'o') {
         /* Open wallet, giving our wallet path and password */
-        const [openedWallet, error] = WB.WalletBackend.openWalletFromFile(daemon, 'mywallet.wallet', 'hunter2');
+        const [openedWallet, error] = await WB.WalletBackend.openWalletFromFile(daemon, 'mywallet.wallet', 'hunter2');
 
         if (error) {
             console.log('Failed to open wallet: ' + error.toString());
@@ -58,7 +58,7 @@ function sleep(ms) {
     console.log('Started wallet');
     console.log('Address: ' + wallet.getPrimaryAddress());
 
-    const [unlockedBalance, lockedBalance] = wallet.getBalance();
+    const [unlockedBalance, lockedBalance] = await wallet.getBalance();
 
     if (unlockedBalance < 11) {
         console.log('Not enough funds to send a transaction...');
@@ -74,7 +74,7 @@ function sleep(ms) {
         }
     }
 
-    await sleep(1000 * 10);
+    await sleep(1000 * 20);
 
     /* Save the wallet to disk */
     wallet.saveWalletToFile('mywallet.wallet', 'hunter2');
