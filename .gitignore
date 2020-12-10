@@ -2,3 +2,5 @@ node_modules
 mywallet.wallet
 dist/
 package-lock.json
+.idea
+yarn-error.log

@@ -1,0 +1,8 @@
+node_modules
+dist
+docs
+examples
+package.json
+typedoc.js
+yarn.lock
+.eslintrc.js

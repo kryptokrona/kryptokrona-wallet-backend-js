@@ -5,7 +5,7 @@
 export { WalletError, WalletErrorCode, SUCCESS } from './WalletError';
 export { WalletBackend } from './WalletBackend';
 export { Daemon } from './Daemon';
-export { IDaemon } from './IDaemon';
+export { FeeType } from './FeeType';
 
 export {
     prettyPrintAmount, isHex64, isValidMnemonic, isValidMnemonicWord,
@@ -14,7 +14,7 @@ export {
 
 export { LogLevel, LogCategory } from './Logger';
 export { validateAddress, validateAddresses, validatePaymentID } from './ValidateParameters';
-export { TransactionInput, DaemonType, DaemonConnection } from './Types';
+export { TransactionInput, DaemonConnection } from './Types';
 export { MixinLimit, MixinLimits } from './MixinLimits';
 export { Config } from './Config';
 

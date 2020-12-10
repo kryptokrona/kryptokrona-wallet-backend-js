@@ -11,6 +11,7 @@
     "outDir": "./dist",
     "strict": true,
     "baseUrl": "./lib",
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "resolveJsonModule": true
   }
 }
