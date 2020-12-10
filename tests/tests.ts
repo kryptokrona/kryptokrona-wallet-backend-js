@@ -18,7 +18,7 @@ import {
 
 import {generateKeyDerivation, underivePublicKey} from '../lib/CryptoWrapper';
 
-import {Address, Crypto as TurtleCoinCrypto, CryptoType, LedgerTransport} from 'turtlecoin-utils';
+import {Address, Crypto as TurtleCoinCrypto, CryptoType, LedgerTransport} from 'kryptokrona-utils';
 
 const doPerformanceTests: boolean = process.argv.includes('--do-performance-tests');
 
