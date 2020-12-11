@@ -2,6 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
+import { CryptoUtils} from './CnUtils';
 import { SubWalletJSON } from './JsonSerialization';
 import { logger, LogLevel, LogCategory } from './Logger';
 import { TransactionInput, TxInputAndOwner, UnconfirmedInput } from './Types';
@@ -379,7 +380,7 @@ export class SubWallet {
      */
     public async getTxInputKeyImage(
         derivation: string,
-        outputIndex: number): Promise<[string, string?]> {
+        outputIndex: number): Promise<[string, string]> {
 
         return generateKeyImagePrimitive(
             this.publicSpendKey, this.privateSpendKey as string, outputIndex,
@@ -417,7 +418,7 @@ export class SubWallet {
 
     public haveSpendableInput(input: TransactionInput, currentHeight: number): boolean {
         for (const i of this.unspentInputs) {
-            if (input.key === i.key) {
+            if (input.key == i.key) {
                 return isInputUnlocked(i.unlockTime, currentHeight);
             }
         }

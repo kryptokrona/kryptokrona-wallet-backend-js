@@ -8,137 +8,31 @@ import request = require('request-promise-native');
 
 import { EventEmitter } from 'events';
 
-import {
-    Block as UtilsBlock,
-    Transaction as UtilsTransaction,
-    TransactionOutputs,
-    TransactionInputs
-} from 'kryptokrona-utils';
-
 import * as http from 'http';
 import * as https from 'https';
 
 import { assertString, assertNumber, assertBooleanOrUndefined } from './Assert';
+import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
+import { IDaemon } from './IDaemon';
 import { validateAddresses } from './ValidateParameters';
 import { LogCategory, logger, LogLevel } from './Logger';
-import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
-
-import {
-    Block, TopBlock, DaemonConnection, RawCoinbaseTransaction,
-    RawTransaction, KeyOutput, KeyInput
-} from './Types';
-
-export declare interface Daemon {
-    /**
-     * This is emitted whenever the interface fails to contact the underlying daemon.
-     * This event will only be emitted on the first disconnection. It will not
-     * be emitted again, until the daemon connects, and then disconnects again.
-     *
-     * Example:
-     *
-     * ```javascript
-     * daemon.on('disconnect', (error) => {
-     *     console.log('Possibly lost connection to daemon: ' + error.toString());
-     * });
-     * ```
-     *
-     * @event This is emitted whenever the interface fails to contact the underlying daemon.
-     */
-    on(event: 'disconnect', callback: (error: Error) => void): this;
-
-    /**
-     * This is emitted whenever the interface previously failed to contact the
-     * underlying daemon, and has now reconnected.
-     * This event will only be emitted on the first connection. It will not
-     * be emitted again, until the daemon disconnects, and then reconnects again.
-     *
-     * Example:
-     *
-     * ```javascript
-     * daemon.on('connect', () => {
-     *     console.log('Regained connection to daemon!');
-     * });
-     * ```
-     *
-     * @event This is emitted whenever the interface previously failed to contact the underlying daemon, and has now reconnected.
-     */
-    on(event: 'connect', callback: () => void): this;
-
-    /**
-     * This is emitted whenever either the localDaemonBlockCount or the networkDaemonBlockCount
-     * changes.
-     *
-     * Example:
-     *
-     * ```javascript
-     * daemon.on('heightchange', (localDaemonBlockCount, networkDaemonBlockCount) => {
-     *     console.log(localDaemonBlockCount, networkDaemonBlockCount);
-     * });
-     * ```
-     *
-     * @event This is emitted whenever either the localDaemonBlockCount or the networkDaemonBlockCount changes
-     */
-    on(event: 'heightchange',
-       callback: (localDaemonBlockCount: number, networkDaemonBlockCount: number) => void,
-    ): this;
-
-    /**
-     * This is emitted every time we download a block from the daemon.
-     *
-     * This block object is an instance of the [Block turtlecoin-utils class](https://utils.turtlecoin.dev/classes/block.html).
-     * See the Utils docs for further info on using this value.
-     *
-     * Note that a block emitted after a previous one could potentially have a lower
-     * height, if a blockchain fork took place.
-     *
-     * Example:
-     *
-     * ```javascript
-     * daemon.on('rawblock', (block) => {
-     *      console.log(`Downloaded new block ${block.hash}`);
-     * });
-     * ```
-     *
-     * @event This is emitted every time we download a block from the daemon
-     */
-    on(event: 'rawblock', callback: (block: UtilsBlock) => void): this;
-
-    /**
-     * This is emitted every time we download a transaction from the daemon.
-     *
-     * This transaction object is an instance of the [Transaction turtlecoin-utils class](https://utils.turtlecoin.dev/classes/transaction.html).
-     * See the Utils docs for further info on using this value.
-     *
-     * Note that a transaction emitted after a previous one could potentially have a lower
-     * height in the chain, if a blockchain fork took place.
-     *
-     * Example:
-     *
-     * ```javascript
-     * daemon.on('rawtransaction', (block) => {
-     *      console.log(`Downloaded new transaction ${transaction.hash}`);
-     * });
-     * ```
-     *
-     * @event This is emitted every time we download a transaction from the daemon
-     */
-    on(event: 'rawtransaction', callback: (transaction: UtilsTransaction) => void): this;
-}
+import { WalletError, WalletErrorCode } from './WalletError';
 
 /**
  * @noInheritDoc
  */
-export class Daemon extends EventEmitter {
+export class Daemon extends EventEmitter implements IDaemon {
+
     /**
      * Daemon/API host
      */
-    private readonly host: string;
+    private host: string;
 
     /**
      * Daemon/API port
      */
-    private readonly port: number;
+    private port: number;
 
     /**
      * Whether we should use https for our requests
@@ -149,6 +43,16 @@ export class Daemon extends EventEmitter {
      * Have we determined if we should be using ssl or not?
      */
     private sslDetermined: boolean = false;
+
+    /**
+     * Whether we're talking to a conventional daemon, or a blockchain cache API
+     */
+    private isCacheApi: boolean = false;
+
+    /**
+     * Have we determined if this is a cache API or not?
+     */
+    private isCacheApiDetermined: boolean = false;
 
     /**
      * The address node fees will go to
@@ -217,8 +121,6 @@ export class Daemon extends EventEmitter {
      */
     private connected: boolean = true;
 
-    private useRawBlocks: boolean = true;
-
     /**
      * @param host The host to access the API on. Can be an IP, or a URL, for
      *             example, 1.1.1.1, or blockapi.turtlepay.io
@@ -226,20 +128,25 @@ export class Daemon extends EventEmitter {
      * @param port The port to access the API on. Normally 11898 for a TurtleCoin
      *             daemon, 80 for a HTTP api, or 443 for a HTTPS api.
      *
+     * @param isCacheApi You can optionally specify whether this API is a
+     *                   blockchain cache API to save a couple of requests.
+     *                   If you're not sure, do not specify this parameter -
+     *                   we will work it out automatically.
+     *
      * @param ssl        You can optionally specify whether this API supports
      *                   ssl/tls/https to save a couple of requests.
      *                   If you're not sure, do not specify this parameter -
      *                   we will work it out automatically.
      */
-    constructor(host: string, port: number, ssl?: boolean, useRawBlocks?: boolean) {
+    constructor(host: string, port: number, isCacheApi?: boolean, ssl?: boolean) {
         super();
 
         this.setMaxListeners(0);
 
         assertString(host, 'host');
         assertNumber(port, 'port');
+        assertBooleanOrUndefined(isCacheApi, 'isCacheApi');
         assertBooleanOrUndefined(ssl, 'ssl');
-        assertBooleanOrUndefined(useRawBlocks, 'useRawBlocks');
 
         this.host = host;
         this.port = port;
@@ -250,13 +157,14 @@ export class Daemon extends EventEmitter {
             ssl = false;
         }
 
+        if (isCacheApi !== undefined) {
+            this.isCacheApi = isCacheApi;
+            this.isCacheApiDetermined = true;
+        }
+
         if (ssl !== undefined) {
             this.ssl = ssl;
             this.sslDetermined = true;
-        }
-
-        if (useRawBlocks !== undefined) {
-            this.useRawBlocks = useRawBlocks;
         }
     }
 
@@ -300,7 +208,7 @@ export class Daemon extends EventEmitter {
         const haveDeterminedSsl = this.sslDetermined;
 
         try {
-            [info] = await this.makeGetRequest('/info');
+            info = await this.makeGetRequest('/info');
         } catch (err) {
             logger.log(
                 'Failed to update daemon info: ' + err.toString(),
@@ -336,9 +244,26 @@ export class Daemon extends EventEmitter {
             return this.updateDaemonInfo();
         }
 
+        /* Are we talking to a cache API or not? */
+        if (!this.isCacheApiDetermined) {
+            if (info.isCacheApi !== undefined && _.isBoolean(info.isCacheApi)) {
+                this.isCacheApi = info.isCacheApi;
+                this.isCacheApiDetermined = true;
+            } else {
+                this.isCacheApi = false;
+                this.isCacheApiDetermined = true;
+            }
+        }
+
+        /* Height returned is one more than the current height - but we
+           don't want to overflow if the height returned is zero */
+        if (info.network_height !== 0) {
+            info.network_height--;
+        }
+
         if (this.localDaemonBlockCount !== info.height
-         || this.networkBlockCount !== info.networkHeight) {
-            this.emit('heightchange', info.height, info.networkHeight);
+         || this.networkBlockCount !== info.network_height) {
+            this.emit('heightchange', info.height, info.network_height);
 
             this.lastUpdatedNetworkHeight = new Date();
             this.lastUpdatedLocalHeight = new Date();
@@ -353,15 +278,11 @@ export class Daemon extends EventEmitter {
         }
 
         this.localDaemonBlockCount = info.height;
-        this.networkBlockCount = info.networkHeight;
+        this.networkBlockCount = info.network_height;
 
-        if (this.networkBlockCount > 0) {
-            this.networkBlockCount--;
-        }
+        this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
-        this.peerCount = info.incomingConnections + info.outgoingConnections;
-
-        this.lastKnownHashrate = info.hashrate;
+        this.lastKnownHashrate = info.difficulty / this.config.blockTargetTime;
     }
 
     /**
@@ -389,15 +310,13 @@ export class Daemon extends EventEmitter {
 
         let data;
 
-        const endpoint = this.useRawBlocks ? '/sync/raw' : '/sync';
-
         try {
-            [data] = await this.makePostRequest(endpoint, {
-                count: this.blockCount,
-                checkpoints: blockHashCheckpoints,
+            data = await this.makePostRequest('/getwalletsyncdata', {
+                blockCount: this.blockCount,
+                blockHashCheckpoints,
                 skipCoinbaseTransactions: !this.config.scanCoinbaseTransactions,
-                height: startHeight,
-                timestamp: startTimestamp,
+                startHeight,
+                startTimestamp,
             });
         } catch (err) {
             this.blockCount = Math.ceil(this.blockCount / 4);
@@ -412,9 +331,9 @@ export class Daemon extends EventEmitter {
         }
 
         /* The node is not dead if we're fetching blocks. */
-        if (data.blocks.length >= 0) {
+        if (data.items.length >= 0) {
             logger.log(
-                `Fetched ${data.blocks.length} blocks from the daemon`,
+                `Fetched ${data.items.length} blocks from the daemon`,
                 LogLevel.DEBUG,
                 [LogCategory.DAEMON],
             );
@@ -433,15 +352,11 @@ export class Daemon extends EventEmitter {
             this.lastUpdatedLocalHeight = new Date();
         }
 
-        const blocks = this.useRawBlocks
-            ? await this.rawBlocksToBlocks(data.blocks)
-            : data.blocks.map(Block.fromJSON);
-
         if (data.synced && data.topBlock && data.topBlock.height && data.topBlock.hash) {
-            return [blocks, data.topBlock];
+            return [data.items.map(Block.fromJSON), data.topBlock];
         }
 
-        return [blocks, true];
+        return [data.items.map(Block.fromJSON), true];
     }
 
     /**
@@ -454,13 +369,23 @@ export class Daemon extends EventEmitter {
         startHeight: number,
         endHeight: number): Promise<Map<string, number[]>> {
 
+        if (this.isCacheApi) {
+            throw new Error(
+                'This call is not supported on the cache api. The cache API ' +
+                'returns global indexes directly from /getWalletSyncData',
+            );
+        }
+
         try {
-            const [data] = await this.makeGetRequest(`/indexes/${startHeight}/${endHeight}`);
+            const data = await this.makePostRequest('/get_global_indexes_for_range', {
+                endHeight,
+                startHeight,
+            });
 
             const indexes: Map<string, number[]> = new Map();
 
-            for (const index of data) {
-                indexes.set(index.hash, index.indexes);
+            for (const index of data.indexes) {
+                indexes.set(index.key, index.value);
             }
 
             return indexes;
@@ -477,8 +402,11 @@ export class Daemon extends EventEmitter {
 
     public async getCancelledTransactions(transactionHashes: string[]): Promise<string[]> {
         try {
-            const [data] = await this.makePostRequest('/transaction/status', transactionHashes);
-            return data.notFound || [];
+            const data = await this.makePostRequest('/get_transactions_status', {
+                transactionHashes,
+            });
+
+            return data.transactionsUnknown || [];
         } catch (err) {
             logger.log(
                 'Failed to get transactions status: ' + err.toString(),
@@ -499,15 +427,24 @@ export class Daemon extends EventEmitter {
      */
     public async getRandomOutputsByAmount(
         amounts: number[],
-        requestedOuts: number): Promise<[number, [number, string][]][]> {
+        requestedOuts: number): Promise<Array<[number, Array<[number, string]>]>> {
 
         let data;
 
         try {
-            [data] = await this.makePostRequest('/indexes/random', {
-                amounts: amounts,
-                count: requestedOuts,
-            });
+            if (this.isCacheApi) {
+                data = await this.makePostRequest('/randomOutputs', {
+                    amounts: amounts,
+                    mixin: requestedOuts,
+                });
+            } else {
+                const tmp = await this.makePostRequest('/getrandom_outs', {
+                    amounts: amounts,
+                    outs_count: requestedOuts,
+                });
+
+                data = tmp.outs || [];
+            }
         } catch (err) {
             logger.log(
                 'Failed to get random outs: ' + err.toString(),
@@ -518,52 +455,45 @@ export class Daemon extends EventEmitter {
             return [];
         }
 
-        const outputs: [number, [number, string][]][] = [];
+        const outputs: Array<[number, Array<[number, string]>]> = [];
 
         for (const output of data) {
-            const indexes: [number, string][] = [];
+            const indexes: Array<[number, string]> = [];
 
-            for (const outs of output.outputs) {
-                indexes.push([outs.index, outs.key]);
+            for (const outs of output.outs) {
+                indexes.push([outs.global_amount_index, outs.out_key]);
             }
 
             /* Sort by output index to make it hard to determine real one */
-            outputs.push([output.amount, _.sortBy(indexes, ([index]) => index)]);
+            outputs.push([output.amount, _.sortBy(indexes, ([index, key]) => index)]);
         }
 
         return outputs;
     }
 
-    public async sendTransaction(rawTransaction: string): Promise<WalletError> {
-        try {
-            const [ result, statusCode ] = await this.makePostRequest('/transaction', rawTransaction);
+    public async sendTransaction(rawTransaction: string): Promise<[boolean, string | undefined]> {
+        const result = await this.makePostRequest('/sendrawtransaction', {
+            tx_as_hex: rawTransaction,
+        });
 
-            if (statusCode === 202) {
-                return SUCCESS;
-            }
-
-            if (result && result.error && result.error.code) {
-                const code = WalletErrorCode[result.error.code] !== undefined
-                    ? result.error.code
-                    : WalletErrorCode.UNKNOWN_ERROR;
-
-                return new WalletError(code, result.error.message);
-            }
-
-            return new WalletError(WalletErrorCode.UNKNOWN_ERROR);
-        } catch (err) {
-            logger.log(
-                'Failed to send transaction: ' + err.toString(),
-                LogLevel.ERROR,
-                [LogCategory.TRANSACTIONS, LogCategory.DAEMON],
-            );
-
-            return new WalletError(WalletErrorCode.DAEMON_ERROR, err.toString());
+        /* Success. */
+        if (result.status.toUpperCase() === 'OK') {
+            return [true, undefined];
         }
+
+        /* Fail, no extra error message. */
+        if (!result || !result.status || !result.error) {
+            return [false, undefined];
+        }
+
+        /* Fail, extra error message */
+        return [false, result.error];
     }
 
     public getConnectionInfo(): DaemonConnection {
         return {
+            daemonType: this.isCacheApi ? DaemonType.BlockchainCacheApi : DaemonType.ConventionalDaemon,
+            daemonTypeDetermined: this.isCacheApiDetermined,
             host: this.host,
             port: this.port,
             ssl: this.ssl,
@@ -575,97 +505,6 @@ export class Daemon extends EventEmitter {
         return this.host + ':' + this.port;
     }
 
-    private async rawBlocksToBlocks(rawBlocks: any): Promise<Block[]> {
-        const result: Block[] = [];
-
-        for (const rawBlock of rawBlocks) {
-            const block = await UtilsBlock.from(rawBlock.blob, this.config);
-
-            this.emit('rawblock', block);
-            this.emit('rawtransaction', block.minerTransaction);
-
-            let coinbaseTransaction: RawCoinbaseTransaction | undefined;
-
-            if (this.config.scanCoinbaseTransactions) {
-                const keyOutputs: KeyOutput[] = [];
-
-                for (const output of block.minerTransaction.outputs) {
-                    if (output.type === TransactionOutputs.OutputType.KEY) {
-                        const o = output as TransactionOutputs.KeyOutput;
-
-                        keyOutputs.push(new KeyOutput(
-                            o.key,
-                            o.amount.toJSNumber(),
-                        ));
-                    }
-                }
-
-                coinbaseTransaction = new RawCoinbaseTransaction(
-                    keyOutputs,
-                    await block.minerTransaction.hash(),
-                    block.minerTransaction.publicKey!,
-                    block.minerTransaction.unlockTime > Number.MAX_SAFE_INTEGER
-                        ? (block.minerTransaction.unlockTime as any).toJSNumber()
-                        : block.minerTransaction.unlockTime,
-                );
-            }
-
-            const transactions: RawTransaction[] = [];
-
-            for (const tx of rawBlock.transactions) {
-                const rawTX = await UtilsTransaction.from(tx);
-
-                this.emit('rawtransaction', tx);
-
-                const keyOutputs: KeyOutput[] = [];
-                const keyInputs: KeyInput[] = [];
-
-                for (const output of rawTX.outputs) {
-                    if (output.type === TransactionOutputs.OutputType.KEY) {
-                        const o = output as TransactionOutputs.KeyOutput;
-
-                        keyOutputs.push(new KeyOutput(
-                            o.key,
-                            o.amount.toJSNumber(),
-                        ));
-                    }
-                }
-
-                for (const input of rawTX.inputs) {
-                    if (input.type === TransactionInputs.InputType.KEY) {
-                        const i = input as TransactionInputs.KeyInput;
-
-                        keyInputs.push(new KeyInput(
-                            i.amount.toJSNumber(),
-                            i.keyImage,
-                        ));
-                    }
-                }
-
-                transactions.push(new RawTransaction(
-                    keyOutputs,
-                    await rawTX.hash(),
-                    rawTX.publicKey!,
-                    rawTX.unlockTime > Number.MAX_SAFE_INTEGER
-                        ? (rawTX.unlockTime as any).toJSNumber()
-                        : rawTX.unlockTime,
-                    rawTX.paymentId || '',
-                    keyInputs,
-                ));
-            }
-
-            result.push(new Block(
-                transactions,
-                block.height,
-                await block.hash(),
-                Math.floor(block.timestamp.getTime() / 1000),
-                coinbaseTransaction,
-            ));
-        }
-
-        return result;
-    }
-
     /**
      * Update the fee address and amount
      */
@@ -673,7 +512,7 @@ export class Daemon extends EventEmitter {
         let feeInfo;
 
         try {
-            [feeInfo] = await this.makeGetRequest('/fee');
+            feeInfo = await this.makeGetRequest('/fee');
         } catch (err) {
             logger.log(
                 'Failed to update fee info: ' + err.toString(),
@@ -689,9 +528,9 @@ export class Daemon extends EventEmitter {
 
         const integratedAddressesAllowed: boolean = false;
 
-        const err: WalletErrorCode = (await validateAddresses(
+        const err: WalletErrorCode = validateAddresses(
             new Array(feeInfo.address), integratedAddressesAllowed, this.config,
-        )).errorCode;
+        ).errorCode;
 
         if (err !== WalletErrorCode.SUCCESS) {
             logger.log(
@@ -709,25 +548,24 @@ export class Daemon extends EventEmitter {
         }
     }
 
-    private async makeGetRequest(endpoint: string): Promise<[any, number]> {
+    private async makeGetRequest(endpoint: string): Promise<any> {
         return this.makeRequest(endpoint, 'GET');
     }
 
-    private async makePostRequest(endpoint: string, body: any): Promise<[any, number]> {
+    private async makePostRequest(endpoint: string, body: any): Promise<any> {
         return this.makeRequest(endpoint, 'POST', body);
     }
 
     /**
      * Makes a get request to the given endpoint
      */
-    private async makeRequest(endpoint: string, method: string, body?: any): Promise<[any, number]> {
+    private async makeRequest(endpoint: string, method: string, body?: any): Promise<any> {
         const options = {
             body,
             headers: { 'User-Agent': this.config.customUserAgentString },
             json: true,
             method,
             timeout: this.config.requestTimeout,
-            resolveWithFullResponse: true,
         };
 
         try {
@@ -743,7 +581,7 @@ export class Daemon extends EventEmitter {
                 [LogCategory.DAEMON],
             );
 
-            const response = await request({
+            const data = await request({
                 agent: protocol === 'https' ? this.httpsAgent : this.httpAgent,
                 ...options,
                 ...this.config.customRequestOptions,
@@ -762,12 +600,12 @@ export class Daemon extends EventEmitter {
             }
 
             logger.log(
-                `Got response from ${url} with body ${JSON.stringify(response.body)}`,
+                `Got response from ${url} with body ${JSON.stringify(data)}`,
                 LogLevel.TRACE,
                 [LogCategory.DAEMON],
             );
 
-            return [response.body, response.statusCode];
+            return data;
         } catch (err) {
             /* No point trying again with SSL - we already have decided what
                type it is. */
@@ -790,7 +628,7 @@ export class Daemon extends EventEmitter {
                     [LogCategory.DAEMON],
                 );
 
-                const response = await request({
+                const data = await request({
                     agent: this.httpAgent,
                     ...options,
                     /* Lets try HTTP now. */
@@ -806,12 +644,12 @@ export class Daemon extends EventEmitter {
                 }
 
                 logger.log(
-                    `Got response from ${url} with body ${JSON.stringify(response.body)}`,
+                    `Got response from ${url} with body ${JSON.stringify(data)}`,
                     LogLevel.TRACE,
                     [LogCategory.DAEMON],
                 );
 
-                return [response.body, response.statusCode];
+                return data;
 
             } catch (err) {
                 if (this.connected) {

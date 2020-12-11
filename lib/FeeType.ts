@@ -59,4 +59,7 @@ export class FeeType {
     public fixedFee: number = 0;
 
     public feePerByte: number = 0;
+
+    private constructor() {
+    }
 }
