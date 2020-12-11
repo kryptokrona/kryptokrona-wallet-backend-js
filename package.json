@@ -29,6 +29,7 @@
     "typescript": "^3.7.2"
   },
   "devDependencies": {
+    "@types/ledgerhq__hw-transport-node-hid": "^4.22.1",
     "@types/lodash": "^4.14.149",
     "@types/node": "^12.12.14",
     "@types/pbkdf2": "^3.0.0",

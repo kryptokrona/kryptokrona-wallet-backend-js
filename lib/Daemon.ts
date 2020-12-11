@@ -13,7 +13,7 @@ import {
     Transaction as UtilsTransaction,
     TransactionOutputs,
     TransactionInputs
-} from 'turtlecoin-utils';
+} from 'kryptokrona-utils';
 
 import * as http from 'http';
 import * as https from 'https';

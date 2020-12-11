@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { Transaction as CreatedTransaction } from 'turtlecoin-utils';
+import { Transaction as CreatedTransaction } from 'kryptokrona-utils';
 
 import { WalletError } from './WalletError';
 

@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import {Crypto} from 'turtlecoin-utils';
+import {Crypto} from 'kryptokrona-utils';
 import {CryptoUtils} from './CnUtils';
 import {Config} from './Config';
 

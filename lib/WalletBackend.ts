@@ -12,7 +12,7 @@ import {
     CryptoType,
     Transaction as CreatedTransaction,
     Transaction as UtilsTransaction
-} from 'turtlecoin-utils';
+} from 'kryptokrona-utils';
 
 import * as fs from 'fs';
 import * as _ from 'lodash';

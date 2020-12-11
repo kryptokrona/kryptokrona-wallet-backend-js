@@ -3,7 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import * as _ from 'lodash';
-import { Address } from 'turtlecoin-utils';
+import { Address } from 'kryptokrona-utils';
 
 import { FeeType } from './FeeType';
 import { SubWallets } from './SubWallets';

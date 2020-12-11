@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import {
     Transaction as CreatedTransaction, TransactionOutputs,
     Address, Interfaces,
-} from 'turtlecoin-utils';
+} from 'kryptokrona-utils';
 
 import { Config } from './Config';
 import { FeeType } from './FeeType';
