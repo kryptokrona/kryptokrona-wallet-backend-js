@@ -2,8 +2,6 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { Config } from './Config';
-
 /**
  * What version of the file format are we on (to make it easier to
  * upgrade the wallet format in the future)
@@ -63,13 +61,6 @@ export const BLOCK_HASH_CHECKPOINTS_INTERVAL: number = 5000;
  * This value determines how many blocks to take from.
  */
 export const GLOBAL_INDEXES_OBSCURITY: number = 10;
-
-/**
- * The maximum amount of blocks we can have waiting to be processed in
- * the queue. If we exceed this, we will wait till it drops below this
- * amount.
- */
-export const MAXIMUM_SYNC_QUEUE_SIZE: number = 1000;
 
 /**
  * Used to determine whether an unlock time is a height, or a timestamp

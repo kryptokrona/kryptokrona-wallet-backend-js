@@ -8,31 +8,141 @@ import request = require('request-promise-native');
 
 import { EventEmitter } from 'events';
 
+import {
+    Block as UtilsBlock,
+    Transaction as UtilsTransaction,
+    TransactionOutputs,
+    TransactionInputs
+} from 'turtlecoin-utils';
+
 import * as http from 'http';
 import * as https from 'https';
 
 import { assertString, assertNumber, assertBooleanOrUndefined } from './Assert';
-import { Block, TopBlock, DaemonType, DaemonConnection } from './Types';
 import { Config, IConfig, MergeConfig } from './Config';
-import { IDaemon } from './IDaemon';
 import { validateAddresses } from './ValidateParameters';
 import { LogCategory, logger, LogLevel } from './Logger';
-import { WalletError, WalletErrorCode } from './WalletError';
+import { WalletErrorCode } from './WalletError';
+
+import {
+    Block, TopBlock, DaemonType, DaemonConnection, RawCoinbaseTransaction,
+    RawTransaction, KeyOutput, KeyInput
+} from './Types';
+
+export declare interface Daemon {
+    /**
+     * This is emitted whenever the interface fails to contact the underlying daemon.
+     * This event will only be emitted on the first disconnection. It will not
+     * be emitted again, until the daemon connects, and then disconnects again.
+     *
+     * Example:
+     *
+     * ```javascript
+     * daemon.on('disconnect', (error) => {
+     *     console.log('Possibly lost connection to daemon: ' + error.toString());
+     * });
+     * ```
+     *
+     * @event This is emitted whenever the interface fails to contact the underlying daemon.
+     */
+    on(event: 'disconnect', callback: (error: Error) => void): this;
+
+    /**
+     * This is emitted whenever the interface previously failed to contact the
+     * underlying daemon, and has now reconnected.
+     * This event will only be emitted on the first connection. It will not
+     * be emitted again, until the daemon disconnects, and then reconnects again.
+     *
+     * Example:
+     *
+     * ```javascript
+     * daemon.on('connect', () => {
+     *     console.log('Regained connection to daemon!');
+     * });
+     * ```
+     *
+     * @event This is emitted whenever the interface previously failed to contact the underlying daemon, and has now reconnected.
+     */
+    on(event: 'connect', callback: () => void): this;
+
+    /**
+     * This is emitted whenever either the localDaemonBlockCount or the networkDaemonBlockCount
+     * changes.
+     *
+     * Example:
+     *
+     * ```javascript
+     * daemon.on('heightchange', (localDaemonBlockCount, networkDaemonBlockCount) => {
+     *     console.log(localDaemonBlockCount, networkDaemonBlockCount);
+     * });
+     * ```
+     *
+     * @event This is emitted whenever either the localDaemonBlockCount or the networkDaemonBlockCount changes
+     */
+    on(event: 'heightchange',
+       callback: (localDaemonBlockCount: number, networkDaemonBlockCount: number) => void,
+    ): this;
+
+    /**
+     * This is emitted every time we download a block from the daemon. Will
+     * only be emitted if the daemon is using /getrawblocks (All non blockchain
+     * cache daemons should support this).
+     *
+     * This block object is an instance of the [Block turtlecoin-utils class](https://utils.turtlecoin.dev/classes/block.html).
+     * See the Utils docs for further info on using this value.
+     *
+     * Note that a block emitted after a previous one could potentially have a lower
+     * height, if a blockchain fork took place.
+     *
+     * Example:
+     *
+     * ```javascript
+     * daemon.on('rawblock', (block) => {
+     *      console.log(`Downloaded new block ${block.hash}`);
+     * });
+     * ```
+     *
+     * @event This is emitted every time we download a block from the daemon
+     */
+    on(event: 'rawblock', callback: (block: UtilsBlock) => void): this;
+
+    /**
+     * This is emitted every time we download a transaction from the daemon. Will
+     * only be emitted if the daemon is using /getrawblocks (All non blockchain
+     * cache daemons should support this).
+     *
+     * This transaction object is an instance of the [Transaction turtlecoin-utils class](https://utils.turtlecoin.dev/classes/transaction.html).
+     * See the Utils docs for further info on using this value.
+     *
+     * Note that a transaction emitted after a previous one could potentially have a lower
+     * height in the chain, if a blockchain fork took place.
+     *
+     * Example:
+     *
+     * ```javascript
+     * daemon.on('rawtransaction', (block) => {
+     *      console.log(`Downloaded new transaction ${transaction.hash}`);
+     * });
+     * ```
+     *
+     * @event This is emitted every time we download a transaction from the daemon
+     */
+    on(event: 'rawtransaction', callback: (transaction: UtilsTransaction) => void): this;
+}
 
 /**
  * @noInheritDoc
  */
-export class Daemon extends EventEmitter implements IDaemon {
-
+export class Daemon extends EventEmitter {
     /**
      * Daemon/API host
      */
-    private host: string;
+    private readonly host: string;
 
     /**
      * Daemon/API port
      */
-    private port: number;
+    private readonly port: number;
 
     /**
      * Whether we should use https for our requests
@@ -88,6 +198,11 @@ export class Daemon extends EventEmitter implements IDaemon {
      * The number of blocks to download per /getwalletsyncdata request
      */
     private blockCount: number = 100;
+
+    /**
+     * Should we use /getrawblocks instead of /getwalletsyncdata
+     */
+    private useRawBlocks = true;
 
     private config: Config = new Config();
 
@@ -308,10 +423,12 @@ export class Daemon extends EventEmitter implements IDaemon {
         startHeight: number,
         startTimestamp: number): Promise<[Block[], TopBlock | boolean]> {
 
+        const endpoint: string = this.useRawBlocks ? '/getrawblocks' : '/getwalletsyncdata';
+
         let data;
 
         try {
-            data = await this.makePostRequest('/getwalletsyncdata', {
+            data = await this.makePostRequest(endpoint, {
                 blockCount: this.blockCount,
                 blockHashCheckpoints,
                 skipCoinbaseTransactions: !this.config.scanCoinbaseTransactions,
@@ -320,6 +437,23 @@ export class Daemon extends EventEmitter implements IDaemon {
             });
         } catch (err) {
             this.blockCount = Math.ceil(this.blockCount / 4);
+
+            /* Daemon doesn't support /getrawblocks, full back to /getwalletsyncdata */
+            if (err.statusCode === 404 && this.useRawBlocks) {
+                logger.log(
+                    `Daemon responded 404 to /getrawblocks, reverting to /getwalletsyncdata`,
+                    LogLevel.INFO,
+                    [LogCategory.DAEMON],
+                );
+
+                this.useRawBlocks = false;
+
+                return this.getWalletSyncData(
+                    blockHashCheckpoints,
+                    startHeight,
+                    startTimestamp,
+                );
+            }
 
             logger.log(
                 `Failed to get wallet sync data: ${err.toString()}. Lowering block count to ${this.blockCount}`,
@@ -353,10 +487,18 @@ export class Daemon extends EventEmitter implements IDaemon {
         }
 
         if (data.synced && data.topBlock && data.topBlock.height && data.topBlock.hash) {
-            return [data.items.map(Block.fromJSON), data.topBlock];
+            if (this.useRawBlocks) {
+                return [await this.rawBlocksToBlocks(data.items), data.topBlock];
+            } else {
+                return [data.items.map(Block.fromJSON), data.topBlock];
+            }
         }
 
-        return [data.items.map(Block.fromJSON), true];
+        if (this.useRawBlocks) {
+            return [await this.rawBlocksToBlocks(data.items), true];
+        } else {
+            return [data.items.map(Block.fromJSON), true];
+        }
     }
 
     /**
@@ -427,7 +569,7 @@ export class Daemon extends EventEmitter implements IDaemon {
      */
     public async getRandomOutputsByAmount(
         amounts: number[],
-        requestedOuts: number): Promise<Array<[number, Array<[number, string]>]>> {
+        requestedOuts: number): Promise<[number, [number, string][]][]> {
 
         let data;
 
@@ -455,17 +597,17 @@ export class Daemon extends EventEmitter implements IDaemon {
             return [];
         }
 
-        const outputs: Array<[number, Array<[number, string]>]> = [];
+        const outputs: [number, [number, string][]][] = [];
 
         for (const output of data) {
-            const indexes: Array<[number, string]> = [];
+            const indexes: [number, string][] = [];
 
             for (const outs of output.outs) {
                 indexes.push([outs.global_amount_index, outs.out_key]);
             }
 
             /* Sort by output index to make it hard to determine real one */
-            outputs.push([output.amount, _.sortBy(indexes, ([index, key]) => index)]);
+            outputs.push([output.amount, _.sortBy(indexes, ([index]) => index)]);
         }
 
         return outputs;
@@ -505,6 +647,98 @@ export class Daemon extends EventEmitter implements IDaemon {
         return this.host + ':' + this.port;
     }
 
+    private async rawBlocksToBlocks(rawBlocks: any): Promise<Block[]> {
+        const result: Block[] = [];
+
+        for (const rawBlock of rawBlocks) {
+            const block = await UtilsBlock.from(rawBlock.block, this.config);
+
+            this.emit('rawblock', block);
+            this.emit('rawtransaction', block.minerTransaction);
+
+            let coinbaseTransaction: RawCoinbaseTransaction | undefined;
+
+            if (this.config.scanCoinbaseTransactions) {
+                const keyOutputs: KeyOutput[] = [];
+
+                for (const output of block.minerTransaction.outputs) {
+                    if (output.type === TransactionOutputs.OutputType.KEY) {
+                        const o = output as TransactionOutputs.KeyOutput;
+
+                        keyOutputs.push(new KeyOutput(
+                            o.key,
+                            o.amount.toJSNumber(),
+                        ));
+                    }
+                }
+
+                coinbaseTransaction = new RawCoinbaseTransaction(
+                    keyOutputs,
+                    await block.minerTransaction.hash(),
+                    block.minerTransaction.publicKey!,
+                    block.minerTransaction.unlockTime > Number.MAX_SAFE_INTEGER
+                        ? (block.minerTransaction.unlockTime as any).toJSNumber()
+                        : block.minerTransaction.unlockTime,
+                );
+            }
+
+            const transactions: RawTransaction[] = [];
+
+            for (const tx of rawBlock.transactions) {
+                const rawTX = await UtilsTransaction.from(tx);
+
+                this.emit('rawtransaction', tx);
+
+                const keyOutputs: KeyOutput[] = [];
+                const keyInputs: KeyInput[] = [];
+
+                for (const output of rawTX.outputs) {
+                    if (output.type === TransactionOutputs.OutputType.KEY) {
+                        const o = output as TransactionOutputs.KeyOutput;
+
+                        keyOutputs.push(new KeyOutput(
+                            o.key,
+                            o.amount.toJSNumber(),
+                        ));
+                    }
+                }
+
+                for (const input of rawTX.inputs) {
+                    if (input.type === TransactionInputs.InputType.KEY) {
+                        const i = input as TransactionInputs.KeyInput;
+
+                        keyInputs.push(new KeyInput(
+                            i.amount.toJSNumber(),
+                            i.keyImage,
+                            i.keyOffsets.map((x) => x.toJSNumber()),
+                        ));
+                    }
+                }
+
+                transactions.push(new RawTransaction(
+                    keyOutputs,
+                    await rawTX.hash(),
+                    rawTX.publicKey!,
+                    rawTX.unlockTime > Number.MAX_SAFE_INTEGER
+                        ? (rawTX.unlockTime as any).toJSNumber()
+                        : rawTX.unlockTime,
+                    rawTX.paymentId || '',
+                    keyInputs,
+                ));
+            }
+
+            result.push(new Block(
+                transactions,
+                block.height,
+                await block.hash(),
+                Math.floor(block.timestamp.getTime() / 1000),
+                coinbaseTransaction,
+            ));
+        }
+
+        return result;
+    }
+
     /**
      * Update the fee address and amount
      */
@@ -528,9 +762,9 @@ export class Daemon extends EventEmitter implements IDaemon {
 
         const integratedAddressesAllowed: boolean = false;
 
-        const err: WalletErrorCode = validateAddresses(
+        const err: WalletErrorCode = (await validateAddresses(
             new Array(feeInfo.address), integratedAddressesAllowed, this.config,
-        ).errorCode;
+        )).errorCode;
 
         if (err !== WalletErrorCode.SUCCESS) {
             logger.log(

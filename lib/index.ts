@@ -5,7 +5,7 @@
 export { WalletError, WalletErrorCode, SUCCESS } from './WalletError';
 export { WalletBackend } from './WalletBackend';
 export { Daemon } from './Daemon';
-export { IDaemon } from './IDaemon';
+export { FeeType } from './FeeType';
 
 export {
     prettyPrintAmount, isHex64, isValidMnemonic, isValidMnemonicWord,

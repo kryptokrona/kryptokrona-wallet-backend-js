@@ -2,8 +2,11 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { CryptoUtils } from './CnUtils';
-import { Config } from './Config';
+import {Crypto} from 'turtlecoin-utils';
+import {CryptoUtils} from './CnUtils';
+import {Config} from './Config';
+
+const TurtleCoinCrypto = new Crypto();
 
 const nullKey = '0'.repeat(64);
 
@@ -17,11 +20,10 @@ export async function generateKeyDerivation(
     }
 
     try {
-        const key = await CryptoUtils(config).generateKeyDerivation(
+        return TurtleCoinCrypto.generateKeyDerivation(
             transactionPublicKey,
             privateViewKey,
         );
-        return key;
     } catch (err) {
         return nullKey;
     }
@@ -32,7 +34,7 @@ export async function generateKeyImagePrimitive(
     privateSpendKey: string,
     outputIndex: number,
     derivation: string,
-    config: Config): Promise<[string, string]> {
+    config: Config): Promise<[string, string?]> {
 
     if (config.derivePublicKey && config.deriveSecretKey && config.generateKeyImage) {
         /* Derive the transfer public key from the derived key, the output index, and our public spend key */
@@ -56,7 +58,7 @@ export async function generateKeyImagePrimitive(
             publicSpendKey, privateSpendKey, outputIndex, derivation,
         );
 
-        return keys;
+        return [keys.keyImage, keys.privateEphemeral];
     } catch (err) {
         return [nullKey, nullKey];
     }
@@ -68,7 +70,7 @@ export async function generateKeyImage(
     publicSpendKey: string,
     privateSpendKey: string,
     transactionIndex: number,
-    config: Config): Promise<[string, string]> {
+    config: Config): Promise<[string, string?]> {
 
     const derivation: string = await generateKeyDerivation(
         transactionPublicKey, privateViewKey, config,
@@ -89,11 +91,9 @@ export async function underivePublicKey(
     }
 
     try {
-        const key = await CryptoUtils(config).underivePublicKey(
+        return TurtleCoinCrypto.underivePublicKey(
             derivation, outputIndex, outputKey,
         );
-
-        return key;
     } catch (err) {
         return nullKey;
     }

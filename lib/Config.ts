@@ -96,37 +96,37 @@ export interface IConfig {
      */
     underivePublicKey?: (derivation: string,
                          outputIndex: number,
-                         outputKey: string) => string;
+                         outputKey: string) => Promise<string>;
 
     /**
      * A replacement function for the JS/C++ derivePublicKey.
      */
     derivePublicKey?: (derivation: string,
                        outputIndex: number,
-                       publicKey: string) => string;
+                       publicKey: string) => Promise<string>;
 
     /**
      * A replacement function for the JS/C++ deriveSecretKey.
      */
     deriveSecretKey?: (derivation: string,
                        outputIndex: number,
-                       privateKey: string) => string;
+                       privateKey: string) => Promise<string>;
 
     /**
      * A replacement function for the JS/C++ generateKeyImage.
      */
     generateKeyImage?: (publicKey: string,
-                        privateKey: string) => string;
+                        privateKey: string) => Promise<string>;
 
     /**
      * A replacement function for the JS/C++ secretKeyToPublicKey.
      */
-    secretKeyToPublicKey?: (privateKey: string) => string;
+    secretKeyToPublicKey?: (privateKey: string) => Promise<string>;
 
     /**
      * A replacement function for the JS/C++ cnFastHash.
      */
-    cnFastHash?: (input: string) => string;
+    cnFastHash?: (input: string) => Promise<string>;
 
     /**
      * A replacement function for the JS/C++ generateRingSignatures.
@@ -135,7 +135,7 @@ export interface IConfig {
                               keyImage: string,
                               inputKeys: string[],
                               privateKey: string,
-                              realIndex: number) => string[];
+                              realIndex: number) => Promise<string[]>;
 
     /**
      * A replacement function for the JS/C++ checkRingSignatures.
@@ -143,13 +143,13 @@ export interface IConfig {
     checkRingSignatures?: (transactionPrefixHash: string,
                            keyImage: string,
                            publicKeys: string[],
-                           signatures: string[]) => boolean;
+                           signatures: string[]) => Promise<boolean>;
 
     /**
      * A replacement function for the JS/C++ generateKeyDerivation.
      */
     generateKeyDerivation?: (transactionPublicKey: string,
-                             privateViewKey: string) => string;
+                             privateViewKey: string) => Promise<string>;
 
     /**
      * The max amount of memory to use, storing downloaded blocks to be processed.
@@ -304,37 +304,37 @@ export class Config implements IConfig {
      */
     public underivePublicKey?: (derivation: string,
                                 outputIndex: number,
-                                outputKey: string) => string = undefined;
+                                outputKey: string) => Promise<string> = undefined;
 
     /**
      * A replacement function for the JS/C++ derivePublicKey.
      */
     public derivePublicKey?: (derivation: string,
                               outputIndex: number,
-                              publicKey: string) => string = undefined;
+                              publicKey: string) => Promise<string> = undefined;
 
     /**
      * A replacement function for the JS/C++ deriveSecretKey.
      */
     public deriveSecretKey?: (derivation: string,
                               outputIndex: number,
-                              privateKey: string) => string = undefined;
+                              privateKey: string) => Promise<string> = undefined;
 
     /**
      * A replacement function for the JS/C++ generateKeyImage.
      */
     public generateKeyImage?: (publicKey: string,
-                               privateKey: string) => string = undefined;
+                               privateKey: string) => Promise<string> = undefined;
 
     /**
      * A replacement function for the JS/C++ secretKeyToPublicKey.
      */
-    public secretKeyToPublicKey?: (privateKey: string) => string = undefined;
+    public secretKeyToPublicKey?: (privateKey: string) => Promise<string> = undefined;
 
     /**
      * A replacement function for the JS/C++ cnFastHash.
      */
-    public cnFastHash?: (input: string) => string = undefined;
+    public cnFastHash?: (input: string) => Promise<string> = undefined;
 
     /**
      * A replacement function for the JS/C++ generateRingSignatures.
@@ -343,20 +343,20 @@ export class Config implements IConfig {
                                      keyImage: string,
                                      inputKeys: string[],
                                      privateKey: string,
-                                     realIndex: number) => string[] = undefined;
+                                     realIndex: number) => Promise<string[]> = undefined;
     /**
      * A replacement function for the JS/C++ checkRingSignatures.
      */
     public checkRingSignatures?: (transactionPrefixHash: string,
                                   keyImage: string,
                                   publicKeys: string[],
-                                  signatures: string[]) => boolean = undefined;
+                                  signatures: string[]) => Promise<boolean> = undefined;
 
     /**
      * A replacement function for the JS/C++ generateKeyDerivation.
      */
     public generateKeyDerivation?: (transactionPublicKey: string,
-                                    privateViewKey: string) => string = undefined;
+                                    privateViewKey: string) => Promise<string> = undefined;
 
     /**
      * The amount of memory to use storing downloaded blocks - 50MB

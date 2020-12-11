@@ -20,6 +20,10 @@ class Logger {
         if (level) {
             this.logLevel = level;
         }
+
+        if (callback) {
+            this.callback = callback;
+        }
     }
 
     /**

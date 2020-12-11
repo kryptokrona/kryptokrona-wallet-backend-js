@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import { CryptoNote } from 'kryptokrona-utils';
+import { CryptoNote } from 'turtlecoin-utils';
 import { Config } from './Config';
 
 /**
@@ -14,15 +14,16 @@ import { Config } from './Config';
 export function CryptoUtils(config: Config): CryptoNote {
     return new CryptoNote({
         addressPrefix: config.addressPrefix,
-        checkRingSignatures: config.checkRingSignatures,
-        cnFastHash: config.cnFastHash,
         coinUnitPlaces: config.decimalPlaces,
+        keccakIterations: 1,
+    }, {
+        cn_fast_hash: config.cnFastHash,
+        checkRingSignatures: config.checkRingSignatures,
         derivePublicKey: config.derivePublicKey,
         deriveSecretKey: config.deriveSecretKey,
         generateKeyDerivation: config.generateKeyDerivation,
         generateKeyImage: config.generateKeyImage,
         generateRingSignatures: config.generateRingSignatures,
-        keccakIterations: 1,
         secretKeyToPublicKey: config.secretKeyToPublicKey,
         underivePublicKey: config.underivePublicKey,
     });

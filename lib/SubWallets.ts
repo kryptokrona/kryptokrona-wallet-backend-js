@@ -20,6 +20,7 @@ import { addressToKeys, getCurrentTimestampAdjusted, isInputUnlocked } from './U
 import { SUCCESS, WalletError, WalletErrorCode } from './WalletError';
 
 import * as _ from 'lodash';
+import { Address } from 'turtlecoin-utils';
 
 /**
  * Stores each subwallet, along with transactions and public spend keys
@@ -69,12 +70,12 @@ export class SubWallets {
      * The public spend keys this wallet contains. Used for verifying if a
      * transaction is ours.
      */
-    private publicSpendKeys: string[] = [];
+    private readonly publicSpendKeys: string[] = [];
 
     /**
      * Mapping of public spend key to subwallet
      */
-    private subWallets: Map<string, SubWallet> = new Map();
+    private readonly subWallets: Map<string, SubWallet> = new Map();
 
     /**
      * Our transactions
@@ -103,38 +104,62 @@ export class SubWallets {
 
     private config: Config = new Config();
 
-    /**
-     * @param privateSpendKey Private spend key is optional if it's a view wallet
-     */
-    constructor(
+    private constructor(
         config: Config,
-        address: string,
-        scanHeight: number,
-        newWallet: boolean,
+        isViewWallet: boolean,
         privateViewKey: string,
-        privateSpendKey?: string) {
-
+        publicSpendKeys: string[],
+        subWallets: Map<string, SubWallet>
+    ) {
         this.config = config;
 
-        this.isViewWallet = privateSpendKey === undefined;
+        this.isViewWallet = isViewWallet;
+
         this.privateViewKey = privateViewKey;
 
+        this.publicSpendKeys = publicSpendKeys;
+
+        this.subWallets = subWallets;
+    }
+
+    /**
+     * @param config
+     * @param address
+     * @param scanHeight
+     * @param newWallet
+     * @param privateViewKey
+     * @param privateSpendKey Private spend key is optional if it's a view wallet
+     */
+    public static async init(
+         config: Config,
+         address: string,
+         scanHeight: number,
+         newWallet: boolean,
+         privateViewKey: string,
+         privateSpendKey?: string
+    ): Promise<SubWallets> {
         let timestamp = 0;
 
         if (newWallet) {
-            timestamp = getCurrentTimestampAdjusted(this.config.blockTargetTime);
+            timestamp = getCurrentTimestampAdjusted(config.blockTargetTime);
         }
 
-        const publicKeys = CryptoUtils(config).decodeAddress(address);
+        const decodedAddress = await Address.fromAddress(address, config.addressPrefix)
 
-        this.publicSpendKeys.push(publicKeys.publicSpendKey);
+        const publicSpendKeys: string[] = [];
+
+        publicSpendKeys.push(decodedAddress.spend.publicKey);
 
         const subWallet = new SubWallet(
-            config, address, scanHeight, timestamp, publicKeys.publicSpendKey,
+            config, address, scanHeight, timestamp, decodedAddress.spend.publicKey,
             privateSpendKey,
         );
 
-        this.subWallets.set(publicKeys.publicSpendKey, subWallet);
+        const subWallets: Map<string, SubWallet> = new Map();
+
+        subWallets.set(decodedAddress.spend.publicKey, subWallet);
+
+        return new SubWallets(config, privateSpendKey === undefined, privateViewKey, publicSpendKeys, subWallets);
     }
 
     public initKeyImageMap(): void {
@@ -146,7 +171,7 @@ export class SubWallets {
     }
 
     public pruneSpentInputs(pruneHeight: number): void {
-        for (const [publicKey, subWallet] of this.subWallets) {
+        for (const [, subWallet] of this.subWallets) {
             subWallet.pruneSpentInputs(pruneHeight);
         }
     }
@@ -157,7 +182,7 @@ export class SubWallets {
         this.transactionPrivateKeys = new Map();
         this.keyImageOwners = new Map();
 
-        for (const [publicKey, subWallet] of this.subWallets) {
+        for (const [, subWallet] of this.subWallets) {
             subWallet.reset(scanHeight, scanTimestamp);
         }
     }
@@ -212,7 +237,7 @@ export class SubWallets {
      * Gets the 'primary' subwallet
      */
     public getPrimarySubWallet(): SubWallet {
-        for (const [publicKey, subWallet] of this.subWallets) {
+        for (const [, subWallet] of this.subWallets) {
             if (subWallet.isPrimaryAddress()) {
                 return subWallet;
             }
@@ -299,6 +324,7 @@ export class SubWallets {
     /**
      * @param publicSpendKey    The public spend key of the subwallet to add this
      *                          input to
+     * @param input
      *
      * Store the transaction input in the corresponding subwallet
      */
@@ -326,6 +352,7 @@ export class SubWallets {
      * @param publicSpendKey    The public spend key of the subwallet to mark
      *                          the corresponding input spent in
      * @param spendHeight       The height the input was spent at
+     * @param keyImage
      *
      * Marks an input as spent by us, no longer part of balance or available
      * for spending. Input is identified by keyImage (unique)
@@ -361,7 +388,7 @@ export class SubWallets {
         });
 
         /* Remove the corresponding inputs */
-        for (const [publicKey, subWallet] of this.subWallets) {
+        for (const [, subWallet] of this.subWallets) {
             subWallet.removeCancelledTransaction(transactionHash);
         }
     }
@@ -377,7 +404,7 @@ export class SubWallets {
 
         let keyImagesToRemove: string[] = [];
 
-        for (const [publicKey, subWallet] of this.subWallets) {
+        for (const [, subWallet] of this.subWallets) {
             keyImagesToRemove = keyImagesToRemove.concat(subWallet.removeForkedTransactions(forkHeight));
         }
 
@@ -394,13 +421,13 @@ export class SubWallets {
      * daemon
      */
     public convertSyncTimestampToHeight(timestamp: number, height: number): void {
-        for (const [publicKey, subWallet] of this.subWallets) {
+        for (const [, subWallet] of this.subWallets) {
             subWallet.convertSyncTimestampToHeight(timestamp, height);
         }
     }
 
     public haveSpendableInput(input: TransactionInput, height: number): boolean {
-        for (const [publicKey, subWallet] of this.subWallets) {
+        for (const [, subWallet] of this.subWallets) {
             if (subWallet.haveSpendableInput(input, height)) {
                 return true;
             }
@@ -440,8 +467,8 @@ export class SubWallets {
     /**
      * Get all [public, private] spend keys in a container
      */
-    public getAllSpendKeys(): Array<[string, string]> {
-        const keys: Array<[string, string]> = [];
+    public getAllSpendKeys(): [string, string][] {
+        const keys: [string, string][] = [];
 
         for (const [publicKey, subWallet] of this.subWallets) {
             keys.push([publicKey, subWallet.getPrivateSpendKey()]);
@@ -453,10 +480,10 @@ export class SubWallets {
     /**
      * Generate the key image for an input
      */
-    public getTxInputKeyImage(
+    public async getTxInputKeyImage(
         publicSpendKey: string,
         derivation: string,
-        outputIndex: number): Promise<[string, string]> {
+        outputIndex: number): Promise<[string, string?]> {
 
         const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
@@ -478,9 +505,9 @@ export class SubWallets {
      *
      * @return Returns [unlockedBalance, lockedBalance]
      */
-    public getBalance(
+    public async getBalance(
         currentHeight: number,
-        subWalletsToTakeFrom?: string[]): [number, number] {
+        subWalletsToTakeFrom?: string[]): Promise<[number, number]> {
 
         let publicSpendKeys: string[] = [];
 
@@ -488,11 +515,11 @@ export class SubWallets {
         if (!subWalletsToTakeFrom) {
             publicSpendKeys = this.publicSpendKeys;
         } else {
-            publicSpendKeys = subWalletsToTakeFrom.map((address) => {
-                const [publicViewKey, publicSpendKey] = addressToKeys(address, this.config);
+            for (const address of subWalletsToTakeFrom) {
+                const [, publicSpendKey] = await addressToKeys(address, this.config);
 
-                return publicSpendKey;
-            });
+                publicSpendKeys.push(publicSpendKey);
+            }
         }
 
         let unlockedBalance: number = 0;
@@ -548,7 +575,7 @@ export class SubWallets {
     public getAddresses(): string[] {
         const addresses: string[] = [];
 
-        for (const [publicKey, subWallet] of this.subWallets) {
+        for (const [, subWallet] of this.subWallets) {
             addresses.push(subWallet.getAddress());
         }
 
@@ -563,16 +590,16 @@ export class SubWallets {
      *
      * @returns Returns the inputs and their owners, and the sum of their money
      */
-    public getSpendableTransactionInputs(
+    public async getSpendableTransactionInputs(
         subWalletsToTakeFrom: string[],
-        currentHeight: number): TxInputAndOwner[] {
+        currentHeight: number): Promise<TxInputAndOwner[]> {
 
         let availableInputs: TxInputAndOwner[] = [];
 
         /* Loop through each subwallet that we can take from */
-        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(
-            (address) => addressToKeys(address, this.config),
-        )) {
+        for (const address of subWalletsToTakeFrom) {
+            const [, publicSpendKey] = await addressToKeys(address, this.config);
+
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
             if (!subWallet) {
@@ -588,7 +615,7 @@ export class SubWallets {
 
         /* Push into base 10 buckets. Smallest amount buckets will come first, and
          * largest amounts within those buckets come first */
-        let buckets: Map<number, Array<TxInputAndOwner>> = new Map();
+        let buckets: Map<number, TxInputAndOwner[]> = new Map();
 
         for (const input of availableInputs) {
 
@@ -608,7 +635,7 @@ export class SubWallets {
 
         /* ES6 maps are sorted by insertion order, so we create a new map, sorting
          * the buckets we want first in the resulting map, first. */
-        buckets = new Map<number, Array<TxInputAndOwner>>([...buckets].sort((a, b) => {
+        buckets = new Map<number, TxInputAndOwner[]>([...buckets].sort((a, b) => {
             return a[0] > b[0] ? 1 : -1;
         }));
 
@@ -630,17 +657,17 @@ export class SubWallets {
         return ordered;
     }
 
-    public getFusionTransactionInputs(
+    public async getFusionTransactionInputs(
         subWalletsToTakeFrom: string[],
         mixin: number,
-        currentHeight: number): [TxInputAndOwner[], number] {
+        currentHeight: number): Promise<[TxInputAndOwner[], number]> {
 
         let availableInputs: TxInputAndOwner[] = [];
 
-        /* Loop through each subwallet we can take from */
-        for (const [publicViewKey, publicSpendKey] of subWalletsToTakeFrom.map(
-            (address) => addressToKeys(address, this.config),
-        )) {
+        /* Loop through each subwallet that we can take from */
+        for (const address of subWalletsToTakeFrom) {
+            const [, publicSpendKey] = await addressToKeys(address, this.config);
+
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
             if (!subWallet) {
@@ -673,7 +700,7 @@ export class SubWallets {
 
         let fullBuckets: TxInputAndOwner[][] = [];
 
-        for (const [amount, bucket] of buckets) {
+        for (const [, bucket] of buckets) {
             /* Skip the buckets with not enough items */
             if (bucket.length >= FUSION_TX_MIN_INPUT_COUNT) {
                 fullBuckets.push(bucket);
@@ -692,7 +719,7 @@ export class SubWallets {
             ];
         /* Otherwise just use all buckets */
         } else {
-            for (const [amount, bucket] of buckets) {
+            for (const [, bucket] of buckets) {
                 bucketsToTakeFrom.push(bucket);
             }
         }
@@ -755,7 +782,7 @@ export class SubWallets {
      * Get the transactions of the given subWallet address. If no subWallet address is given,
      * gets all transactions.
      */
-    public getTransactions(address?: string, includeFusions?: boolean): Transaction[] {
+    public async getTransactions(address?: string, includeFusions?: boolean): Promise<Transaction[]> {
         return this.filterTransactions(this.transactions, address, includeFusions);
     }
 
@@ -765,15 +792,15 @@ export class SubWallets {
      * if you want to avoid fetching every transactions repeatedly when nothing
      * has changed.
      */
-    public getNumTransactions(address?: string, includeFusions: boolean = true): number {
-        return this.getTransactions(address, includeFusions).length;
+    public async getNumTransactions(address?: string, includeFusions: boolean = true): Promise<number> {
+        return (await this.getTransactions(address, includeFusions)).length;
     }
 
     /**
      * Get the unconfirmed transactions of the given subwallet address. If no subwallet address
      * is given, gets all unconfirmed transactions.
      */
-    public getUnconfirmedTransactions(address?: string, includeFusions: boolean = true): Transaction[] {
+    public async getUnconfirmedTransactions(address?: string, includeFusions: boolean = true): Promise<Transaction[]> {
         return this.filterTransactions(this.lockedTransactions, address, includeFusions);
     }
 
@@ -783,8 +810,8 @@ export class SubWallets {
      * if you want to avoid fetching every transactions repeatedly when nothing
      * has changed.
      */
-    public getNumUnconfirmedTransactions(address?: string, includeFusions?: boolean): number {
-        return this.getUnconfirmedTransactions(address, includeFusions).length;
+    public async getNumUnconfirmedTransactions(address?: string, includeFusions?: boolean): Promise<number> {
+        return (await this.getUnconfirmedTransactions(address, includeFusions)).length;
     }
 
     public initAfterLoad(config: Config): void {
@@ -792,79 +819,71 @@ export class SubWallets {
         this.subWallets.forEach((subWallet) => subWallet.initAfterLoad(config));
     }
 
-    public addSubWallet(scanHeight: number): ([string, undefined] | [undefined, WalletError]) {
+    public async addSubWallet(scanHeight: number): Promise<([string, undefined] | [undefined, WalletError])> {
         if (this.isViewWallet) {
             /* Adding a random subwallet to a view wallet makes no sense. */
             return [undefined, new WalletError(WalletErrorCode.ILLEGAL_VIEW_WALLET_OPERATION)];
         }
 
-        const keys = CryptoUtils(this.config).createNewAddress();
+        /* Make a random address to get a new pub/priv spend key pair */
+        const address = await Address.fromEntropy(undefined, undefined, this.config.addressPrefix);
 
-        const privateSpendKey = keys.spend.privateKey;
-        const publicSpendKey = keys.spend.publicKey;
-
-        if (this.publicSpendKeys.includes(publicSpendKey)) {
+        if (this.publicSpendKeys.includes(address.spend.publicKey)) {
             return [undefined, new WalletError(WalletErrorCode.SUBWALLET_ALREADY_EXISTS)];
         }
 
-        const publicViewKey = CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
+        this.publicSpendKeys.push(address.spend.publicKey);
 
-        const newAddress = CryptoUtils(this.config).encodeAddress(
-            publicViewKey, publicSpendKey,
-        );
-
-        this.publicSpendKeys.push(publicSpendKey);
-
-        const isPrimaryAddress: boolean = false;
+        /**
+         * Create the actual address using the shared private view key and the new
+         * private spend key
+         */
+        const newAddress = await (await Address.fromKeys(address.spend.privateKey, this.privateViewKey, this.config.addressPrefix)).address();
 
         const subWallet = new SubWallet(
-            this.config, newAddress, scanHeight, 0, publicSpendKey,
-            privateSpendKey, false,
+            this.config, newAddress, scanHeight, 0, address.spend.publicKey,
+            address.spend.privateKey, false,
         );
 
-        this.subWallets.set(publicSpendKey, subWallet);
+        this.subWallets.set(address.spend.publicKey, subWallet);
 
         return [newAddress, undefined];
     }
 
-    public importSubWallet(
+    public async importSubWallet(
         privateSpendKey: string,
-        scanHeight: number): ([string, undefined] | [undefined, WalletError]) {
+        scanHeight: number): Promise<([string, undefined] | [undefined, WalletError])> {
 
         if (this.isViewWallet) {
             /* Adding a random subwallet to a view wallet makes no sense. */
             return [undefined, new WalletError(WalletErrorCode.ILLEGAL_VIEW_WALLET_OPERATION)];
         }
 
-        const publicSpendKey = CryptoUtils(this.config).privateKeyToPublicKey(privateSpendKey);
+        const publicSpendKey = await CryptoUtils(this.config).privateKeyToPublicKey(privateSpendKey);
 
         if (this.publicSpendKeys.includes(publicSpendKey)) {
             return [undefined, new WalletError(WalletErrorCode.SUBWALLET_ALREADY_EXISTS)];
         }
 
-        const publicViewKey = CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
+        const publicViewKey = await CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
 
-        const newAddress = CryptoUtils(this.config).encodeAddress(
-            publicViewKey, publicSpendKey,
-        );
+        const address = await (await Address.fromPublicKeys(publicSpendKey, publicViewKey, undefined, this.config.addressPrefix)).address();
 
         this.publicSpendKeys.push(publicSpendKey);
 
-        const isPrimaryAddress: boolean = false;
-
         const subWallet = new SubWallet(
-            this.config, newAddress, scanHeight, 0, publicSpendKey,
+            this.config, address, scanHeight, 0, publicSpendKey,
             privateSpendKey, false,
         );
 
         this.subWallets.set(publicSpendKey, subWallet);
 
-        return [newAddress, undefined];
+        return [address, undefined];
     }
 
-    public importViewSubWallet(
+    public async importViewSubWallet(
         publicSpendKey: string,
-        scanHeight: number): ([string, undefined] | [undefined, WalletError]) {
+        scanHeight: number): Promise<([string, undefined] | [undefined, WalletError])> {
 
         if (!this.isViewWallet) {
             /* Adding a random subwallet to a view wallet makes no sense. */
@@ -875,28 +894,24 @@ export class SubWallets {
             return [undefined, new WalletError(WalletErrorCode.SUBWALLET_ALREADY_EXISTS)];
         }
 
-        const publicViewKey = CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
+        const publicViewKey = await CryptoUtils(this.config).privateKeyToPublicKey(this.privateViewKey);
 
-        const newAddress = CryptoUtils(this.config).encodeAddress(
-            publicViewKey, publicSpendKey,
-        );
+        const address = await (await Address.fromPublicKeys(publicSpendKey, publicViewKey, undefined, this.config.addressPrefix)).address();
 
         this.publicSpendKeys.push(publicSpendKey);
 
-        const isPrimaryAddress: boolean = false;
-
         const subWallet = new SubWallet(
-            this.config, newAddress, scanHeight, 0, publicSpendKey,
+            this.config, address, scanHeight, 0, publicSpendKey,
             undefined, false,
         );
 
         this.subWallets.set(publicSpendKey, subWallet);
 
-        return [newAddress, undefined];
+        return [address, undefined];
     }
 
-    public deleteSubWallet(address: string): WalletError {
-        const [publicViewKey, publicSpendKey] = addressToKeys(address, this.config);
+    public async deleteSubWallet(address: string): Promise<WalletError> {
+        const [, publicSpendKey] = await addressToKeys(address, this.config);
 
         const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
@@ -937,11 +952,11 @@ export class SubWallets {
         });
     }
 
-    private filterTransactions(txs: Transaction[], address?: string, includeFusions: boolean = true) {
-        const filters: Array<(tx: Transaction) => boolean> = [];
+    private async filterTransactions(txs: Transaction[], address?: string, includeFusions: boolean = true) {
+        const filters: ((tx: Transaction) => boolean)[] = [];
 
         if (address) {
-            const [, publicSpendKey] = addressToKeys(address, this.config);
+            const [, publicSpendKey] = await addressToKeys(address, this.config);
             filters.push((tx: Transaction) => tx.transfers.has(publicSpendKey));
         }
 
