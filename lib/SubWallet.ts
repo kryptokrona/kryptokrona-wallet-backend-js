@@ -256,11 +256,13 @@ export class SubWallet {
     /**
      * Move an input from the unspent container to the locked container
      */
-    public markInputAsLocked(keyImage: string): void {
+    public markInputAsLocked(keyImage: string, transactionHash: string): void {
         /* Remove input from unspent */
         const [removedInput] = _.remove(this.unspentInputs, (input) => {
             return input.keyImage === keyImage;
         });
+
+        removedInput.parentTransactionHash = transactionHash;
 
         if (!removedInput) {
             logger.log(

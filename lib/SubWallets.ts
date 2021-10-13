@@ -367,14 +367,14 @@ export class SubWallets {
         subWallet.markInputAsSpent(keyImage, spendHeight);
     }
 
-    public markInputAsLocked(publicSpendKey: string, keyImage: string): void {
+    public markInputAsLocked(publicSpendKey: string, keyImage: string, transactionHash: string): void {
         const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
         if (!subWallet) {
             throw new Error('Subwallet not found!');
         }
 
-        subWallet.markInputAsLocked(keyImage);
+        subWallet.markInputAsLocked(keyImage, transactionHash);
     }
 
     /**

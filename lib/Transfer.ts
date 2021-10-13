@@ -1432,7 +1432,7 @@ async function relayTransaction(
 
     /* Lock the input for spending till confirmed/cancelled */
     for (const input of inputs) {
-        subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage);
+        subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage, await tx.hash());
     }
 
     logger.log(

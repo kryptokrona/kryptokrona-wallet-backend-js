@@ -321,7 +321,7 @@ export class TransactionInput {
     public readonly unlockTime: number;
 
     /* The transaction hash of the transaction that contains this input */
-    public readonly parentTransactionHash: string;
+    public parentTransactionHash: string;
 
     /* The tmp private key generated when we generated the key image. Optional,
        for backwards compatiblity. */
