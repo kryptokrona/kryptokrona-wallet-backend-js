@@ -64,12 +64,12 @@ const WB = require('kryptokrona-wallet-backend-js');
 ### Typescript
 
 ```typescript
-import { WalletBackend, Daemon, IDaemon } from 'kryptokrona-wallet-backend-js';
+import { WalletBackend, Daemon } from 'kryptokrona-wallet-backend-js';
 
 (async () => {
-    const daemon: IDaemon = new Daemon('127.0.0.1', 11898);
+    const daemon: Daemon = new Daemon('127.0.0.1', 11898);
 
-    const wallet: WalletBackend = WalletBackend.createWallet(daemon);
+    const wallet: WalletBackend = await WalletBackend.createWallet(daemon);
 
     console.log('Created wallet');
 
