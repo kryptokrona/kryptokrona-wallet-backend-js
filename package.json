@@ -20,7 +20,7 @@
   "author": "",
   "license": "AGPL-3.0",
   "dependencies": {
-    "kryptokrona-utils": "^1.3.2",
+    "kryptokrona-utils": "^1.3.5",
     "lodash": "^4.17.15",
     "object-sizeof": "^1.5.2",
     "pbkdf2": "^3.0.17",
