@@ -927,7 +927,9 @@ export class SubWallets {
 
         this.deleteAddressTransactions(this.transactions, publicSpendKey);
         this.deleteAddressTransactions(this.lockedTransactions, publicSpendKey);
-
+        
+        this.publicSpendKeys = this.publicSpendKeys.filter(elem => elem != publicSpendKey);
+        
         return SUCCESS;
     }
 
