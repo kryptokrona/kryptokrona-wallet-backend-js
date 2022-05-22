@@ -972,7 +972,7 @@ async function tryMakeFeePerByteTransaction(
 
     let attempt: number = 0;
 
-    while (true) {
+    while (attempt < 10) {
         logger.log(
             `Attempting fee per byte transaction construction, attempt ${attempt}`,
             LogLevel.DEBUG,
