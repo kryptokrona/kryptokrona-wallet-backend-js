@@ -13,8 +13,8 @@ import { generateKeyDerivation, underivePublicKey } from '../lib/CryptoWrapper';
 
 const doPerformanceTests: boolean = process.argv.includes('--do-performance-tests');
 
-const daemonAddress = 'blockapi.turtlepay.io';
-const daemonPort = 443;
+const daemonAddress = 'pool.kryptokrona.se';
+const daemonPort = 11898;
 
 class Tester {
 
@@ -284,8 +284,8 @@ async function roundTrip(
     await tester.test(async () => {
         const [viewWallet, error] = await WalletBackend.importViewWallet(
             daemon, 0,
-            '3c6cfe7a29a371278abd9f5725a3d2af5eb73d88b4ed9b8d6c2ff993bbc4c20a',
-            'TRTLuybJFCU8BjP18bH3VZCNAu1fZ2r3d85SsU2w3VnJAHoRfnzLKgtTK2b58nfwDu59hKxwVuSMhTN31gmUW8nN9aoAN9N8Qyb',
+            '37171d02ffeaa6e27085cd0815ada830334f0585dcd1859992bf5b53685d4c07',
+            'SEKReTRGXxc41SGrKyw5ucHKoM4nhMYazTwseWGB181H9zRB68oSApmjSaUS8yPjgEGEnH4WesJEW1zaCmEB5ykSLQZvfs7CFTU',
         );
 
         const [privateSpendKey, privateViewKey] = (viewWallet as WalletBackend).getPrimaryAddressPrivateKeys();
@@ -306,17 +306,18 @@ async function roundTrip(
 
         const address = (seedWallet as WalletBackend).getPrimaryAddress();
 
-        return address === 'TRTLv1s9JQeHAJFoHvcqVBPyHYom2ynKeK6dpYptbp8gQNzdzE73ZD' +
-                           'kNmNurqfhhcMSUXpS1ZGEJKiKJUcPCyw7vYaCc354DCN1';
+        return address === 'SEKReX4MYn2HAJFoHvcqVBPyHYom2ynKeK6dpYptbp8gQNzdzE73ZD' +
+                           'kNmNurqfhhcMSUXpS1ZGEJKiKJUcPCyw7vYaCc35yBZCf';
 
     }, 'Verifying correct address is created from seed',
        'Seed wallet has correct address',
        'Seed wallet has incorrect address!');
 
     await tester.test(async () => {
-        const test1: boolean = prettyPrintAmount(12345607) === '123,456.07 TRTL';
-        const test2: boolean = prettyPrintAmount(0) === '0.00 TRTL';
-        const test3: boolean = prettyPrintAmount(-1234) === '-12.34 TRTL';
+
+        const test1: boolean = prettyPrintAmount(12345607) === '123.45607 XKR';
+        const test2: boolean = prettyPrintAmount(0) === '0.00000 XKR';
+        const test3: boolean = prettyPrintAmount(-1234567) === '-12.34567 XKR';
 
         return test1 && test2 && test3;
 
@@ -334,8 +335,8 @@ async function roundTrip(
         const test1: boolean = (err1 as WalletError).errorCode === WalletErrorCode.ADDRESS_WRONG_LENGTH;
 
         const [seed2, err2] = await wallet.getMnemonicSeedForAddress(
-            'TRTLv1s9JQeHAJFoHvcqVBPyHYom2ynKeK6dpYptbp8gQNzdzE73ZD' +
-            'kNmNurqfhhcMSUXpS1ZGEJKiKJUcPCyw7vYaCc354DCN1',
+            'SEKReX4MYn2HAJFoHvcqVBPyHYom2ynKeK6dpYptbp8gQNzdzE73ZD' +
+            'kNmNurqfhhcMSUXpS1ZGEJKiKJUcPCyw7vYaCc35yBZCf',
         );
 
         /* Random address shouldn't be present in wallet */
@@ -379,12 +380,12 @@ async function roundTrip(
        'getPrimaryAddress doesn\'t work!');
 
     await tester.test(async () => {
-        const privateViewKey: string = '3c6cfe7a29a371278abd9f5725a3d2af5eb73d88b4ed9b8d6c2ff993bbc4c20a';
+        const privateViewKey: string = '37171d02ffeaa6e27085cd0815ada830334f0585dcd1859992bf5b53685d4c07';
 
         const [viewWallet, error] = await WalletBackend.importViewWallet(
             daemon, 0,
             privateViewKey,
-            'TRTLuybJFCU8BjP18bH3VZCNAu1fZ2r3d85SsU2w3VnJAHoRfnzLKgtTK2b58nfwDu59hKxwVuSMhTN31gmUW8nN9aoAN9N8Qyb',
+            'SEKReTRGXxc41SGrKyw5ucHKoM4nhMYazTwseWGB181H9zRB68oSApmjSaUS8yPjgEGEnH4WesJEW1zaCmEB5ykSLQZvfs7CFTU',
         );
 
         return (viewWallet as WalletBackend).getPrivateViewKey() === privateViewKey;
@@ -416,19 +417,19 @@ async function roundTrip(
         let address;
         try {
         address = await createIntegratedAddress(
-            'TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW',
-            'b23df6e84c1dd619d3601a28e5948d92a0d096aea1621969c591a90e986794a0',
+            'SEKReVqaRaqWfBg4Fypb6dVNLx27FXw8icGgA3EUKKhVUdB7EVJR1iia3fVTxqw5RTiFJN4DU98KuBXvCoG6f9qx5XRtqnc883h',
+            '7bedddf2b150cf247a42dde6a999e73b7f297d67d2ddfadbc331ea54a526ba1b',
         );
         } catch (err) {
             console.log(JSON.stringify(err));
         }
 
-        const test1: boolean = address === 'TRTLuyzDT8wJ6bAmnmBLyRHmBNrRrafuR9G3bJTNzPiTAS4xKDQKHd9Aa2sF2q22DF9EXi5HNpZGcHGBwqgVAqc2AZxUBMMSegm8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyhJk2yR';
+        const test1: boolean = address === 'SEKReU5xRJsHnvwLSGzSLfHdJDPhNiQ8hHnvvr1FbyG4HvvGRUeRtorAGNFpKrhzJwJ8Dg26FMRJQHxWbWdCpCysHTQYZsk6JdoWfBg4Fypb6dVNLx27FXw8icGgA3EUKKhVUdB7EVJR1iia3fVTxqw5RTiFJN4DU98KuBXvCoG6f9qx5XRtqppRa7E';
 
         let test2: boolean = false;
 
         try {
-            await createIntegratedAddress('TRTLv2Fyavy8CXG8BPEbNeCHFZ1fuDCYCZ3vW5H5LXN4K2M2MHUpTENip9bbavpHvvPwb4NDkBWrNgURAd5DB38FHXWZyoBh4wW', '');
+            await createIntegratedAddress('SEKReVqaRaqWfBg4Fypb6dVNLx27FXw8icGgA3EUKKhVUdB7EVJR1iia3fVTxqw5RTiFJN4DU98KuBXvCoG6f9qx5XRtqnc883h', '');
         } catch (err) {
             test2 = true;
         }
@@ -436,7 +437,7 @@ async function roundTrip(
         let test3: boolean = false;
 
         try {
-            await createIntegratedAddress('', 'b23df6e84c1dd619d3601a28e5948d92a0d096aea1621969c591a90e986794a0');
+            await createIntegratedAddress('', '7bedddf2b150cf247a42dde6a999e73b7f297d67d2ddfadbc331ea54a526ba1b');
         } catch (err) {
             test3 = true;
         }
@@ -494,11 +495,11 @@ async function roundTrip(
         await wallet.stop();
 
         return _.isEqual(info, {
-            daemonType: DaemonType.BlockchainCacheApi,
+            daemonType: DaemonType.ConventionalDaemon,
             daemonTypeDetermined: true,
             host: daemonAddress,
             port: daemonPort,
-            ssl: true,
+            ssl: false,
             sslDetermined: true,
         });
 
@@ -539,19 +540,19 @@ async function roundTrip(
 
         const wallet = testWallet as WalletBackend;
 
-        const a = await wallet.getNumTransactions() === 3;
+        const a = await wallet.getNumTransactions() === 2;
 
         let [ unlockedBalance, lockedBalance ] = await wallet.getBalance();
 
-        const c = unlockedBalance === 246 && lockedBalance === 167;
+        const c = unlockedBalance === 1100000 && lockedBalance === 0;
 
-        await wallet.rewind(1026200);
+        await wallet.rewind(1063228);
 
-        const b = await wallet.getNumTransactions() === 1;
+        let b = await wallet.getNumTransactions() === 1;
 
         [ unlockedBalance, lockedBalance ] = await wallet.getBalance();
 
-        const d = unlockedBalance === 1234 && lockedBalance === 0;
+        const d = unlockedBalance === 100000 && lockedBalance === 0;
 
         return a && b && c && d;
 
@@ -570,9 +571,9 @@ async function roundTrip(
 
         const [address1, error1] = await wallet.importSubWallet('c93d9e2e71ea018e7b0cec89c260f2d00d3f88ede16b3532f4ae04596ab38001');
 
-        const a = address1 === 'TRTLuxZPMVRHTq27oJFmwzd85wVr2ddhM2gqXcDAp1NiDKjCMwBT98BEaCRGvRc8uXEeoz5PaR5EgDZd1FTbCeVeYFqjbp6Wx2H';
+        const a = address1 === 'SEKReTkbbroHTq27oJFmwzd85wVr2ddhM2gqXcDAp1NiDKjCMwBT98BEaCRGvRc8uXEeoz5PaR5EgDZd1FTbCeVeYFqjbkAGdpP';
 
-        const b = wallet.getPrimaryAddress() === 'TRTLv41arQbNqvP1x4MuTVFxqVydgF2PBatbBKdER2LP6uH56q3s4EbEaCRGvRc8uXEeoz5PaR5EgDZd1FTbCeVeYFqjbj5LyQQ';
+        const b = wallet.getPrimaryAddress() === 'SEKReZCo6myNqvP1x4MuTVFxqVydgF2PBatbBKdER2LP6uH56q3s4EbEaCRGvRc8uXEeoz5PaR5EgDZd1FTbCeVeYFqjboZpBZn';
 
         const [address2, error2] = await wallet.importSubWallet('c93d9e2e71ea018e7b0cec89c260f2d00d3f88ede16b3532f4ae04596ab38001');
 
