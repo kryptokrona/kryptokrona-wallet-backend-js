@@ -327,6 +327,8 @@ export function getTransactionFee(
     feePerByte: number,
     config: IConfig = new Config()) {
 
+    return 10;
+
     const tempConfig: Config = MergeConfig(config);
 
     const numChunks: number = Math.ceil(
