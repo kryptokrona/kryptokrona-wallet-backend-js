@@ -209,7 +209,7 @@ export class Config implements IConfig {
 
     /**
      * The address prefix your coin uses - you can find this in CryptoNoteConfig.h.
-     * In TurtleCoin, this converts to TRTL
+     * For kryptokrona, this converts to 'SEKR'.
      */
     public addressPrefix: number = 2239254;
 
@@ -226,7 +226,7 @@ export class Config implements IConfig {
     /**
      * How often to process blocks, in millseconds
      */
-    public syncThreadInterval: number = 10;
+    public syncThreadInterval: number = 1000;
 
     /**
      * How often to update the daemon info
