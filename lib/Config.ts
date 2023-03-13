@@ -226,7 +226,7 @@ export class Config implements IConfig {
     /**
      * How often to process blocks, in millseconds
      */
-    public syncThreadInterval: number = 1000;
+    public syncThreadInterval: number = 100;
 
     /**
      * How often to update the daemon info
@@ -243,7 +243,7 @@ export class Config implements IConfig {
      * high a value will cause the event loop to be blocked, and your interaction
      * to be laggy.
      */
-    public blocksPerTick: number = 1;
+    public blocksPerTick: number = 10;
 
     /**
      * Your coins 'ticker', generally used to refer to the coin, i.e. 123 TRTL
