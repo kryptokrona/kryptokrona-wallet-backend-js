@@ -1459,8 +1459,10 @@ async function storeSentTransaction(
     const derivation: string = await generateKeyDerivation(
         txPublicKey, subWallets.getPrivateViewKey(), config,
     );
-
+    
     const spendKeys: string[] = subWallets.getPublicSpendKeys();
+    
+    subWallets.knownTransactions.push(hash)
 
     for (const [outputIndex, output] of keyOutputs.entries()) {
         if (output.type === TransactionOutputs.OutputType.KEY) {
@@ -1478,7 +1480,7 @@ async function storeSentTransaction(
             }
 
             const input: UnconfirmedInput = new UnconfirmedInput(
-                o.amount.toJSNumber(), o.key, hash,
+                o.amount.toJSNumber(), o.key, hash, false
             );
 
             subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);

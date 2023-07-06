@@ -2853,6 +2853,8 @@ export class WalletBackend extends EventEmitter {
             [LogCategory.SYNC, LogCategory.TRANSACTIONS],
         );
 
+        await this.checkPoolTransactions()
+
         const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
 
         const cancelledTransactions: string[]
@@ -2973,6 +2975,15 @@ export class WalletBackend extends EventEmitter {
         );
     }
 
+    public async checkPoolTransactions() {
+        await this.walletSynchronizer.checkPoolTransactions()
+        logger.log(
+            'Checking pool transactions ',
+            LogLevel.INFO,
+            LogCategory.SYNC,
+        )
+    }
+
     /**
      * Process config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
@@ -3007,7 +3018,9 @@ export class WalletBackend extends EventEmitter {
 
                 this.subWallets.removeForkedTransactions(block.blockHeight);
             }
-
+            
+            
+            
             if (block.blockHeight % 5000 === 0 && block.blockHeight !== 0) {
                 this.subWallets.pruneSpentInputs(block.blockHeight - 5000);
             }

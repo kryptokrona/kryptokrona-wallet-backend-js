@@ -2,14 +2,15 @@
   "compilerOptions": {
     "target": "es6",
     "lib": [
-      "es2017",
+      "es2021",
       "dom",
       "scripthost"
     ],
+    "skipLibCheck": true,
     "module": "commonjs",
     "declaration": true,
     "outDir": "./dist",
-    "strict": true,
+    "strict": false,
     "baseUrl": "./lib",
     "downlevelIteration": true
   }

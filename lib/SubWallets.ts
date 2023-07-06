@@ -53,6 +53,8 @@ export class SubWallets {
             ),
 
             keyImageOwners: new Map(),
+
+            knownTransactions: [],
         });
 
         newSubWallets.initKeyImageMap();
@@ -86,6 +88,12 @@ export class SubWallets {
      * Transactions we sent, but haven't been confirmed yet
      */
     private lockedTransactions: Transaction[] = [];
+
+    
+    /**
+     * Transactions we have already checked
+     */
+    public knownTransactions = []
 
     /**
      * The shared private view key
@@ -181,7 +189,7 @@ export class SubWallets {
         this.lockedTransactions = [];
         this.transactionPrivateKeys = new Map();
         this.keyImageOwners = new Map();
-
+        this.knownTransactions = [];
         for (const [, subWallet] of this.subWallets) {
             subWallet.reset(scanHeight, scanTimestamp);
         }
@@ -210,6 +218,8 @@ export class SubWallets {
             isViewWallet: this.isViewWallet,
 
             txPrivateKeys: txPrivateKeysToVector(this.transactionPrivateKeys),
+
+            knownTransactions: [],
         };
     }
 
@@ -552,20 +562,21 @@ export class SubWallets {
         }
 
         let unconfirmedIncomingBalance = 0;
-
+        let locked = 0
         for (const publicSpendKey of publicSpendKeys) {
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
             if (!subWallet) {
                 throw new Error('Subwallet not found!');
             }
-
+            
             unconfirmedIncomingBalance += subWallet.getUnconfirmedChange();
+            locked += subWallet.getLockedMessageBalance()
         }
 
         lockedBalance += unconfirmedIncomingBalance;
-        unlockedBalance -= unconfirmedIncomingBalance;
-
+        unlockedBalance -= (unconfirmedIncomingBalance -locked);
+  
         return [unlockedBalance, lockedBalance];
     }
 

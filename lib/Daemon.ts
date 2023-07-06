@@ -407,6 +407,31 @@ export class Daemon extends EventEmitter {
         return [this.feeAddress, this.feeAmount];
     }
 
+    public async getPoolChanges(knownTxs: any[]) {
+        const endpoint = "/get_pool_changes_lite"
+        let data
+        try {
+            data = await this.makePostRequest(endpoint, {
+                knownTxsIds: knownTxs,
+            });
+        } catch (err) {
+            return false
+        }
+    
+        logger.log(
+            `Making pool changes request, got data ${JSON.stringify(data)}`,
+            LogLevel.DEBUG,
+            [LogCategory.DAEMON],
+        );
+        
+        let json = data
+        json = JSON.stringify(json)
+        .replaceAll('transactionPrefixInfo.txPrefix', 'transactionPrefixInfo')
+        .replaceAll('transactionPrefixInfo.txHash', 'transactionPrefixInfotxHash')
+        const parsed = JSON.parse(json)
+        if (parsed.addedTxs.length === 0) return false
+        return parsed
+    }
     /**
      * @param blockHashCheckpoints  Hashes of the last known blocks. Later
      *                              blocks (higher block height) should be
@@ -418,6 +443,7 @@ export class Daemon extends EventEmitter {
      * Gets blocks from the daemon. Blocks are returned starting from the last
      * known block hash (if higher than the startHeight/startTimestamp)
      */
+    
     public async getWalletSyncData(
         blockHashCheckpoints: string[],
         startHeight: number,
@@ -442,7 +468,7 @@ export class Daemon extends EventEmitter {
             if (err.statusCode === 404 && this.useRawBlocks) {
                 logger.log(
                     `Daemon responded 404 to /getrawblocks, reverting to /getwalletsyncdata`,
-                    LogLevel.INFO,
+                    LogLevel.DEBUG,
                     [LogCategory.DAEMON],
                 );
 
@@ -676,7 +702,7 @@ export class Daemon extends EventEmitter {
                     keyOutputs,
                     await block.minerTransaction.hash(),
                     block.minerTransaction.publicKey!,
-                    block.minerTransaction.unlockTime > Number.MAX_SAFE_INTEGER
+                    block.minerTransaction.unlockTime as number > Number.MAX_SAFE_INTEGER
                         ? (block.minerTransaction.unlockTime as any).toJSNumber()
                         : block.minerTransaction.unlockTime,
                 );
@@ -719,7 +745,7 @@ export class Daemon extends EventEmitter {
                     keyOutputs,
                     await rawTX.hash(),
                     rawTX.publicKey!,
-                    rawTX.unlockTime > Number.MAX_SAFE_INTEGER
+                    rawTX.unlockTime as number > Number.MAX_SAFE_INTEGER
                         ? (rawTX.unlockTime as any).toJSNumber()
                         : rawTX.unlockTime,
                     rawTX.paymentId || '',

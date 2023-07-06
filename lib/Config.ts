@@ -421,6 +421,5 @@ export function MergeConfig(config?: IConfig, currentConfig = new Config()): Con
     for (const [key, value] of Object.entries(config)) {
         finalConfig[key] = value;
     }
-
     return finalConfig;
 }

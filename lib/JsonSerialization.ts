@@ -75,6 +75,8 @@ export interface SubWalletsJSON {
     isViewWallet: boolean;
 
     txPrivateKeys: TxPrivateKeysJSON[];
+
+    knownTransactions: string[];
 }
 
 export interface TxPrivateKeysJSON {
@@ -139,6 +141,8 @@ export interface UnconfirmedInputJSON {
     key: string;
 
     parentTransactionHash: string;
+
+    locked: boolean;
 }
 
 export interface SynchronizationStatusJSON {

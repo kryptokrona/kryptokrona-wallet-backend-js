@@ -19,7 +19,7 @@ import { underivePublicKey, generateKeyDerivation } from './CryptoWrapper';
 
 import {
     Block, RawCoinbaseTransaction, RawTransaction, Transaction,
-    TransactionData, TransactionInput, TopBlock,
+    TransactionData, TransactionInput, TopBlock, UnconfirmedInput,
 } from './Types';
 
 /**
@@ -296,7 +296,7 @@ export class WalletSynchronizer extends EventEmitter {
             /* Hash still not found, increment fail count */
             if (cancelled.includes(hash)) {
                 /* Failed too many times, cancel transaction, return funds to wallet */
-                if (failCount === 10) {
+                if (failCount === 3) {
                     toRemove.push(hash);
                     this.cancelledTransactionsFailCount.delete(hash);
 
@@ -723,4 +723,126 @@ export class WalletSynchronizer extends EventEmitter {
 
         return [undefined, []];
     }
+
+    public checkOutgoingPoolTransaction(thisTx, thisHash) {
+        
+        const spentKeyImages = []
+        let message = false
+        if (thisTx.extra.length > 200) message = true
+
+        for (const inpt of thisTx.vin) {
+
+            const key_image = inpt.value.k_image
+
+            if (key_image.length !== 64) {
+                continue
+            }
+
+            const inAmount = inpt.value.amount
+
+            const [found, publicSpendKey] = this.subWallets.getKeyImageOwner(
+                key_image,
+            );
+
+            if (!found) continue
+
+            spentKeyImages.push({publicSpendKey, key_image, thisHash, inAmount});
+        
+        }
+
+        if (spentKeyImages.length === 0) return false
+
+        /* Mark the unconfirmed inputs as locked */
+        for (const input of spentKeyImages) {
+            this.subWallets.markInputAsLocked(input.publicSpendKey, input.key_image, input.thisHash);
+            const unconfirmed = new UnconfirmedInput(
+                input.inAmount, input.key_image, input.thisHash, false                );
+            
+            if (!message) continue
+            /* If it is a message, we know the inputs will be returning to us, thus we store it as locked balance */
+            this.subWallets.storeUnconfirmedIncomingInput(unconfirmed, input.publicSpendKey);
+        }
+
+        return true
+    }
+
+    public async checkIncomingPoolTransaction(thisTx, thisHash, spendKeys) {
+        let txPubKey
+        const incomingOutputs = []
+        const thisExtra = thisTx.extra
+        try {
+            txPubKey = thisExtra.substring(2,66)
+        } catch (e) {
+            logger.log(`Some parse error in thisExtra, checkIncomingPoolTransaction`, LogLevel.INFO, LogCategory.SYNC)
+        }
+
+        const derivation = await generateKeyDerivation(txPubKey, this.privateViewKey, this.config);
+        let outputIndex = 0
+        for (const output of thisTx.vout) {
+            /* Derive the spend key from the transaction, using the previous
+            derivation */
+            const derivedSpendKey = await underivePublicKey(derivation, outputIndex, output.target.data.key, this.config);
+            /* See if the derived spend key matches any of our spend keys */
+            outputIndex++
+            
+            if (!_.includes(spendKeys, derivedSpendKey)) {
+                continue;
+            }
+
+            /* The public spend key of the subwallet that owns this input */
+            const ownerSpendKey = derivedSpendKey;
+            const [keyImage] = await this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
+            const amount = output.amount
+            const key = output.target.data.key
+            /* Save the locked transaction keyimage, hash and spendkey to array */
+            incomingOutputs.push({ownerSpendKey, keyImage, thisHash, amount, key});
+            
+        }
+    
+        if (incomingOutputs.length === 0) return false
+
+        /* Mark the outputs as locked */
+        for (const output of incomingOutputs) {
+            this.subWallets.markInputAsLocked(output.ownerSpendKey, output.keyImage, output.thisHash);
+            
+            const unconfirmed = new UnconfirmedInput(
+                output.amount, output.key, output.thisHash, true
+            );
+
+            this.subWallets.storeUnconfirmedIncomingInput(unconfirmed, output.ownerSpendKey);
+        }
+
+        return true
+    }
+
+    
+    public async checkPoolTransactions() {
+
+        const txArray = await this.daemon.getPoolChanges(this.subWallets.knownTransactions);
+        if (!txArray) return
+        
+        const spendKeys = this.subWallets.getPublicSpendKeys();
+     
+        logger.log(`Checking all txs in pool ${JSON.stringify(txArray.addedTxs)}`, LogLevel.DEBUG, LogCategory.SYNC)
+
+        for (const tx of txArray.addedTxs) {
+
+            const thisTx = tx.transactionPrefixInfo
+            const thisHash = tx.transactionPrefixInfotxHash
+
+            if (this.subWallets.knownTransactions.some(a => a === thisHash)) {
+                continue
+            }
+
+            this.subWallets.knownTransactions.push(thisHash)
+
+            this.checkOutgoingPoolTransaction(thisTx, thisHash)
+            await this.checkIncomingPoolTransaction(thisTx, thisHash, spendKeys)
+        }
+
+        const filtered = this.subWallets.knownTransactions.filter((n) => !txArray.deletedTxsIds.includes(n));
+        this.subWallets.knownTransactions = filtered;
+    }
+    
 }
+

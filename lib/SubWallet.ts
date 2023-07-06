@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020, Zpalmtree
+// Copyright (c) 2018-2023, Zpalmtree
 //
 // Please see the included LICENSE file for more information.
 
@@ -262,6 +262,17 @@ export class SubWallet {
             return input.keyImage === keyImage;
         });
 
+        if (this.lockedInputs.some(a => a.keyImage === keyImage)) {
+            logger.log(
+                `This input is already locked! ${JSON.stringify(keyImage)}`, 
+                LogLevel.INFO,
+                LogCategory.SYNC,
+            );
+            return
+        }
+
+        if (!removedInput) return
+        
         removedInput.parentTransactionHash = transactionHash;
 
         if (!removedInput) {
@@ -404,9 +415,28 @@ export class SubWallet {
             }
         }
 
+        const locked = this.getLockedMessageBalance()
+
+        unlockedBalance += locked
         lockedBalance += _.sumBy(this.unconfirmedIncomingAmounts, 'amount');
 
+        if (unlockedBalance < 0) unlockedBalance = 0
+
         return [unlockedBalance, lockedBalance];
+    }
+
+     /**
+     * Gets the amount of incoming and outgoing funds locked in the mempool, uses this to subtract from locked amount
+     * so we do not get a negative number when displaying available balance.
+     */
+     public getLockedMessageBalance(): number {
+        logger.log(
+            `Unconfirmed inc amounts, getLocked ${JSON.stringify(this.unconfirmedIncomingAmounts)}`,
+            LogLevel.DEBUG,
+            [LogCategory.SYNC, LogCategory.TRANSACTIONS],
+        );
+        const unconfirmed = this.unconfirmedIncomingAmounts.filter(a => a.locked === true)
+        return _.sumBy(unconfirmed, 'amount')
     }
 
     /**
@@ -414,7 +444,7 @@ export class SubWallet {
      * unconfirmed transactions
      */
     public getUnconfirmedChange(): number {
-        return _.sumBy(this.unconfirmedIncomingAmounts, 'amount');
+        return _.sumBy(this.unconfirmedIncomingAmounts, 'amount')
     }
 
     public haveSpendableInput(input: TransactionInput, currentHeight: number): boolean {
@@ -447,6 +477,12 @@ export class SubWallet {
     }
 
     public storeUnconfirmedIncomingInput(input: UnconfirmedInput): void {
+    
+        if (this.unconfirmedIncomingAmounts.some(a => a.key === input.key))
+        {
+            logger.log(`Already know this unconfirmed input`, LogLevel.INFO, LogCategory.SYNC);
+            return
+        }
         this.unconfirmedIncomingAmounts.push(input);
     }
 

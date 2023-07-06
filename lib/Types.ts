@@ -401,6 +401,8 @@ export class UnconfirmedInput {
             key: json.key,
 
             parentTransactionHash: json.parentTransactionHash,
+
+            locked: json.locked,
         });
     }
 
@@ -413,14 +415,18 @@ export class UnconfirmedInput {
     /* The transaction hash of the transaction that contains this input */
     public readonly parentTransactionHash: string;
 
+    public readonly locked: boolean;
+
     constructor(
         amount: number,
         key: string,
-        parentTransactionHash: string) {
+        parentTransactionHash: string,
+        locked: boolean) {
 
         this.amount = amount;
         this.key = key;
         this.parentTransactionHash = parentTransactionHash;
+        this.locked = locked;
     }
 
     public toJSON(): UnconfirmedInputJSON {
@@ -430,6 +436,8 @@ export class UnconfirmedInput {
             key: this.key,
 
             parentTransactionHash: this.parentTransactionHash,
+
+            locked: this.locked
         };
     }
 }
