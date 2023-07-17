@@ -1430,6 +1430,8 @@ async function relayTransaction(
         LogCategory.TRANSACTIONS,
     );
 
+    subWallets.knownTransactions.push(await tx.hash())
+
     /* Lock the input for spending till confirmed/cancelled */
     for (const input of inputs) {
         subWallets.markInputAsLocked(input.publicSpendKey, input.input.keyImage, await tx.hash());
@@ -1461,8 +1463,6 @@ async function storeSentTransaction(
     );
     
     const spendKeys: string[] = subWallets.getPublicSpendKeys();
-    
-    subWallets.knownTransactions.push(hash)
 
     for (const [outputIndex, output] of keyOutputs.entries()) {
         if (output.type === TransactionOutputs.OutputType.KEY) {
