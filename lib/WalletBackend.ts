@@ -291,6 +291,21 @@ export declare interface WalletBackend {
     on(event: 'deadnode', callback: () => void): this;
 
     /**
+     * This is emitted when an unconfirmed incoming transaction is in the mempool.
+     *
+     * Example:
+     * ```javascript
+     * wallet.on('unconfirmedtx', (amount, hash) => {
+     *     console.log('Incoming unconfimed amount: ', amount);
+     *     console.log('Incoming unconfimed hash: ', hash);
+     * }
+     *
+     * @event This is emitted when an unconfirmed incoming transaction is in the mempool
+     */
+    on(event: 'unconfirmedtx', callback: (amount: number, hash: string) => void): this;
+
+
+    /**
      * This is emitted every time we download a block from the daemon. Will
      * only be emitted if the daemon is using /getrawblocks (All non blockchain
      * cache daemons should support this).
@@ -2841,6 +2856,10 @@ export class WalletBackend extends EventEmitter {
                 this.emit('deadnode');
             }
         });
+
+        this.walletSynchronizer.on('unconfirmedtx', (amount, hash) => {
+            this.emit('unconfirmedtx', amount, hash)
+         });
     }
 
     /**
@@ -3199,6 +3218,10 @@ export class WalletBackend extends EventEmitter {
                 this.emit('deadnode');
             }
         });
+
+        this.walletSynchronizer.on('unconfirmedtx', (amount, hash) => {
+            this.emit('unconfirmedtx', amount, hash)
+         });
     }
 
     /**
@@ -3251,6 +3274,7 @@ export class WalletBackend extends EventEmitter {
             if (!result.success) {
                 failCount++;
             } else if (result.transactionHash) {
+                this.subWallets.knownTransactions.push(result.transactionHash)
                 failCount = 0;
                 sentTransactions++;
                 hashes.push(result.transactionHash);

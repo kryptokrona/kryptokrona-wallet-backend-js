@@ -767,9 +767,9 @@ export class WalletSynchronizer extends EventEmitter {
     }
 
     public async checkIncomingPoolTransaction(thisTx, thisHash, spendKeys) {
-        let txPubKey
+        let txPubKey: string
         const incomingOutputs = []
-        const thisExtra = thisTx.extra
+        const thisExtra: string = thisTx.extra
         try {
             txPubKey = thisExtra.substring(2,66)
         } catch (e) {
@@ -801,6 +801,7 @@ export class WalletSynchronizer extends EventEmitter {
     
         if (incomingOutputs.length === 0) return false
 
+        let amount: number = 0
         /* Mark the outputs as locked */
         for (const output of incomingOutputs) {
             this.subWallets.markInputAsLocked(output.ownerSpendKey, output.keyImage, output.thisHash);
@@ -808,10 +809,10 @@ export class WalletSynchronizer extends EventEmitter {
             const unconfirmed = new UnconfirmedInput(
                 output.amount, output.key, output.thisHash, true
             );
-
+            amount += output.amount
             this.subWallets.storeUnconfirmedIncomingInput(unconfirmed, output.ownerSpendKey);
         }
-
+        this.emit('unconfirmedtx', amount, thisHash)
         return true
     }
 
@@ -826,13 +827,18 @@ export class WalletSynchronizer extends EventEmitter {
         logger.log(`Checking all txs in pool ${JSON.stringify(txArray.addedTxs)}`, LogLevel.DEBUG, LogCategory.SYNC)
 
         for (const tx of txArray.addedTxs) {
+            
+            const thisHash: string = tx.transactionPrefixInfotxHash
 
-            const thisTx = tx.transactionPrefixInfo
-            const thisHash = tx.transactionPrefixInfotxHash
+            if (thisHash.length !== 64) continue
 
             if (this.subWallets.knownTransactions.some(a => a === thisHash)) {
                 continue
             }
+            
+            const thisTx = tx.transactionPrefixInfo
+            
+            if (typeof thisTx !== 'object') continue
 
             this.subWallets.knownTransactions.push(thisHash)
 
