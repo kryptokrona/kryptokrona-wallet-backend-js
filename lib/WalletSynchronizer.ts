@@ -724,48 +724,6 @@ export class WalletSynchronizer extends EventEmitter {
         return [undefined, []];
     }
 
-    public checkOutgoingPoolTransaction(thisTx, thisHash) {
-        
-        const spentKeyImages = []
-        let message = false
-        if (thisTx.extra.length > 200) message = true
-
-        for (const inpt of thisTx.vin) {
-
-            const key_image = inpt.value.k_image
-
-            if (key_image.length !== 64) {
-                continue
-            }
-
-            const inAmount = inpt.value.amount
-
-            const [found, publicSpendKey] = this.subWallets.getKeyImageOwner(
-                key_image,
-            );
-
-            if (!found) continue
-
-            spentKeyImages.push({publicSpendKey, key_image, thisHash, inAmount});
-        
-        }
-
-        if (spentKeyImages.length === 0) return false
-
-        /* Mark the unconfirmed inputs as locked */
-        for (const input of spentKeyImages) {
-            this.subWallets.markInputAsLocked(input.publicSpendKey, input.key_image, input.thisHash);
-            const unconfirmed = new UnconfirmedInput(
-                input.inAmount, input.key_image, input.thisHash, false                );
-            
-            if (!message) continue
-            /* If it is a message, we know the inputs will be returning to us, thus we store it as locked balance */
-            this.subWallets.storeUnconfirmedIncomingInput(unconfirmed, input.publicSpendKey);
-        }
-
-        return true
-    }
-
     public async checkIncomingPoolTransaction(thisTx, thisHash, spendKeys) {
         let txPubKey: string
         const incomingOutputs = []
@@ -839,10 +797,7 @@ export class WalletSynchronizer extends EventEmitter {
             const thisTx = tx.transactionPrefixInfo
             
             if (typeof thisTx !== 'object') continue
-
             this.subWallets.knownTransactions.push(thisHash)
-
-            this.checkOutgoingPoolTransaction(thisTx, thisHash)
             await this.checkIncomingPoolTransaction(thisTx, thisHash, spendKeys)
         }
 
