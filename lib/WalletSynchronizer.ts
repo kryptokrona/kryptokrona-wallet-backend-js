@@ -480,10 +480,10 @@ export class WalletSynchronizer extends EventEmitter {
 
         this.fetchingBlocks = true;
 
-        const localDaemonBlockCount: number = this.daemon.getLocalDaemonBlockCount();
         const walletBlockCount: number = this.getHeight();
+        const networkHeight: number = this.daemon.getNetworkBlockCount()
 
-        if (localDaemonBlockCount < walletBlockCount) {
+        if (walletBlockCount === networkHeight) {
             this.fetchingBlocks = false;
             return [true, true];
         }
@@ -498,7 +498,7 @@ export class WalletSynchronizer extends EventEmitter {
 
         try {
             [blocks, topBlock] = await this.daemon.getWalletSyncData(
-                blockCheckpoints, this.startHeight, this.startTimestamp,
+                blockCheckpoints.slice(0,10), this.startHeight, this.startTimestamp,
             );
         } catch (err) {
             logger.log(
