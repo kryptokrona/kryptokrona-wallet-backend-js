@@ -1475,6 +1475,29 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
+     * Only some applications need to scan pool transactions. 
+     * Make it easy to turn it on/off.
+     * Example:
+     * ```javascript
+     * wallet.scanPoolTransactions(false);
+     * ```
+     *
+     * @param shouldScan Should we scan for pool transactions?
+     */
+     public scanPoolTransactions(shouldScan: boolean): void {
+        logger.log(
+            'Function scanPoolTransactions called',
+            LogLevel.DEBUG,
+            LogCategory.GENERAL,
+        );
+
+        assertBoolean(shouldScan, 'shouldScan');
+
+
+        this.config.scanPoolTransactions = shouldScan;
+    }
+
+    /**
      * Sets the log level. Log messages below this level are not shown.
      *
      * Logging by default occurs to stdout. See [[setLoggerCallback]] to modify this,
@@ -2866,6 +2889,7 @@ export class WalletBackend extends EventEmitter {
      * Remove any transactions that have been cancelled
      */
     private async checkLockedTransactions(): Promise<void> {
+        if (!this.config.scanPoolTransactions) return
         logger.log(
             'Checking locked transactions...',
             LogLevel.DEBUG,

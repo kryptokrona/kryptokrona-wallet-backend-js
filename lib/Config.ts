@@ -68,6 +68,12 @@ export interface IConfig {
     scanCoinbaseTransactions?: boolean;
 
     /**
+     * Only some applications need to scan pool transactions
+     *
+     */
+    scanPoolTransactions?: boolean;
+
+    /**
      * The minimum fee allowed for transactions, in ATOMIC units
      */
     minimumFee?: number;
@@ -255,6 +261,12 @@ export class Config implements IConfig {
      * them
      */
     public scanCoinbaseTransactions: boolean = false;
+
+    /**
+     * Only some applications need to scan pool transactions
+     *
+     */
+    public scanPoolTransactions: boolean = true;
 
     /**
      * The minimum fee allowed for transactions, in ATOMIC units
