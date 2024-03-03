@@ -2889,15 +2889,16 @@ export class WalletBackend extends EventEmitter {
      * Remove any transactions that have been cancelled
      */
     private async checkLockedTransactions(): Promise<void> {
-        if (!this.config.scanPoolTransactions) return
+
         logger.log(
             'Checking locked transactions...',
             LogLevel.DEBUG,
             [LogCategory.SYNC, LogCategory.TRANSACTIONS],
         );
 
-        await this.checkPoolTransactions()
-
+        if (this.config.scanPoolTransactions) {
+            await this.checkPoolTransactions()
+        }
         const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
 
         const cancelledTransactions: string[]
