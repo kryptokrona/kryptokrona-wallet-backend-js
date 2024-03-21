@@ -414,10 +414,7 @@ export class Daemon extends EventEmitter {
             data = await this.makePostRequest(endpoint, {
                 knownTxsIds: knownTxs,
             });
-        } catch (err) {
-            return false
-        }
-    
+   
         logger.log(
             `Making pool changes request, got data ${JSON.stringify(data)}`,
             LogLevel.DEBUG,
@@ -431,6 +428,11 @@ export class Daemon extends EventEmitter {
         const parsed = JSON.parse(json)
         if (parsed.addedTxs.length === 0) return false
         return parsed
+        
+        } catch (err) {
+            return false
+        }
+
     }
     /**
      * @param blockHashCheckpoints  Hashes of the last known blocks. Later
