@@ -77,7 +77,8 @@ export class SubWallets {
     /**
      * Mapping of public spend key to subwallet
      */
-    private readonly subWallets: Map<string, SubWallet> = new Map();
+    private subWallets: Map<string, SubWallet> = new Map();
+
 
     /**
      * Our transactions
@@ -938,6 +939,8 @@ export class SubWallets {
 
         this.deleteAddressTransactions(this.transactions, publicSpendKey);
         this.deleteAddressTransactions(this.lockedTransactions, publicSpendKey);
+
+        this.publicSpendKeys = this.publicSpendKeys.filter(elem => elem != publicSpendKey);
 
         return SUCCESS;
     }
