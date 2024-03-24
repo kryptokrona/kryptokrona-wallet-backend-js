@@ -72,7 +72,7 @@ export class SubWallets {
      * The public spend keys this wallet contains. Used for verifying if a
      * transaction is ours.
      */
-    private readonly publicSpendKeys: string[] = [];
+    private publicSpendKeys: string[] = [];
 
     /**
      * Mapping of public spend key to subwallet
@@ -938,6 +938,8 @@ export class SubWallets {
 
         this.deleteAddressTransactions(this.transactions, publicSpendKey);
         this.deleteAddressTransactions(this.lockedTransactions, publicSpendKey);
+
+        this.publicSpendKeys = this.publicSpendKeys.filter(elem => elem != publicSpendKey);
 
         return SUCCESS;
     }
