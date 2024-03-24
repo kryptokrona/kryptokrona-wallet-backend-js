@@ -72,13 +72,12 @@ export class SubWallets {
      * The public spend keys this wallet contains. Used for verifying if a
      * transaction is ours.
      */
-    private readonly publicSpendKeys: string[] = [];
+    private publicSpendKeys: string[] = [];
 
     /**
      * Mapping of public spend key to subwallet
      */
-    private subWallets: Map<string, SubWallet> = new Map();
-
+    private readonly subWallets: Map<string, SubWallet> = new Map();
 
     /**
      * Our transactions
