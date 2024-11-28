@@ -249,7 +249,7 @@ export class Config implements IConfig {
      * high a value will cause the event loop to be blocked, and your interaction
      * to be laggy.
      */
-    public blocksPerTick: number = 10;
+    public blocksPerTick: number = 20;
 
     /**
      * Your coins 'ticker', generally used to refer to the coin, i.e. 123 TRTL
