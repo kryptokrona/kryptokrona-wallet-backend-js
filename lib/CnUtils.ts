@@ -26,5 +26,11 @@ export function CryptoUtils(config: Config): CryptoNote {
         generateRingSignatures: config.generateRingSignatures,
         secretKeyToPublicKey: config.secretKeyToPublicKey,
         underivePublicKey: config.underivePublicKey,
+        scReduce32: config.scReduce32,
+        checkKey: config.checkKey,
+        hashToEllipticCurve: config.hashToEllipticCurve,
+        generateSignature: config.generateSignature,
+        checkSignature: config.checkSignature,
+        hashToScalar: config.hashToScalar,
     });
 }

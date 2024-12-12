@@ -67,6 +67,7 @@ import {
     assertString,
     assertStringOrUndefined,
 } from './Assert';
+import { CryptoUtils } from 'CnUtils';
 
 export declare interface WalletBackend {
 
@@ -524,6 +525,8 @@ export class WalletBackend extends EventEmitter {
 
         assertString(json, 'json');
 
+        CryptoUtils(MergeConfig(config))
+
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
             wallet.initAfterLoad(daemon, MergeConfig(config));
@@ -579,6 +582,8 @@ export class WalletBackend extends EventEmitter {
         assertString(mnemonicSeed, 'mnemonicSeed');
 
         const merged = MergeConfig(config);
+
+        CryptoUtils(merged)
 
         let keys;
 
@@ -660,6 +665,8 @@ export class WalletBackend extends EventEmitter {
 
         const merged = MergeConfig(config);
 
+        CryptoUtils(merged)
+
         let keys;
 
         try {
@@ -738,16 +745,20 @@ export class WalletBackend extends EventEmitter {
         assertNumber(scanHeight, 'scanHeight');
         assertString(privateViewKey, 'privateViewKey');
         assertString(address, 'address');
+        
 
         if (!isHex64(privateViewKey)) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
         }
+        
+        CryptoUtils(MergeConfig(config))
 
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletError = await validateAddresses(
             new Array(address), integratedAddressesAllowed, MergeConfig(config),
         );
+
 
         if (!_.isEqual(err, SUCCESS)) {
             return [undefined, err];
@@ -802,6 +813,8 @@ export class WalletBackend extends EventEmitter {
         const scanHeight: number = 0;
 
         const merged = MergeConfig(config);
+
+        CryptoUtils(merged)
 
         const address = await Address.fromEntropy(undefined, undefined, merged.addressPrefix);
 
