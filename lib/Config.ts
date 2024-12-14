@@ -187,6 +187,11 @@ export interface IConfig {
      */
     hashToScalar?: (hash: string) => Promise<string>;
 
+    /**
+     * Generate a keypair.
+     */
+    generateKeys?: () => Promise<object>;
+
 
     /**
      * The max amount of memory to use, storing downloaded blocks to be processed.
@@ -429,7 +434,12 @@ export class Config implements IConfig {
     /**
      * A replacement function for the JS/C++ hashToScalar.
      */
-    public hashToScalar?: (hash: string) => Promise<string> = undefined;           
+    public hashToScalar?: (hash: string) => Promise<string> = undefined;     
+
+     /**
+     * A replacement function for the JS/C++ generateKeys.
+     */
+     public generateKeys?: () => Promise<object> = undefined;
 
     /**
      * The amount of memory to use storing downloaded blocks - 50MB

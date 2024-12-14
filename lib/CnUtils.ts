@@ -32,5 +32,6 @@ export function CryptoUtils(config: Config): CryptoNote {
         generateSignature: config.generateSignature,
         checkSignature: config.checkSignature,
         hashToScalar: config.hashToScalar,
+        generateKeys: config.generateKeys
     });
 }
