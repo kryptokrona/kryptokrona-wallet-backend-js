@@ -3,6 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import { MixinLimit, MixinLimits } from './MixinLimits';
+import {IKeyPair} from 'kryptokrona-crypto'
 
 const version = require('../../package.json').version;
 
@@ -139,9 +140,9 @@ export interface IConfig {
                               realIndex: number) => Promise<string[]>;
 
     /**
-     * A replacement function for the JS/C++ checkRingSignatures.
+     * A replacement function for the JS/C++ checkRingSignature.
      */
-    checkRingSignatures?: (transactionPrefixHash: string,
+    checkRingSignature?: (transactionPrefixHash: string,
                            keyImage: string,
                            publicKeys: string[],
                            signatures: string[]) => Promise<boolean>;
@@ -190,7 +191,7 @@ export interface IConfig {
     /**
      * Generate a keypair.
      */
-    generateKeys?: () => Promise<object>;
+    generateKeys?: () => Promise<IKeyPair>;
 
 
     /**
@@ -395,7 +396,7 @@ export class Config implements IConfig {
     /**
      * A replacement function for the JS/C++ checkRingSignatures.
      */
-    public checkRingSignatures?: (transactionPrefixHash: string,
+    public checkRingSignature?: (transactionPrefixHash: string,
                                   keyImage: string,
                                   publicKeys: string[],
                                   signatures: string[]) => Promise<boolean> = undefined;
@@ -439,7 +440,7 @@ export class Config implements IConfig {
      /**
      * A replacement function for the JS/C++ generateKeys.
      */
-     public generateKeys?: () => Promise<object> = undefined;
+     public generateKeys?: () => Promise<IKeyPair> = undefined;
 
     /**
      * The amount of memory to use storing downloaded blocks - 50MB

@@ -18,7 +18,7 @@ export function CryptoUtils(config: Config): CryptoNote {
         keccakIterations: 1,
     }, {
         cn_fast_hash: config.cnFastHash,
-        checkRingSignatures: config.checkRingSignatures,
+        checkRingSignature: config.checkRingSignature,
         derivePublicKey: config.derivePublicKey,
         deriveSecretKey: config.deriveSecretKey,
         generateKeyDerivation: config.generateKeyDerivation,
