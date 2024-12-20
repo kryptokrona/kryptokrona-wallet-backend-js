@@ -18,7 +18,7 @@ export function CryptoUtils(config: Config): CryptoNote {
         keccakIterations: 1,
     }, {
         cn_fast_hash: config.cnFastHash,
-        checkRingSignatures: config.checkRingSignatures,
+        checkRingSignature: config.checkRingSignature,
         derivePublicKey: config.derivePublicKey,
         deriveSecretKey: config.deriveSecretKey,
         generateKeyDerivation: config.generateKeyDerivation,
@@ -26,5 +26,12 @@ export function CryptoUtils(config: Config): CryptoNote {
         generateRingSignatures: config.generateRingSignatures,
         secretKeyToPublicKey: config.secretKeyToPublicKey,
         underivePublicKey: config.underivePublicKey,
+        scReduce32: config.scReduce32,
+        checkKey: config.checkKey,
+        hashToEllipticCurve: config.hashToEllipticCurve,
+        generateSignature: config.generateSignature,
+        checkSignature: config.checkSignature,
+        hashToScalar: config.hashToScalar,
+        generateKeys: config.generateKeys
     });
 }

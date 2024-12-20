@@ -777,7 +777,7 @@ export class WalletSynchronizer extends EventEmitter {
     
     public async checkPoolTransactions() {
 
-        const txArray = await this.daemon.getPoolChanges(this.subWallets.knownTransactions);
+        let txArray = await this.daemon.getPoolChanges(this.subWallets.knownTransactions);
         if (!txArray) return
         
         const spendKeys = this.subWallets.getPublicSpendKeys();
@@ -785,15 +785,16 @@ export class WalletSynchronizer extends EventEmitter {
         logger.log(`Checking all txs in pool ${JSON.stringify(txArray.addedTxs)}`, LogLevel.DEBUG, LogCategory.SYNC)
 
         for (const tx of txArray.addedTxs) {
-            
             const thisHash: string = tx.transactionPrefixInfotxHash
-
             if (thisHash.length !== 64) continue
-
             if (this.subWallets.knownTransactions.some(a => a === thisHash)) {
                 continue
             }
             
+            if (tx.transactionPrefixInfo.extra.length > 200) {
+                this.subWallets.knownTransactions.push(thisHash)
+                continue
+            }
             const thisTx = tx.transactionPrefixInfo
             
             if (typeof thisTx !== 'object') continue

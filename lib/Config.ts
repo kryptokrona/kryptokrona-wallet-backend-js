@@ -3,6 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import { MixinLimit, MixinLimits } from './MixinLimits';
+import {IKeyPair} from 'kryptokrona-crypto'
 
 const version = require('../../package.json').version;
 
@@ -125,11 +126,6 @@ export interface IConfig {
                         privateKey: string) => Promise<string>;
 
     /**
-     * A replacement function for the JS/C++ secretKeyToPublicKey.
-     */
-    secretKeyToPublicKey?: (privateKey: string) => Promise<string>;
-
-    /**
      * A replacement function for the JS/C++ cnFastHash.
      */
     cnFastHash?: (input: string) => Promise<string>;
@@ -144,9 +140,9 @@ export interface IConfig {
                               realIndex: number) => Promise<string[]>;
 
     /**
-     * A replacement function for the JS/C++ checkRingSignatures.
+     * A replacement function for the JS/C++ checkRingSignature.
      */
-    checkRingSignatures?: (transactionPrefixHash: string,
+    checkRingSignature?: (transactionPrefixHash: string,
                            keyImage: string,
                            publicKeys: string[],
                            signatures: string[]) => Promise<boolean>;
@@ -156,6 +152,47 @@ export interface IConfig {
      */
     generateKeyDerivation?: (transactionPublicKey: string,
                              privateViewKey: string) => Promise<string>;
+
+                             /**
+     * Converts a secret key to a public key.
+     */
+    secretKeyToPublicKey?: (secretKey: string) => Promise<string>;
+
+    /**
+     * Reduces a scalar to a 32-byte value.
+     */
+    scReduce32?: (scalar: string) => Promise<string>;
+
+    /**
+     * Checks the validity of a given key.
+     */
+    checkKey?: (key: string) => Promise<boolean>;
+
+    /**
+     * Maps a hash to an elliptic curve point.
+     */
+    hashToEllipticCurve?: (hash: string) => Promise<string>;
+
+    /**
+     * Generates a signature for a given message using the specified keys.
+     */
+    generateSignature?: (message: string, publicKey: string, privateKey: string) => Promise<string>;
+
+    /**
+     * Verifies the validity of a signature for a message.
+     */
+    checkSignature?: (message: string, publicKey: string, signature: string) => Promise<boolean>;
+
+    /**
+     * Maps a hash to a scalar value.
+     */
+    hashToScalar?: (hash: string) => Promise<string>;
+
+    /**
+     * Generate a keypair.
+     */
+    generateKeys?: () => Promise<IKeyPair>;
+
 
     /**
      * The max amount of memory to use, storing downloaded blocks to be processed.
@@ -249,7 +286,7 @@ export class Config implements IConfig {
      * high a value will cause the event loop to be blocked, and your interaction
      * to be laggy.
      */
-    public blocksPerTick: number = 10;
+    public blocksPerTick: number = 20;
 
     /**
      * Your coins 'ticker', generally used to refer to the coin, i.e. 123 TRTL
@@ -359,7 +396,7 @@ export class Config implements IConfig {
     /**
      * A replacement function for the JS/C++ checkRingSignatures.
      */
-    public checkRingSignatures?: (transactionPrefixHash: string,
+    public checkRingSignature?: (transactionPrefixHash: string,
                                   keyImage: string,
                                   publicKeys: string[],
                                   signatures: string[]) => Promise<boolean> = undefined;
@@ -369,6 +406,41 @@ export class Config implements IConfig {
      */
     public generateKeyDerivation?: (transactionPublicKey: string,
                                     privateViewKey: string) => Promise<string> = undefined;
+
+    /**
+     * A replacement function for the JS/C++ scReduce32.
+     */
+    public scReduce32?: (scalar: string) => Promise<string> = undefined;
+
+    /**
+     * A replacement function for the JS/C++ checkKey.
+     */
+    public checkKey?: (key: string) => Promise<boolean> = undefined;
+
+    /**
+     * A replacement function for the JS/C++ hashToEllipticCurve.
+     */
+    public hashToEllipticCurve?: (hash: string) => Promise<string> = undefined;
+
+    /**
+     * A replacement function for the JS/C++ generateSignature.
+     */
+    public generateSignature?: (message: string, publicKey: string, privateKey: string) => Promise<string> = undefined;
+
+    /**
+     * A replacement function for the JS/C++ checkSignature.
+     */
+    public checkSignature?: (message: string, publicKey: string, signature: string) => Promise<boolean> = undefined;
+
+    /**
+     * A replacement function for the JS/C++ hashToScalar.
+     */
+    public hashToScalar?: (hash: string) => Promise<string> = undefined;     
+
+     /**
+     * A replacement function for the JS/C++ generateKeys.
+     */
+     public generateKeys?: () => Promise<IKeyPair> = undefined;
 
     /**
      * The amount of memory to use storing downloaded blocks - 50MB

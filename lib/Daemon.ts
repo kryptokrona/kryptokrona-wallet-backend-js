@@ -202,7 +202,7 @@ export class Daemon extends EventEmitter {
     /**
      * Should we use /getrawblocks instead of /getwalletsyncdata
      */
-    private useRawBlocks = true;
+    private useRawBlocks = false;
 
     private config: Config = new Config();
 

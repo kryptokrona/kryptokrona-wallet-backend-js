@@ -13,8 +13,8 @@ import { generateKeyDerivation, underivePublicKey } from '../lib/CryptoWrapper';
 
 const doPerformanceTests: boolean = process.argv.includes('--do-performance-tests');
 
-const daemonAddress = 'pool.kryptokrona.se';
-const daemonPort = 11898;
+const daemonAddress = 'node.xkr.network';
+const daemonPort = 80;
 
 class Tester {
 
@@ -480,7 +480,7 @@ async function roundTrip(
        'isValidMnemonic doesn\'t work!');
 
     await tester.test(async () => {
-        const daemon2: Daemon = new Daemon('127.0.0.1', 11898);
+        const daemon2: Daemon = new Daemon('blocksum.org', 11898);
 
         const wallet = await WalletBackend.createWallet(daemon2);
 
@@ -491,6 +491,8 @@ async function roundTrip(
         await wallet.swapNode(daemon3);
 
         const info = wallet.getDaemonConnectionInfo();
+
+        console.log(info);
 
         await wallet.stop();
 
