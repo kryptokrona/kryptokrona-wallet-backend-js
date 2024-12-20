@@ -67,7 +67,7 @@ import {
     assertString,
     assertStringOrUndefined,
 } from './Assert';
-import { CryptoUtils } from 'CnUtils';
+import { CryptoUtils } from './CnUtils';
 
 export declare interface WalletBackend {
 
