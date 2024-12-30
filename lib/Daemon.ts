@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash';
 
-import request = require('request-promise-native');
+import axios, { AxiosRequestConfig, AxiosError } from 'axios';
 
 import { EventEmitter } from 'events';
 
@@ -811,30 +811,27 @@ export class Daemon extends EventEmitter {
     }
 
     private async makeGetRequest(endpoint: string): Promise<any> {
-        return this.makeRequest(endpoint, 'GET');
+        return this.makeRequest(endpoint, 'get');
     }
 
     private async makePostRequest(endpoint: string, body: any): Promise<any> {
-        return this.makeRequest(endpoint, 'POST', body);
+        return this.makeRequest(endpoint, 'post', body);
     }
 
     /**
      * Makes a get request to the given endpoint
      */
     private async makeRequest(endpoint: string, method: string, body?: any): Promise<any> {
-        const options = {
-            body,
-            headers: { 'User-Agent': this.config.customUserAgentString },
-            json: true,
+        const options: AxiosRequestConfig = {
             method,
+            data: body,
             timeout: this.config.requestTimeout,
         };
 
         try {
             /* Start by trying HTTPS if we haven't determined whether it's
-               HTTPS or HTTP yet. */
+            HTTPS or HTTP yet. */
             const protocol = this.sslDetermined ? (this.ssl ? 'https' : 'http') : 'https';
-
             const url: string = `${protocol}://${this.host}:${this.port}${endpoint}`;
 
             logger.log(
@@ -843,14 +840,20 @@ export class Daemon extends EventEmitter {
                 [LogCategory.DAEMON],
             );
 
-            const data = await request({
-                agent: protocol === 'https' ? this.httpsAgent : this.httpAgent,
-                ...options,
-                ...this.config.customRequestOptions,
-                url,
-            });
+            // const response = await axios({
+            //     ...options,
+            //     url,
+            //     httpsAgent: protocol === 'https' ? this.httpsAgent : undefined,
+            //     httpAgent: protocol === 'http' ? this.httpAgent : undefined,
+            //     ...this.config.customRequestOptions,
+            // });
 
-            /* Cool, https works. Store for later. */
+            const response = await axios({
+                ...options,
+                url
+              });
+
+            /* Cool, HTTPS works. Store for later. */
             if (!this.sslDetermined) {
                 this.ssl = true;
                 this.sslDetermined = true;
@@ -862,26 +865,25 @@ export class Daemon extends EventEmitter {
             }
 
             logger.log(
-                `Got response from ${url} with body ${JSON.stringify(data)}`,
+                `Got response from ${url} with body ${JSON.stringify(response.data)}`,
                 LogLevel.TRACE,
                 [LogCategory.DAEMON],
             );
 
-            return data;
-        } catch (err) {
+            return response.data;
+        } catch (err: any) {
             /* No point trying again with SSL - we already have decided what
-               type it is. */
+            type it is. */
             if (this.sslDetermined) {
                 if (this.connected) {
                     this.emit('disconnect', err);
                     this.connected = false;
                 }
-
                 throw err;
             }
 
             try {
-                /* Lets try HTTP now. */
+                /* Let's try HTTP now. */
                 const url: string = `http://${this.host}:${this.port}${endpoint}`;
 
                 logger.log(
@@ -890,11 +892,9 @@ export class Daemon extends EventEmitter {
                     [LogCategory.DAEMON],
                 );
 
-                const data = await request({
-                    agent: this.httpAgent,
+                const response = await axios({
                     ...options,
-                    /* Lets try HTTP now. */
-                    url,
+                    url
                 });
 
                 this.ssl = false;
@@ -906,21 +906,20 @@ export class Daemon extends EventEmitter {
                 }
 
                 logger.log(
-                    `Got response from ${url} with body ${JSON.stringify(data)}`,
+                    `Got response from ${url} with body ${JSON.stringify(response.data)}`,
                     LogLevel.TRACE,
                     [LogCategory.DAEMON],
                 );
 
-                return data;
-
-            } catch (err) {
+                return response.data;
+            } catch (err: any) {
                 if (this.connected) {
                     this.emit('disconnect', err);
                     this.connected = false;
                 }
-
                 throw err;
             }
         }
     }
+
 }
