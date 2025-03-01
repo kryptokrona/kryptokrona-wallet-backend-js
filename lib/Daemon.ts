@@ -913,6 +913,7 @@ export class Daemon extends EventEmitter {
 
                 return response.data;
             } catch (err: any) {
+                this.emit('deadnode');
                 if (this.connected) {
                     this.emit('disconnect', err);
                     this.connected = false;
