@@ -99,6 +99,20 @@ export interface IConfig {
     integratedAddressLength?: number;
 
     /**
+     * The length of a standard address encoded under the alternate (legacy or
+     * new) address prefix. Both prefixes encode the same keys but differ in
+     * varint length, so the two address forms differ in string length by a
+     * character; we accept both when validating. See addressPrefix.
+     */
+    standardAddressLengthAlt?: number;
+
+    /**
+     * The length of an integrated address encoded under the alternate address
+     * prefix. See standardAddressLengthAlt.
+     */
+    integratedAddressLengthAlt?: number;
+
+    /**
      * A replacement function for the JS/C++ underivePublicKey.
      */
     underivePublicKey?: (derivation: string,
@@ -347,6 +361,15 @@ export class Config implements IConfig {
        chunks of 8 chars at once into blocks of 11 chars, we can calculate
        this automatically */
     public integratedAddressLength: number = 99 + ((64 * 11) / 8);
+
+    /* The length of a standard/integrated address under the alternate address
+       prefix. The legacy (SEKR) and new (Xkr) prefixes encode the same keys but
+       their varints differ in length, so the address strings differ by one
+       character. Both forms are accepted when validating so a prefix switch
+       stays backwards compatible. See standardAddressLength / addressPrefix. */
+    public standardAddressLengthAlt: number = 98;
+
+    public integratedAddressLengthAlt: number = 98 + ((64 * 11) / 8);
 
     /**
      * A replacement function for the JS/C++ underivePublicKey.

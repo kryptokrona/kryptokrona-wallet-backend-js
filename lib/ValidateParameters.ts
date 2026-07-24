@@ -34,9 +34,13 @@ export async function validateAddresses(
 
     for (const address of addresses) {
         try {
-            /* Verify address lengths are correct */
-            if (address.length !== config.standardAddressLength
-             && address.length !== config.integratedAddressLength) {
+            /* Verify address lengths are correct. Addresses under the alternate
+               prefix (see Config.addressPrefix / standardAddressLengthAlt) are a
+               character shorter/longer, so we accept those lengths too. */
+            if (address.length !== tempConfig.standardAddressLength
+             && address.length !== tempConfig.integratedAddressLength
+             && address.length !== tempConfig.standardAddressLengthAlt
+             && address.length !== tempConfig.integratedAddressLengthAlt) {
                 return new WalletError(WalletErrorCode.ADDRESS_WRONG_LENGTH);
             }
 
@@ -136,7 +140,13 @@ export async function validateIntegratedAddresses(
     const tempConfig: Config = MergeConfig(config);
 
     for (const [destination] of destinations) {
-        if (destination.length !== tempConfig.integratedAddressLength) {
+        /* Skip non-integrated addresses. Accept both prefix forms, whose
+           integrated addresses differ in length by a character (see
+           Config.integratedAddressLengthAlt) -- otherwise an integrated address
+           under the alternate prefix would have its payment ID silently
+           ignored. */
+        if (destination.length !== tempConfig.integratedAddressLength
+         && destination.length !== tempConfig.integratedAddressLengthAlt) {
             continue;
         }
 
