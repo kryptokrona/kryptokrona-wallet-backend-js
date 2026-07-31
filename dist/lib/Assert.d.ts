@@ -1,0 +1,11 @@
+export declare function assertStringOrUndefined(param: unknown, name: string): void;
+export declare function assertString(param: unknown, name: string): void;
+export declare function assertNumberOrUndefined(param: unknown, name: string): void;
+export declare function assertNumber(param: unknown, name: string): void;
+export declare function assertBooleanOrUndefined(param: unknown, name: string): void;
+export declare function assertBoolean(param: unknown, name: string): void;
+export declare function assertArrayOrUndefined(param: unknown, name: string): void;
+export declare function assertArray(param: unknown, name: string): void;
+export declare function assertObjectOrUndefined(param: unknown, name: string): void;
+export declare function assertObject(param: unknown, name: string): void;
+export declare function assertType(param: unknown, name: string, correctType: string, typeVerificationFunc: (param: unknown) => boolean, allowUndefined: boolean): void;

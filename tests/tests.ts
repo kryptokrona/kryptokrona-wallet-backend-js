@@ -11,6 +11,8 @@ import {
 
 import { generateKeyDerivation, underivePublicKey } from '../lib/CryptoWrapper';
 
+import { Address } from 'kryptokrona-utils';
+
 const doPerformanceTests: boolean = process.argv.includes('--do-performance-tests');
 
 const daemonAddress = 'node.xkr.network';
@@ -378,6 +380,32 @@ async function roundTrip(
     }, 'Testing getPrimaryAddress',
        'getPrimaryAddress works',
        'getPrimaryAddress doesn\'t work!');
+
+    await tester.test(async () => {
+        /* The address prefix is display-only, not consensus: the same keys can
+           be encoded under the legacy prefix (SEKR) or the new one (Xkr), and
+           decoding accepts both (see kryptokrona-utils Address.fromAddress).
+           These two strings encode the SAME keys under each prefix. GUI wallets
+           call validateAddresses, so a third party still handing out SEKR must
+           keep validating even after the switch to Xkr. */
+        const sekr = 'SEKReXzbFzP13xQEcTeZ7v2xb7n2wkpzXQTGpoVU5DevgHbjPyS8Zz9SzfErVB8KFGAyVNkcbUbKjGJhYovhCxG83DLwaYj6eYX';
+        const xkr = 'Xkrf4ot1pfRE3XZ5WckmX8XLriaSoUXXHAFx5Ppwowq3eYTUgHbDJcAJW5FAomRg26TzXFHqGrLmYNZbFtxZBXAU3ECQ2HEy51';
+
+        /* Both prefixes must pass validation... */
+        const sekrValid = _.isEqual(await validateAddresses([sekr], false), SUCCESS);
+        const xkrValid = _.isEqual(await validateAddresses([xkr], false), SUCCESS);
+
+        /* ...and both must decode to the exact same spend/view keys. */
+        const a = await Address.fromAddress(sekr);
+        const b = await Address.fromAddress(xkr);
+        const sameKeys = a.spend.publicKey === b.spend.publicKey
+                      && a.view.publicKey === b.view.publicKey;
+
+        return sekrValid && xkrValid && sameKeys;
+
+    }, 'Testing SEKR/Xkr address prefix compatibility',
+       'Both SEKR and Xkr prefixes validate and decode to the same keys',
+       'Address prefix backwards compatibility is broken!');
 
     await tester.test(async () => {
         const privateViewKey: string = '37171d02ffeaa6e27085cd0815ada830334f0585dcd1859992bf5b53685d4c07';

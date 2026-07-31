@@ -944,6 +944,8 @@ export class WalletBackend extends EventEmitter {
         this.setupEventHandlers();
 
         this.setupMetronomes();
+
+        this.haveEmittedDeadNode = false;
     }
 
     /**
