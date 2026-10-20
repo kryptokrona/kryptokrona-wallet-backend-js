@@ -1,7 +1,7 @@
 ![image](https://camo.githubusercontent.com/d344c9e18b69f96502f3bf61b0dedc1ca9603af3/68747470733a2f2f6b727970746f6b726f6e612e73652f77702d636f6e74656e742f75706c6f6164732f323031392f30372f786b722d6c6f676f2d626c61636b2d746578742e706e67)
 
 #### Master Build Status
-[![Build Status](https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js.svg?branch=master)](https://travis-ci.org/turtlecoin/turtlecoin-wallet-backend-js)
+[![Build Status](https://github.com/kryptokrona/kryptokrona-wallet-backend-js/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/kryptokrona/kryptokrona-wallet-backend-js/actions/workflows/pages/pages-build-deployment)
 
 #### NPM
 https://www.npmjs.com/package/kryptokrona-wallet-backend-js
