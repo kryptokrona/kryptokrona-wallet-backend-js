@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 
 import {
     Transaction as CreatedTransaction, TransactionOutputs,
-    Address, Interfaces,
+    Address, Interfaces, hasClsagSupport,
 } from 'kryptokrona-utils';
 
 import { Config } from './Config';
@@ -19,12 +19,14 @@ import { LogCategory, logger, LogLevel } from './Logger';
 
 import {
     Transaction as TX, TxInputAndOwner, UnconfirmedInput, PreparedTransactionInfo,
-    PreparedTransaction
+    PreparedTransaction,
 } from './Types';
 
 import {
-    generateKeyImage, generateKeyDerivation, underivePublicKey,
+    generateKeyImage, generateKeyDerivation, underivePublicKey, deriveViewTag,
 } from './CryptoWrapper';
+
+import { chooseTransactionVersion } from './TransactionVersion';
 
 import {
     getMaxTxSize, prettyPrintAmount, prettyPrintBytes,
@@ -159,6 +161,14 @@ export async function sendFusionTransactionAdvanced(
         return returnValue;
     }
 
+    /* The transaction version to build (1, or 2 from fork 14) */
+    const [transactionVersion, versionError] = getTransactionVersionToBuild(daemon, config);
+
+    if (versionError) {
+        returnValue.error = versionError;
+        return returnValue;
+    }
+
     /* Get the random inputs for this tx */
     const [ourInputs, foundMoney] = await subWallets.getFusionTransactionInputs(
         subWalletsToTakeFrom, mixin, daemon.getNetworkBlockCount(),
@@ -225,7 +235,7 @@ export async function sendFusionTransactionAdvanced(
             continue;
         }
 
-        const addressesAndAmounts: [string, number][] = [[destination, amount]];
+        const addressesAndAmounts: Array<[string, number]> = [[destination, amount]];
 
         const destinations = await setupDestinations(
             addressesAndAmounts,
@@ -243,7 +253,8 @@ export async function sendFusionTransactionAdvanced(
             subWallets,
             daemon,
             config,
-            extraData
+            extraData,
+            transactionVersion as number,
         );
 
         if (creationError || tx === undefined) {
@@ -423,7 +434,7 @@ export async function sendTransactionAdvanced(
     config: Config,
     daemon: Daemon,
     subWallets: SubWallets,
-    addressesAndAmounts: [string, number][],
+    addressesAndAmounts: Array<[string, number]>,
     mixin?: number,
     fee?: FeeType,
     paymentID?: string,
@@ -556,6 +567,14 @@ export async function sendTransactionAdvanced(
         return returnValue;
     }
 
+    /* The transaction version to build (1, or 2 from fork 14) */
+    const [transactionVersion, versionError] = getTransactionVersionToBuild(daemon, config);
+
+    if (versionError) {
+        returnValue.error = versionError;
+        return returnValue;
+    }
+
     for (let [address] of addressesAndAmounts) {
         const decoded = await Address.fromAddress(address, config.addressPrefix);
 
@@ -647,6 +666,7 @@ export async function sendTransactionAdvanced(
                     destinations.length,
                     paymentID !== '',
                     0,
+                    transactionVersion,
                 );
 
                 logger.log(
@@ -755,6 +775,7 @@ export async function sendTransactionAdvanced(
                         extraData,
                         sendAll,
                         config,
+                        transactionVersion as number,
                     );
 
                     if (success) {
@@ -790,7 +811,8 @@ export async function sendTransactionAdvanced(
                     subWallets,
                     daemon,
                     config,
-                    extraData
+                    extraData,
+                    transactionVersion as number,
                 );
 
                 const [tx, err] = txResult;
@@ -954,7 +976,7 @@ async function tryMakeFeePerByteTransaction(
     amountPreFee: number,
     estimatedFee: number,
     feePerByte: number,
-    addressesAndAmounts: [string, number][],
+    addressesAndAmounts: Array<[string, number]>,
     changeAddress: string,
     mixin: number,
     daemon: Daemon,
@@ -963,7 +985,8 @@ async function tryMakeFeePerByteTransaction(
     subWallets: SubWallets,
     extraData: string = '',
     sendAll: boolean,
-    config: Config): Promise<[
+    config: Config,
+    transactionVersion: number = 1): Promise<[
         boolean,
         ([ CreatedTransaction, undefined ] | [undefined, WalletError ]),
         number,
@@ -1006,7 +1029,8 @@ async function tryMakeFeePerByteTransaction(
             subWallets,
             daemon,
             config,
-            extraData
+            extraData,
+            transactionVersion,
         );
 
         const [ tx, creationError ] = result;
@@ -1132,6 +1156,34 @@ export async function sendPreparedTransaction(
         }
     }
 
+    /* The daemon may no longer accept the version the transaction was built
+       with (for example version 1 after the fork 14 grace period). Not
+       checked when a fixed version is configured: then the daemon decides. */
+    const preparedVersion: number | undefined = transaction.rawTransaction
+        ? Number(transaction.rawTransaction.version)
+        : undefined;
+
+    const allowedVersions: number[] = getDaemonTransactionVersions(daemon);
+
+    if (config.transactionVersion === undefined
+     && preparedVersion !== undefined
+     && !isNaN(preparedVersion)
+     && !allowedVersions.includes(preparedVersion)) {
+        logger.log(
+            `Prepared transaction has version ${preparedVersion}, ` +
+            `the daemon accepts ${JSON.stringify(allowedVersions)}`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
+        returnValue.error = new WalletError(
+            WalletErrorCode.TRANSACTION_VERSION_NOT_ALLOWED,
+            `The daemon accepts transaction versions ${allowedVersions.join(', ')} at the current ` +
+            `height, but this prepared transaction has version ${preparedVersion}. Create the transaction again.`,
+        );
+        return returnValue;
+    }
+
     const [prettyTX, err] = await relayTransaction(
         transaction.rawTransaction,
         transaction.fee,
@@ -1162,19 +1214,19 @@ export async function sendPreparedTransaction(
 }
 
 async function setupDestinations(
-    addressesAndAmountsTmp: [string, number][],
+    addressesAndAmountsTmp: Array<[string, number]>,
     changeRequired: number,
     changeAddress: string,
     config: Config): Promise<Interfaces.GeneratedOutput[]> {
 
     /* Clone array so we don't manipulate it outside the function */
-    const addressesAndAmounts: [string, number][] = addressesAndAmountsTmp.slice();
+    const addressesAndAmounts: Array<[string, number]> = addressesAndAmountsTmp.slice();
 
     if (changeRequired !== 0) {
         addressesAndAmounts.push([changeAddress, changeRequired]);
     }
 
-    let amounts: [string, number][] = [];
+    let amounts: Array<[string, number]> = [];
 
     /* Split amounts into denominations */
     addressesAndAmounts.map(([address, amount]) => {
@@ -1198,8 +1250,8 @@ async function setupDestinations(
     for (const [address, amount] of amounts) {
         result.push({
             amount: amount,
-            destination: await Address.fromAddress(address, config.addressPrefix)
-        })
+            destination: await Address.fromAddress(address, config.addressPrefix),
+        });
     }
 
     return result;
@@ -1214,7 +1266,8 @@ async function makeTransaction(
     subWallets: SubWallets,
     daemon: Daemon,
     config: Config,
-    extraData?: string): Promise<([CreatedTransaction, undefined]) | ([undefined, WalletError])> {
+    extraData?: string,
+    transactionVersion: number = 1): Promise<([CreatedTransaction, undefined]) | ([undefined, WalletError])> {
 
     ourInputs = _.sortBy(ourInputs, (input) => input.input.amount);
 
@@ -1285,14 +1338,16 @@ async function makeTransaction(
 
     try {
         logger.log(
-            `Asynchronously creating transaction with turtlecoin-utils`,
+            `Asynchronously creating transaction version ${transactionVersion} with kryptokrona-utils`,
             LogLevel.DEBUG,
             LogCategory.TRANSACTIONS,
         );
 
+        /* Version 2 (fork 14): tagged outputs with view tags and a CLSAG
+           signature per input. Version 1: as before. */
         const tx = await CryptoUtils(config).createTransaction(
             destinations, ourOutputs, randomOuts as Interfaces.RandomOutput[][], mixin, fee,
-            paymentID, undefined, extraData
+            paymentID, undefined, extraData, { version: transactionVersion },
         );
 
         logger.log(
@@ -1409,6 +1464,11 @@ async function relayTransaction(
             LogCategory.TRANSACTIONS,
         );
 
+        /* xkrd: "invalid transaction: transaction version not allowed at this height" */
+        if (errorMessage !== undefined && /transaction version not allowed/i.test(errorMessage)) {
+            return [undefined, new WalletError(WalletErrorCode.TRANSACTION_VERSION_NOT_ALLOWED, customMessage)];
+        }
+
         return [undefined, new WalletError(WalletErrorCode.DAEMON_ERROR, customMessage)];
     }
 
@@ -1430,7 +1490,7 @@ async function relayTransaction(
         LogCategory.TRANSACTIONS,
     );
 
-    subWallets.knownTransactions.push(await tx.hash())
+    subWallets.knownTransactions.push(await tx.hash());
 
     /* Lock the input for spending till confirmed/cancelled */
     for (const input of inputs) {
@@ -1461,12 +1521,19 @@ async function storeSentTransaction(
     const derivation: string = await generateKeyDerivation(
         txPublicKey, subWallets.getPrivateViewKey(), config,
     );
-    
+
     const spendKeys: string[] = subWallets.getPublicSpendKeys();
 
     for (const [outputIndex, output] of keyOutputs.entries()) {
-        if (output.type === TransactionOutputs.OutputType.KEY) {
+        /* Untagged (0x02) and tagged (0x03, version 2) outputs */
+        if (TransactionOutputs.isKeyOutput(output)) {
             const o = output as TransactionOutputs.KeyOutput;
+
+            /* Tagged output: skip it if the view tag does not match */
+            if (o.viewTag !== undefined
+             && await deriveViewTag(derivation, outputIndex, config) !== o.viewTag.toLowerCase()) {
+                continue;
+            }
 
             /* Derive the spend key from the transaction, using the previous
                derivation */
@@ -1480,7 +1547,7 @@ async function storeSentTransaction(
             }
 
             const input: UnconfirmedInput = new UnconfirmedInput(
-                o.amount.toJSNumber(), o.key, hash, false
+                o.amount.toJSNumber(), o.key, hash, false,
             );
 
             subWallets.storeUnconfirmedIncomingInput(input, derivedSpendKey);
@@ -1549,7 +1616,7 @@ function isTransactionPayloadTooBig(
  */
 function verifyAmounts(amounts: TransactionOutputs.ITransactionOutput[]): boolean {
     for (const output of amounts) {
-        if (output.type === TransactionOutputs.OutputType.KEY) {
+        if (TransactionOutputs.isKeyOutput(output)) {
             if (!PRETTY_AMOUNTS.includes((output as TransactionOutputs.KeyOutput).amount.toJSNumber())) {
                 return false;
             }
@@ -1564,7 +1631,7 @@ function sumTransactionFee(transaction: CreatedTransaction): number {
     let outputTotal: number = 0;
 
     for (const output of transaction.outputs) {
-        if (output.type === TransactionOutputs.OutputType.KEY) {
+        if (TransactionOutputs.isKeyOutput(output)) {
             outputTotal += (output as TransactionOutputs.KeyOutput).amount.toJSNumber();
         }
     }
@@ -1589,6 +1656,80 @@ function verifyTransactionFee(
           * and no more than two times the fee per byte specified. */
         return actualFee >= calculatedFee && actualFee <= calculatedFee * 2;
     }
+}
+
+/**
+ * The transaction versions the daemon accepts for the next block
+ */
+function getDaemonTransactionVersions(daemon: Daemon): number[] {
+    const d: any = daemon;
+
+    if (typeof d.getTransactionVersions === 'function') {
+        return d.getTransactionVersions();
+    }
+
+    return [1];
+}
+
+/**
+ * Whether CLSAG signing (transaction version 2) is available: through the
+ * config hooks or the loaded cryptographic library
+ */
+function haveClsagSupport(config: Config): boolean {
+    if (config.clsagSign !== undefined && config.clsagVerify !== undefined) {
+        return true;
+    }
+
+    try {
+        return hasClsagSupport();
+    } catch (err) {
+        return false;
+    }
+}
+
+/**
+ * Chooses the transaction version to build: `config.transactionVersion` if
+ * set, otherwise the highest version the daemon accepts that we can build.
+ */
+function getTransactionVersionToBuild(
+    daemon: Daemon,
+    config: Config): [number, undefined] | [undefined, WalletError] {
+
+    const allowedVersions: number[] = getDaemonTransactionVersions(daemon);
+    const clsagSupported: boolean = haveClsagSupport(config);
+
+    const version: number | undefined = chooseTransactionVersion(
+        allowedVersions, clsagSupported, config.transactionVersion,
+    );
+
+    if (version === undefined) {
+        logger.log(
+            `Cannot build any of the transaction versions the daemon accepts ` +
+            `(${JSON.stringify(allowedVersions)}, override: ${config.transactionVersion}, ` +
+            `CLSAG support: ${clsagSupported})`,
+            LogLevel.DEBUG,
+            LogCategory.TRANSACTIONS,
+        );
+
+        return [undefined, new WalletError(WalletErrorCode.TRANSACTION_VERSION_NOT_SUPPORTED)];
+    }
+
+    if (!allowedVersions.includes(version)) {
+        logger.log(
+            `The daemon accepts transaction versions ${JSON.stringify(allowedVersions)} for the ` +
+            `next block, building version ${version} as configured`,
+            LogLevel.WARNING,
+            LogCategory.TRANSACTIONS,
+        );
+    }
+
+    logger.log(
+        `Building transaction version ${version} (daemon accepts ${JSON.stringify(allowedVersions)})`,
+        LogLevel.DEBUG,
+        LogCategory.TRANSACTIONS,
+    );
+
+    return [version, undefined];
 }
 
 /**
@@ -1703,7 +1844,7 @@ async function getRingParticipants(
  * @return Returns either SUCCESS or an error representing the issue
  */
 async function validateTransaction(
-    destinations: [string, number][],
+    destinations: Array<[string, number]>,
     mixin: number,
     fee: FeeType,
     paymentID: string,

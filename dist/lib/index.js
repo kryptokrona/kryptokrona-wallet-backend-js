@@ -3,7 +3,7 @@
 //
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Config = exports.MixinLimits = exports.MixinLimit = exports.DaemonType = exports.TransactionInput = exports.validatePaymentID = exports.validateAddresses = exports.validateAddress = exports.LogCategory = exports.LogLevel = exports.createIntegratedAddress = exports.isValidMnemonicWord = exports.isValidMnemonic = exports.isHex64 = exports.prettyPrintAmount = exports.FeeType = exports.Daemon = exports.WalletBackend = exports.SUCCESS = exports.WalletErrorCode = exports.WalletError = void 0;
+exports.parseTransactionVersions = exports.chooseTransactionVersion = exports.Config = exports.MixinLimits = exports.MixinLimit = exports.DaemonType = exports.TransactionInput = exports.validatePaymentID = exports.validateAddresses = exports.validateAddress = exports.LogCategory = exports.LogLevel = exports.createIntegratedAddress = exports.isValidMnemonicWord = exports.isValidMnemonic = exports.isHex64 = exports.prettyPrintAmount = exports.FeeType = exports.Daemon = exports.WalletBackend = exports.SUCCESS = exports.WalletErrorCode = exports.WalletError = void 0;
 var WalletError_1 = require("./WalletError");
 Object.defineProperty(exports, "WalletError", { enumerable: true, get: function () { return WalletError_1.WalletError; } });
 Object.defineProperty(exports, "WalletErrorCode", { enumerable: true, get: function () { return WalletError_1.WalletErrorCode; } });
@@ -35,6 +35,9 @@ Object.defineProperty(exports, "MixinLimit", { enumerable: true, get: function (
 Object.defineProperty(exports, "MixinLimits", { enumerable: true, get: function () { return MixinLimits_1.MixinLimits; } });
 var Config_1 = require("./Config");
 Object.defineProperty(exports, "Config", { enumerable: true, get: function () { return Config_1.Config; } });
+var TransactionVersion_1 = require("./TransactionVersion");
+Object.defineProperty(exports, "chooseTransactionVersion", { enumerable: true, get: function () { return TransactionVersion_1.chooseTransactionVersion; } });
+Object.defineProperty(exports, "parseTransactionVersions", { enumerable: true, get: function () { return TransactionVersion_1.parseTransactionVersions; } });
 // this is to keep pesky timeout errors away
 // see https://stackoverflow.com/questions/24320578/node-js-get-request-etimedout-esockettimedout/37946324#37946324
 process.env.UV_THREADPOOL_SIZE = '256';

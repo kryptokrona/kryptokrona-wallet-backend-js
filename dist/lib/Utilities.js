@@ -12,7 +12,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.estimateTransactionSize = exports.getTransactionFee = exports.getMinimumTransactionFee = exports.isValidMnemonic = exports.isValidMnemonicWord = exports.prettyPrintBytes = exports.getMaxTxSize = exports.splitAmountIntoDenominations = exports.delay = exports.prettyPrintAmount = exports.isInputUnlocked = exports.getCurrentTimestampAdjusted = exports.getUpperBound = exports.getLowerBound = exports.addressToKeys = exports.isHex64 = exports.createIntegratedAddress = void 0;
+exports.createIntegratedAddress = createIntegratedAddress;
+exports.isHex64 = isHex64;
+exports.addressToKeys = addressToKeys;
+exports.getLowerBound = getLowerBound;
+exports.getUpperBound = getUpperBound;
+exports.getCurrentTimestampAdjusted = getCurrentTimestampAdjusted;
+exports.isInputUnlocked = isInputUnlocked;
+exports.prettyPrintAmount = prettyPrintAmount;
+exports.delay = delay;
+exports.splitAmountIntoDenominations = splitAmountIntoDenominations;
+exports.getMaxTxSize = getMaxTxSize;
+exports.prettyPrintBytes = prettyPrintBytes;
+exports.isValidMnemonicWord = isValidMnemonicWord;
+exports.isValidMnemonic = isValidMnemonic;
+exports.getMinimumTransactionFee = getMinimumTransactionFee;
+exports.getTransactionFee = getTransactionFee;
+exports.estimateTransactionSize = estimateTransactionSize;
 const _ = require("lodash");
 const kryptokrona_utils_1 = require("kryptokrona-utils");
 const Config_1 = require("./Config");
@@ -27,8 +43,8 @@ const Assert_1 = require("./Assert");
  *
  * Throws if either address or payment ID is invalid.
  */
-function createIntegratedAddress(address, paymentID, config = new Config_1.Config()) {
-    return __awaiter(this, void 0, void 0, function* () {
+function createIntegratedAddress(address_1, paymentID_1) {
+    return __awaiter(this, arguments, void 0, function* (address, paymentID, config = new Config_1.Config()) {
         (0, Assert_1.assertString)(address, 'address');
         (0, Assert_1.assertString)(paymentID, 'paymentID');
         const tempConfig = (0, Config_1.MergeConfig)(config);
@@ -47,7 +63,6 @@ function createIntegratedAddress(address, paymentID, config = new Config_1.Confi
         return (0, CnUtils_1.CryptoUtils)(tempConfig).createIntegratedAddress(address, paymentID);
     });
 }
-exports.createIntegratedAddress = createIntegratedAddress;
 /**
  * Verifies if a key or payment ID is valid (64 char hex)
  */
@@ -56,21 +71,19 @@ function isHex64(val) {
     const regex = new RegExp('^[0-9a-fA-F]{64}$');
     return regex.test(val);
 }
-exports.isHex64 = isHex64;
 /**
  * Converts an address to the corresponding public view and public spend key
  * Precondition: address is valid
  *
  * @hidden
  */
-function addressToKeys(address, config = new Config_1.Config()) {
-    return __awaiter(this, void 0, void 0, function* () {
+function addressToKeys(address_1) {
+    return __awaiter(this, arguments, void 0, function* (address, config = new Config_1.Config()) {
         const tempConfig = (0, Config_1.MergeConfig)(config);
         const parsed = yield kryptokrona_utils_1.Address.fromAddress(address, tempConfig.addressPrefix);
         return [parsed.view.publicKey, parsed.spend.publicKey];
     });
 }
-exports.addressToKeys = addressToKeys;
 /**
  * Get the nearest multiple of the given value, rounded down.
  *
@@ -80,7 +93,6 @@ function getLowerBound(val, nearestMultiple) {
     const remainder = val % nearestMultiple;
     return val - remainder;
 }
-exports.getLowerBound = getLowerBound;
 /**
  * Get the nearest multiple of the given value, rounded up
  *
@@ -89,7 +101,6 @@ exports.getLowerBound = getLowerBound;
 function getUpperBound(val, nearestMultiple) {
     return getLowerBound(val, nearestMultiple) + nearestMultiple;
 }
-exports.getUpperBound = getUpperBound;
 /**
  * Get a decent value to start the sync process at
  *
@@ -99,7 +110,6 @@ function getCurrentTimestampAdjusted(blockTargetTime = 30) {
     const timestamp = Math.floor(Date.now() / 1000);
     return timestamp - (100 * blockTargetTime);
 }
-exports.getCurrentTimestampAdjusted = getCurrentTimestampAdjusted;
 /**
  * Is an input unlocked for spending at this height
  *
@@ -119,7 +129,6 @@ function isInputUnlocked(unlockTime, currentHeight) {
         return currentHeight + 1 >= unlockTime;
     }
 }
-exports.isInputUnlocked = isInputUnlocked;
 /**
  * Takes an amount in atomic units and pretty prints it.
  * Example: 12345607 -> 123,456.07 TRTL
@@ -136,7 +145,6 @@ function prettyPrintAmount(amount, config = new Config_1.Config()) {
     const formatted = dollars.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     return formatted + '.' + cents + ' ' + tempConfig.ticker;
 }
-exports.prettyPrintAmount = prettyPrintAmount;
 /**
  * Sleep for the given amount of milliseconds, async
  *
@@ -145,7 +153,6 @@ exports.prettyPrintAmount = prettyPrintAmount;
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
-exports.delay = delay;
 /**
  * Split each amount into uniform amounts, e.g.
  * 1234567 = 1000000 + 200000 + 30000 + 4000 + 500 + 60 + 7
@@ -175,7 +182,6 @@ function splitAmountIntoDenominations(amount, preventTooLargeOutputs = true) {
     }
     return splitAmounts;
 }
-exports.splitAmountIntoDenominations = splitAmountIntoDenominations;
 /**
  * The formula for the block size is as follows. Calculate the
  * maxBlockCumulativeSize. This is equal to:
@@ -213,7 +219,6 @@ function getMaxTxSize(currentHeight, blockTime = 30) {
     /* Need space for the miner transaction */
     return Math.min(x, y) - Constants_1.CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
 }
-exports.getMaxTxSize = getMaxTxSize;
 /**
  * Converts an amount in bytes, say, 10000, into 9.76 KB
  *
@@ -228,7 +233,6 @@ function prettyPrintBytes(bytes) {
     }
     return bytes.toFixed(2) + ' ' + suffixes[selectedSuffix];
 }
-exports.prettyPrintBytes = prettyPrintBytes;
 /**
  * Returns whether the given word is in the mnemonic english dictionary. Note that
  * just because all the words are valid, does not mean the mnemonic is valid.
@@ -239,13 +243,12 @@ function isValidMnemonicWord(word) {
     (0, Assert_1.assertString)(word, 'word');
     return WordList_1.English.includes(word);
 }
-exports.isValidMnemonicWord = isValidMnemonicWord;
 /**
  * Verifies whether a mnemonic is valid. Returns a boolean, and an error messsage
  * describing what is invalid.
  */
-function isValidMnemonic(mnemonic, config = new Config_1.Config()) {
-    return __awaiter(this, void 0, void 0, function* () {
+function isValidMnemonic(mnemonic_1) {
+    return __awaiter(this, arguments, void 0, function* (mnemonic, config = new Config_1.Config()) {
         (0, Assert_1.assertString)(mnemonic, 'mnemonic');
         const tempConfig = (0, Config_1.MergeConfig)(config);
         const words = mnemonic.split(' ').map((x) => x.toLowerCase());
@@ -274,26 +277,32 @@ function isValidMnemonic(mnemonic, config = new Config_1.Config()) {
         }
     });
 }
-exports.isValidMnemonic = isValidMnemonic;
 function getMinimumTransactionFee(transactionSize, height, config = new Config_1.Config()) {
     const tempConfig = (0, Config_1.MergeConfig)(config);
     return getTransactionFee(transactionSize, height, tempConfig.minimumFeePerByte, tempConfig);
 }
-exports.getMinimumTransactionFee = getMinimumTransactionFee;
 function getTransactionFee(transactionSize, height, feePerByte, config = new Config_1.Config()) {
     return 10;
     const tempConfig = (0, Config_1.MergeConfig)(config);
     const numChunks = Math.ceil(transactionSize / tempConfig.feePerByteChunkSize);
     return numChunks * feePerByte * tempConfig.feePerByteChunkSize;
 }
-exports.getTransactionFee = getTransactionFee;
-function estimateTransactionSize(mixin, numInputs, numOutputs, havePaymentID, extraDataSize) {
+/**
+ * Estimates the size of a transaction in bytes.
+ *
+ * Version 1 signs each input with a ring signature of 64 bytes per ring
+ * member. Version 2 signs each input with a CLSAG of 32 bytes per ring member
+ * plus 32 bytes, and each output carries one extra byte (the view tag).
+ */
+function estimateTransactionSize(mixin, numInputs, numOutputs, havePaymentID, extraDataSize, transactionVersion = 1) {
     const KEY_IMAGE_SIZE = 32;
     const OUTPUT_KEY_SIZE = 32;
     const AMOUNT_SIZE = 8 + 2; // varint
     const GLOBAL_INDEXES_VECTOR_SIZE_SIZE = 1; // varint
     const GLOBAL_INDEXES_INITIAL_VALUE_SIZE = 4; // varint
     const SIGNATURE_SIZE = 64;
+    const CLSAG_SCALAR_SIZE = 32;
+    const VIEW_TAG_SIZE = transactionVersion >= 2 ? 1 : 0;
     const EXTRA_TAG_SIZE = 1;
     const INPUT_TAG_SIZE = 1;
     const OUTPUT_TAG_SIZE = 1;
@@ -309,20 +318,25 @@ function estimateTransactionSize(mixin, numInputs, numOutputs, havePaymentID, ex
         + EXTRA_DATA_SIZE
         + PUBLIC_KEY_SIZE
         + PAYMENT_ID_SIZE;
+    /* The signature of each input: version 1 one (c, r) pair per ring member,
+       version 2 (CLSAG) one response per ring member plus c1 */
+    const ringSize = mixin + 1;
+    const inputSignatureSize = transactionVersion >= 2
+        ? CLSAG_SCALAR_SIZE * ringSize + CLSAG_SCALAR_SIZE
+        : SIGNATURE_SIZE * ringSize;
     /* The size of each transaction input */
     const inputSize = INPUT_TAG_SIZE
         + AMOUNT_SIZE
         + KEY_IMAGE_SIZE
-        + SIGNATURE_SIZE
         + GLOBAL_INDEXES_VECTOR_SIZE_SIZE
         + GLOBAL_INDEXES_INITIAL_VALUE_SIZE
-        + mixin * SIGNATURE_SIZE;
+        + inputSignatureSize;
     const inputsSize = inputSize * numInputs;
     /* The size of each transaction output. */
     const outputSize = OUTPUT_TAG_SIZE
         + OUTPUT_KEY_SIZE
+        + VIEW_TAG_SIZE
         + AMOUNT_SIZE;
     const outputsSize = outputSize * numOutputs;
     return headerSize + inputsSize + outputsSize;
 }
-exports.estimateTransactionSize = estimateTransactionSize;

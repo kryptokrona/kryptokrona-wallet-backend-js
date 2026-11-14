@@ -5,6 +5,7 @@ export { FeeType } from './FeeType';
 export { prettyPrintAmount, isHex64, isValidMnemonic, isValidMnemonicWord, createIntegratedAddress, } from './Utilities';
 export { LogLevel, LogCategory } from './Logger';
 export { validateAddress, validateAddresses, validatePaymentID } from './ValidateParameters';
-export { TransactionInput, DaemonType, DaemonConnection } from './Types';
+export { TransactionInput, DaemonType, DaemonConnection, ScanStats } from './Types';
 export { MixinLimit, MixinLimits } from './MixinLimits';
 export { Config } from './Config';
+export { chooseTransactionVersion, parseTransactionVersions } from './TransactionVersion';

@@ -11,7 +11,7 @@ import {
     Crypto,
     CryptoType,
     Transaction as CreatedTransaction,
-    Transaction as UtilsTransaction
+    Transaction as UtilsTransaction,
 } from 'kryptokrona-utils';
 
 import * as fs from 'fs';
@@ -41,6 +41,7 @@ import {
     TransactionData,
     TransactionInput,
     TxInputAndOwner,
+    ScanStats,
 } from './Types';
 
 import {
@@ -305,7 +306,6 @@ export declare interface WalletBackend {
      */
     on(event: 'unconfirmedtx', callback: (amount: number, hash: string) => void): this;
 
-
     /**
      * This is emitted every time we download a block from the daemon. Will
      * only be emitted if the daemon is using /getrawblocks (All non blockchain
@@ -525,7 +525,7 @@ export class WalletBackend extends EventEmitter {
 
         assertString(json, 'json');
 
-        CryptoUtils(MergeConfig(config))
+        CryptoUtils(MergeConfig(config));
 
         try {
             const wallet = JSON.parse(json, WalletBackend.reviver);
@@ -583,7 +583,7 @@ export class WalletBackend extends EventEmitter {
 
         const merged = MergeConfig(config);
 
-        CryptoUtils(merged)
+        CryptoUtils(merged);
 
         let keys;
 
@@ -665,7 +665,7 @@ export class WalletBackend extends EventEmitter {
 
         const merged = MergeConfig(config);
 
-        CryptoUtils(merged)
+        CryptoUtils(merged);
 
         let keys;
 
@@ -745,20 +745,18 @@ export class WalletBackend extends EventEmitter {
         assertNumber(scanHeight, 'scanHeight');
         assertString(privateViewKey, 'privateViewKey');
         assertString(address, 'address');
-        
 
         if (!isHex64(privateViewKey)) {
             return [undefined, new WalletError(WalletErrorCode.INVALID_KEY_FORMAT)];
         }
-        
-        CryptoUtils(MergeConfig(config))
+
+        CryptoUtils(MergeConfig(config));
 
         const integratedAddressesAllowed: boolean = false;
 
         const err: WalletError = await validateAddresses(
             new Array(address), integratedAddressesAllowed, MergeConfig(config),
         );
-
 
         if (!_.isEqual(err, SUCCESS)) {
             return [undefined, err];
@@ -814,7 +812,7 @@ export class WalletBackend extends EventEmitter {
 
         const merged = MergeConfig(config);
 
-        CryptoUtils(merged)
+        CryptoUtils(merged);
 
         const address = await Address.fromEntropy(undefined, undefined, merged.addressPrefix);
 
@@ -843,6 +841,60 @@ export class WalletBackend extends EventEmitter {
             subWallets: SubWallets.fromJSON(json.subWallets),
             walletSynchronizer: WalletSynchronizer.fromJSON(json.walletSynchronizer),
         });
+    }
+
+    /**
+     * @param config
+     * @param daemon
+     * @param address
+     * @param newWallet Are we creating a new wallet? If so, it will start
+     *                  syncing from the current time.
+     *
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Set to zero if `newWallet` is `true`.
+     * @param privateViewKey
+     * @param privateSpendKey   Omit this parameter to create a view wallet.
+     *
+     */
+    private static async init(
+        config: Config,
+        daemon: Daemon,
+        address: string,
+        scanHeight: number,
+        newWallet: boolean,
+        privateViewKey: string,
+        privateSpendKey?: string,
+    ): Promise<WalletBackend> {
+        daemon.updateConfig(config);
+
+        const subWallets =  await SubWallets.init(
+            config, address, scanHeight, newWallet, privateViewKey,
+            privateSpendKey,
+        );
+
+        let timestamp = 0;
+
+        if (newWallet) {
+            timestamp = getCurrentTimestampAdjusted(config.blockTargetTime);
+        }
+
+        const walletSynchronizer = new WalletSynchronizer(
+            daemon, subWallets, timestamp, scanHeight,
+            privateViewKey, config,
+        );
+
+        const result = new WalletBackend(config, daemon, subWallets, walletSynchronizer);
+
+        if (!result.usingNativeCrypto()) {
+            logger.log(
+                'Wallet is not using native crypto. Syncing could be much slower than normal.',
+                LogLevel.WARNING,
+                LogCategory.GENERAL,
+            );
+        }
+
+        return result;
     }
 
     /**
@@ -892,10 +944,10 @@ export class WalletBackend extends EventEmitter {
     private externalBlockProcessFunction?: (
         block: Block,
         privateViewKey: string,
-        spendKeys: [string, string][],
+        spendKeys: Array<[string, string]>,
         isViewWallet: boolean,
         processCoinbaseTransactions: boolean,
-    ) => [string, TransactionInput][];
+    ) => Array<[string, TransactionInput]>;
 
     /**
      * Whether we should automatically keep the wallet optimized
@@ -946,60 +998,6 @@ export class WalletBackend extends EventEmitter {
         this.setupMetronomes();
 
         this.haveEmittedDeadNode = false;
-    }
-
-    /**
-     * @param config
-     * @param daemon
-     * @param address
-     * @param newWallet Are we creating a new wallet? If so, it will start
-     *                  syncing from the current time.
-     *
-     * @param scanHeight    The height to begin scanning the blockchain from.
-     *                      This can greatly increase sync speeds if given.
-     *                      Set to zero if `newWallet` is `true`.
-     * @param privateViewKey
-     * @param privateSpendKey   Omit this parameter to create a view wallet.
-     *
-     */
-    private static async init (
-        config: Config,
-        daemon: Daemon,
-        address: string,
-        scanHeight: number,
-        newWallet: boolean,
-        privateViewKey: string,
-        privateSpendKey?: string
-    ): Promise<WalletBackend> {
-        daemon.updateConfig(config);
-
-        const subWallets =  await SubWallets.init(
-            config, address, scanHeight, newWallet, privateViewKey,
-            privateSpendKey,
-        );
-
-        let timestamp = 0;
-
-        if (newWallet) {
-            timestamp = getCurrentTimestampAdjusted(config.blockTargetTime);
-        }
-
-        const walletSynchronizer = new WalletSynchronizer(
-            daemon, subWallets, timestamp, scanHeight,
-            privateViewKey, config,
-        );
-
-        const result = new WalletBackend(config, daemon, subWallets, walletSynchronizer);
-
-        if (!result.usingNativeCrypto()) {
-            logger.log(
-                'Wallet is not using native crypto. Syncing could be much slower than normal.',
-                LogLevel.WARNING,
-                LogCategory.GENERAL,
-            );
-        }
-
-        return result;
     }
 
     /**
@@ -1490,7 +1488,7 @@ export class WalletBackend extends EventEmitter {
     }
 
     /**
-     * Only some applications need to scan pool transactions. 
+     * Only some applications need to scan pool transactions.
      * Make it easy to turn it on/off.
      * Example:
      * ```javascript
@@ -1499,7 +1497,7 @@ export class WalletBackend extends EventEmitter {
      *
      * @param shouldScan Should we scan for pool transactions?
      */
-     public scanPoolTransactions(shouldScan: boolean): void {
+    public scanPoolTransactions(shouldScan: boolean): void {
         logger.log(
             'Function scanPoolTransactions called',
             LogLevel.DEBUG,
@@ -1507,7 +1505,6 @@ export class WalletBackend extends EventEmitter {
         );
 
         assertBoolean(shouldScan, 'shouldScan');
-
 
         this.config.scanPoolTransactions = shouldScan;
     }
@@ -1626,7 +1623,6 @@ export class WalletBackend extends EventEmitter {
         return Crypto.isNative;
     }
 
-
     /**
      * Sets a callback to be used instead of console.log for more fined control
      * of the logging output.
@@ -1681,6 +1677,11 @@ export class WalletBackend extends EventEmitter {
      * We will fetch them from the daemon if needed. However, if you have them,
      * return them, to save us a daemon call.
      *
+     * Outputs of transaction version 2 carry a view tag (`keyOutputs[i].viewTag`,
+     * two hex characters, undefined for untagged outputs). Compute the view tag
+     * of output i from the per-transaction key derivation and skip the output
+     * when it does not match, before deriving the output key.
+     *
      * Your function should return an array of `[publicSpendKey, TransactionInput]`.
      * The public spend key is the corresponding subwallet that the transaction input
      * belongs to.
@@ -1702,10 +1703,10 @@ export class WalletBackend extends EventEmitter {
     public setBlockOutputProcessFunc(func: (
             block: Block,
             privateViewKey: string,
-            spendKeys: [string, string][],
+            spendKeys: Array<[string, string]>,
             isViewWallet: boolean,
             processCoinbaseTransactions: boolean,
-        ) => [string, TransactionInput][]): void {
+        ) => Array<[string, TransactionInput]>): void {
 
         logger.log(
             'Function setBlockOutputProcessFunc called',
@@ -1714,6 +1715,24 @@ export class WalletBackend extends EventEmitter {
         );
 
         this.externalBlockProcessFunction = func;
+    }
+
+    /**
+     * Returns the counts of the output scan since the wallet was started or
+     * loaded: outputs looked at, outputs with a view tag (transaction
+     * version 2), tagged outputs skipped by their view tag alone, and outputs
+     * that needed the full ownership check. Not counted when a function set
+     * with [[setBlockOutputProcessFunc]] does the scanning.
+     *
+     * Example:
+     * ```javascript
+     * const stats = wallet.getScanStats();
+     * console.log(`${stats.outputs} outputs, ${stats.tagged} with view tags, ` +
+     *             `${stats.skippedByTag} skipped by view tag, ${stats.fullChecks} full derivations`);
+     * ```
+     */
+    public getScanStats(): ScanStats {
+        return this.walletSynchronizer.getScanStats();
     }
 
     /**
@@ -1741,7 +1760,7 @@ export class WalletBackend extends EventEmitter {
             await Promise.all([
                 this.syncThread.start(),
                 this.daemonUpdateThread.start(),
-                this.lockedTransactionsCheckThread.start()
+                this.lockedTransactionsCheckThread.start(),
             ]);
         }
     }
@@ -1970,7 +1989,7 @@ export class WalletBackend extends EventEmitter {
         const parsedAddr = await Address.fromKeys(
             privateSpendKey as string,
             privateViewKey as string,
-            this.config.addressPrefix
+            this.config.addressPrefix,
         );
 
         if (!parsedAddr.mnemonic) {
@@ -2238,7 +2257,7 @@ export class WalletBackend extends EventEmitter {
                     mixin,
                     subWalletsToTakeFrom,
                     destination,
-                    extraData
+                    extraData,
                 );
             },
             true,
@@ -2360,7 +2379,7 @@ export class WalletBackend extends EventEmitter {
      * @param extraData             Extra arbitrary data to include in the transaction
      */
     public async sendTransactionAdvanced(
-        destinations: [string, number][],
+        destinations: Array<[string, number]>,
         mixin?: number,
         fee?: FeeType,
         paymentID?: string,
@@ -2399,7 +2418,7 @@ export class WalletBackend extends EventEmitter {
                     changeAddress,
                     relayToNetwork,
                     sendAll,
-                    extraData
+                    extraData,
                 );
             },
             false,
@@ -2805,6 +2824,15 @@ export class WalletBackend extends EventEmitter {
              + (await this.subWallets.getNumUnconfirmedTransactions(subWallet, includeFusions));
     }
 
+    public async checkPoolTransactions() {
+        await this.walletSynchronizer.checkPoolTransactions();
+        logger.log(
+            'Checking pool transactions ',
+            LogLevel.INFO,
+            LogCategory.SYNC,
+        );
+    }
+
     private async sendTransactionInternal(
         sendTransactionFunc: () => Promise<PreparedTransactionInfo>,
         fusion: boolean,
@@ -2896,7 +2924,7 @@ export class WalletBackend extends EventEmitter {
         });
 
         this.walletSynchronizer.on('unconfirmedtx', (amount, hash) => {
-            this.emit('unconfirmedtx', amount, hash)
+            this.emit('unconfirmedtx', amount, hash);
          });
     }
 
@@ -2912,7 +2940,7 @@ export class WalletBackend extends EventEmitter {
         );
 
         if (this.config.scanPoolTransactions) {
-            await this.checkPoolTransactions()
+            await this.checkPoolTransactions();
         }
         const lockedTransactionHashes: string[] = this.subWallets.getLockedTransactionHashes();
 
@@ -2949,7 +2977,7 @@ export class WalletBackend extends EventEmitter {
 
             if (this.shouldPerformAutoOptimize && this.autoOptimize) {
                 this.performAutoOptimize()
-                    .catch(error => this.emit('autoOptimizeError', error));
+                    .catch((error) => this.emit('autoOptimizeError', error));
             }
         } else {
 
@@ -3034,15 +3062,6 @@ export class WalletBackend extends EventEmitter {
         );
     }
 
-    public async checkPoolTransactions() {
-        await this.walletSynchronizer.checkPoolTransactions()
-        logger.log(
-            'Checking pool transactions ',
-            LogLevel.INFO,
-            LogCategory.SYNC,
-        )
-    }
-
     /**
      * Process config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us
@@ -3077,9 +3096,7 @@ export class WalletBackend extends EventEmitter {
 
                 this.subWallets.removeForkedTransactions(block.blockHeight);
             }
-            
-            
-            
+
             if (block.blockHeight % 5000 === 0 && block.blockHeight !== 0) {
                 this.subWallets.pruneSpentInputs(block.blockHeight - 5000);
             }
@@ -3089,7 +3106,7 @@ export class WalletBackend extends EventEmitter {
             const processFunction = this.externalBlockProcessFunction
                                  || this.walletSynchronizer.processBlockOutputs.bind(this.walletSynchronizer);
 
-            const blockInputs: [string, TransactionInput][] = await processFunction(
+            const blockInputs: Array<[string, TransactionInput]> = await processFunction(
                 block,
                 this.subWallets.getPrivateViewKey(),
                 this.subWallets.getAllSpendKeys(),
@@ -3260,7 +3277,7 @@ export class WalletBackend extends EventEmitter {
         });
 
         this.walletSynchronizer.on('unconfirmedtx', (amount, hash) => {
-            this.emit('unconfirmedtx', amount, hash)
+            this.emit('unconfirmedtx', amount, hash);
          });
     }
 
@@ -3314,7 +3331,7 @@ export class WalletBackend extends EventEmitter {
             if (!result.success) {
                 failCount++;
             } else if (result.transactionHash) {
-                this.subWallets.knownTransactions.push(result.transactionHash)
+                this.subWallets.knownTransactions.push(result.transactionHash);
                 failCount = 0;
                 sentTransactions++;
                 hashes.push(result.transactionHash);

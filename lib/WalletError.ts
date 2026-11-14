@@ -262,6 +262,15 @@ export class WalletError {
                 return 'The prepared transaction given could not be found. Note ' +
                        'that prepared transactions are lost upon restarting the wallet.';
             }
+            case WalletErrorCode.TRANSACTION_VERSION_NOT_ALLOWED: {
+                return 'The daemon does not accept this transaction version at the ' +
+                       'current height. Create the transaction again.';
+            }
+            case WalletErrorCode.TRANSACTION_VERSION_NOT_SUPPORTED: {
+                return 'None of the transaction versions the daemon accepts can be ' +
+                       'built: transaction version 2 needs kryptokrona-crypto 1.1.0 ' +
+                       'or later (CLSAG signing), or the clsagSign and clsagVerify config hooks.';
+            }
         }
     }
 }
@@ -482,6 +491,16 @@ export enum WalletErrorCode {
 
     /* Prepared transaction cannot be found, perhaps wallet application has been restarted */
     PREPARED_TRANSACTION_NOT_FOUND = 58,
+
+    /* The daemon does not accept the version of this transaction at the
+       current height (for example a version 1 transaction after the fork 14
+       grace period, or a prepared transaction created before the daemon
+       changed the allowed versions). Create the transaction again. */
+    TRANSACTION_VERSION_NOT_ALLOWED = 59,
+
+    /* None of the transaction versions the daemon accepts can be built with
+       the loaded cryptographic library (version 2 needs CLSAG support) */
+    TRANSACTION_VERSION_NOT_SUPPORTED = 60,
 }
 
 /**

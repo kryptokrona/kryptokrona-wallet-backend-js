@@ -92,7 +92,7 @@ export async function validateAddress(
  * @hidden
  */
 export async function validateDestinations(
-    destinations: [string, number][],
+    destinations: Array<[string, number]>,
     config: IConfig = new Config()): Promise<WalletError> {
 
     const tempConfig: Config = MergeConfig(config);
@@ -133,7 +133,7 @@ export async function validateDestinations(
  * @hidden
  */
 export async function validateIntegratedAddresses(
-    destinations: [string, number][],
+    destinations: Array<[string, number]>,
     paymentID: string,
     config: IConfig = new Config()): Promise<WalletError> {
 
@@ -210,7 +210,7 @@ export async function validateOurAddresses(
  * @hidden
  */
 export async function validateAmount(
-    destinations: [string, number][],
+    destinations: Array<[string, number]>,
     fee: FeeType,
     subWalletsToTakeFrom: string[],
     subWallets: SubWallets,

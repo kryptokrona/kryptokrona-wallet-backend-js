@@ -12,7 +12,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validatePaymentID = exports.validateMixin = exports.validateAmount = exports.validateOurAddresses = exports.validateIntegratedAddresses = exports.validateDestinations = exports.validateAddress = exports.validateAddresses = void 0;
+exports.validateAddresses = validateAddresses;
+exports.validateAddress = validateAddress;
+exports.validateDestinations = validateDestinations;
+exports.validateIntegratedAddresses = validateIntegratedAddresses;
+exports.validateOurAddresses = validateOurAddresses;
+exports.validateAmount = validateAmount;
+exports.validateMixin = validateMixin;
+exports.validatePaymentID = validatePaymentID;
 const _ = require("lodash");
 const kryptokrona_utils_1 = require("kryptokrona-utils");
 const WalletError_1 = require("./WalletError");
@@ -26,8 +33,8 @@ const Assert_1 = require("./Assert");
  * Verifies that the addresses given are valid.
  * @returns Returns SUCCESS if valid, otherwise a WalletError describing the error
  */
-function validateAddresses(addresses, integratedAddressesAllowed, config = new Config_1.Config()) {
-    return __awaiter(this, void 0, void 0, function* () {
+function validateAddresses(addresses_1, integratedAddressesAllowed_1) {
+    return __awaiter(this, arguments, void 0, function* (addresses, integratedAddressesAllowed, config = new Config_1.Config()) {
         (0, Assert_1.assertArray)(addresses, 'addresses');
         (0, Assert_1.assertBoolean)(integratedAddressesAllowed, 'integratedAddressesAllowed');
         const tempConfig = (0, Config_1.MergeConfig)(config);
@@ -60,7 +67,6 @@ function validateAddresses(addresses, integratedAddressesAllowed, config = new C
         return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.SUCCESS);
     });
 }
-exports.validateAddresses = validateAddresses;
 /**
  * Verifies that the address given is valid.
  * @param address The address to validate.
@@ -76,7 +82,6 @@ function validateAddress(address, integratedAddressAllowed, config) {
         return err.errorCode === WalletError_1.WalletErrorCode.SUCCESS;
     });
 }
-exports.validateAddress = validateAddress;
 /**
  * Validate the amounts being sent are valid, and the addresses are valid.
  *
@@ -84,8 +89,8 @@ exports.validateAddress = validateAddress;
  *
  * @hidden
  */
-function validateDestinations(destinations, config = new Config_1.Config()) {
-    return __awaiter(this, void 0, void 0, function* () {
+function validateDestinations(destinations_1) {
+    return __awaiter(this, arguments, void 0, function* (destinations, config = new Config_1.Config()) {
         const tempConfig = (0, Config_1.MergeConfig)(config);
         if (destinations.length === 0) {
             return new WalletError_1.WalletError(WalletError_1.WalletErrorCode.NO_DESTINATIONS_GIVEN);
@@ -107,7 +112,6 @@ function validateDestinations(destinations, config = new Config_1.Config()) {
         return validateAddresses(destinationAddresses, true, tempConfig);
     });
 }
-exports.validateDestinations = validateDestinations;
 /**
  * Validate that the payment ID's included in integrated addresses are valid.
  *
@@ -117,8 +121,8 @@ exports.validateDestinations = validateDestinations;
  *
  * @hidden
  */
-function validateIntegratedAddresses(destinations, paymentID, config = new Config_1.Config()) {
-    return __awaiter(this, void 0, void 0, function* () {
+function validateIntegratedAddresses(destinations_1, paymentID_1) {
+    return __awaiter(this, arguments, void 0, function* (destinations, paymentID, config = new Config_1.Config()) {
         const tempConfig = (0, Config_1.MergeConfig)(config);
         for (const [destination] of destinations) {
             /* Skip non-integrated addresses. Accept both prefix forms, whose
@@ -142,7 +146,6 @@ function validateIntegratedAddresses(destinations, paymentID, config = new Confi
         return WalletError_1.SUCCESS;
     });
 }
-exports.validateIntegratedAddresses = validateIntegratedAddresses;
 /**
  * Validate the the addresses given are both valid, and exist in the subwallet
  *
@@ -150,8 +153,8 @@ exports.validateIntegratedAddresses = validateIntegratedAddresses;
  *
  * @hidden
  */
-function validateOurAddresses(addresses, subWallets, config = new Config_1.Config()) {
-    return __awaiter(this, void 0, void 0, function* () {
+function validateOurAddresses(addresses_1, subWallets_1) {
+    return __awaiter(this, arguments, void 0, function* (addresses, subWallets, config = new Config_1.Config()) {
         const tempConfig = (0, Config_1.MergeConfig)(config);
         const error = yield validateAddresses(addresses, false, tempConfig);
         if (!_.isEqual(error, WalletError_1.SUCCESS)) {
@@ -168,7 +171,6 @@ function validateOurAddresses(addresses, subWallets, config = new Config_1.Confi
         return WalletError_1.SUCCESS;
     });
 }
-exports.validateOurAddresses = validateOurAddresses;
 /**
  * Validate that the transfer amount + fee is valid, and we have enough balance
  * Note: Does not verify amounts are positive / integer, validateDestinations
@@ -178,8 +180,8 @@ exports.validateOurAddresses = validateOurAddresses;
  *
  * @hidden
  */
-function validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight, config = new Config_1.Config()) {
-    return __awaiter(this, void 0, void 0, function* () {
+function validateAmount(destinations_1, fee_1, subWalletsToTakeFrom_1, subWallets_1, currentHeight_1) {
+    return __awaiter(this, arguments, void 0, function* (destinations, fee, subWalletsToTakeFrom, subWallets, currentHeight, config = new Config_1.Config()) {
         const tempConfig = (0, Config_1.MergeConfig)(config);
         if (!fee.isFeePerByte && !fee.isFixedFee) {
             throw new Error('Programmer error: Fee type not specified!');
@@ -213,7 +215,6 @@ function validateAmount(destinations, fee, subWalletsToTakeFrom, subWallets, cur
         return WalletError_1.SUCCESS;
     });
 }
-exports.validateAmount = validateAmount;
 /**
  * Validates mixin is valid and in allowed range
  *
@@ -240,7 +241,6 @@ function validateMixin(mixin, height, config = new Config_1.Config()) {
     }
     return WalletError_1.SUCCESS;
 }
-exports.validateMixin = validateMixin;
 /**
  * Validates the payment ID is valid (or an empty string)
  *
@@ -260,4 +260,3 @@ function validatePaymentID(paymentID, allowEmptyString = true) {
     }
     return WalletError_1.SUCCESS;
 }
-exports.validatePaymentID = validatePaymentID;

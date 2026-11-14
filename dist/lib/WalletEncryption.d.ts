@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { WalletError } from './WalletError';
 export declare class WalletEncryption {
     /**

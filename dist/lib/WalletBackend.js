@@ -191,8 +191,8 @@ class WalletBackend extends events_1.EventEmitter {
      * @param mnemonicSeed  The mnemonic seed to import. Should be a 25 word string.
      * @param config
      */
-    static importWalletFromSeed(daemon, scanHeight = 0, mnemonicSeed, config) {
-        return __awaiter(this, void 0, void 0, function* () {
+    static importWalletFromSeed(daemon_1) {
+        return __awaiter(this, arguments, void 0, function* (daemon, scanHeight = 0, mnemonicSeed, config) {
             Logger_1.logger.log('Function importWalletFromSeed called', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.GENERAL);
             (0, Assert_1.assertNumber)(scanHeight, 'scanHeight');
             (0, Assert_1.assertString)(mnemonicSeed, 'mnemonicSeed');
@@ -247,8 +247,8 @@ class WalletBackend extends events_1.EventEmitter {
      * @param privateSpendKey   The private spend key to import. Should be a 64 char hex string.
      * @param config
      */
-    static importWalletFromKeys(daemon, scanHeight = 0, privateViewKey, privateSpendKey, config) {
-        return __awaiter(this, void 0, void 0, function* () {
+    static importWalletFromKeys(daemon_1) {
+        return __awaiter(this, arguments, void 0, function* (daemon, scanHeight = 0, privateViewKey, privateSpendKey, config) {
             Logger_1.logger.log('Function importWalletFromKeys called', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.GENERAL);
             (0, Assert_1.assertNumber)(scanHeight, 'scanHeight');
             (0, Assert_1.assertString)(privateViewKey, 'privateViewKey');
@@ -312,8 +312,8 @@ class WalletBackend extends events_1.EventEmitter {
      * @param address       The public address of this view wallet.
      * @param config
      */
-    static importViewWallet(daemon, scanHeight = 0, privateViewKey, address, config) {
-        return __awaiter(this, void 0, void 0, function* () {
+    static importViewWallet(daemon_1) {
+        return __awaiter(this, arguments, void 0, function* (daemon, scanHeight = 0, privateViewKey, address, config) {
             Logger_1.logger.log('Function importViewWallet called', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.GENERAL);
             (0, Assert_1.assertNumber)(scanHeight, 'scanHeight');
             (0, Assert_1.assertString)(privateViewKey, 'privateViewKey');
@@ -381,6 +381,36 @@ class WalletBackend extends events_1.EventEmitter {
             walletSynchronizer: WalletSynchronizer_1.WalletSynchronizer.fromJSON(json.walletSynchronizer),
         });
     }
+    /**
+     * @param config
+     * @param daemon
+     * @param address
+     * @param newWallet Are we creating a new wallet? If so, it will start
+     *                  syncing from the current time.
+     *
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Set to zero if `newWallet` is `true`.
+     * @param privateViewKey
+     * @param privateSpendKey   Omit this parameter to create a view wallet.
+     *
+     */
+    static init(config, daemon, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
+        return __awaiter(this, void 0, void 0, function* () {
+            daemon.updateConfig(config);
+            const subWallets = yield SubWallets_1.SubWallets.init(config, address, scanHeight, newWallet, privateViewKey, privateSpendKey);
+            let timestamp = 0;
+            if (newWallet) {
+                timestamp = (0, Utilities_1.getCurrentTimestampAdjusted)(config.blockTargetTime);
+            }
+            const walletSynchronizer = new WalletSynchronizer_1.WalletSynchronizer(daemon, subWallets, timestamp, scanHeight, privateViewKey, config);
+            const result = new WalletBackend(config, daemon, subWallets, walletSynchronizer);
+            if (!result.usingNativeCrypto()) {
+                Logger_1.logger.log('Wallet is not using native crypto. Syncing could be much slower than normal.', Logger_1.LogLevel.WARNING, Logger_1.LogCategory.GENERAL);
+            }
+            return result;
+        });
+    }
     constructor(config, daemon, subWallets, walletSynchronizer) {
         super();
         /**
@@ -424,36 +454,6 @@ class WalletBackend extends events_1.EventEmitter {
         this.setupEventHandlers();
         this.setupMetronomes();
         this.haveEmittedDeadNode = false;
-    }
-    /**
-     * @param config
-     * @param daemon
-     * @param address
-     * @param newWallet Are we creating a new wallet? If so, it will start
-     *                  syncing from the current time.
-     *
-     * @param scanHeight    The height to begin scanning the blockchain from.
-     *                      This can greatly increase sync speeds if given.
-     *                      Set to zero if `newWallet` is `true`.
-     * @param privateViewKey
-     * @param privateSpendKey   Omit this parameter to create a view wallet.
-     *
-     */
-    static init(config, daemon, address, scanHeight, newWallet, privateViewKey, privateSpendKey) {
-        return __awaiter(this, void 0, void 0, function* () {
-            daemon.updateConfig(config);
-            const subWallets = yield SubWallets_1.SubWallets.init(config, address, scanHeight, newWallet, privateViewKey, privateSpendKey);
-            let timestamp = 0;
-            if (newWallet) {
-                timestamp = (0, Utilities_1.getCurrentTimestampAdjusted)(config.blockTargetTime);
-            }
-            const walletSynchronizer = new WalletSynchronizer_1.WalletSynchronizer(daemon, subWallets, timestamp, scanHeight, privateViewKey, config);
-            const result = new WalletBackend(config, daemon, subWallets, walletSynchronizer);
-            if (!result.usingNativeCrypto()) {
-                Logger_1.logger.log('Wallet is not using native crypto. Syncing could be much slower than normal.', Logger_1.LogLevel.WARNING, Logger_1.LogCategory.GENERAL);
-            }
-            return result;
-        });
     }
     /**
      * Swaps the currently connected daemon with a different one. If the wallet
@@ -555,8 +555,8 @@ class WalletBackend extends events_1.EventEmitter {
      * @param scanHeight The scan height to begin scanning transactions from
      * @param scanTimestamp The timestamp to being scanning transactions from
      */
-    reset(scanHeight = 0, scanTimestamp = 0) {
-        return __awaiter(this, void 0, void 0, function* () {
+    reset() {
+        return __awaiter(this, arguments, void 0, function* (scanHeight = 0, scanTimestamp = 0) {
             Logger_1.logger.log('Function reset called', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.GENERAL);
             (0, Assert_1.assertNumber)(scanHeight, 'scanHeight');
             (0, Assert_1.assertNumber)(scanTimestamp, 'scanTimestamp');
@@ -588,8 +588,8 @@ class WalletBackend extends events_1.EventEmitter {
      *
      * @param scanHeight The scan height to rewind to
      */
-    rewind(scanHeight = 0) {
-        return __awaiter(this, void 0, void 0, function* () {
+    rewind() {
+        return __awaiter(this, arguments, void 0, function* (scanHeight = 0) {
             Logger_1.logger.log('Function rewind called', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.GENERAL);
             (0, Assert_1.assertNumber)(scanHeight, 'scanHeight');
             const shouldRestart = this.started;
@@ -962,6 +962,11 @@ class WalletBackend extends events_1.EventEmitter {
      * We will fetch them from the daemon if needed. However, if you have them,
      * return them, to save us a daemon call.
      *
+     * Outputs of transaction version 2 carry a view tag (`keyOutputs[i].viewTag`,
+     * two hex characters, undefined for untagged outputs). Compute the view tag
+     * of output i from the per-transaction key derivation and skip the output
+     * when it does not match, before deriving the output key.
+     *
      * Your function should return an array of `[publicSpendKey, TransactionInput]`.
      * The public spend key is the corresponding subwallet that the transaction input
      * belongs to.
@@ -985,6 +990,23 @@ class WalletBackend extends events_1.EventEmitter {
         this.externalBlockProcessFunction = func;
     }
     /**
+     * Returns the counts of the output scan since the wallet was started or
+     * loaded: outputs looked at, outputs with a view tag (transaction
+     * version 2), tagged outputs skipped by their view tag alone, and outputs
+     * that needed the full ownership check. Not counted when a function set
+     * with [[setBlockOutputProcessFunc]] does the scanning.
+     *
+     * Example:
+     * ```javascript
+     * const stats = wallet.getScanStats();
+     * console.log(`${stats.outputs} outputs, ${stats.tagged} with view tags, ` +
+     *             `${stats.skippedByTag} skipped by view tag, ${stats.fullChecks} full derivations`);
+     * ```
+     */
+    getScanStats() {
+        return this.walletSynchronizer.getScanStats();
+    }
+    /**
      * Initializes and starts the wallet sync process. You should call this
      * function before enquiring about daemon info or fee info. The wallet will
      * not process blocks until you call this method.
@@ -1003,7 +1025,7 @@ class WalletBackend extends events_1.EventEmitter {
                 yield Promise.all([
                     this.syncThread.start(),
                     this.daemonUpdateThread.start(),
-                    this.lockedTransactionsCheckThread.start()
+                    this.lockedTransactionsCheckThread.start(),
                 ]);
             }
         });
@@ -1707,8 +1729,8 @@ class WalletBackend extends events_1.EventEmitter {
      * @param includeFusions Should we include fusion transactions?
      * @param subWallet Should we only include transactions of the specified subWallet?
      */
-    getTransactions(startIndex, numTransactions, includeFusions = true, subWallet) {
-        return __awaiter(this, void 0, void 0, function* () {
+    getTransactions(startIndex_1, numTransactions_1) {
+        return __awaiter(this, arguments, void 0, function* (startIndex, numTransactions, includeFusions = true, subWallet) {
             Logger_1.logger.log('Function getTransactions called', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.GENERAL);
             (0, Assert_1.assertNumberOrUndefined)(startIndex, 'startIndex');
             (0, Assert_1.assertNumberOrUndefined)(numTransactions, 'numTransactions');
@@ -1781,8 +1803,8 @@ class WalletBackend extends events_1.EventEmitter {
      * @param subWallet Should we only count transactions of the specified subWallet?
      * @param includeFusions Should we count fusion transactions? Defaults to true.
      */
-    getNumTransactions(subWallet, includeFusions = true) {
-        return __awaiter(this, void 0, void 0, function* () {
+    getNumTransactions(subWallet_1) {
+        return __awaiter(this, arguments, void 0, function* (subWallet, includeFusions = true) {
             Logger_1.logger.log('Function getNumTransactions called', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.GENERAL);
             (0, Assert_1.assertStringOrUndefined)(subWallet, 'subWallet');
             (0, Assert_1.assertBoolean)(includeFusions, 'includeFusions');
@@ -1790,8 +1812,14 @@ class WalletBackend extends events_1.EventEmitter {
                 + (yield this.subWallets.getNumUnconfirmedTransactions(subWallet, includeFusions));
         });
     }
-    sendTransactionInternal(sendTransactionFunc, fusion, relayToNetwork = true) {
+    checkPoolTransactions() {
         return __awaiter(this, void 0, void 0, function* () {
+            yield this.walletSynchronizer.checkPoolTransactions();
+            Logger_1.logger.log('Checking pool transactions ', Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
+        });
+    }
+    sendTransactionInternal(sendTransactionFunc_1, fusion_1) {
+        return __awaiter(this, arguments, void 0, function* (sendTransactionFunc, fusion, relayToNetwork = true) {
             this.currentlyTransacting = true;
             const result = yield sendTransactionFunc();
             if (result.success) {
@@ -1881,7 +1909,7 @@ class WalletBackend extends events_1.EventEmitter {
                 }
                 if (this.shouldPerformAutoOptimize && this.autoOptimize) {
                     this.performAutoOptimize()
-                        .catch(error => this.emit('autoOptimizeError', error));
+                        .catch((error) => this.emit('autoOptimizeError', error));
                 }
             }
             else {
@@ -1942,12 +1970,6 @@ class WalletBackend extends events_1.EventEmitter {
             const startHeight = (0, Utilities_1.getLowerBound)(blockHeight, Constants_1.GLOBAL_INDEXES_OBSCURITY);
             const endHeight = (0, Utilities_1.getUpperBound)(blockHeight, Constants_1.GLOBAL_INDEXES_OBSCURITY);
             return this.daemon.getGlobalIndexesForRange(startHeight, endHeight);
-        });
-    }
-    checkPoolTransactions() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.walletSynchronizer.checkPoolTransactions();
-            Logger_1.logger.log('Checking pool transactions ', Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
         });
     }
     /**

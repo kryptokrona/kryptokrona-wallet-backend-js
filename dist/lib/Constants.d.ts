@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /**
  * What version of the file format are we on (to make it easier to
  * upgrade the wallet format in the future)

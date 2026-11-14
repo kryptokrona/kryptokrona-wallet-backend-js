@@ -1,0 +1,1040 @@
+{
+  "description": "Fork-14 wallet sync (docs/tx-v2.md §9, docs/wallet-v2.md §7.2 E): xkrd RPC answers recorded from an in-process testnet chain (fork 13 at 2, fork 14 at F = 4, grace 3: blocks 5..=7 accept versions 1 and 2, block 8 only 2). Subwallets share the view key. expected lists every output the wallet owns (in sync order: height, coinbase first, then transactions, output index), the spends of those outputs, the summed ScanStats of a view-tag scan with the primary keys, the unspent balance, the tx_versions of the /getinfo snapshots and the wallet's outputs in the pool transaction. Secrets are H_s(\"xkr tx-v2 vectors \" || label). Generated and checked by crates/xkr-rpc/tests/tx_v2_walletsync/.",
+  "expected": {
+    "outputs": [
+      {
+        "amount": 47683714,
+        "global_index": 0,
+        "height": 1,
+        "index": 0,
+        "key": "4586178b86c66630f1833936da919bfb55928c71be9ee710a09bac8df88d1de6",
+        "key_image": "93c1018654592958b5f778a99badd04c1948480182288e854c9519d53fffa6b0",
+        "subwallet": "primary",
+        "tx_hash": "06ed7a629a93b3df7babb2c0320270856507e9598244fcce4f32e42d88a192b9",
+        "view_tag": null
+      },
+      {
+        "amount": 47683668,
+        "global_index": 0,
+        "height": 3,
+        "index": 0,
+        "key": "373b68400c12584f527eda081cefc412c4b9408329c6d820eb8d1300c41025ff",
+        "key_image": "8faab6e5f1ba76266f9a84c5cde001835c606ac8558e65081bbeb00c7e3ac544",
+        "subwallet": "subwallet",
+        "tx_hash": "c96ace756bb6e4798069aee628ce1c799869ceb3e5db0b58a44d683564ad838f",
+        "view_tag": null
+      },
+      {
+        "amount": 47683633,
+        "global_index": 0,
+        "height": 5,
+        "index": 0,
+        "key": "c969b430b3cbde4efef844982e36c5bd6b7840dd1980714a8e4cfeffaafc9475",
+        "key_image": "5278168c0c000e309943d4c03cca9f121a498472d7d120a72b92b61d5292af38",
+        "subwallet": "primary",
+        "tx_hash": "33f83e733e5f59c46158302e71ef446dca1e0b2a91b2bcf5e3c629384bbf586f",
+        "view_tag": "3a"
+      },
+      {
+        "amount": 4,
+        "global_index": 0,
+        "height": 5,
+        "index": 0,
+        "key": "03b6ae51a7913c4fe986ebae927b725b8b8bc667a4e4f0b9034bee5da9ba28b9",
+        "key_image": "8ff55d31897d12d2b2901bee063f834b39ce3efa076904c23579df1476812a54",
+        "subwallet": "primary",
+        "tx_hash": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15",
+        "view_tag": null
+      },
+      {
+        "amount": 700,
+        "global_index": 0,
+        "height": 5,
+        "index": 1,
+        "key": "1e79a171d176c08f949605a798c7b3aa5353567f2085b471ddf04258eacd3748",
+        "key_image": "42997b0a438e9402e41df34c10320c66257fa053b13355e0eca881a365c524d1",
+        "subwallet": "primary",
+        "tx_hash": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15",
+        "view_tag": null
+      },
+      {
+        "amount": 3000,
+        "global_index": 0,
+        "height": 5,
+        "index": 2,
+        "key": "487fd4fb58786a3b5680b1b97672fabe27d1794c9bd8f320fd9d458f0c9dfffa",
+        "key_image": "0b2286b486e368807de9695822c5866628bb0df86d28cd5b939506df8d037828",
+        "subwallet": "primary",
+        "tx_hash": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15",
+        "view_tag": null
+      },
+      {
+        "amount": 80000,
+        "global_index": 0,
+        "height": 5,
+        "index": 3,
+        "key": "886e85afb3300380ce74ee78b613f5403f621e91d2301e31ff544c3389fdd7fe",
+        "key_image": "a8c9f0037948baa718eb7a087808295e3f5d529008a3d06318298c8af9e0b8d4",
+        "subwallet": "primary",
+        "tx_hash": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15",
+        "view_tag": null
+      },
+      {
+        "amount": 600000,
+        "global_index": 0,
+        "height": 5,
+        "index": 4,
+        "key": "4d5a325dc907e336dfb2e53a8a1a38df341a684f81309a79c0be2be850e3ecde",
+        "key_image": "53c04ccf04ddbd5b5bf748a930c397f2b24765b6899673f2b1b72812907cf83b",
+        "subwallet": "primary",
+        "tx_hash": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15",
+        "view_tag": null
+      },
+      {
+        "amount": 6000000,
+        "global_index": 0,
+        "height": 5,
+        "index": 6,
+        "key": "eeb0e88951a26b164baa5310e20daff7ec4f8c51ae708f309d5ac6e77395f14e",
+        "key_image": "eb6609955b12b13c8738192866db1c0450d410562b1a43a9ed1852b23fbf7a35",
+        "subwallet": "primary",
+        "tx_hash": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15",
+        "view_tag": null
+      },
+      {
+        "amount": 40000000,
+        "global_index": 0,
+        "height": 5,
+        "index": 7,
+        "key": "9902b1d2bcff7e1c0aa356b4195ec0cd03e78d3602dfe63a4bbefb5e1d8363e9",
+        "key_image": "1acb3e906b02d6fde7e994056fad87ea222657011fb7aed6e6e20b2c10ab3245",
+        "subwallet": "primary",
+        "tx_hash": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15",
+        "view_tag": null
+      },
+      {
+        "amount": 500000,
+        "global_index": 0,
+        "height": 6,
+        "index": 6,
+        "key": "4bd498acc84b0ec775346cb2c35dd94a8c32bd77d34e96eadc7b3b86cd38d30a",
+        "key_image": "553babaf2146c24fef00dcb6497845cbee34bfa6b800c8db5cf389af4cf0f88d",
+        "subwallet": "subwallet",
+        "tx_hash": "55688ebcf05d7ccd503277bf320ae7cd847d2814b5566bda3b11c2074fe739fe",
+        "view_tag": "9a"
+      },
+      {
+        "amount": 90,
+        "global_index": 0,
+        "height": 8,
+        "index": 0,
+        "key": "df38aeb9b21aa628b733f590de8c4d19faeb0a823c646c6cdae0f72f70d99437",
+        "key_image": "e5f65a5ab23551a7cecaa45702c213623a573664e71e1aec39e94c0377936f6a",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "e5"
+      },
+      {
+        "amount": 900,
+        "global_index": 0,
+        "height": 8,
+        "index": 1,
+        "key": "b11608dc1a46f4a7d4509a8eaf2ddeacafafda7ed27c9030b11a4bcc74cfe0d6",
+        "key_image": "dc6c2fd8f9ff26519abe786759b5490f2a20463f45dd5dd530fc74189de8c70e",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "2e"
+      },
+      {
+        "amount": 9000,
+        "global_index": 0,
+        "height": 8,
+        "index": 2,
+        "key": "66bcf6c9dd4f389cadee2a1b0fd3d2a379dab9c4c3ffde0f827259317a9a107c",
+        "key_image": "d2a1840f85eec8a4ed1a69d197d0b1ff79f46b7089291b52840bdab632c1f86d",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "74"
+      },
+      {
+        "amount": 90000,
+        "global_index": 0,
+        "height": 8,
+        "index": 3,
+        "key": "002534b485a4643c04bafdc290e27855f0c6b2f79eca800f86b9bfe2a0342194",
+        "key_image": "7492e9852dfb408efe5a9c81b30868eaac46e169e4af392c816941a2513dd779",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "e7"
+      },
+      {
+        "amount": 200000,
+        "global_index": 1,
+        "height": 8,
+        "index": 5,
+        "key": "3081b673a41dc4d2770e8f5f9a61901a1481b097d0d48c4ca23d4e3c96e2253f",
+        "key_image": "8dea3377432303c7ed31c928af1864a855e6a4206998faac19376be5eaa6d434",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "dd"
+      }
+    ],
+    "pool_outputs": [
+      {
+        "amount": 90,
+        "global_index": null,
+        "height": 0,
+        "index": 0,
+        "key": "df38aeb9b21aa628b733f590de8c4d19faeb0a823c646c6cdae0f72f70d99437",
+        "key_image": "e5f65a5ab23551a7cecaa45702c213623a573664e71e1aec39e94c0377936f6a",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "e5"
+      },
+      {
+        "amount": 900,
+        "global_index": null,
+        "height": 0,
+        "index": 1,
+        "key": "b11608dc1a46f4a7d4509a8eaf2ddeacafafda7ed27c9030b11a4bcc74cfe0d6",
+        "key_image": "dc6c2fd8f9ff26519abe786759b5490f2a20463f45dd5dd530fc74189de8c70e",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "2e"
+      },
+      {
+        "amount": 9000,
+        "global_index": null,
+        "height": 0,
+        "index": 2,
+        "key": "66bcf6c9dd4f389cadee2a1b0fd3d2a379dab9c4c3ffde0f827259317a9a107c",
+        "key_image": "d2a1840f85eec8a4ed1a69d197d0b1ff79f46b7089291b52840bdab632c1f86d",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "74"
+      },
+      {
+        "amount": 90000,
+        "global_index": null,
+        "height": 0,
+        "index": 3,
+        "key": "002534b485a4643c04bafdc290e27855f0c6b2f79eca800f86b9bfe2a0342194",
+        "key_image": "7492e9852dfb408efe5a9c81b30868eaac46e169e4af392c816941a2513dd779",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "e7"
+      },
+      {
+        "amount": 200000,
+        "global_index": null,
+        "height": 0,
+        "index": 5,
+        "key": "3081b673a41dc4d2770e8f5f9a61901a1481b097d0d48c4ca23d4e3c96e2253f",
+        "key_image": "8dea3377432303c7ed31c928af1864a855e6a4206998faac19376be5eaa6d434",
+        "subwallet": "primary",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+        "view_tag": "dd"
+      }
+    ],
+    "scan_stats": {
+      "full_checks": 19,
+      "outputs": 40,
+      "skipped_by_tag": 21,
+      "tagged": 28
+    },
+    "spent": [
+      {
+        "height": 5,
+        "key_image": "93c1018654592958b5f778a99badd04c1948480182288e854c9519d53fffa6b0",
+        "tx_hash": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15"
+      },
+      {
+        "height": 8,
+        "key_image": "553babaf2146c24fef00dcb6497845cbee34bfa6b800c8db5cf389af4cf0f88d",
+        "tx_hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364"
+      }
+    ],
+    "tx_versions": [
+      [
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2
+      ]
+    ],
+    "unspent_balance": 142350995
+  },
+  "fork13_height": 2,
+  "fork14_grace": 3,
+  "fork14_height": 4,
+  "get_global_indexes_for_range": {
+    "path": "/get_global_indexes_for_range",
+    "request": {
+      "endHeight": 9,
+      "startHeight": 1
+    },
+    "response": {
+      "indexes": [
+        {
+          "key": "06ed7a629a93b3df7babb2c0320270856507e9598244fcce4f32e42d88a192b9",
+          "value": [
+            0
+          ]
+        },
+        {
+          "key": "fce3966c08b0da448e5da43e17f659f3493c3fd3b17f16dcfc546226881a475e",
+          "value": [
+            0
+          ]
+        },
+        {
+          "key": "c96ace756bb6e4798069aee628ce1c799869ceb3e5db0b58a44d683564ad838f",
+          "value": [
+            0
+          ]
+        },
+        {
+          "key": "b5365083ee9815ee6774feb69dcda12a82f7600322b2eac71ccf7bdcf25e117d",
+          "value": [
+            0
+          ]
+        },
+        {
+          "key": "33f83e733e5f59c46158302e71ef446dca1e0b2a91b2bcf5e3c629384bbf586f",
+          "value": [
+            0
+          ]
+        },
+        {
+          "key": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15",
+          "value": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "key": "ffe7adc3ca1125af6c912b3326f908ecb8eb3d0ae713eac7dd2424a94b372968",
+          "value": [
+            0
+          ]
+        },
+        {
+          "key": "55688ebcf05d7ccd503277bf320ae7cd847d2814b5566bda3b11c2074fe739fe",
+          "value": [
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "key": "6ce7d4cf47e19e3033e6afce1f14d2cd8e5795cbb3b8fffa20b69ec538b9df0a",
+          "value": [
+            0,
+            0,
+            1,
+            2,
+            2,
+            1,
+            1,
+            1,
+            2
+          ]
+        },
+        {
+          "key": "44f47cc3bd0c21ae3ddddef93b1e3ac7dcdabb1ffd65124f82e0714b506ad144",
+          "value": [
+            0
+          ]
+        },
+        {
+          "key": "8ff4b576059f3c309450bebc9aab7568c5c36d25eec7de558ba5deca271ba74b",
+          "value": [
+            0
+          ]
+        },
+        {
+          "key": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+          "value": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "status": "OK"
+    }
+  },
+  "get_pool_changes_lite": {
+    "path": "/get_pool_changes_lite",
+    "request": {
+      "knownTxsIds": [],
+      "tailBlockId": "c808ef264c10432f3c3353a192b8db11009a65b2afb749b28270a70ab14d7b5e"
+    },
+    "response": {
+      "addedTxs": [
+        {
+          "transactionPrefixInfo.txHash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+          "transactionPrefixInfo.txPrefix": {
+            "extra": "0126a0153961f8800743bff66525b80e241d25b319c00eb665efa3a3503cfaad1b",
+            "unlock_time": 0,
+            "version": 2,
+            "vin": [
+              {
+                "type": "02",
+                "value": {
+                  "amount": 500000,
+                  "k_image": "553babaf2146c24fef00dcb6497845cbee34bfa6b800c8db5cf389af4cf0f88d",
+                  "key_offsets": [
+                    0,
+                    1
+                  ]
+                }
+              }
+            ],
+            "vout": [
+              {
+                "amount": 90,
+                "target": {
+                  "data": {
+                    "key": "df38aeb9b21aa628b733f590de8c4d19faeb0a823c646c6cdae0f72f70d99437",
+                    "view_tag": "e5"
+                  },
+                  "type": "03"
+                }
+              },
+              {
+                "amount": 900,
+                "target": {
+                  "data": {
+                    "key": "b11608dc1a46f4a7d4509a8eaf2ddeacafafda7ed27c9030b11a4bcc74cfe0d6",
+                    "view_tag": "2e"
+                  },
+                  "type": "03"
+                }
+              },
+              {
+                "amount": 9000,
+                "target": {
+                  "data": {
+                    "key": "66bcf6c9dd4f389cadee2a1b0fd3d2a379dab9c4c3ffde0f827259317a9a107c",
+                    "view_tag": "74"
+                  },
+                  "type": "03"
+                }
+              },
+              {
+                "amount": 90000,
+                "target": {
+                  "data": {
+                    "key": "002534b485a4643c04bafdc290e27855f0c6b2f79eca800f86b9bfe2a0342194",
+                    "view_tag": "e7"
+                  },
+                  "type": "03"
+                }
+              },
+              {
+                "amount": 200000,
+                "target": {
+                  "data": {
+                    "key": "f0ea6298b798c12eb85c3db3952a8b9dc23e233a5e77c458035a836f6d130b0b",
+                    "view_tag": "1a"
+                  },
+                  "type": "03"
+                }
+              },
+              {
+                "amount": 200000,
+                "target": {
+                  "data": {
+                    "key": "3081b673a41dc4d2770e8f5f9a61901a1481b097d0d48c4ca23d4e3c96e2253f",
+                    "view_tag": "dd"
+                  },
+                  "type": "03"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "deletedTxsIds": [],
+      "isTailBlockActual": true,
+      "status": "OK"
+    }
+  },
+  "getinfo": [
+    {
+      "path": "/getinfo",
+      "request": {},
+      "response": {
+        "alt_blocks_count": 0,
+        "difficulty": 1,
+        "fork_readiness": 0.0,
+        "grey_peerlist_size": 0,
+        "hashrate": 0,
+        "height": 4,
+        "hyper_connections_count": 0,
+        "incoming_connections_count": 0,
+        "last_known_block_index": 3,
+        "major_version": 6,
+        "minor_version": 0,
+        "network_height": 4,
+        "outgoing_connections_count": 0,
+        "pruning_seed": 0,
+        "start_time": 0,
+        "status": "OK",
+        "supported_height": 4,
+        "synced": true,
+        "testnet": true,
+        "tx_count": 0,
+        "tx_pool_size": 0,
+        "tx_versions": [
+          1
+        ],
+        "upgrade_heights": [
+          187000,
+          350000,
+          440000,
+          620000,
+          700000,
+          800000,
+          1000000,
+          1200000,
+          1300000,
+          1400000,
+          1600000,
+          1800000,
+          2200000,
+          2,
+          4
+        ],
+        "version": "xkr-vectors",
+        "white_peerlist_size": 0
+      }
+    },
+    {
+      "path": "/getinfo",
+      "request": {},
+      "response": {
+        "alt_blocks_count": 0,
+        "difficulty": 1,
+        "fork_readiness": null,
+        "grey_peerlist_size": 0,
+        "hashrate": 0,
+        "height": 5,
+        "hyper_connections_count": 0,
+        "incoming_connections_count": 0,
+        "last_known_block_index": 4,
+        "major_version": 6,
+        "minor_version": 0,
+        "network_height": 5,
+        "outgoing_connections_count": 0,
+        "pruning_seed": 0,
+        "start_time": 0,
+        "status": "OK",
+        "supported_height": 4,
+        "synced": true,
+        "testnet": true,
+        "tx_count": 0,
+        "tx_pool_size": 0,
+        "tx_versions": [
+          1,
+          2
+        ],
+        "upgrade_heights": [
+          187000,
+          350000,
+          440000,
+          620000,
+          700000,
+          800000,
+          1000000,
+          1200000,
+          1300000,
+          1400000,
+          1600000,
+          1800000,
+          2200000,
+          2,
+          4
+        ],
+        "version": "xkr-vectors",
+        "white_peerlist_size": 0
+      }
+    },
+    {
+      "path": "/getinfo",
+      "request": {},
+      "response": {
+        "alt_blocks_count": 0,
+        "difficulty": 1,
+        "fork_readiness": null,
+        "grey_peerlist_size": 0,
+        "hashrate": 0,
+        "height": 8,
+        "hyper_connections_count": 0,
+        "incoming_connections_count": 0,
+        "last_known_block_index": 7,
+        "major_version": 7,
+        "minor_version": 0,
+        "network_height": 8,
+        "outgoing_connections_count": 0,
+        "pruning_seed": 0,
+        "start_time": 0,
+        "status": "OK",
+        "supported_height": 4,
+        "synced": true,
+        "testnet": true,
+        "tx_count": 3,
+        "tx_pool_size": 1,
+        "tx_versions": [
+          2
+        ],
+        "upgrade_heights": [
+          187000,
+          350000,
+          440000,
+          620000,
+          700000,
+          800000,
+          1000000,
+          1200000,
+          1300000,
+          1400000,
+          1600000,
+          1800000,
+          2200000,
+          2,
+          4
+        ],
+        "version": "xkr-vectors",
+        "white_peerlist_size": 0
+      }
+    }
+  ],
+  "getwalletsyncdata": {
+    "path": "/getwalletsyncdata",
+    "request": {
+      "blockCount": 100,
+      "blockHashCheckpoints": [],
+      "startHeight": 1,
+      "startTimestamp": 0
+    },
+    "response": {
+      "items": [
+        {
+          "blockHash": "180d08c2233a15fda64724a9b65a174d06dfdf983b271bb0775d8e03aa1a117d",
+          "blockHeight": 1,
+          "blockTimestamp": 1750000030,
+          "coinbaseTX": {
+            "hash": "06ed7a629a93b3df7babb2c0320270856507e9598244fcce4f32e42d88a192b9",
+            "outputs": [
+              {
+                "amount": 47683714,
+                "key": "4586178b86c66630f1833936da919bfb55928c71be9ee710a09bac8df88d1de6"
+              }
+            ],
+            "txPublicKey": "56728ff57461e1ffb1906689ae01309f7f3e6130346e62088634e9eeb4e378e0",
+            "unlockTime": 2
+          },
+          "transactions": []
+        },
+        {
+          "blockHash": "a22bb69b9fd23f7510da16c2d921de2aa29ef2e2d4294968e3ffcba5ef4c79c5",
+          "blockHeight": 2,
+          "blockTimestamp": 1750000060,
+          "coinbaseTX": {
+            "hash": "fce3966c08b0da448e5da43e17f659f3493c3fd3b17f16dcfc546226881a475e",
+            "outputs": [
+              {
+                "amount": 47683691,
+                "key": "f2ef8e080b44f95175ed04721abfbf9dc1b5c7a2a268da710b8075df6cc51d34"
+              }
+            ],
+            "txPublicKey": "9725e09da2a57e8d7aa6e77bf8b07addd0ffedac86ec0b276b6d40a31b7c716f",
+            "unlockTime": 3
+          },
+          "transactions": []
+        },
+        {
+          "blockHash": "612fbbdee1d86814610064531cdb13f5bc9fb4254258967c6b7c668d9347d727",
+          "blockHeight": 3,
+          "blockTimestamp": 1750000090,
+          "coinbaseTX": {
+            "hash": "c96ace756bb6e4798069aee628ce1c799869ceb3e5db0b58a44d683564ad838f",
+            "outputs": [
+              {
+                "amount": 47683668,
+                "key": "373b68400c12584f527eda081cefc412c4b9408329c6d820eb8d1300c41025ff"
+              }
+            ],
+            "txPublicKey": "3317b862b6409defffff842d2f7e676f0c98a6af5701163adeb5195224ef2222",
+            "unlockTime": 4
+          },
+          "transactions": []
+        },
+        {
+          "blockHash": "1606c5ab232fbc82360dfa13ba2960adf73cfa567c2633b74fe615e101ddfb96",
+          "blockHeight": 4,
+          "blockTimestamp": 1750000120,
+          "coinbaseTX": {
+            "hash": "b5365083ee9815ee6774feb69dcda12a82f7600322b2eac71ccf7bdcf25e117d",
+            "outputs": [
+              {
+                "amount": 47683646,
+                "key": "fb96f762eb7aebe4783b92f947e545494b917fb065f4dea3fbfcc13e6c371e59"
+              }
+            ],
+            "txPublicKey": "c52fc864c22802ec1a45cb5f22310d25cd34371b200cc8ecfac7eaaa15ca9784",
+            "unlockTime": 5
+          },
+          "transactions": []
+        },
+        {
+          "blockHash": "17d4de31afb8ce0c165ecb3c937e60c492335438198ef7ab6a44b3a56d61e4ab",
+          "blockHeight": 5,
+          "blockTimestamp": 1750000150,
+          "coinbaseTX": {
+            "hash": "33f83e733e5f59c46158302e71ef446dca1e0b2a91b2bcf5e3c629384bbf586f",
+            "outputs": [
+              {
+                "amount": 47683633,
+                "key": "c969b430b3cbde4efef844982e36c5bd6b7840dd1980714a8e4cfeffaafc9475",
+                "view_tag": "3a"
+              }
+            ],
+            "txPublicKey": "7ceab7afdf58858b10f67b71810d3850823510eee3842bd662d37b6af3ec0b70",
+            "unlockTime": 6
+          },
+          "transactions": [
+            {
+              "hash": "98af685824135838c3491d399e692cb4b53cdfd38901dbcba1029c0e04a97d15",
+              "inputs": [
+                {
+                  "amount": 47683714,
+                  "k_image": "93c1018654592958b5f778a99badd04c1948480182288e854c9519d53fffa6b0",
+                  "key_offsets": [
+                    0
+                  ]
+                }
+              ],
+              "outputs": [
+                {
+                  "amount": 4,
+                  "key": "03b6ae51a7913c4fe986ebae927b725b8b8bc667a4e4f0b9034bee5da9ba28b9"
+                },
+                {
+                  "amount": 700,
+                  "key": "1e79a171d176c08f949605a798c7b3aa5353567f2085b471ddf04258eacd3748"
+                },
+                {
+                  "amount": 3000,
+                  "key": "487fd4fb58786a3b5680b1b97672fabe27d1794c9bd8f320fd9d458f0c9dfffa"
+                },
+                {
+                  "amount": 80000,
+                  "key": "886e85afb3300380ce74ee78b613f5403f621e91d2301e31ff544c3389fdd7fe"
+                },
+                {
+                  "amount": 600000,
+                  "key": "4d5a325dc907e336dfb2e53a8a1a38df341a684f81309a79c0be2be850e3ecde"
+                },
+                {
+                  "amount": 1000000,
+                  "key": "85cb47997b2b3a69df2f7d84988d3d78d450132dbe00a5983db7a0aeaee7b518"
+                },
+                {
+                  "amount": 6000000,
+                  "key": "eeb0e88951a26b164baa5310e20daff7ec4f8c51ae708f309d5ac6e77395f14e"
+                },
+                {
+                  "amount": 40000000,
+                  "key": "9902b1d2bcff7e1c0aa356b4195ec0cd03e78d3602dfe63a4bbefb5e1d8363e9"
+                }
+              ],
+              "paymentID": "",
+              "txPublicKey": "cabf9cf4397ab78031e9fa0b0cabb7d36fac6a7e0a077e26533a805fc3de691f",
+              "unlockTime": 0
+            }
+          ]
+        },
+        {
+          "blockHash": "a5602ae956889fb316e3d2de0dcac71ac0d824a1922d31f2f1f93cae6322801a",
+          "blockHeight": 6,
+          "blockTimestamp": 1750000180,
+          "coinbaseTX": {
+            "hash": "ffe7adc3ca1125af6c912b3326f908ecb8eb3d0ae713eac7dd2424a94b372968",
+            "outputs": [
+              {
+                "amount": 47683620,
+                "key": "f91d5fcc9cc1f8c616c56fcf94b2292a312f3591a9563bfb3845ad03e1fd32bd",
+                "view_tag": "f0"
+              }
+            ],
+            "txPublicKey": "4474e22c6c5359bbc1188e0dc855f12d24494a2eabae2e8731a7650992b11d14",
+            "unlockTime": 7
+          },
+          "transactions": [
+            {
+              "hash": "55688ebcf05d7ccd503277bf320ae7cd847d2814b5566bda3b11c2074fe739fe",
+              "inputs": [
+                {
+                  "amount": 47683691,
+                  "k_image": "b89551698cb5b3d8e908729adb86f881b7ba3d8552decce3eec88cc06f786955",
+                  "key_offsets": [
+                    0
+                  ]
+                }
+              ],
+              "outputs": [
+                {
+                  "amount": 1,
+                  "key": "8aa14c808ade655c089f8fbe3a07c3a0067c7d5436694b9bcfe4921ae025bfc2",
+                  "view_tag": "b6"
+                },
+                {
+                  "amount": 80,
+                  "key": "b40677b941ad75203666a48e5511956ec68268e0e7d3929f38c2b811296cbca9",
+                  "view_tag": "13"
+                },
+                {
+                  "amount": 600,
+                  "key": "2cad4cfffbbf543f2111a2aa2b41b3edd99d1a939579e5475913b203ff09fd4c",
+                  "view_tag": "d2"
+                },
+                {
+                  "amount": 3000,
+                  "key": "8f79bbae07a57806a3871da1a8f0c82a2ea3c6b68cb392577f190ccfb1cba9f3",
+                  "view_tag": "97"
+                },
+                {
+                  "amount": 80000,
+                  "key": "9ed19ff2d54a0c9bdbb2ff9ff0461bca10a66e8d0336bbdc3f9271f3136db4e2",
+                  "view_tag": "22"
+                },
+                {
+                  "amount": 100000,
+                  "key": "648d96f96bcbd181b28c3736d5a9c8300af110cb8127c05a4d251205c9aa9ec4",
+                  "view_tag": "cb"
+                },
+                {
+                  "amount": 500000,
+                  "key": "4bd498acc84b0ec775346cb2c35dd94a8c32bd77d34e96eadc7b3b86cd38d30a",
+                  "view_tag": "9a"
+                },
+                {
+                  "amount": 7000000,
+                  "key": "e5df09bf27567e3b719b8b9ce6dcfce37c7e49fdea86e18497e7bd680f96ca89",
+                  "view_tag": "0f"
+                },
+                {
+                  "amount": 40000000,
+                  "key": "77ab771af1b63f8f54b300b921311f79e8feef844807b0e7b2c787aecc02ecc0",
+                  "view_tag": "98"
+                }
+              ],
+              "paymentID": "",
+              "txPublicKey": "c197b71cbe85b820c674299f0f0416635ca42656275f4c0f126d049ee79bb8eb",
+              "unlockTime": 0
+            },
+            {
+              "hash": "6ce7d4cf47e19e3033e6afce1f14d2cd8e5795cbb3b8fffa20b69ec538b9df0a",
+              "inputs": [
+                {
+                  "amount": 47683646,
+                  "k_image": "71e7e782f1dae7aa5abb7787ea2bb53bd7b5761063d019eac66b6b70b20992af",
+                  "key_offsets": [
+                    0
+                  ]
+                }
+              ],
+              "outputs": [
+                {
+                  "amount": 6,
+                  "key": "093aa8f40fc600a1ae29734cad5d547da48260c7e9eed26630467f520d940236",
+                  "view_tag": "3a"
+                },
+                {
+                  "amount": 30,
+                  "key": "2181b1ea384b5d44491c1f773318042c68a9d199ba647604a90078d96f387474",
+                  "view_tag": "85"
+                },
+                {
+                  "amount": 600,
+                  "key": "3be0f1c499a44661a5aad587795a598c1ee83c09a3677d91ed8a32498667fb98",
+                  "view_tag": "32"
+                },
+                {
+                  "amount": 3000,
+                  "key": "5f64942db8f5938eaa72da28c3fe63355b3333fff745d8f00be566a4c10983ae",
+                  "view_tag": "bc"
+                },
+                {
+                  "amount": 80000,
+                  "key": "352d3effc9018f9923e1971c4d75f505ec53878457736b04af4bb8e4df61efe1",
+                  "view_tag": "a2"
+                },
+                {
+                  "amount": 100000,
+                  "key": "8c2a196c626f92119c68586cc72e359fc6c1668e019ddf84c9899cbabae773f9",
+                  "view_tag": "2a"
+                },
+                {
+                  "amount": 500000,
+                  "key": "6937c31ea6f8b21beac65672e1e9db8c5dacc0cd1eb07a376621832922464fa5",
+                  "view_tag": "7c"
+                },
+                {
+                  "amount": 7000000,
+                  "key": "ea0a41aa271ad0835bcaf56d41d1de0930119401c2c54bafe6d671925cda5773",
+                  "view_tag": "48"
+                },
+                {
+                  "amount": 40000000,
+                  "key": "947261b872dd5a61f748b64f922ec2498aae2298282179c93e1c70015b6dfe06",
+                  "view_tag": "92"
+                }
+              ],
+              "paymentID": "",
+              "txPublicKey": "61928ca07ae9d5743ea23159a69dc995221277b3a74859c4a317832320c3311d",
+              "unlockTime": 0
+            }
+          ]
+        },
+        {
+          "blockHash": "c808ef264c10432f3c3353a192b8db11009a65b2afb749b28270a70ab14d7b5e",
+          "blockHeight": 7,
+          "blockTimestamp": 1750000210,
+          "coinbaseTX": {
+            "hash": "44f47cc3bd0c21ae3ddddef93b1e3ac7dcdabb1ffd65124f82e0714b506ad144",
+            "outputs": [
+              {
+                "amount": 47683577,
+                "key": "a0fbd9fb8f8dda744c602e2ad19bc6e390a2792a816fd5488fb50ed905afbba8",
+                "view_tag": "78"
+              }
+            ],
+            "txPublicKey": "fc2db48252b31aa7b5d81fd4c188a8d7c509a61047770d9e0be033b0a6ec0a0a",
+            "unlockTime": 8
+          },
+          "transactions": []
+        },
+        {
+          "blockHash": "0535650eb12d7c80a677a04ad9cbc5a4f2fdfac126af450c0ef7339ababe6891",
+          "blockHeight": 8,
+          "blockTimestamp": 1750000240,
+          "coinbaseTX": {
+            "hash": "8ff4b576059f3c309450bebc9aab7568c5c36d25eec7de558ba5deca271ba74b",
+            "outputs": [
+              {
+                "amount": 47683565,
+                "key": "c0647944d249ab43c287e85f020cb878d8d20bb93b2b75bf86c6f88daefd2a2b",
+                "view_tag": "e7"
+              }
+            ],
+            "txPublicKey": "9e7f04b6a9ae54a1ead43e87e02f26c3706db176ebea05d2e0ed71ce8a4e9b85",
+            "unlockTime": 9
+          },
+          "transactions": [
+            {
+              "hash": "d60c475268acfe0dd1983c55d48480855c51f689135e23e66efb0ca70c8f6364",
+              "inputs": [
+                {
+                  "amount": 500000,
+                  "k_image": "553babaf2146c24fef00dcb6497845cbee34bfa6b800c8db5cf389af4cf0f88d",
+                  "key_offsets": [
+                    0,
+                    1
+                  ]
+                }
+              ],
+              "outputs": [
+                {
+                  "amount": 90,
+                  "key": "df38aeb9b21aa628b733f590de8c4d19faeb0a823c646c6cdae0f72f70d99437",
+                  "view_tag": "e5"
+                },
+                {
+                  "amount": 900,
+                  "key": "b11608dc1a46f4a7d4509a8eaf2ddeacafafda7ed27c9030b11a4bcc74cfe0d6",
+                  "view_tag": "2e"
+                },
+                {
+                  "amount": 9000,
+                  "key": "66bcf6c9dd4f389cadee2a1b0fd3d2a379dab9c4c3ffde0f827259317a9a107c",
+                  "view_tag": "74"
+                },
+                {
+                  "amount": 90000,
+                  "key": "002534b485a4643c04bafdc290e27855f0c6b2f79eca800f86b9bfe2a0342194",
+                  "view_tag": "e7"
+                },
+                {
+                  "amount": 200000,
+                  "key": "f0ea6298b798c12eb85c3db3952a8b9dc23e233a5e77c458035a836f6d130b0b",
+                  "view_tag": "1a"
+                },
+                {
+                  "amount": 200000,
+                  "key": "3081b673a41dc4d2770e8f5f9a61901a1481b097d0d48c4ca23d4e3c96e2253f",
+                  "view_tag": "dd"
+                }
+              ],
+              "paymentID": "",
+              "txPublicKey": "26a0153961f8800743bff66525b80e241d25b319c00eb665efa3a3503cfaad1b",
+              "unlockTime": 0
+            }
+          ]
+        }
+      ],
+      "status": "OK"
+    }
+  },
+  "network": "testnet",
+  "scenario": [
+    "1: v5 block, v1 coinbase to primary",
+    "2: v5 block, v1 coinbase to x",
+    "3: v6 block, v1 coinbase to subwallet",
+    "4 = F: v6 block, v1 coinbase to y",
+    "5: v7 block, v2 coinbase to primary; t1 (v1, grace): primary spends its coinbase of 1, 1 000 000 to z, change to primary",
+    "6: v7 block, v2 coinbase to z; t2 (v2): x pays 500 000 to subwallet, change to x; t3 (v2): y pays 500 000 to z, change to y",
+    "7: v7 block, v2 coinbase to z",
+    "8 = F + 4: v7 block, v2 coinbase to z; t4 (v2, ring 2 with t3's output as decoy, first seen in the pool): subwallet spends its 500 000, 200 000 to z, change to primary"
+  ],
+  "subwallets": [
+    {
+      "address": "SEKReVZX1rrHQsWgJAiRnT79GtyRP5P4NDb5bD1suFCqWefixQ5pfd7765F6Xvi9Nt7RstHJwfvRFP8czSfhVqtjBr7Dow2KdA7",
+      "name": "primary",
+      "spend_public": "7118e6bb621e4c1acaf3c78424b97ba6d8545d5b4b41947610342fe6b1432ec8",
+      "spend_secret": "9bd5fe2241fbfc11ed063aa26055759d1dda76a644eb47dd5b9afe349d009302",
+      "view_public": "805b10be24650423ce216bcd266f9d77b3f8066284509ef8e8de02d840d91964",
+      "view_secret": "3303ba43e89def3a0dc7ade2ae5bc90b63712fc51fb3e33424e68f5e12d04206"
+    },
+    {
+      "address": "SEKReWFLyTsQiNRrcLVwqy6SWjMN7ymiUSCYKZBFN8BMVpjb74Wjqho765F6Xvi9Nt7RstHJwfvRFP8czSfhVqtjBr7DowjnsXi",
+      "name": "subwallet",
+      "spend_public": "8bf60c2e8dc5b93621d723602085dae171e1c9d596a79f15cdaef8bcac524ced",
+      "spend_secret": "7276a78321cd035a68a36769965acdd6c9f49651dfcdd9af91fed04935201f0f",
+      "view_public": "805b10be24650423ce216bcd266f9d77b3f8066284509ef8e8de02d840d91964",
+      "view_secret": "3303ba43e89def3a0dc7ade2ae5bc90b63712fc51fb3e33424e68f5e12d04206"
+    }
+  ]
+}

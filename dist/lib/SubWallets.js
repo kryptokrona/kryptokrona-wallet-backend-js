@@ -47,43 +47,6 @@ class SubWallets {
         newSubWallets.initKeyImageMap();
         return newSubWallets;
     }
-    constructor(config, isViewWallet, privateViewKey, publicSpendKeys, subWallets) {
-        /**
-         * The public spend keys this wallet contains. Used for verifying if a
-         * transaction is ours.
-         */
-        this.publicSpendKeys = [];
-        /**
-         * Mapping of public spend key to subwallet
-         */
-        this.subWallets = new Map();
-        /**
-         * Our transactions
-         */
-        this.transactions = [];
-        /**
-         * Transactions we sent, but haven't been confirmed yet
-         */
-        this.lockedTransactions = [];
-        /**
-         * Transactions we have already checked
-         */
-        this.knownTransactions = [];
-        /**
-         * A mapping of transaction hashes, to transaction private keys
-         */
-        this.transactionPrivateKeys = new Map();
-        /**
-         * A mapping of key images to the subwallet public spend key that owns them
-         */
-        this.keyImageOwners = new Map();
-        this.config = new Config_1.Config();
-        this.config = config;
-        this.isViewWallet = isViewWallet;
-        this.privateViewKey = privateViewKey;
-        this.publicSpendKeys = publicSpendKeys;
-        this.subWallets = subWallets;
-    }
     /**
      * @param config
      * @param address
@@ -106,6 +69,43 @@ class SubWallets {
             subWallets.set(decodedAddress.spend.publicKey, subWallet);
             return new SubWallets(config, privateSpendKey === undefined, privateViewKey, publicSpendKeys, subWallets);
         });
+    }
+    constructor(config, isViewWallet, privateViewKey, publicSpendKeys, subWallets) {
+        /**
+         * Transactions we have already checked
+         */
+        this.knownTransactions = [];
+        /**
+         * The public spend keys this wallet contains. Used for verifying if a
+         * transaction is ours.
+         */
+        this.publicSpendKeys = [];
+        /**
+         * Mapping of public spend key to subwallet
+         */
+        this.subWallets = new Map();
+        /**
+         * Our transactions
+         */
+        this.transactions = [];
+        /**
+         * Transactions we sent, but haven't been confirmed yet
+         */
+        this.lockedTransactions = [];
+        /**
+         * A mapping of transaction hashes, to transaction private keys
+         */
+        this.transactionPrivateKeys = new Map();
+        /**
+         * A mapping of key images to the subwallet public spend key that owns them
+         */
+        this.keyImageOwners = new Map();
+        this.config = new Config_1.Config();
+        this.config = config;
+        this.isViewWallet = isViewWallet;
+        this.privateViewKey = privateViewKey;
+        this.publicSpendKeys = publicSpendKeys;
+        this.subWallets = subWallets;
     }
     initKeyImageMap() {
         for (const [publicKey, subWallet] of this.subWallets) {
@@ -594,8 +594,8 @@ class SubWallets {
      * if you want to avoid fetching every transactions repeatedly when nothing
      * has changed.
      */
-    getNumTransactions(address, includeFusions = true) {
-        return __awaiter(this, void 0, void 0, function* () {
+    getNumTransactions(address_1) {
+        return __awaiter(this, arguments, void 0, function* (address, includeFusions = true) {
             return (yield this.getTransactions(address, includeFusions)).length;
         });
     }
@@ -603,8 +603,8 @@ class SubWallets {
      * Get the unconfirmed transactions of the given subwallet address. If no subwallet address
      * is given, gets all unconfirmed transactions.
      */
-    getUnconfirmedTransactions(address, includeFusions = true) {
-        return __awaiter(this, void 0, void 0, function* () {
+    getUnconfirmedTransactions(address_1) {
+        return __awaiter(this, arguments, void 0, function* (address, includeFusions = true) {
             return this.filterTransactions(this.lockedTransactions, address, includeFusions);
         });
     }
@@ -693,7 +693,7 @@ class SubWallets {
             this.subWallets.delete(publicSpendKey);
             this.deleteAddressTransactions(this.transactions, publicSpendKey);
             this.deleteAddressTransactions(this.lockedTransactions, publicSpendKey);
-            this.publicSpendKeys = this.publicSpendKeys.filter(elem => elem != publicSpendKey);
+            this.publicSpendKeys = this.publicSpendKeys.filter((elem) => elem !== publicSpendKey);
             return WalletError_1.SUCCESS;
         });
     }
@@ -716,8 +716,8 @@ class SubWallets {
             return false;
         });
     }
-    filterTransactions(txs, address, includeFusions = true) {
-        return __awaiter(this, void 0, void 0, function* () {
+    filterTransactions(txs_1, address_1) {
+        return __awaiter(this, arguments, void 0, function* (txs, address, includeFusions = true) {
             const filters = [];
             if (address) {
                 const [, publicSpendKey] = yield (0, Utilities_1.addressToKeys)(address, this.config);

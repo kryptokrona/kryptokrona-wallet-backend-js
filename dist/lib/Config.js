@@ -3,7 +3,8 @@
 //
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MergeConfig = exports.Config = void 0;
+exports.Config = void 0;
+exports.MergeConfig = MergeConfig;
 const MixinLimits_1 = require("./MixinLimits");
 const version = require('../../package.json').version;
 /**
@@ -78,7 +79,8 @@ class Config {
          * is 500 atomic units. The fee per byte is 500 / chunk size. */
         this.minimumFeePerByte = 500.00 / this.feePerByteChunkSize;
         /**
-         * Mapping of height to mixin maximum and mixin minimum
+         * Mapping of height to mixin maximum and mixin minimum. The limits apply
+         * to transaction versions 1 and 2 alike.
          */
         this.mixinLimits = new MixinLimits_1.MixinLimits([
             /* Height: 440,000, minMixin: 0, maxMixin: 100, defaultMixin: 3 */
@@ -87,6 +89,9 @@ class Config {
             new MixinLimits_1.MixinLimit(620000, 7),
             /* At height of 800000, static mixin of 3 */
             new MixinLimits_1.MixinLimit(800000, 3),
+            /* Height: 1,250,000, minMixin: 1, maxMixin: 5, defaultMixin: 5
+               (MIXIN_LIMITS_V4_HEIGHT) */
+            new MixinLimits_1.MixinLimit(1250000, 1, 5, 5),
         ], 3 /* Default mixin of 3 before block 440,000 */);
         /**
          * The length of a standard address for your coin
@@ -170,6 +175,23 @@ class Config {
         */
         this.generateKeys = undefined;
         /**
+         * A replacement function for the view tag of an output (transaction version 2).
+         */
+        this.deriveViewTag = undefined;
+        /**
+         * A replacement function for single-key CLSAG signing (transaction version 2).
+         */
+        this.clsagSign = undefined;
+        /**
+         * A replacement function for single-key CLSAG verification (transaction version 2).
+         */
+        this.clsagVerify = undefined;
+        /**
+         * The transaction version to build (1 or 2). Undefined: the highest version
+         * the daemon accepts that the loaded cryptographic library supports.
+         */
+        this.transactionVersion = undefined;
+        /**
          * The amount of memory to use storing downloaded blocks - 50MB
          */
         this.blockStoreMemoryLimit = 1024 * 1024 * 50;
@@ -222,4 +244,3 @@ function MergeConfig(config, currentConfig = new Config()) {
     }
     return finalConfig;
 }
-exports.MergeConfig = MergeConfig;

@@ -338,19 +338,29 @@ export function getTransactionFee(
     return numChunks * feePerByte * tempConfig.feePerByteChunkSize;
 }
 
+/**
+ * Estimates the size of a transaction in bytes.
+ *
+ * Version 1 signs each input with a ring signature of 64 bytes per ring
+ * member. Version 2 signs each input with a CLSAG of 32 bytes per ring member
+ * plus 32 bytes, and each output carries one extra byte (the view tag).
+ */
 export function estimateTransactionSize(
     mixin: number,
     numInputs: number,
     numOutputs: number,
     havePaymentID: boolean,
-    extraDataSize: number): number {
+    extraDataSize: number,
+    transactionVersion: number = 1): number {
 
     const KEY_IMAGE_SIZE: number = 32;
     const OUTPUT_KEY_SIZE: number = 32;
     const AMOUNT_SIZE = 8 + 2; // varint
-    const GLOBAL_INDEXES_VECTOR_SIZE_SIZE: number = 1 // varint
+    const GLOBAL_INDEXES_VECTOR_SIZE_SIZE: number = 1; // varint
     const GLOBAL_INDEXES_INITIAL_VALUE_SIZE: number = 4; // varint
     const SIGNATURE_SIZE: number = 64;
+    const CLSAG_SCALAR_SIZE: number = 32;
+    const VIEW_TAG_SIZE: number = transactionVersion >= 2 ? 1 : 0;
     const EXTRA_TAG_SIZE: number = 1;
     const INPUT_TAG_SIZE: number = 1;
     const OUTPUT_TAG_SIZE: number = 1;
@@ -368,20 +378,28 @@ export function estimateTransactionSize(
                              + PUBLIC_KEY_SIZE
                              + PAYMENT_ID_SIZE;
 
+    /* The signature of each input: version 1 one (c, r) pair per ring member,
+       version 2 (CLSAG) one response per ring member plus c1 */
+    const ringSize: number = mixin + 1;
+
+    const inputSignatureSize: number = transactionVersion >= 2
+        ? CLSAG_SCALAR_SIZE * ringSize + CLSAG_SCALAR_SIZE
+        : SIGNATURE_SIZE * ringSize;
+
     /* The size of each transaction input */
     const inputSize: number = INPUT_TAG_SIZE
                             + AMOUNT_SIZE
                             + KEY_IMAGE_SIZE
-                            + SIGNATURE_SIZE
                             + GLOBAL_INDEXES_VECTOR_SIZE_SIZE
                             + GLOBAL_INDEXES_INITIAL_VALUE_SIZE
-                            + mixin * SIGNATURE_SIZE;
+                            + inputSignatureSize;
 
     const inputsSize: number = inputSize * numInputs;
 
     /* The size of each transaction output. */
     const outputSize: number = OUTPUT_TAG_SIZE
                              + OUTPUT_KEY_SIZE
+                             + VIEW_TAG_SIZE
                              + AMOUNT_SIZE;
 
     const outputsSize: number = outputSize * numOutputs;

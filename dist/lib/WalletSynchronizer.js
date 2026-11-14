@@ -23,6 +23,14 @@ const SynchronizationStatus_1 = require("./SynchronizationStatus");
 const Logger_1 = require("./Logger");
 const CryptoWrapper_1 = require("./CryptoWrapper");
 const Types_1 = require("./Types");
+function emptyScanStats() {
+    return {
+        outputs: 0,
+        tagged: 0,
+        skippedByTag: 0,
+        fullChecks: 0,
+    };
+}
 /**
  * Decrypts blocks for our transactions and inputs
  * @noInheritDoc
@@ -67,6 +75,11 @@ class WalletSynchronizer extends events_1.EventEmitter {
          */
         this.lastDownloadedBlocks = new Date();
         this.config = new Config_1.Config();
+        /**
+         * Counts of the output scan since the wallet was started or loaded (not
+         * saved in the wallet file)
+         */
+        this.scanStats = emptyScanStats();
         this.daemon = daemon;
         this.startTimestamp = startTimestamp;
         this.startHeight = startHeight;
@@ -88,6 +101,22 @@ class WalletSynchronizer extends events_1.EventEmitter {
         this.config = config;
         this.cancelledTransactionsFailCount = new Map();
         this.lastDownloadedBlocks = new Date();
+        this.scanStats = emptyScanStats();
+    }
+    /**
+     * Returns the counts of the output scan so far: outputs looked at, outputs
+     * with a view tag, tagged outputs skipped by their view tag, and outputs
+     * that needed the full ownership check. Only counts the built-in scan,
+     * not a function set with `setBlockOutputProcessFunc`.
+     */
+    getScanStats() {
+        return Object.assign({}, this.getMutableScanStats());
+    }
+    /**
+     * Resets the counts returned by [[getScanStats]]
+     */
+    resetScanStats() {
+        this.scanStats = emptyScanStats();
     }
     /**
      * Convert from class to stringable type
@@ -300,6 +329,112 @@ class WalletSynchronizer extends events_1.EventEmitter {
     getRecentBlockHashes() {
         return this.synchronizationStatus.getRecentBlockHashes();
     }
+    /**
+     * Finds the outputs of a pool transaction (`/get_pool_changes_lite`
+     * `txPrefix` JSON) that belong to us. Tagged outputs (`target.type` "03",
+     * `target.data.view_tag`) are checked against their view tag first.
+     *
+     * @hidden
+     */
+    getPoolTransactionOutputs(thisTx, thisHash, spendKeys) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const outputs = [];
+            let txPubKey = '';
+            const thisExtra = thisTx.extra;
+            try {
+                txPubKey = thisExtra.substring(2, 66);
+            }
+            catch (e) {
+                Logger_1.logger.log(`Some parse error in thisExtra, checkIncomingPoolTransaction`, Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
+            }
+            const derivation = yield (0, CryptoWrapper_1.generateKeyDerivation)(txPubKey, this.privateViewKey, this.config);
+            const vout = Array.isArray(thisTx.vout) ? thisTx.vout : [];
+            /* The output index is the position in the full output list: it is
+               part of both the key derivation and the view tag */
+            for (const [outputIndex, output] of vout.entries()) {
+                const data = output && output.target && output.target.data;
+                if (!data || typeof data.key !== 'string') {
+                    continue;
+                }
+                const viewTag = (0, Types_1.normalizeViewTag)(data.view_tag);
+                if (viewTag !== undefined) {
+                    const expectedViewTag = yield (0, CryptoWrapper_1.deriveViewTag)(derivation, outputIndex, this.config);
+                    if (expectedViewTag !== viewTag) {
+                        continue;
+                    }
+                }
+                /* Derive the spend key from the transaction, using the previous
+                derivation */
+                const derivedSpendKey = yield (0, CryptoWrapper_1.underivePublicKey)(derivation, outputIndex, data.key, this.config);
+                /* See if the derived spend key matches any of our spend keys */
+                if (!_.includes(spendKeys, derivedSpendKey)) {
+                    continue;
+                }
+                /* The public spend key of the subwallet that owns this input */
+                const ownerSpendKey = derivedSpendKey;
+                const [keyImage] = yield this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
+                outputs.push({
+                    ownerSpendKey,
+                    keyImage,
+                    thisHash,
+                    amount: output.amount,
+                    key: data.key,
+                    index: outputIndex,
+                });
+            }
+            return outputs;
+        });
+    }
+    checkIncomingPoolTransaction(thisTx, thisHash, spendKeys) {
+        return __awaiter(this, void 0, void 0, function* () {
+            /* Save the locked transaction keyimage, hash and spendkey to array */
+            const incomingOutputs = yield this.getPoolTransactionOutputs(thisTx, thisHash, spendKeys);
+            if (incomingOutputs.length === 0) {
+                return false;
+            }
+            let amount = 0;
+            /* Mark the outputs as locked */
+            for (const output of incomingOutputs) {
+                this.subWallets.markInputAsLocked(output.ownerSpendKey, output.keyImage, output.thisHash);
+                const unconfirmed = new Types_1.UnconfirmedInput(output.amount, output.key, output.thisHash, true);
+                amount += output.amount;
+                this.subWallets.storeUnconfirmedIncomingInput(unconfirmed, output.ownerSpendKey);
+            }
+            this.emit('unconfirmedtx', amount, thisHash);
+            return true;
+        });
+    }
+    checkPoolTransactions() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const txArray = yield this.daemon.getPoolChanges(this.subWallets.knownTransactions);
+            if (!txArray) {
+                return;
+            }
+            const spendKeys = this.subWallets.getPublicSpendKeys();
+            Logger_1.logger.log(`Checking all txs in pool ${JSON.stringify(txArray.addedTxs)}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
+            for (const tx of txArray.addedTxs) {
+                const thisHash = tx.transactionPrefixInfotxHash;
+                if (thisHash.length !== 64) {
+                    continue;
+                }
+                if (this.subWallets.knownTransactions.some((a) => a === thisHash)) {
+                    continue;
+                }
+                if (tx.transactionPrefixInfo.extra.length > 200) {
+                    this.subWallets.knownTransactions.push(thisHash);
+                    continue;
+                }
+                const thisTx = tx.transactionPrefixInfo;
+                if (typeof thisTx !== 'object') {
+                    continue;
+                }
+                this.subWallets.knownTransactions.push(thisHash);
+                yield this.checkIncomingPoolTransaction(thisTx, thisHash, spendKeys);
+            }
+            const filtered = this.subWallets.knownTransactions.filter((n) => !txArray.deletedTxsIds.includes(n));
+            this.subWallets.knownTransactions = filtered;
+        });
+    }
     getStoredBlockCheckpoints() {
         const hashes = [];
         for (const block of this.storedBlocks) {
@@ -415,7 +550,22 @@ class WalletSynchronizer extends events_1.EventEmitter {
             const inputs = [];
             const derivation = yield (0, CryptoWrapper_1.generateKeyDerivation)(rawTX.transactionPublicKey, this.privateViewKey, this.config);
             const spendKeys = this.subWallets.getPublicSpendKeys();
+            const stats = this.getMutableScanStats();
             for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
+                stats.outputs++;
+                /* Tagged output (transaction version 2): compare the view tag
+                   before the expensive derivation. The private view key is shared
+                   by all subwallets, so one comparison covers all of them. The
+                   output index is the position in the full output list. */
+                if (output.viewTag !== undefined) {
+                    stats.tagged++;
+                    const expectedViewTag = yield (0, CryptoWrapper_1.deriveViewTag)(derivation, outputIndex, this.config);
+                    if (expectedViewTag !== output.viewTag) {
+                        stats.skippedByTag++;
+                        continue;
+                    }
+                }
+                stats.fullChecks++;
                 /* Derive the spend key from the transaction, using the previous
                    derivation */
                 const derivedSpendKey = yield (0, CryptoWrapper_1.underivePublicKey)(derivation, outputIndex, output.key, this.config);
@@ -478,77 +628,12 @@ class WalletSynchronizer extends events_1.EventEmitter {
         }
         return [undefined, []];
     }
-    checkIncomingPoolTransaction(thisTx, thisHash, spendKeys) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let txPubKey;
-            const incomingOutputs = [];
-            const thisExtra = thisTx.extra;
-            try {
-                txPubKey = thisExtra.substring(2, 66);
-            }
-            catch (e) {
-                Logger_1.logger.log(`Some parse error in thisExtra, checkIncomingPoolTransaction`, Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
-            }
-            const derivation = yield (0, CryptoWrapper_1.generateKeyDerivation)(txPubKey, this.privateViewKey, this.config);
-            let outputIndex = 0;
-            for (const output of thisTx.vout) {
-                /* Derive the spend key from the transaction, using the previous
-                derivation */
-                const derivedSpendKey = yield (0, CryptoWrapper_1.underivePublicKey)(derivation, outputIndex, output.target.data.key, this.config);
-                /* See if the derived spend key matches any of our spend keys */
-                outputIndex++;
-                if (!_.includes(spendKeys, derivedSpendKey)) {
-                    continue;
-                }
-                /* The public spend key of the subwallet that owns this input */
-                const ownerSpendKey = derivedSpendKey;
-                const [keyImage] = yield this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
-                const amount = output.amount;
-                const key = output.target.data.key;
-                /* Save the locked transaction keyimage, hash and spendkey to array */
-                incomingOutputs.push({ ownerSpendKey, keyImage, thisHash, amount, key });
-            }
-            if (incomingOutputs.length === 0)
-                return false;
-            let amount = 0;
-            /* Mark the outputs as locked */
-            for (const output of incomingOutputs) {
-                this.subWallets.markInputAsLocked(output.ownerSpendKey, output.keyImage, output.thisHash);
-                const unconfirmed = new Types_1.UnconfirmedInput(output.amount, output.key, output.thisHash, true);
-                amount += output.amount;
-                this.subWallets.storeUnconfirmedIncomingInput(unconfirmed, output.ownerSpendKey);
-            }
-            this.emit('unconfirmedtx', amount, thisHash);
-            return true;
-        });
-    }
-    checkPoolTransactions() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let txArray = yield this.daemon.getPoolChanges(this.subWallets.knownTransactions);
-            if (!txArray)
-                return;
-            const spendKeys = this.subWallets.getPublicSpendKeys();
-            Logger_1.logger.log(`Checking all txs in pool ${JSON.stringify(txArray.addedTxs)}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.SYNC);
-            for (const tx of txArray.addedTxs) {
-                const thisHash = tx.transactionPrefixInfotxHash;
-                if (thisHash.length !== 64)
-                    continue;
-                if (this.subWallets.knownTransactions.some(a => a === thisHash)) {
-                    continue;
-                }
-                if (tx.transactionPrefixInfo.extra.length > 200) {
-                    this.subWallets.knownTransactions.push(thisHash);
-                    continue;
-                }
-                const thisTx = tx.transactionPrefixInfo;
-                if (typeof thisTx !== 'object')
-                    continue;
-                this.subWallets.knownTransactions.push(thisHash);
-                yield this.checkIncomingPoolTransaction(thisTx, thisHash, spendKeys);
-            }
-            const filtered = this.subWallets.knownTransactions.filter((n) => !txArray.deletedTxsIds.includes(n));
-            this.subWallets.knownTransactions = filtered;
-        });
+    getMutableScanStats() {
+        /* Wallets loaded from JSON skip the field initializers */
+        if (!this.scanStats) {
+            this.scanStats = emptyScanStats();
+        }
+        return this.scanStats;
     }
 }
 exports.WalletSynchronizer = WalletSynchronizer;

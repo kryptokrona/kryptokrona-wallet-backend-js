@@ -12,7 +12,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendPreparedTransaction = exports.sendTransactionAdvanced = exports.sendTransactionBasic = exports.sendFusionTransactionAdvanced = exports.sendFusionTransactionBasic = void 0;
+exports.sendFusionTransactionBasic = sendFusionTransactionBasic;
+exports.sendFusionTransactionAdvanced = sendFusionTransactionAdvanced;
+exports.sendTransactionBasic = sendTransactionBasic;
+exports.sendTransactionAdvanced = sendTransactionAdvanced;
+exports.sendPreparedTransaction = sendPreparedTransaction;
 const _ = require("lodash");
 const kryptokrona_utils_1 = require("kryptokrona-utils");
 const FeeType_1 = require("./FeeType");
@@ -20,6 +24,7 @@ const CnUtils_1 = require("./CnUtils");
 const Logger_1 = require("./Logger");
 const Types_1 = require("./Types");
 const CryptoWrapper_1 = require("./CryptoWrapper");
+const TransactionVersion_1 = require("./TransactionVersion");
 const Utilities_1 = require("./Utilities");
 const ValidateParameters_1 = require("./ValidateParameters");
 const Constants_1 = require("./Constants");
@@ -37,7 +42,6 @@ function sendFusionTransactionBasic(config, daemon, subWallets) {
         return sendFusionTransactionAdvanced(config, daemon, subWallets);
     });
 }
-exports.sendFusionTransactionBasic = sendFusionTransactionBasic;
 /**
  * Sends a transaction, which permits multiple amounts to different destinations,
  * specifying the mixin, fee, subwallets to draw funds from, and change address.
@@ -84,6 +88,12 @@ function sendFusionTransactionAdvanced(config, daemon, subWallets, mixin, subWal
             returnValue.error = error;
             return returnValue;
         }
+        /* The transaction version to build (1, or 2 from fork 14) */
+        const [transactionVersion, versionError] = getTransactionVersionToBuild(daemon, config);
+        if (versionError) {
+            returnValue.error = versionError;
+            return returnValue;
+        }
         /* Get the random inputs for this tx */
         const [ourInputs, foundMoney] = yield subWallets.getFusionTransactionInputs(subWalletsToTakeFrom, mixin, daemon.getNetworkBlockCount());
         Logger_1.logger.log(`Selected ${ourInputs.length} inputs for fusion transaction, for total amount of ${(0, Utilities_1.prettyPrintAmount)(foundMoney)}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
@@ -116,7 +126,7 @@ function sendFusionTransactionAdvanced(config, daemon, subWallets, mixin, subWal
             }
             const addressesAndAmounts = [[destination, amount]];
             const destinations = yield setupDestinations(addressesAndAmounts, 0, destination, config);
-            const [tx, creationError] = yield makeTransaction(mixin, fee, paymentID, ourInputs, destinations, subWallets, daemon, config, extraData);
+            const [tx, creationError] = yield makeTransaction(mixin, fee, paymentID, ourInputs, destinations, subWallets, daemon, config, extraData, transactionVersion);
             if (creationError || tx === undefined) {
                 Logger_1.logger.log(`Failed to create fusion transaction, ${creationError.toString()}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
                 returnValue.error = creationError;
@@ -157,7 +167,7 @@ function sendFusionTransactionAdvanced(config, daemon, subWallets, mixin, subWal
         returnValue.transactionHash = yield fusionTX.hash();
         returnValue.prettyTransaction = prettyTransaction;
         returnValue.destinations = {
-            nodeFee: undefined,
+            nodeFee: undefined, /* technically this line is not needed, will def to undef */
             change: undefined,
             userDestinations: [{
                     address: destination,
@@ -167,7 +177,6 @@ function sendFusionTransactionAdvanced(config, daemon, subWallets, mixin, subWal
         return returnValue;
     });
 }
-exports.sendFusionTransactionAdvanced = sendFusionTransactionAdvanced;
 /**
  * Sends a transaction of amount to the address destination, using the
  * given payment ID, if specified.
@@ -191,7 +200,6 @@ function sendTransactionBasic(config, daemon, subWallets, destination, amount, p
         return sendTransactionAdvanced(config, daemon, subWallets, [[destination, amount]], undefined, undefined, paymentID);
     });
 }
-exports.sendTransactionBasic = sendTransactionBasic;
 /**
  * Sends a transaction, which permits multiple amounts to different destinations,
  * specifying the mixin, fee, subwallets to draw funds from, and change address.
@@ -277,6 +285,12 @@ function sendTransactionAdvanced(config, daemon, subWallets, addressesAndAmounts
             returnValue.error = error;
             return returnValue;
         }
+        /* The transaction version to build (1, or 2 from fork 14) */
+        const [transactionVersion, versionError] = getTransactionVersionToBuild(daemon, config);
+        if (versionError) {
+            returnValue.error = versionError;
+            return returnValue;
+        }
         for (let [address] of addressesAndAmounts) {
             const decoded = yield kryptokrona_utils_1.Address.fromAddress(address, config.addressPrefix);
             /* Assign payment ID from integrated address if present */
@@ -321,7 +335,7 @@ function sendTransactionAdvanced(config, daemon, subWallets, addressesAndAmounts
                 /* Using fee per byte, lets take a guess at how large our fee is
                  * going to be, and then see if we have enough inputs to cover it. */
                 if (fee.isFeePerByte) {
-                    const transactionSize = (0, Utilities_1.estimateTransactionSize)(mixin, ourInputs.length, destinations.length, paymentID !== '', 0);
+                    const transactionSize = (0, Utilities_1.estimateTransactionSize)(mixin, ourInputs.length, destinations.length, paymentID !== '', 0, transactionVersion);
                     Logger_1.logger.log(`Estimated transaction size: ${(0, Utilities_1.prettyPrintBytes)(transactionSize)}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
                     const estimatedFee = (0, Utilities_1.getTransactionFee)(transactionSize, daemon.getNetworkBlockCount(), fee.feePerByte, config);
                     Logger_1.logger.log(`Estimated required transaction fee using fee per byte of ${fee.feePerByte}: ${estimatedFee}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
@@ -362,7 +376,7 @@ function sendTransactionAdvanced(config, daemon, subWallets, addressesAndAmounts
                     if (sumOfInputs >= estimatedAmount) {
                         Logger_1.logger.log(`Selected enough inputs to exceed total amount required, ` +
                             `attempting to estimate transaction fee`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
-                        const [success, result, change, needed] = yield tryMakeFeePerByteTransaction(sumOfInputs, totalAmount, estimatedFee, fee.feePerByte, addressesAndAmounts, changeAddress, mixin, daemon, ourInputs, paymentID, subWallets, extraData, sendAll, config);
+                        const [success, result, change, needed] = yield tryMakeFeePerByteTransaction(sumOfInputs, totalAmount, estimatedFee, fee.feePerByte, addressesAndAmounts, changeAddress, mixin, daemon, ourInputs, paymentID, subWallets, extraData, sendAll, config, transactionVersion);
                         if (success) {
                             txResult = result;
                             changeRequired = change;
@@ -380,7 +394,7 @@ function sendTransactionAdvanced(config, daemon, subWallets, addressesAndAmounts
                 }
                 else {
                     Logger_1.logger.log(`Making non fee per byte transaction with fixed fee of ${fee.fixedFee}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
-                    txResult = yield makeTransaction(mixin, fee.fixedFee, paymentID, ourInputs, destinations, subWallets, daemon, config, extraData);
+                    txResult = yield makeTransaction(mixin, fee.fixedFee, paymentID, ourInputs, destinations, subWallets, daemon, config, extraData, transactionVersion);
                     const [tx, err] = txResult;
                     if (err) {
                         Logger_1.logger.log(`Error creating transaction, ${err.toString()}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
@@ -459,9 +473,8 @@ function sendTransactionAdvanced(config, daemon, subWallets, addressesAndAmounts
         return returnValue;
     });
 }
-exports.sendTransactionAdvanced = sendTransactionAdvanced;
-function tryMakeFeePerByteTransaction(sumOfInputs, amountPreFee, estimatedFee, feePerByte, addressesAndAmounts, changeAddress, mixin, daemon, ourInputs, paymentID, subWallets, extraData = '', sendAll, config) {
-    return __awaiter(this, void 0, void 0, function* () {
+function tryMakeFeePerByteTransaction(sumOfInputs_1, amountPreFee_1, estimatedFee_1, feePerByte_1, addressesAndAmounts_1, changeAddress_1, mixin_1, daemon_1, ourInputs_1, paymentID_1, subWallets_1) {
+    return __awaiter(this, arguments, void 0, function* (sumOfInputs, amountPreFee, estimatedFee, feePerByte, addressesAndAmounts, changeAddress, mixin, daemon, ourInputs, paymentID, subWallets, extraData = '', sendAll, config, transactionVersion = 1) {
         let attempt = 0;
         while (true) {
             Logger_1.logger.log(`Attempting fee per byte transaction construction, attempt ${attempt}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
@@ -471,7 +484,7 @@ function tryMakeFeePerByteTransaction(sumOfInputs, amountPreFee, estimatedFee, f
             Logger_1.logger.log(`Change required: ${changeRequired}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
             /* Need to recalculate destinations since amount of change, err, changed! */
             const destinations = yield setupDestinations(addressesAndAmounts, changeRequired, changeAddress, config);
-            const result = yield makeTransaction(mixin, estimatedFee, paymentID, ourInputs, destinations, subWallets, daemon, config, extraData);
+            const result = yield makeTransaction(mixin, estimatedFee, paymentID, ourInputs, destinations, subWallets, daemon, config, extraData, transactionVersion);
             const [tx, creationError] = result;
             if (creationError) {
                 Logger_1.logger.log(`Error creating transaction, ${creationError.toString()}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
@@ -527,6 +540,23 @@ function sendPreparedTransaction(transaction, subWallets, daemon, config) {
                 return returnValue;
             }
         }
+        /* The daemon may no longer accept the version the transaction was built
+           with (for example version 1 after the fork 14 grace period). Not
+           checked when a fixed version is configured: then the daemon decides. */
+        const preparedVersion = transaction.rawTransaction
+            ? Number(transaction.rawTransaction.version)
+            : undefined;
+        const allowedVersions = getDaemonTransactionVersions(daemon);
+        if (config.transactionVersion === undefined
+            && preparedVersion !== undefined
+            && !isNaN(preparedVersion)
+            && !allowedVersions.includes(preparedVersion)) {
+            Logger_1.logger.log(`Prepared transaction has version ${preparedVersion}, ` +
+                `the daemon accepts ${JSON.stringify(allowedVersions)}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
+            returnValue.error = new WalletError_1.WalletError(WalletError_1.WalletErrorCode.TRANSACTION_VERSION_NOT_ALLOWED, `The daemon accepts transaction versions ${allowedVersions.join(', ')} at the current ` +
+                `height, but this prepared transaction has version ${preparedVersion}. Create the transaction again.`);
+            return returnValue;
+        }
         const [prettyTX, err] = yield relayTransaction(transaction.rawTransaction, transaction.fee, transaction.paymentID, transaction.inputs, transaction.changeAddress, transaction.changeRequired, subWallets, daemon, config);
         if (err) {
             Logger_1.logger.log(`Failed to verify and send transaction: ${err.toString()}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
@@ -538,7 +568,6 @@ function sendPreparedTransaction(transaction, subWallets, daemon, config) {
         return returnValue;
     });
 }
-exports.sendPreparedTransaction = sendPreparedTransaction;
 function setupDestinations(addressesAndAmountsTmp, changeRequired, changeAddress, config) {
     return __awaiter(this, void 0, void 0, function* () {
         /* Clone array so we don't manipulate it outside the function */
@@ -560,14 +589,14 @@ function setupDestinations(addressesAndAmountsTmp, changeRequired, changeAddress
         for (const [address, amount] of amounts) {
             result.push({
                 amount: amount,
-                destination: yield kryptokrona_utils_1.Address.fromAddress(address, config.addressPrefix)
+                destination: yield kryptokrona_utils_1.Address.fromAddress(address, config.addressPrefix),
             });
         }
         return result;
     });
 }
-function makeTransaction(mixin, fee, paymentID, ourInputs, destinations, subWallets, daemon, config, extraData) {
-    return __awaiter(this, void 0, void 0, function* () {
+function makeTransaction(mixin_1, fee_1, paymentID_1, ourInputs_1, destinations_1, subWallets_1, daemon_1, config_1, extraData_1) {
+    return __awaiter(this, arguments, void 0, function* (mixin, fee, paymentID, ourInputs, destinations, subWallets, daemon, config, extraData, transactionVersion = 1) {
         ourInputs = _.sortBy(ourInputs, (input) => input.input.amount);
         Logger_1.logger.log(`Collecting ring participants`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
         const randomOuts = yield getRingParticipants(ourInputs, mixin, daemon, config);
@@ -592,7 +621,7 @@ function makeTransaction(mixin, fee, paymentID, ourInputs, destinations, subWall
                 index: input.input.transactionIndex,
                 input: {
                     privateEphemeral: input.input.privateEphemeral,
-                    publicEphemeral: '',
+                    publicEphemeral: '', // Required by compiler, not used in func
                     transactionKeys: {
                         derivedKey: '',
                         outputIndex: 0,
@@ -605,8 +634,10 @@ function makeTransaction(mixin, fee, paymentID, ourInputs, destinations, subWall
         })));
         Logger_1.logger.log(`Generated key images for ${numGeneratedOnDemand} inputs, used pre-generated key images for ${numPregenerated} inputs.`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
         try {
-            Logger_1.logger.log(`Asynchronously creating transaction with turtlecoin-utils`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
-            const tx = yield (0, CnUtils_1.CryptoUtils)(config).createTransaction(destinations, ourOutputs, randomOuts, mixin, fee, paymentID, undefined, extraData);
+            Logger_1.logger.log(`Asynchronously creating transaction version ${transactionVersion} with kryptokrona-utils`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
+            /* Version 2 (fork 14): tagged outputs with view tags and a CLSAG
+               signature per input. Version 1: as before. */
+            const tx = yield (0, CnUtils_1.CryptoUtils)(config).createTransaction(destinations, ourOutputs, randomOuts, mixin, fee, paymentID, undefined, extraData, { version: transactionVersion });
             Logger_1.logger.log(`Transaction creation succeeded`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
             return [tx, undefined];
         }
@@ -657,6 +688,10 @@ function relayTransaction(tx, fee, paymentID, inputs, changeAddress, changeRequi
                 ? ''
                 : `The daemon did not accept our transaction. Error: ${errorMessage}.`;
             Logger_1.logger.log(`Failed to relay transaction. ${customMessage}`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
+            /* xkrd: "invalid transaction: transaction version not allowed at this height" */
+            if (errorMessage !== undefined && /transaction version not allowed/i.test(errorMessage)) {
+                return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.TRANSACTION_VERSION_NOT_ALLOWED, customMessage)];
+            }
             return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.DAEMON_ERROR, customMessage)];
         }
         Logger_1.logger.log('Storing sent transaction', Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
@@ -678,8 +713,14 @@ function storeSentTransaction(hash, keyOutputs, txPublicKey, fee, paymentID, our
         const derivation = yield (0, CryptoWrapper_1.generateKeyDerivation)(txPublicKey, subWallets.getPrivateViewKey(), config);
         const spendKeys = subWallets.getPublicSpendKeys();
         for (const [outputIndex, output] of keyOutputs.entries()) {
-            if (output.type === kryptokrona_utils_1.TransactionOutputs.OutputType.KEY) {
+            /* Untagged (0x02) and tagged (0x03, version 2) outputs */
+            if (kryptokrona_utils_1.TransactionOutputs.isKeyOutput(output)) {
                 const o = output;
+                /* Tagged output: skip it if the view tag does not match */
+                if (o.viewTag !== undefined
+                    && (yield (0, CryptoWrapper_1.deriveViewTag)(derivation, outputIndex, config)) !== o.viewTag.toLowerCase()) {
+                    continue;
+                }
                 /* Derive the spend key from the transaction, using the previous
                    derivation */
                 const derivedSpendKey = yield (0, CryptoWrapper_1.underivePublicKey)(derivation, outputIndex, o.key, config);
@@ -724,7 +765,7 @@ function isTransactionPayloadTooBig(txSize, currentHeight, config) {
  */
 function verifyAmounts(amounts) {
     for (const output of amounts) {
-        if (output.type === kryptokrona_utils_1.TransactionOutputs.OutputType.KEY) {
+        if (kryptokrona_utils_1.TransactionOutputs.isKeyOutput(output)) {
             if (!Constants_1.PRETTY_AMOUNTS.includes(output.amount.toJSNumber())) {
                 return false;
             }
@@ -736,7 +777,7 @@ function sumTransactionFee(transaction) {
     const inputTotal = transaction.amount;
     let outputTotal = 0;
     for (const output of transaction.outputs) {
-        if (output.type === kryptokrona_utils_1.TransactionOutputs.OutputType.KEY) {
+        if (kryptokrona_utils_1.TransactionOutputs.isKeyOutput(output)) {
             outputTotal += output.amount.toJSNumber();
         }
     }
@@ -755,6 +796,52 @@ function verifyTransactionFee(transactionSize, expectedFee, actualFee) {
          * and no more than two times the fee per byte specified. */
         return actualFee >= calculatedFee && actualFee <= calculatedFee * 2;
     }
+}
+/**
+ * The transaction versions the daemon accepts for the next block
+ */
+function getDaemonTransactionVersions(daemon) {
+    const d = daemon;
+    if (typeof d.getTransactionVersions === 'function') {
+        return d.getTransactionVersions();
+    }
+    return [1];
+}
+/**
+ * Whether CLSAG signing (transaction version 2) is available: through the
+ * config hooks or the loaded cryptographic library
+ */
+function haveClsagSupport(config) {
+    if (config.clsagSign !== undefined && config.clsagVerify !== undefined) {
+        return true;
+    }
+    try {
+        return (0, kryptokrona_utils_1.hasClsagSupport)();
+    }
+    catch (err) {
+        return false;
+    }
+}
+/**
+ * Chooses the transaction version to build: `config.transactionVersion` if
+ * set, otherwise the highest version the daemon accepts that we can build.
+ */
+function getTransactionVersionToBuild(daemon, config) {
+    const allowedVersions = getDaemonTransactionVersions(daemon);
+    const clsagSupported = haveClsagSupport(config);
+    const version = (0, TransactionVersion_1.chooseTransactionVersion)(allowedVersions, clsagSupported, config.transactionVersion);
+    if (version === undefined) {
+        Logger_1.logger.log(`Cannot build any of the transaction versions the daemon accepts ` +
+            `(${JSON.stringify(allowedVersions)}, override: ${config.transactionVersion}, ` +
+            `CLSAG support: ${clsagSupported})`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
+        return [undefined, new WalletError_1.WalletError(WalletError_1.WalletErrorCode.TRANSACTION_VERSION_NOT_SUPPORTED)];
+    }
+    if (!allowedVersions.includes(version)) {
+        Logger_1.logger.log(`The daemon accepts transaction versions ${JSON.stringify(allowedVersions)} for the ` +
+            `next block, building version ${version} as configured`, Logger_1.LogLevel.WARNING, Logger_1.LogCategory.TRANSACTIONS);
+    }
+    Logger_1.logger.log(`Building transaction version ${version} (daemon accepts ${JSON.stringify(allowedVersions)})`, Logger_1.LogLevel.DEBUG, Logger_1.LogCategory.TRANSACTIONS);
+    return [version, undefined];
 }
 /**
  * Get sufficient random outputs for the transaction. Returns an error if

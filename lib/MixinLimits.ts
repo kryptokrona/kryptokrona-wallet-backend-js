@@ -31,6 +31,10 @@ export class MixinLimit {
 }
 
 /**
+ * A table of mixin limits by height. At a height, the limit with the highest
+ * activation height at or below that height applies (C++
+ * `Mixins::getMixinAllowableRange`, Rust `xkr_consensus::mixin_limits`).
+ *
  * @param limits        Mixin limits to apply. Can be empty
  * @param defaultMixin  Default mixin to use if no limits given or before the first limit comes into play
  */
@@ -46,37 +50,45 @@ export class MixinLimits {
     }
 
     /**
-     * Returns the default mixin for the given height.
+     * Returns the limit that applies at the given height: the one with the
+     * highest activation height at or below it. Undefined before the first limit.
      */
-    public getDefaultMixinByHeight(height: number): number {
-        /* No limits defined, or height is before first limit */
-        if (this.limits.length === 0 || (_.last(this.limits) as MixinLimit).height > height) {
-            return this.defaultMixin;
-        }
-
+    public getMixinLimitByHeight(height: number): MixinLimit | undefined {
+        /* Limits are ordered by height, highest first, so the first match is
+           the newest applicable limit */
         for (const limit of this.limits) {
-            if (height > limit.height) {
-                return limit.defaultMixin;
+            if (height >= limit.height) {
+                return limit;
             }
         }
 
-        throw new Error('Something happened :^)');
+        return undefined;
+    }
+
+    /**
+     * Returns the default mixin for the given height.
+     */
+    public getDefaultMixinByHeight(height: number): number {
+        const limit: MixinLimit | undefined = this.getMixinLimitByHeight(height);
+
+        /* No limits defined, or height is before first limit */
+        if (limit === undefined) {
+            return this.defaultMixin;
+        }
+
+        return limit.defaultMixin;
     }
 
     /**
      * Returns the minimum and maximum mixin for the given height.
      */
     public getMixinLimitsByHeight(height: number): [number, number] {
-        let minimumMixin = 0;
-        let maximumMixin = 2 ** 64;
+        const limit: MixinLimit | undefined = this.getMixinLimitByHeight(height);
 
-        for (const limit of this.limits) {
-            if (height > limit.height) {
-                minimumMixin = limit.minMixin;
-                maximumMixin = limit.maxMixin;
-            }
+        if (limit === undefined) {
+            return [0, 2 ** 64];
         }
 
-        return [minimumMixin, maximumMixin];
+        return [limit.minMixin, limit.maxMixin];
     }
 }

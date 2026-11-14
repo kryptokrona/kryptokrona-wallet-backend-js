@@ -1,12 +1,13 @@
 {
   "name": "kryptokrona-wallet-backend-js",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "description": "",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
     "build": "./node_modules/.bin/tsc",
     "test": "npm run-script build && node dist/tests/tests.js",
+    "test-v2": "npm run-script build && node dist/tests/txv2.js",
     "test-all": "npm run-script build && node dist/tests/tests.js --do-performance-tests",
     "style": "./node_modules/.bin/tslint -c tslint.json 'lib/**/*.ts'",
     "docs": "./node_modules/.bin/typedoc --options ./typedoc.js ./lib/; touch docs/.nojekyll"
@@ -20,7 +21,8 @@
   "dependencies": {
     "@ledgerhq/hw-transport": "^6.31.4",
     "axios": "^1.7.9",
-    "kryptokrona-utils": "^1.4.0",
+    "kryptokrona-crypto": "^1.1.0",
+    "kryptokrona-utils": "^1.5.0",
     "lodash": "^4.17.15",
     "object-sizeof": "^1.5.2",
     "pbkdf2": "^3.0.17",

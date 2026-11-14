@@ -111,6 +111,28 @@ If you wish to enable coinbase transaction scanning, run this line of code:
 wallet.scanCoinbaseTransactions(true)
 ```
 
+### Transaction version 2 (fork 14)
+
+From version 2.7.0 the wallet supports Kryptokrona transaction version 2 (view tags and
+single-key CLSAG signatures, activated by fork 14). It needs kryptokrona-utils 1.5.0 and
+kryptokrona-crypto 1.1.0 or later.
+
+* **Sending**: the wallet builds the highest transaction version the daemon accepts for the next
+  block (`/info` `tx_versions`: `[1]` before the fork, `[1, 2]` during the grace period, `[2]`
+  after it) that the loaded cryptographic library can build. Daemons without `tx_versions` count as
+  `[1, 2]` from block major version 7, otherwise `[1]`. `daemon.getTransactionVersions()` returns
+  the list; set `transactionVersion: 1` or `2` in the config to fix the version (meant for tests).
+  A prepared transaction whose version the daemon no longer accepts is refused with
+  `TRANSACTION_VERSION_NOT_ALLOWED`; create it again.
+* **Syncing**: outputs of version 2 transactions carry a view tag (`view_tag` in
+  `/getwalletsyncdata`). The wallet compares it before the full key derivation and skips outputs
+  whose tag does not match, so most foreign outputs cost one hash instead of a derivation.
+  Untagged outputs are scanned as before. `wallet.getScanStats()` shows the counts. If you replace
+  the scanner with `setBlockOutputProcessFunc`, read `keyOutputs[i].viewTag` and do the same check.
+* **Native crypto hooks**: `deriveViewTag`, `clsagSign` and `clsagVerify` can be supplied in the
+  config like the other cryptographic functions.
+* **Mixin**: from height 1 250 000 the mixin is 1 to 5 (default 5), for both versions.
+
 ### Logging
 
 By default, the logger is disabled. You can enable it like so:

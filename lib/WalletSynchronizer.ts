@@ -15,12 +15,47 @@ import { LAST_KNOWN_BLOCK_HASHES_SIZE } from './Constants';
 import { SynchronizationStatus } from './SynchronizationStatus';
 import { WalletSynchronizerJSON } from './JsonSerialization';
 import { LogCategory, logger, LogLevel } from './Logger';
-import { underivePublicKey, generateKeyDerivation } from './CryptoWrapper';
+import { underivePublicKey, generateKeyDerivation, deriveViewTag } from './CryptoWrapper';
 
 import {
     Block, RawCoinbaseTransaction, RawTransaction, Transaction,
     TransactionData, TransactionInput, TopBlock, UnconfirmedInput,
+    ScanStats, normalizeViewTag,
 } from './Types';
+
+/**
+ * An output of a pool transaction that belongs to this wallet
+ *
+ * @hidden
+ */
+export interface PoolTransactionOutput {
+    /* The public spend key of the subwallet that owns the output */
+    ownerSpendKey: string;
+
+    /* The key image of the output */
+    keyImage: string;
+
+    /* The hash of the pool transaction */
+    thisHash: string;
+
+    /* The amount of the output */
+    amount: number;
+
+    /* The output key */
+    key: string;
+
+    /* The index of the output in the transaction */
+    index: number;
+}
+
+function emptyScanStats(): ScanStats {
+    return {
+        outputs: 0,
+        tagged: 0,
+        skippedByTag: 0,
+        fullChecks: 0,
+    };
+}
 
 /**
  * Decrypts blocks for our transactions and inputs
@@ -99,6 +134,12 @@ export class WalletSynchronizer extends EventEmitter {
 
     private config: Config = new Config();
 
+    /**
+     * Counts of the output scan since the wallet was started or loaded (not
+     * saved in the wallet file)
+     */
+    private scanStats: ScanStats = emptyScanStats();
+
     constructor(
         daemon: Daemon,
         subWallets: SubWallets,
@@ -133,6 +174,24 @@ export class WalletSynchronizer extends EventEmitter {
         this.config = config;
         this.cancelledTransactionsFailCount = new Map();
         this.lastDownloadedBlocks = new Date();
+        this.scanStats = emptyScanStats();
+    }
+
+    /**
+     * Returns the counts of the output scan so far: outputs looked at, outputs
+     * with a view tag, tagged outputs skipped by their view tag, and outputs
+     * that needed the full ownership check. Only counts the built-in scan,
+     * not a function set with `setBlockOutputProcessFunc`.
+     */
+    public getScanStats(): ScanStats {
+        return { ...this.getMutableScanStats() };
+    }
+
+    /**
+     * Resets the counts returned by [[getScanStats]]
+     */
+    public resetScanStats(): void {
+        this.scanStats = emptyScanStats();
     }
 
     /**
@@ -149,7 +208,7 @@ export class WalletSynchronizer extends EventEmitter {
 
     public processBlock(
         block: Block,
-        ourInputs: [string, TransactionInput][]) {
+        ourInputs: Array<[string, TransactionInput]>) {
 
         const txData: TransactionData = new TransactionData();
 
@@ -194,11 +253,11 @@ export class WalletSynchronizer extends EventEmitter {
     public async processBlockOutputs(
         block: Block,
         privateViewKey: string,
-        spendKeys: [string, string][],
+        spendKeys: Array<[string, string]>,
         isViewWallet: boolean,
-        processCoinbaseTransactions: boolean): Promise<[string, TransactionInput][]> {
+        processCoinbaseTransactions: boolean): Promise<Array<[string, TransactionInput]>> {
 
-        let inputs: [string, TransactionInput][] = [];
+        let inputs: Array<[string, TransactionInput]> = [];
 
         /* Process the coinbase tx if we're not skipping them for speed */
         if (processCoinbaseTransactions && block.coinbaseTransaction) {
@@ -420,6 +479,129 @@ export class WalletSynchronizer extends EventEmitter {
         return this.synchronizationStatus.getRecentBlockHashes();
     }
 
+    /**
+     * Finds the outputs of a pool transaction (`/get_pool_changes_lite`
+     * `txPrefix` JSON) that belong to us. Tagged outputs (`target.type` "03",
+     * `target.data.view_tag`) are checked against their view tag first.
+     *
+     * @hidden
+     */
+    public async getPoolTransactionOutputs(
+        thisTx: any,
+        thisHash: string,
+        spendKeys: string[]): Promise<PoolTransactionOutput[]> {
+
+        const outputs: PoolTransactionOutput[] = [];
+
+        let txPubKey: string = '';
+        const thisExtra: string = thisTx.extra;
+        try {
+            txPubKey = thisExtra.substring(2, 66);
+        } catch (e) {
+            logger.log(`Some parse error in thisExtra, checkIncomingPoolTransaction`, LogLevel.INFO, LogCategory.SYNC);
+        }
+
+        const derivation = await generateKeyDerivation(txPubKey, this.privateViewKey, this.config);
+
+        const vout: any[] = Array.isArray(thisTx.vout) ? thisTx.vout : [];
+
+        /* The output index is the position in the full output list: it is
+           part of both the key derivation and the view tag */
+        for (const [outputIndex, output] of vout.entries()) {
+            const data = output && output.target && output.target.data;
+
+            if (!data || typeof data.key !== 'string') {
+                continue;
+            }
+
+            const viewTag: string | undefined = normalizeViewTag(data.view_tag);
+
+            if (viewTag !== undefined) {
+                const expectedViewTag: string = await deriveViewTag(derivation, outputIndex, this.config);
+
+                if (expectedViewTag !== viewTag) {
+                    continue;
+                }
+            }
+
+            /* Derive the spend key from the transaction, using the previous
+            derivation */
+            const derivedSpendKey = await underivePublicKey(derivation, outputIndex, data.key, this.config);
+
+            /* See if the derived spend key matches any of our spend keys */
+            if (!_.includes(spendKeys, derivedSpendKey)) {
+                continue;
+            }
+
+            /* The public spend key of the subwallet that owns this input */
+            const ownerSpendKey = derivedSpendKey;
+            const [keyImage] = await this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
+
+            outputs.push({
+                ownerSpendKey,
+                keyImage,
+                thisHash,
+                amount: output.amount,
+                key: data.key,
+                index: outputIndex,
+            });
+        }
+
+        return outputs;
+    }
+
+    public async checkIncomingPoolTransaction(thisTx, thisHash, spendKeys) {
+        /* Save the locked transaction keyimage, hash and spendkey to array */
+        const incomingOutputs = await this.getPoolTransactionOutputs(thisTx, thisHash, spendKeys);
+
+        if (incomingOutputs.length === 0) { return false; }
+
+        let amount: number = 0;
+        /* Mark the outputs as locked */
+        for (const output of incomingOutputs) {
+            this.subWallets.markInputAsLocked(output.ownerSpendKey, output.keyImage, output.thisHash);
+
+            const unconfirmed = new UnconfirmedInput(
+                output.amount, output.key, output.thisHash, true,
+            );
+            amount += output.amount;
+            this.subWallets.storeUnconfirmedIncomingInput(unconfirmed, output.ownerSpendKey);
+        }
+        this.emit('unconfirmedtx', amount, thisHash);
+        return true;
+    }
+
+    public async checkPoolTransactions() {
+
+        const txArray = await this.daemon.getPoolChanges(this.subWallets.knownTransactions);
+        if (!txArray) { return; }
+
+        const spendKeys = this.subWallets.getPublicSpendKeys();
+
+        logger.log(`Checking all txs in pool ${JSON.stringify(txArray.addedTxs)}`, LogLevel.DEBUG, LogCategory.SYNC);
+
+        for (const tx of txArray.addedTxs) {
+            const thisHash: string = tx.transactionPrefixInfotxHash;
+            if (thisHash.length !== 64) { continue; }
+            if (this.subWallets.knownTransactions.some((a) => a === thisHash)) {
+                continue;
+            }
+
+            if (tx.transactionPrefixInfo.extra.length > 200) {
+                this.subWallets.knownTransactions.push(thisHash);
+                continue;
+            }
+            const thisTx = tx.transactionPrefixInfo;
+
+            if (typeof thisTx !== 'object') { continue; }
+            this.subWallets.knownTransactions.push(thisHash);
+            await this.checkIncomingPoolTransaction(thisTx, thisHash, spendKeys);
+        }
+
+        const filtered = this.subWallets.knownTransactions.filter((n) => !txArray.deletedTxsIds.includes(n));
+        this.subWallets.knownTransactions = filtered;
+    }
+
     private getStoredBlockCheckpoints(): string[] {
         const hashes = [];
 
@@ -481,7 +663,7 @@ export class WalletSynchronizer extends EventEmitter {
         this.fetchingBlocks = true;
 
         const walletBlockCount: number = this.getHeight();
-        const networkHeight: number = this.daemon.getNetworkBlockCount()
+        const networkHeight: number = this.daemon.getNetworkBlockCount();
 
         if (walletBlockCount === networkHeight) {
             this.fetchingBlocks = false;
@@ -498,7 +680,7 @@ export class WalletSynchronizer extends EventEmitter {
 
         try {
             [blocks, topBlock] = await this.daemon.getWalletSyncData(
-                blockCheckpoints.slice(0,10), this.startHeight, this.startTimestamp,
+                blockCheckpoints.slice(0, 10), this.startHeight, this.startTimestamp,
             );
         } catch (err) {
             logger.log(
@@ -588,9 +770,9 @@ export class WalletSynchronizer extends EventEmitter {
      */
     private async processTransactionOutputs(
         rawTX: RawCoinbaseTransaction,
-        blockHeight: number): Promise<[string, TransactionInput][]> {
+        blockHeight: number): Promise<Array<[string, TransactionInput]>> {
 
-        const inputs: [string, TransactionInput][] = [];
+        const inputs: Array<[string, TransactionInput]> = [];
 
         const derivation: string = await generateKeyDerivation(
             rawTX.transactionPublicKey, this.privateViewKey, this.config,
@@ -598,7 +780,30 @@ export class WalletSynchronizer extends EventEmitter {
 
         const spendKeys: string[] = this.subWallets.getPublicSpendKeys();
 
+        const stats: ScanStats = this.getMutableScanStats();
+
         for (const [outputIndex, output] of rawTX.keyOutputs.entries()) {
+            stats.outputs++;
+
+            /* Tagged output (transaction version 2): compare the view tag
+               before the expensive derivation. The private view key is shared
+               by all subwallets, so one comparison covers all of them. The
+               output index is the position in the full output list. */
+            if (output.viewTag !== undefined) {
+                stats.tagged++;
+
+                const expectedViewTag: string = await deriveViewTag(
+                    derivation, outputIndex, this.config,
+                );
+
+                if (expectedViewTag !== output.viewTag) {
+                    stats.skippedByTag++;
+                    continue;
+                }
+            }
+
+            stats.fullChecks++;
+
             /* Derive the spend key from the transaction, using the previous
                derivation */
             const derivedSpendKey = await underivePublicKey(
@@ -635,14 +840,14 @@ export class WalletSynchronizer extends EventEmitter {
 
     private processCoinbaseTransaction(
         block: Block,
-        ourInputs: [string, TransactionInput][]): Transaction | undefined {
+        ourInputs: Array<[string, TransactionInput]>): Transaction | undefined {
 
         /* Should be guaranteed to be defined here */
         const rawTX: RawCoinbaseTransaction = block.coinbaseTransaction as RawCoinbaseTransaction;
 
         const transfers: Map<string, number> = new Map();
 
-        const relevantInputs: [string, TransactionInput][]
+        const relevantInputs: Array<[string, TransactionInput]>
             = _.filter(ourInputs, ([, input]) => {
             return input.parentTransactionHash === rawTX.hash;
         });
@@ -674,12 +879,12 @@ export class WalletSynchronizer extends EventEmitter {
 
     private processTransaction(
         block: Block,
-        ourInputs: [string, TransactionInput][],
-        rawTX: RawTransaction): [Transaction | undefined, [string, string][]] {
+        ourInputs: Array<[string, TransactionInput]>,
+        rawTX: RawTransaction): [Transaction | undefined, Array<[string, string]>] {
 
         const transfers: Map<string, number> = new Map();
 
-        const relevantInputs: [string, TransactionInput][]
+        const relevantInputs: Array<[string, TransactionInput]>
             = _.filter(ourInputs, ([, input]) => {
             return input.parentTransactionHash === rawTX.hash;
         });
@@ -691,7 +896,7 @@ export class WalletSynchronizer extends EventEmitter {
             );
         }
 
-        const spentKeyImages: [string, string][] = [];
+        const spentKeyImages: Array<[string, string]> = [];
 
         for (const input of rawTX.keyInputs) {
             const [found, publicSpendKey] = this.subWallets.getKeyImageOwner(
@@ -724,87 +929,13 @@ export class WalletSynchronizer extends EventEmitter {
         return [undefined, []];
     }
 
-    public async checkIncomingPoolTransaction(thisTx, thisHash, spendKeys) {
-        let txPubKey: string
-        const incomingOutputs = []
-        const thisExtra: string = thisTx.extra
-        try {
-            txPubKey = thisExtra.substring(2,66)
-        } catch (e) {
-            logger.log(`Some parse error in thisExtra, checkIncomingPoolTransaction`, LogLevel.INFO, LogCategory.SYNC)
+    private getMutableScanStats(): ScanStats {
+        /* Wallets loaded from JSON skip the field initializers */
+        if (!this.scanStats) {
+            this.scanStats = emptyScanStats();
         }
 
-        const derivation = await generateKeyDerivation(txPubKey, this.privateViewKey, this.config);
-        let outputIndex = 0
-        for (const output of thisTx.vout) {
-            /* Derive the spend key from the transaction, using the previous
-            derivation */
-            const derivedSpendKey = await underivePublicKey(derivation, outputIndex, output.target.data.key, this.config);
-            /* See if the derived spend key matches any of our spend keys */
-            outputIndex++
-            
-            if (!_.includes(spendKeys, derivedSpendKey)) {
-                continue;
-            }
-
-            /* The public spend key of the subwallet that owns this input */
-            const ownerSpendKey = derivedSpendKey;
-            const [keyImage] = await this.subWallets.getTxInputKeyImage(ownerSpendKey, derivation, outputIndex);
-            const amount = output.amount
-            const key = output.target.data.key
-            /* Save the locked transaction keyimage, hash and spendkey to array */
-            incomingOutputs.push({ownerSpendKey, keyImage, thisHash, amount, key});
-            
-        }
-    
-        if (incomingOutputs.length === 0) return false
-
-        let amount: number = 0
-        /* Mark the outputs as locked */
-        for (const output of incomingOutputs) {
-            this.subWallets.markInputAsLocked(output.ownerSpendKey, output.keyImage, output.thisHash);
-            
-            const unconfirmed = new UnconfirmedInput(
-                output.amount, output.key, output.thisHash, true
-            );
-            amount += output.amount
-            this.subWallets.storeUnconfirmedIncomingInput(unconfirmed, output.ownerSpendKey);
-        }
-        this.emit('unconfirmedtx', amount, thisHash)
-        return true
+        return this.scanStats;
     }
 
-    
-    public async checkPoolTransactions() {
-
-        let txArray = await this.daemon.getPoolChanges(this.subWallets.knownTransactions);
-        if (!txArray) return
-        
-        const spendKeys = this.subWallets.getPublicSpendKeys();
-     
-        logger.log(`Checking all txs in pool ${JSON.stringify(txArray.addedTxs)}`, LogLevel.DEBUG, LogCategory.SYNC)
-
-        for (const tx of txArray.addedTxs) {
-            const thisHash: string = tx.transactionPrefixInfotxHash
-            if (thisHash.length !== 64) continue
-            if (this.subWallets.knownTransactions.some(a => a === thisHash)) {
-                continue
-            }
-            
-            if (tx.transactionPrefixInfo.extra.length > 200) {
-                this.subWallets.knownTransactions.push(thisHash)
-                continue
-            }
-            const thisTx = tx.transactionPrefixInfo
-            
-            if (typeof thisTx !== 'object') continue
-            this.subWallets.knownTransactions.push(thisHash)
-            await this.checkIncomingPoolTransaction(thisTx, thisHash, spendKeys)
-        }
-
-        const filtered = this.subWallets.knownTransactions.filter((n) => !txArray.deletedTxsIds.includes(n));
-        this.subWallets.knownTransactions = filtered;
-    }
-    
 }
-

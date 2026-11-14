@@ -437,7 +437,7 @@ export class UnconfirmedInput {
 
             parentTransactionHash: this.parentTransactionHash,
 
-            locked: this.locked
+            locked: this.locked,
         };
     }
 }
@@ -449,11 +449,21 @@ export class KeyOutput {
     public static fromJSON(json: any): KeyOutput {
         const keyOutput = Object.create(KeyOutput.prototype);
 
-        return Object.assign(keyOutput, {
+        const fields: any = {
             amount: json.amount,
             globalIndex: json.globalIndex,
             key: json.key,
-        });
+        };
+
+        /* Tagged outputs (transaction version 2) carry their view tag as
+           `view_tag`; untagged outputs and older daemons have none */
+        const viewTag: string | undefined = normalizeViewTag(json.view_tag);
+
+        if (viewTag !== undefined) {
+            fields.viewTag = viewTag;
+        }
+
+        return Object.assign(keyOutput, fields);
     }
 
     /* The output key */
@@ -466,13 +476,62 @@ export class KeyOutput {
        this, but the regular daemon does not. */
     public readonly globalIndex?: number;
 
+    /* The view tag of a tagged output (transaction version 2), as two
+       lowercase hex characters. Undefined for untagged (version 1) outputs. */
+    public readonly viewTag?: string;
+
     constructor(
         key: string,
-        amount: number) {
+        amount: number,
+        viewTag?: string) {
 
         this.key = key;
         this.amount = amount;
+
+        const tag: string | undefined = normalizeViewTag(viewTag);
+
+        if (tag !== undefined) {
+            this.viewTag = tag;
+        }
     }
+}
+
+/**
+ * Normalizes a view tag to two lowercase hex characters. Returns undefined
+ * for a missing or malformed tag, so such an output takes the full ownership
+ * check instead of being skipped.
+ *
+ * @hidden
+ */
+export function normalizeViewTag(viewTag: any): string | undefined {
+    if (typeof viewTag === 'number' && Number.isInteger(viewTag) && viewTag >= 0 && viewTag <= 255) {
+        return viewTag.toString(16).padStart(2, '0');
+    }
+
+    if (typeof viewTag === 'string' && /^[0-9a-fA-F]{2}$/.test(viewTag)) {
+        return viewTag.toLowerCase();
+    }
+
+    return undefined;
+}
+
+/**
+ * Counts of the output scan, showing what the view tags saved. Mirrors
+ * `ScanStats` of the Rust wallet core.
+ */
+export interface ScanStats {
+    /* Outputs looked at */
+    outputs: number;
+
+    /* Outputs that carried a view tag (transaction version 2) */
+    tagged: number;
+
+    /* Tagged outputs rejected by the view tag alone, without a key derivation */
+    skippedByTag: number;
+
+    /* Outputs that needed the full ownership check (underivePublicKey):
+       untagged outputs and tagged outputs whose view tag matched */
+    fullChecks: number;
 }
 
 /**
@@ -517,10 +576,10 @@ export class TransactionData {
     public transactionsToAdd: Transaction[] = [];
 
     /* Mapping of public spend key to inputs */
-    public inputsToAdd: [string, TransactionInput][] = [];
+    public inputsToAdd: Array<[string, TransactionInput]> = [];
 
     /* Mapping of public spend key to key image */
-    public keyImagesToMarkSpent: [string, string][] = [];
+    public keyImagesToMarkSpent: Array<[string, string]> = [];
 }
 
 /**

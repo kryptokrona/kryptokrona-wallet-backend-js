@@ -3,3 +3,4 @@ mywallet.wallet
 package-lock.json
 .idea
 yarn-error.log
+dist/tests/

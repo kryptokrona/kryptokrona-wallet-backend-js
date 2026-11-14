@@ -78,7 +78,9 @@ export declare enum WalletErrorCode {
     DAEMON_STILL_PROCESSING = 55,
     OUTPUT_DECOMPOSITION = 56,
     PREPARED_TRANSACTION_EXPIRED = 57,
-    PREPARED_TRANSACTION_NOT_FOUND = 58
+    PREPARED_TRANSACTION_NOT_FOUND = 58,
+    TRANSACTION_VERSION_NOT_ALLOWED = 59,
+    TRANSACTION_VERSION_NOT_SUPPORTED = 60
 }
 /**
  * Lets us easier compare if a operation code was successful.

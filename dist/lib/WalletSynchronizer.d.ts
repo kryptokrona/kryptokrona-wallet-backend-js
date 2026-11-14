@@ -1,11 +1,23 @@
-/// <reference types="node" />
 import { EventEmitter } from 'events';
 import { Config } from './Config';
 import { Daemon } from './Daemon';
 import { SubWallets } from './SubWallets';
 import { SynchronizationStatus } from './SynchronizationStatus';
 import { WalletSynchronizerJSON } from './JsonSerialization';
-import { Block, TransactionData, TransactionInput } from './Types';
+import { Block, TransactionData, TransactionInput, ScanStats } from './Types';
+/**
+ * An output of a pool transaction that belongs to this wallet
+ *
+ * @hidden
+ */
+export interface PoolTransactionOutput {
+    ownerSpendKey: string;
+    keyImage: string;
+    thisHash: string;
+    amount: number;
+    key: string;
+    index: number;
+}
 /**
  * Decrypts blocks for our transactions and inputs
  * @noInheritDoc
@@ -60,6 +72,11 @@ export declare class WalletSynchronizer extends EventEmitter {
      */
     private lastDownloadedBlocks;
     private config;
+    /**
+     * Counts of the output scan since the wallet was started or loaded (not
+     * saved in the wallet file)
+     */
+    private scanStats;
     constructor(daemon: Daemon, subWallets: SubWallets, startTimestamp: number, startHeight: number, privateViewKey: string, config: Config, synchronizationStatus?: SynchronizationStatus);
     getScanHeights(): [number, number];
     /**
@@ -67,10 +84,21 @@ export declare class WalletSynchronizer extends EventEmitter {
      */
     initAfterLoad(subWallets: SubWallets, daemon: Daemon, config: Config): void;
     /**
+     * Returns the counts of the output scan so far: outputs looked at, outputs
+     * with a view tag, tagged outputs skipped by their view tag, and outputs
+     * that needed the full ownership check. Only counts the built-in scan,
+     * not a function set with `setBlockOutputProcessFunc`.
+     */
+    getScanStats(): ScanStats;
+    /**
+     * Resets the counts returned by [[getScanStats]]
+     */
+    resetScanStats(): void;
+    /**
      * Convert from class to stringable type
      */
     toJSON(): WalletSynchronizerJSON;
-    processBlock(block: Block, ourInputs: [string, TransactionInput][]): TransactionData;
+    processBlock(block: Block, ourInputs: Array<[string, TransactionInput]>): TransactionData;
     /**
      * Process transaction outputs of the given block. No external dependencies,
      * lets us easily swap out with a C++ replacement for SPEEEED
@@ -81,7 +109,7 @@ export declare class WalletSynchronizer extends EventEmitter {
      * @param isViewWallet
      * @param processCoinbaseTransactions
      */
-    processBlockOutputs(block: Block, privateViewKey: string, spendKeys: [string, string][], isViewWallet: boolean, processCoinbaseTransactions: boolean): Promise<[string, TransactionInput][]>;
+    processBlockOutputs(block: Block, privateViewKey: string, spendKeys: Array<[string, string]>, isViewWallet: boolean, processCoinbaseTransactions: boolean): Promise<Array<[string, TransactionInput]>>;
     /**
      * Get the height of the sync process
      */
@@ -102,6 +130,16 @@ export declare class WalletSynchronizer extends EventEmitter {
     dropBlock(blockHeight: number, blockHash: string): void;
     getBlockCheckpoints(): string[];
     getRecentBlockHashes(): string[];
+    /**
+     * Finds the outputs of a pool transaction (`/get_pool_changes_lite`
+     * `txPrefix` JSON) that belong to us. Tagged outputs (`target.type` "03",
+     * `target.data.view_tag`) are checked against their view tag first.
+     *
+     * @hidden
+     */
+    getPoolTransactionOutputs(thisTx: any, thisHash: string, spendKeys: string[]): Promise<PoolTransactionOutput[]>;
+    checkIncomingPoolTransaction(thisTx: any, thisHash: any, spendKeys: any): Promise<boolean>;
+    checkPoolTransactions(): Promise<void>;
     private getStoredBlockCheckpoints;
     /**
      * Only retrieve more blocks if we're not getting close to the memory limit
@@ -115,6 +153,5 @@ export declare class WalletSynchronizer extends EventEmitter {
     private processTransactionOutputs;
     private processCoinbaseTransaction;
     private processTransaction;
-    checkIncomingPoolTransaction(thisTx: any, thisHash: any, spendKeys: any): Promise<boolean>;
-    checkPoolTransactions(): Promise<void>;
+    private getMutableScanStats;
 }

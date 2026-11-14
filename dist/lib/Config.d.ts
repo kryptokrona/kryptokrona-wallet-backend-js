@@ -153,6 +153,31 @@ export interface IConfig {
      */
     generateKeys?: () => Promise<IKeyPair>;
     /**
+     * A replacement function for the view tag of an output (transaction
+     * version 2): the first byte of cn_fast_hash("view_tag" || derivation || varint(outputIndex)),
+     * as two hex characters.
+     */
+    deriveViewTag?: (derivation: string, outputIndex: number) => Promise<string>;
+    /**
+     * A replacement function for single-key CLSAG signing (transaction version 2).
+     * Called with alpha === '' and decoyResponses === [] when fresh randomness
+     * is wanted.
+     */
+    clsagSign?: (prefixHash: string, ring: string[], privateEphemeral: string, realOutputIndex: number, alpha: string, decoyResponses: string[]) => Promise<{
+        c1: string;
+        s: string[];
+    }>;
+    /**
+     * A replacement function for single-key CLSAG verification (transaction version 2).
+     */
+    clsagVerify?: (prefixHash: string, ring: string[], keyImage: string, c1: string, s: string[]) => Promise<boolean>;
+    /**
+     * The transaction version to build: 1 or 2. Leave unset (the default) to
+     * build the highest version the daemon accepts (`/info` `tx_versions`) that
+     * the loaded cryptographic library supports. Meant for tests.
+     */
+    transactionVersion?: 1 | 2;
+    /**
      * The max amount of memory to use, storing downloaded blocks to be processed.
      */
     blockStoreMemoryLimit?: number;
@@ -251,7 +276,8 @@ export declare class Config implements IConfig {
     feePerByteChunkSize: number;
     minimumFeePerByte: number;
     /**
-     * Mapping of height to mixin maximum and mixin minimum
+     * Mapping of height to mixin maximum and mixin minimum. The limits apply
+     * to transaction versions 1 and 2 alike.
      */
     mixinLimits: MixinLimits;
     /**
@@ -325,6 +351,26 @@ export declare class Config implements IConfig {
     * A replacement function for the JS/C++ generateKeys.
     */
     generateKeys?: () => Promise<IKeyPair>;
+    /**
+     * A replacement function for the view tag of an output (transaction version 2).
+     */
+    deriveViewTag?: (derivation: string, outputIndex: number) => Promise<string>;
+    /**
+     * A replacement function for single-key CLSAG signing (transaction version 2).
+     */
+    clsagSign?: (prefixHash: string, ring: string[], privateEphemeral: string, realOutputIndex: number, alpha: string, decoyResponses: string[]) => Promise<{
+        c1: string;
+        s: string[];
+    }>;
+    /**
+     * A replacement function for single-key CLSAG verification (transaction version 2).
+     */
+    clsagVerify?: (prefixHash: string, ring: string[], keyImage: string, c1: string, s: string[]) => Promise<boolean>;
+    /**
+     * The transaction version to build (1 or 2). Undefined: the highest version
+     * the daemon accepts that the loaded cryptographic library supports.
+     */
+    transactionVersion?: 1 | 2;
     /**
      * The amount of memory to use storing downloaded blocks - 50MB
      */

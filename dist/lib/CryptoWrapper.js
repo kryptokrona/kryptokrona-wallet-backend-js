@@ -12,9 +12,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.underivePublicKey = exports.generateKeyImage = exports.generateKeyImagePrimitive = exports.generateKeyDerivation = void 0;
+exports.generateKeyDerivation = generateKeyDerivation;
+exports.generateKeyImagePrimitive = generateKeyImagePrimitive;
+exports.generateKeyImage = generateKeyImage;
+exports.underivePublicKey = underivePublicKey;
+exports.deriveViewTag = deriveViewTag;
+exports.computeViewTag = computeViewTag;
 const kryptokrona_utils_1 = require("kryptokrona-utils");
 const CnUtils_1 = require("./CnUtils");
+const Types_1 = require("./Types");
 const TurtleCoinCrypto = new kryptokrona_utils_1.Crypto();
 const nullKey = '0'.repeat(64);
 function generateKeyDerivation(transactionPublicKey, privateViewKey, config) {
@@ -30,7 +36,6 @@ function generateKeyDerivation(transactionPublicKey, privateViewKey, config) {
         }
     });
 }
-exports.generateKeyDerivation = generateKeyDerivation;
 function generateKeyImagePrimitive(publicSpendKey, privateSpendKey, outputIndex, derivation, config) {
     return __awaiter(this, void 0, void 0, function* () {
         if (config.derivePublicKey && config.deriveSecretKey && config.generateKeyImage) {
@@ -51,14 +56,12 @@ function generateKeyImagePrimitive(publicSpendKey, privateSpendKey, outputIndex,
         }
     });
 }
-exports.generateKeyImagePrimitive = generateKeyImagePrimitive;
 function generateKeyImage(transactionPublicKey, privateViewKey, publicSpendKey, privateSpendKey, transactionIndex, config) {
     return __awaiter(this, void 0, void 0, function* () {
         const derivation = yield generateKeyDerivation(transactionPublicKey, privateViewKey, config);
         return generateKeyImagePrimitive(publicSpendKey, privateSpendKey, transactionIndex, derivation, config);
     });
 }
-exports.generateKeyImage = generateKeyImage;
 function underivePublicKey(derivation, outputIndex, outputKey, config) {
     return __awaiter(this, void 0, void 0, function* () {
         if (config.underivePublicKey) {
@@ -72,4 +75,68 @@ function underivePublicKey(derivation, outputIndex, outputKey, config) {
         }
     });
 }
-exports.underivePublicKey = underivePublicKey;
+/**
+ * The 8 ASCII bytes "view_tag" (no terminator): the domain separator of the
+ * view tag hash.
+ */
+const VIEW_TAG_DOMAIN = '766965775f746167';
+/**
+ * Encodes a non negative integer as a CryptoNote (LEB128) varint, in hex.
+ */
+function varintHex(value) {
+    let result = '';
+    do {
+        let byte = value % 128;
+        value = Math.floor(value / 128);
+        if (value > 0) {
+            byte += 128;
+        }
+        result += byte.toString(16).padStart(2, '0');
+    } while (value > 0);
+    return result;
+}
+/**
+ * The view tag of output `outputIndex` (transaction version 2, fork 14):
+ * the first byte of cn_fast_hash("view_tag" || derivation || varint(outputIndex)),
+ * as two lowercase hex characters.
+ *
+ * Uses, in order: the `deriveViewTag` config hook, kryptokrona-crypto's
+ * `deriveViewTag`, and a computation over `cn_fast_hash`.
+ */
+function deriveViewTag(derivation, outputIndex, config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (config.deriveViewTag) {
+            const tag = (0, Types_1.normalizeViewTag)(yield config.deriveViewTag(derivation, outputIndex));
+            if (tag !== undefined) {
+                return tag;
+            }
+        }
+        const crypto = TurtleCoinCrypto;
+        if (typeof crypto.deriveViewTag === 'function') {
+            try {
+                const tag = (0, Types_1.normalizeViewTag)(yield crypto.deriveViewTag(derivation, outputIndex));
+                if (tag !== undefined) {
+                    return tag;
+                }
+            }
+            catch (err) {
+                /* Fall through to the cn_fast_hash computation */
+            }
+        }
+        return computeViewTag(derivation, outputIndex, config);
+    });
+}
+/**
+ * The view tag computed over `cn_fast_hash` (the fallback of [[deriveViewTag]]).
+ *
+ * @hidden
+ */
+function computeViewTag(derivation, outputIndex, config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = VIEW_TAG_DOMAIN + derivation.toLowerCase() + varintHex(outputIndex);
+        const hash = config.cnFastHash
+            ? yield config.cnFastHash(data)
+            : yield TurtleCoinCrypto.cn_fast_hash(data);
+        return hash.substring(0, 2).toLowerCase();
+    });
+}

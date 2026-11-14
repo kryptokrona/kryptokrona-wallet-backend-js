@@ -3,7 +3,8 @@
 //
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transfersToVector = exports.txPrivateKeysToVector = void 0;
+exports.txPrivateKeysToVector = txPrivateKeysToVector;
+exports.transfersToVector = transfersToVector;
 function txPrivateKeysToVector(txPrivateKeys) {
     const arr = [];
     for (const [hash, privateKey] of txPrivateKeys) {
@@ -11,7 +12,6 @@ function txPrivateKeysToVector(txPrivateKeys) {
     }
     return arr;
 }
-exports.txPrivateKeysToVector = txPrivateKeysToVector;
 function transfersToVector(transfers) {
     const arr = [];
     for (const [publicKey, amount] of transfers) {
@@ -19,4 +19,3 @@ function transfersToVector(transfers) {
     }
     return arr;
 }
-exports.transfersToVector = transfersToVector;

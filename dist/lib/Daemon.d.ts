@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { EventEmitter } from 'events';
 import { Block as UtilsBlock, Transaction as UtilsTransaction } from 'kryptokrona-utils';
 import { IConfig } from './Config';
@@ -150,6 +149,15 @@ export declare class Daemon extends EventEmitter {
      */
     private lastKnownHashrate;
     /**
+     * The transaction versions the daemon accepts for the next block, from
+     * `/info` `tx_versions` (see [[getTransactionVersions]])
+     */
+    private transactionVersions;
+    /**
+     * The major version of the daemon's top block, if it reports one
+     */
+    private majorVersion;
+    /**
      * The number of blocks to download per /getwalletsyncdata request
      */
     private blockCount;
@@ -203,6 +211,25 @@ export declare class Daemon extends EventEmitter {
      */
     getLocalDaemonBlockCount(): number;
     /**
+     * The transaction versions the daemon accepts for the next block, as
+     * reported by `/info` `tx_versions` (refreshed with the daemon info).
+     * `[1]` before fork 14, `[1, 2]` during the grace period, `[2]` after it.
+     *
+     * Daemons without the field: `[1, 2]` if the top block's major version is
+     * 7 or higher, otherwise `[1]`.
+     *
+     * Example:
+     * ```javascript
+     * const versions = daemon.getTransactionVersions();
+     * ```
+     */
+    getTransactionVersions(): number[];
+    /**
+     * The major version of the daemon's top block, or undefined if the daemon
+     * does not report one (or no daemon info has been fetched yet).
+     */
+    getMajorVersion(): number | undefined;
+    /**
      * Initialize the daemon and the fee info
      */
     init(): Promise<void>;
@@ -242,7 +269,7 @@ export declare class Daemon extends EventEmitter {
      *          should be requestedOuts indexes if the daemon fully fulfilled
      *          our request.
      */
-    getRandomOutputsByAmount(amounts: number[], requestedOuts: number): Promise<[number, [number, string][]][]>;
+    getRandomOutputsByAmount(amounts: number[], requestedOuts: number): Promise<Array<[number, Array<[number, string]>]>>;
     sendTransaction(rawTransaction: string): Promise<[boolean, string | undefined]>;
     getConnectionInfo(): DaemonConnection;
     getConnectionString(): string;

@@ -4,6 +4,7 @@
 // Please see the included LICENSE file for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DaemonType = exports.TopBlock = exports.TxInputAndOwner = exports.TransactionData = exports.KeyInput = exports.KeyOutput = exports.UnconfirmedInput = exports.TransactionInput = exports.Transaction = exports.RawTransaction = exports.RawCoinbaseTransaction = exports.Block = void 0;
+exports.normalizeViewTag = normalizeViewTag;
 const JsonSerialization_1 = require("./JsonSerialization");
 /**
  * @hidden
@@ -205,7 +206,7 @@ class UnconfirmedInput {
             amount: this.amount,
             key: this.key,
             parentTransactionHash: this.parentTransactionHash,
-            locked: this.locked
+            locked: this.locked,
         };
     }
 }
@@ -216,18 +217,45 @@ exports.UnconfirmedInput = UnconfirmedInput;
 class KeyOutput {
     static fromJSON(json) {
         const keyOutput = Object.create(KeyOutput.prototype);
-        return Object.assign(keyOutput, {
+        const fields = {
             amount: json.amount,
             globalIndex: json.globalIndex,
             key: json.key,
-        });
+        };
+        /* Tagged outputs (transaction version 2) carry their view tag as
+           `view_tag`; untagged outputs and older daemons have none */
+        const viewTag = normalizeViewTag(json.view_tag);
+        if (viewTag !== undefined) {
+            fields.viewTag = viewTag;
+        }
+        return Object.assign(keyOutput, fields);
     }
-    constructor(key, amount) {
+    constructor(key, amount, viewTag) {
         this.key = key;
         this.amount = amount;
+        const tag = normalizeViewTag(viewTag);
+        if (tag !== undefined) {
+            this.viewTag = tag;
+        }
     }
 }
 exports.KeyOutput = KeyOutput;
+/**
+ * Normalizes a view tag to two lowercase hex characters. Returns undefined
+ * for a missing or malformed tag, so such an output takes the full ownership
+ * check instead of being skipped.
+ *
+ * @hidden
+ */
+function normalizeViewTag(viewTag) {
+    if (typeof viewTag === 'number' && Number.isInteger(viewTag) && viewTag >= 0 && viewTag <= 255) {
+        return viewTag.toString(16).padStart(2, '0');
+    }
+    if (typeof viewTag === 'string' && /^[0-9a-fA-F]{2}$/.test(viewTag)) {
+        return viewTag.toLowerCase();
+    }
+    return undefined;
+}
 /**
  * @hidden
  */

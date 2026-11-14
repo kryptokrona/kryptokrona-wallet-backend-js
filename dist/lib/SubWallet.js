@@ -175,12 +175,13 @@ class SubWallet {
         const [removedInput] = _.remove(this.unspentInputs, (input) => {
             return input.keyImage === keyImage;
         });
-        if (this.lockedInputs.some(a => a.keyImage === keyImage)) {
+        if (this.lockedInputs.some((a) => a.keyImage === keyImage)) {
             Logger_1.logger.log(`This input is already locked! ${JSON.stringify(keyImage)}`, Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
             return;
         }
-        if (!removedInput)
+        if (!removedInput) {
             return;
+        }
         removedInput.parentTransactionHash = transactionHash;
         if (!removedInput) {
             Logger_1.logger.log('Could not find key image to lock!', Logger_1.LogLevel.ERROR, Logger_1.LogCategory.SYNC);
@@ -292,8 +293,9 @@ class SubWallet {
         const locked = this.getLockedMessageBalance();
         unlockedBalance += locked;
         lockedBalance += _.sumBy(this.unconfirmedIncomingAmounts, 'amount');
-        if (unlockedBalance < 0)
+        if (unlockedBalance < 0) {
             unlockedBalance = 0;
+        }
         return [unlockedBalance, lockedBalance];
     }
     /**
@@ -302,7 +304,7 @@ class SubWallet {
     */
     getLockedMessageBalance() {
         Logger_1.logger.log(`Unconfirmed inc amounts, getLocked ${JSON.stringify(this.unconfirmedIncomingAmounts)}`, Logger_1.LogLevel.DEBUG, [Logger_1.LogCategory.SYNC, Logger_1.LogCategory.TRANSACTIONS]);
-        const unconfirmed = this.unconfirmedIncomingAmounts.filter(a => a.locked === true);
+        const unconfirmed = this.unconfirmedIncomingAmounts.filter((a) => a.locked === true);
         return _.sumBy(unconfirmed, 'amount');
     }
     /**
@@ -333,7 +335,7 @@ class SubWallet {
         return inputs;
     }
     storeUnconfirmedIncomingInput(input) {
-        if (this.unconfirmedIncomingAmounts.some(a => a.key === input.key)) {
+        if (this.unconfirmedIncomingAmounts.some((a) => a.key === input.key)) {
             Logger_1.logger.log(`Already know this unconfirmed input`, Logger_1.LogLevel.INFO, Logger_1.LogCategory.SYNC);
             return;
         }

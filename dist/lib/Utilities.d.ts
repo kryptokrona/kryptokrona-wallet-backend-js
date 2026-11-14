@@ -107,4 +107,11 @@ export declare function isValidMnemonicWord(word: string): boolean;
 export declare function isValidMnemonic(mnemonic: string, config?: IConfig): Promise<[boolean, string]>;
 export declare function getMinimumTransactionFee(transactionSize: number, height: number, config?: IConfig): number;
 export declare function getTransactionFee(transactionSize: number, height: number, feePerByte: number, config?: IConfig): number;
-export declare function estimateTransactionSize(mixin: number, numInputs: number, numOutputs: number, havePaymentID: boolean, extraDataSize: number): number;
+/**
+ * Estimates the size of a transaction in bytes.
+ *
+ * Version 1 signs each input with a ring signature of 64 bytes per ring
+ * member. Version 2 signs each input with a CLSAG of 32 bytes per ring member
+ * plus 32 bytes, and each output carries one extra byte (the view tag).
+ */
+export declare function estimateTransactionSize(mixin: number, numInputs: number, numOutputs: number, havePaymentID: boolean, extraDataSize: number, transactionVersion?: number): number;

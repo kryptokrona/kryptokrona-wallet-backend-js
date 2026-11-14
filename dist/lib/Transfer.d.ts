@@ -87,5 +87,5 @@ export declare function sendTransactionBasic(config: Config, daemon: Daemon, sub
  *                              Defaults to false.
  * @param extraData             Extra arbitrary data to include in the transaction
  */
-export declare function sendTransactionAdvanced(config: Config, daemon: Daemon, subWallets: SubWallets, addressesAndAmounts: [string, number][], mixin?: number, fee?: FeeType, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string, relayToNetwork?: boolean, sendAll?: boolean, extraData?: string): Promise<PreparedTransactionInfo>;
+export declare function sendTransactionAdvanced(config: Config, daemon: Daemon, subWallets: SubWallets, addressesAndAmounts: Array<[string, number]>, mixin?: number, fee?: FeeType, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string, relayToNetwork?: boolean, sendAll?: boolean, extraData?: string): Promise<PreparedTransactionInfo>;
 export declare function sendPreparedTransaction(transaction: PreparedTransaction, subWallets: SubWallets, daemon: Daemon, config: Config): Promise<PreparedTransactionInfo>;

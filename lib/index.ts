@@ -14,9 +14,10 @@ export {
 
 export { LogLevel, LogCategory } from './Logger';
 export { validateAddress, validateAddresses, validatePaymentID } from './ValidateParameters';
-export { TransactionInput, DaemonType, DaemonConnection } from './Types';
+export { TransactionInput, DaemonType, DaemonConnection, ScanStats } from './Types';
 export { MixinLimit, MixinLimits } from './MixinLimits';
 export { Config } from './Config';
+export { chooseTransactionVersion, parseTransactionVersions } from './TransactionVersion';
 
 // this is to keep pesky timeout errors away
 // see https://stackoverflow.com/questions/24320578/node-js-get-request-etimedout-esockettimedout/37946324#37946324

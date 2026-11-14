@@ -3,7 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import { MixinLimit, MixinLimits } from './MixinLimits';
-import {IKeyPair} from 'kryptokrona-crypto'
+import {IKeyPair} from 'kryptokrona-crypto';
 
 const version = require('../../package.json').version;
 
@@ -157,9 +157,9 @@ export interface IConfig {
      * A replacement function for the JS/C++ checkRingSignature.
      */
     checkRingSignature?: (transactionPrefixHash: string,
-                           keyImage: string,
-                           publicKeys: string[],
-                           signatures: string[]) => Promise<boolean>;
+                          keyImage: string,
+                          publicKeys: string[],
+                          signatures: string[]) => Promise<boolean>;
 
     /**
      * A replacement function for the JS/C++ generateKeyDerivation.
@@ -207,6 +207,41 @@ export interface IConfig {
      */
     generateKeys?: () => Promise<IKeyPair>;
 
+    /**
+     * A replacement function for the view tag of an output (transaction
+     * version 2): the first byte of cn_fast_hash("view_tag" || derivation || varint(outputIndex)),
+     * as two hex characters.
+     */
+    deriveViewTag?: (derivation: string,
+                     outputIndex: number) => Promise<string>;
+
+    /**
+     * A replacement function for single-key CLSAG signing (transaction version 2).
+     * Called with alpha === '' and decoyResponses === [] when fresh randomness
+     * is wanted.
+     */
+    clsagSign?: (prefixHash: string,
+                 ring: string[],
+                 privateEphemeral: string,
+                 realOutputIndex: number,
+                 alpha: string,
+                 decoyResponses: string[]) => Promise<{ c1: string, s: string[] }>;
+
+    /**
+     * A replacement function for single-key CLSAG verification (transaction version 2).
+     */
+    clsagVerify?: (prefixHash: string,
+                   ring: string[],
+                   keyImage: string,
+                   c1: string,
+                   s: string[]) => Promise<boolean>;
+
+    /**
+     * The transaction version to build: 1 or 2. Leave unset (the default) to
+     * build the highest version the daemon accepts (`/info` `tx_versions`) that
+     * the loaded cryptographic library supports. Meant for tests.
+     */
+    transactionVersion?: 1 | 2;
 
     /**
      * The max amount of memory to use, storing downloaded blocks to be processed.
@@ -337,7 +372,8 @@ export class Config implements IConfig {
     public minimumFeePerByte = 500.00 / this.feePerByteChunkSize;
 
     /**
-     * Mapping of height to mixin maximum and mixin minimum
+     * Mapping of height to mixin maximum and mixin minimum. The limits apply
+     * to transaction versions 1 and 2 alike.
      */
     public mixinLimits: MixinLimits = new MixinLimits([
         /* Height: 440,000, minMixin: 0, maxMixin: 100, defaultMixin: 3 */
@@ -348,6 +384,10 @@ export class Config implements IConfig {
 
         /* At height of 800000, static mixin of 3 */
         new MixinLimit(800000, 3),
+
+        /* Height: 1,250,000, minMixin: 1, maxMixin: 5, defaultMixin: 5
+           (MIXIN_LIMITS_V4_HEIGHT) */
+        new MixinLimit(1250000, 1, 5, 5),
     ], 3 /* Default mixin of 3 before block 440,000 */);
 
     /**
@@ -420,9 +460,9 @@ export class Config implements IConfig {
      * A replacement function for the JS/C++ checkRingSignatures.
      */
     public checkRingSignature?: (transactionPrefixHash: string,
-                                  keyImage: string,
-                                  publicKeys: string[],
-                                  signatures: string[]) => Promise<boolean> = undefined;
+                                 keyImage: string,
+                                 publicKeys: string[],
+                                 signatures: string[]) => Promise<boolean> = undefined;
 
     /**
      * A replacement function for the JS/C++ generateKeyDerivation.
@@ -458,12 +498,43 @@ export class Config implements IConfig {
     /**
      * A replacement function for the JS/C++ hashToScalar.
      */
-    public hashToScalar?: (hash: string) => Promise<string> = undefined;     
+    public hashToScalar?: (hash: string) => Promise<string> = undefined;
 
      /**
      * A replacement function for the JS/C++ generateKeys.
      */
-     public generateKeys?: () => Promise<IKeyPair> = undefined;
+    public generateKeys?: () => Promise<IKeyPair> = undefined;
+
+    /**
+     * A replacement function for the view tag of an output (transaction version 2).
+     */
+    public deriveViewTag?: (derivation: string,
+                            outputIndex: number) => Promise<string> = undefined;
+
+    /**
+     * A replacement function for single-key CLSAG signing (transaction version 2).
+     */
+    public clsagSign?: (prefixHash: string,
+                        ring: string[],
+                        privateEphemeral: string,
+                        realOutputIndex: number,
+                        alpha: string,
+                        decoyResponses: string[]) => Promise<{ c1: string, s: string[] }> = undefined;
+
+    /**
+     * A replacement function for single-key CLSAG verification (transaction version 2).
+     */
+    public clsagVerify?: (prefixHash: string,
+                          ring: string[],
+                          keyImage: string,
+                          c1: string,
+                          s: string[]) => Promise<boolean> = undefined;
+
+    /**
+     * The transaction version to build (1 or 2). Undefined: the highest version
+     * the daemon accepts that the loaded cryptographic library supports.
+     */
+    public transactionVersion?: 1 | 2 = undefined;
 
     /**
      * The amount of memory to use storing downloaded blocks - 50MB

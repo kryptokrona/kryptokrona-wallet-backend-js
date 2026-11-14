@@ -63,10 +63,55 @@ export class SubWallets {
     }
 
     /**
+     * @param config
+     * @param address
+     * @param scanHeight
+     * @param newWallet
+     * @param privateViewKey
+     * @param privateSpendKey Private spend key is optional if it's a view wallet
+     */
+    public static async init(
+         config: Config,
+         address: string,
+         scanHeight: number,
+         newWallet: boolean,
+         privateViewKey: string,
+         privateSpendKey?: string,
+    ): Promise<SubWallets> {
+        let timestamp = 0;
+
+        if (newWallet) {
+            timestamp = getCurrentTimestampAdjusted(config.blockTargetTime);
+        }
+
+        const decodedAddress = await Address.fromAddress(address, config.addressPrefix);
+
+        const publicSpendKeys: string[] = [];
+
+        publicSpendKeys.push(decodedAddress.spend.publicKey);
+
+        const subWallet = new SubWallet(
+            config, address, scanHeight, timestamp, decodedAddress.spend.publicKey,
+            privateSpendKey,
+        );
+
+        const subWallets: Map<string, SubWallet> = new Map();
+
+        subWallets.set(decodedAddress.spend.publicKey, subWallet);
+
+        return new SubWallets(config, privateSpendKey === undefined, privateViewKey, publicSpendKeys, subWallets);
+    }
+
+    /**
      * Whether the wallet is a view only wallet (cannot send transactions,
      * only can view)
      */
     public readonly isViewWallet: boolean;
+
+    /**
+     * Transactions we have already checked
+     */
+    public knownTransactions = [];
 
     /**
      * The public spend keys this wallet contains. Used for verifying if a
@@ -88,12 +133,6 @@ export class SubWallets {
      * Transactions we sent, but haven't been confirmed yet
      */
     private lockedTransactions: Transaction[] = [];
-
-    
-    /**
-     * Transactions we have already checked
-     */
-    public knownTransactions = []
 
     /**
      * The shared private view key
@@ -117,7 +156,7 @@ export class SubWallets {
         isViewWallet: boolean,
         privateViewKey: string,
         publicSpendKeys: string[],
-        subWallets: Map<string, SubWallet>
+        subWallets: Map<string, SubWallet>,
     ) {
         this.config = config;
 
@@ -128,46 +167,6 @@ export class SubWallets {
         this.publicSpendKeys = publicSpendKeys;
 
         this.subWallets = subWallets;
-    }
-
-    /**
-     * @param config
-     * @param address
-     * @param scanHeight
-     * @param newWallet
-     * @param privateViewKey
-     * @param privateSpendKey Private spend key is optional if it's a view wallet
-     */
-    public static async init(
-         config: Config,
-         address: string,
-         scanHeight: number,
-         newWallet: boolean,
-         privateViewKey: string,
-         privateSpendKey?: string
-    ): Promise<SubWallets> {
-        let timestamp = 0;
-
-        if (newWallet) {
-            timestamp = getCurrentTimestampAdjusted(config.blockTargetTime);
-        }
-
-        const decodedAddress = await Address.fromAddress(address, config.addressPrefix)
-
-        const publicSpendKeys: string[] = [];
-
-        publicSpendKeys.push(decodedAddress.spend.publicKey);
-
-        const subWallet = new SubWallet(
-            config, address, scanHeight, timestamp, decodedAddress.spend.publicKey,
-            privateSpendKey,
-        );
-
-        const subWallets: Map<string, SubWallet> = new Map();
-
-        subWallets.set(decodedAddress.spend.publicKey, subWallet);
-
-        return new SubWallets(config, privateSpendKey === undefined, privateViewKey, publicSpendKeys, subWallets);
     }
 
     public initKeyImageMap(): void {
@@ -477,8 +476,8 @@ export class SubWallets {
     /**
      * Get all [public, private] spend keys in a container
      */
-    public getAllSpendKeys(): [string, string][] {
-        const keys: [string, string][] = [];
+    public getAllSpendKeys(): Array<[string, string]> {
+        const keys: Array<[string, string]> = [];
 
         for (const [publicKey, subWallet] of this.subWallets) {
             keys.push([publicKey, subWallet.getPrivateSpendKey()]);
@@ -562,21 +561,21 @@ export class SubWallets {
         }
 
         let unconfirmedIncomingBalance = 0;
-        let locked = 0
+        let locked = 0;
         for (const publicSpendKey of publicSpendKeys) {
             const subWallet: SubWallet | undefined = this.subWallets.get(publicSpendKey);
 
             if (!subWallet) {
                 throw new Error('Subwallet not found!');
             }
-            
+
             unconfirmedIncomingBalance += subWallet.getUnconfirmedChange();
-            locked += subWallet.getLockedMessageBalance()
+            locked += subWallet.getLockedMessageBalance();
         }
 
         lockedBalance += unconfirmedIncomingBalance;
-        unlockedBalance -= (unconfirmedIncomingBalance -locked);
-  
+        unlockedBalance -= (unconfirmedIncomingBalance - locked);
+
         return [unlockedBalance, lockedBalance];
     }
 
@@ -939,7 +938,7 @@ export class SubWallets {
         this.deleteAddressTransactions(this.transactions, publicSpendKey);
         this.deleteAddressTransactions(this.lockedTransactions, publicSpendKey);
 
-        this.publicSpendKeys = this.publicSpendKeys.filter(elem => elem != publicSpendKey);
+        this.publicSpendKeys = this.publicSpendKeys.filter((elem) => elem !== publicSpendKey);
 
         return SUCCESS;
     }
@@ -966,7 +965,7 @@ export class SubWallets {
     }
 
     private async filterTransactions(txs: Transaction[], address?: string, includeFusions: boolean = true) {
-        const filters: ((tx: Transaction) => boolean)[] = [];
+        const filters: Array<(tx: Transaction) => boolean> = [];
 
         if (address) {
             const [, publicSpendKey] = await addressToKeys(address, this.config);

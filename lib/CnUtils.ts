@@ -32,6 +32,9 @@ export function CryptoUtils(config: Config): CryptoNote {
         generateSignature: config.generateSignature,
         checkSignature: config.checkSignature,
         hashToScalar: config.hashToScalar,
-        generateKeys: config.generateKeys
+        generateKeys: config.generateKeys,
+        deriveViewTag: config.deriveViewTag,
+        clsagSign: config.clsagSign,
+        clsagVerify: config.clsagVerify,
     });
 }

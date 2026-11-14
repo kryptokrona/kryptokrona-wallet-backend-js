@@ -28,7 +28,7 @@ export declare function validateAddress(address: string, integratedAddressAllowe
  *
  * @hidden
  */
-export declare function validateDestinations(destinations: [string, number][], config?: IConfig): Promise<WalletError>;
+export declare function validateDestinations(destinations: Array<[string, number]>, config?: IConfig): Promise<WalletError>;
 /**
  * Validate that the payment ID's included in integrated addresses are valid.
  *
@@ -38,7 +38,7 @@ export declare function validateDestinations(destinations: [string, number][], c
  *
  * @hidden
  */
-export declare function validateIntegratedAddresses(destinations: [string, number][], paymentID: string, config?: IConfig): Promise<WalletError>;
+export declare function validateIntegratedAddresses(destinations: Array<[string, number]>, paymentID: string, config?: IConfig): Promise<WalletError>;
 /**
  * Validate the the addresses given are both valid, and exist in the subwallet
  *
@@ -56,7 +56,7 @@ export declare function validateOurAddresses(addresses: string[], subWallets: Su
  *
  * @hidden
  */
-export declare function validateAmount(destinations: [string, number][], fee: FeeType, subWalletsToTakeFrom: string[], subWallets: SubWallets, currentHeight: number, config?: IConfig): Promise<WalletError>;
+export declare function validateAmount(destinations: Array<[string, number]>, fee: FeeType, subWalletsToTakeFrom: string[], subWallets: SubWallets, currentHeight: number, config?: IConfig): Promise<WalletError>;
 /**
  * Validates mixin is valid and in allowed range
  *

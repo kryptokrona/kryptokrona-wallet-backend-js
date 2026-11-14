@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { EventEmitter } from 'events';
 import { Block as UtilsBlock, Transaction as UtilsTransaction } from 'kryptokrona-utils';
 import { FeeType } from './FeeType';
@@ -6,7 +5,7 @@ import { Daemon } from './Daemon';
 import { IConfig } from './Config';
 import { LogCategory, LogLevel } from './Logger';
 import { WalletError } from './WalletError';
-import { Block, DaemonConnection, PreparedTransaction, SendTransactionResult, Transaction, TransactionInput } from './Types';
+import { Block, DaemonConnection, PreparedTransaction, SendTransactionResult, Transaction, TransactionInput, ScanStats } from './Types';
 export declare interface WalletBackend {
     /**
      * This is emitted whenever the wallet finds a new transaction.
@@ -492,6 +491,21 @@ export declare class WalletBackend extends EventEmitter {
     private static reviver;
     private static fromJSON;
     /**
+     * @param config
+     * @param daemon
+     * @param address
+     * @param newWallet Are we creating a new wallet? If so, it will start
+     *                  syncing from the current time.
+     *
+     * @param scanHeight    The height to begin scanning the blockchain from.
+     *                      This can greatly increase sync speeds if given.
+     *                      Set to zero if `newWallet` is `true`.
+     * @param privateViewKey
+     * @param privateSpendKey   Omit this parameter to create a view wallet.
+     *
+     */
+    private static init;
+    /**
      *  Contains private keys, transactions, inputs, etc
      */
     private readonly subWallets;
@@ -555,21 +569,6 @@ export declare class WalletBackend extends EventEmitter {
      */
     private preparedTransactions;
     private constructor();
-    /**
-     * @param config
-     * @param daemon
-     * @param address
-     * @param newWallet Are we creating a new wallet? If so, it will start
-     *                  syncing from the current time.
-     *
-     * @param scanHeight    The height to begin scanning the blockchain from.
-     *                      This can greatly increase sync speeds if given.
-     *                      Set to zero if `newWallet` is `true`.
-     * @param privateViewKey
-     * @param privateSpendKey   Omit this parameter to create a view wallet.
-     *
-     */
-    private static init;
     /**
      * Swaps the currently connected daemon with a different one. If the wallet
      * is currently started, it will remain started after the node is swapped,
@@ -890,6 +889,11 @@ export declare class WalletBackend extends EventEmitter {
      * We will fetch them from the daemon if needed. However, if you have them,
      * return them, to save us a daemon call.
      *
+     * Outputs of transaction version 2 carry a view tag (`keyOutputs[i].viewTag`,
+     * two hex characters, undefined for untagged outputs). Compute the view tag
+     * of output i from the per-transaction key derivation and skip the output
+     * when it does not match, before deriving the output key.
+     *
      * Your function should return an array of `[publicSpendKey, TransactionInput]`.
      * The public spend key is the corresponding subwallet that the transaction input
      * belongs to.
@@ -908,7 +912,22 @@ export declare class WalletBackend extends EventEmitter {
      * @param func.isViewWallet Whether this wallet is a view only wallet or not.
      * @param func.processCoinbaseTransactions Whether you should process coinbase transactions or not.
      */
-    setBlockOutputProcessFunc(func: (block: Block, privateViewKey: string, spendKeys: [string, string][], isViewWallet: boolean, processCoinbaseTransactions: boolean) => [string, TransactionInput][]): void;
+    setBlockOutputProcessFunc(func: (block: Block, privateViewKey: string, spendKeys: Array<[string, string]>, isViewWallet: boolean, processCoinbaseTransactions: boolean) => Array<[string, TransactionInput]>): void;
+    /**
+     * Returns the counts of the output scan since the wallet was started or
+     * loaded: outputs looked at, outputs with a view tag (transaction
+     * version 2), tagged outputs skipped by their view tag alone, and outputs
+     * that needed the full ownership check. Not counted when a function set
+     * with [[setBlockOutputProcessFunc]] does the scanning.
+     *
+     * Example:
+     * ```javascript
+     * const stats = wallet.getScanStats();
+     * console.log(`${stats.outputs} outputs, ${stats.tagged} with view tags, ` +
+     *             `${stats.skippedByTag} skipped by view tag, ${stats.fullChecks} full derivations`);
+     * ```
+     */
+    getScanStats(): ScanStats;
     /**
      * Initializes and starts the wallet sync process. You should call this
      * function before enquiring about daemon info or fee info. The wallet will
@@ -1256,7 +1275,7 @@ export declare class WalletBackend extends EventEmitter {
      *                              Defaults to false.
      * @param extraData             Extra arbitrary data to include in the transaction
      */
-    sendTransactionAdvanced(destinations: [string, number][], mixin?: number, fee?: FeeType, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string, relayToNetwork?: boolean, sendAll?: boolean, extraData?: string): Promise<SendTransactionResult>;
+    sendTransactionAdvanced(destinations: Array<[string, number]>, mixin?: number, fee?: FeeType, paymentID?: string, subWalletsToTakeFrom?: string[], changeAddress?: string, relayToNetwork?: boolean, sendAll?: boolean, extraData?: string): Promise<SendTransactionResult>;
     /**
      * Relays a previously prepared transaction to the network.
      *
@@ -1480,6 +1499,7 @@ export declare class WalletBackend extends EventEmitter {
      * @param includeFusions Should we count fusion transactions? Defaults to true.
      */
     getNumTransactions(subWallet?: string, includeFusions?: boolean): Promise<number>;
+    checkPoolTransactions(): Promise<void>;
     private sendTransactionInternal;
     private discardStoredBlocks;
     /**
@@ -1505,7 +1525,6 @@ export declare class WalletBackend extends EventEmitter {
      * 17, we get all the indexes from block 10 to block 20.
      */
     private getGlobalIndexes;
-    checkPoolTransactions(): Promise<void>;
     /**
      * Process config.blocksPerTick stored blocks, finding transactions and
      * inputs that belong to us

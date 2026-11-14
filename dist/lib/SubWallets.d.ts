@@ -12,10 +12,23 @@ export declare class SubWallets {
      */
     static fromJSON(json: SubWalletsJSON): SubWallets;
     /**
+     * @param config
+     * @param address
+     * @param scanHeight
+     * @param newWallet
+     * @param privateViewKey
+     * @param privateSpendKey Private spend key is optional if it's a view wallet
+     */
+    static init(config: Config, address: string, scanHeight: number, newWallet: boolean, privateViewKey: string, privateSpendKey?: string): Promise<SubWallets>;
+    /**
      * Whether the wallet is a view only wallet (cannot send transactions,
      * only can view)
      */
     readonly isViewWallet: boolean;
+    /**
+     * Transactions we have already checked
+     */
+    knownTransactions: any[];
     /**
      * The public spend keys this wallet contains. Used for verifying if a
      * transaction is ours.
@@ -34,10 +47,6 @@ export declare class SubWallets {
      */
     private lockedTransactions;
     /**
-     * Transactions we have already checked
-     */
-    knownTransactions: any[];
-    /**
      * The shared private view key
      */
     private readonly privateViewKey;
@@ -51,15 +60,6 @@ export declare class SubWallets {
     private keyImageOwners;
     private config;
     private constructor();
-    /**
-     * @param config
-     * @param address
-     * @param scanHeight
-     * @param newWallet
-     * @param privateViewKey
-     * @param privateSpendKey Private spend key is optional if it's a view wallet
-     */
-    static init(config: Config, address: string, scanHeight: number, newWallet: boolean, privateViewKey: string, privateSpendKey?: string): Promise<SubWallets>;
     initKeyImageMap(): void;
     pruneSpentInputs(pruneHeight: number): void;
     reset(scanHeight: number, scanTimestamp: number): void;
@@ -153,7 +153,7 @@ export declare class SubWallets {
     /**
      * Get all [public, private] spend keys in a container
      */
-    getAllSpendKeys(): [string, string][];
+    getAllSpendKeys(): Array<[string, string]>;
     /**
      * Generate the key image for an input
      */

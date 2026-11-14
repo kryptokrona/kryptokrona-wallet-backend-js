@@ -12,7 +12,7 @@ import {
     Block as UtilsBlock,
     Transaction as UtilsTransaction,
     TransactionOutputs,
-    TransactionInputs
+    TransactionInputs,
 } from 'kryptokrona-utils';
 
 import * as http from 'http';
@@ -23,10 +23,11 @@ import { Config, IConfig, MergeConfig } from './Config';
 import { validateAddresses } from './ValidateParameters';
 import { LogCategory, logger, LogLevel } from './Logger';
 import { WalletErrorCode } from './WalletError';
+import { parseTransactionVersions } from './TransactionVersion';
 
 import {
     Block, TopBlock, DaemonType, DaemonConnection, RawCoinbaseTransaction,
-    RawTransaction, KeyOutput, KeyInput
+    RawTransaction, KeyOutput, KeyInput,
 } from './Types';
 
 export declare interface Daemon {
@@ -195,6 +196,17 @@ export class Daemon extends EventEmitter {
     private lastKnownHashrate: number = 0;
 
     /**
+     * The transaction versions the daemon accepts for the next block, from
+     * `/info` `tx_versions` (see [[getTransactionVersions]])
+     */
+    private transactionVersions: number[] = [1];
+
+    /**
+     * The major version of the daemon's top block, if it reports one
+     */
+    private majorVersion: number | undefined = undefined;
+
+    /**
      * The number of blocks to download per /getwalletsyncdata request
      */
     private blockCount: number = 100;
@@ -303,6 +315,31 @@ export class Daemon extends EventEmitter {
     }
 
     /**
+     * The transaction versions the daemon accepts for the next block, as
+     * reported by `/info` `tx_versions` (refreshed with the daemon info).
+     * `[1]` before fork 14, `[1, 2]` during the grace period, `[2]` after it.
+     *
+     * Daemons without the field: `[1, 2]` if the top block's major version is
+     * 7 or higher, otherwise `[1]`.
+     *
+     * Example:
+     * ```javascript
+     * const versions = daemon.getTransactionVersions();
+     * ```
+     */
+    public getTransactionVersions(): number[] {
+        return this.transactionVersions.slice();
+    }
+
+    /**
+     * The major version of the daemon's top block, or undefined if the daemon
+     * does not report one (or no daemon info has been fetched yet).
+     */
+    public getMajorVersion(): number | undefined {
+        return this.majorVersion;
+    }
+
+    /**
      * Initialize the daemon and the fee info
      */
     public async init(): Promise<void> {
@@ -398,6 +435,10 @@ export class Daemon extends EventEmitter {
         this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
 
         this.lastKnownHashrate = info.difficulty / this.config.blockTargetTime;
+
+        this.majorVersion = typeof info.major_version === 'number' ? info.major_version : undefined;
+
+        this.transactionVersions = parseTransactionVersions(info);
     }
 
     /**
@@ -408,29 +449,29 @@ export class Daemon extends EventEmitter {
     }
 
     public async getPoolChanges(knownTxs: any[]) {
-        const endpoint = "/get_pool_changes_lite"
-        let data
+        const endpoint = '/get_pool_changes_lite';
+        let data;
         try {
             data = await this.makePostRequest(endpoint, {
                 knownTxsIds: knownTxs,
             });
-   
-        logger.log(
+
+            logger.log(
             `Making pool changes request, got data ${JSON.stringify(data)}`,
             LogLevel.DEBUG,
             [LogCategory.DAEMON],
         );
-        
-        let json = data
-        json = JSON.stringify(json)
+
+            let json = data;
+            json = JSON.stringify(json)
         .replaceAll('transactionPrefixInfo.txPrefix', 'transactionPrefixInfo')
-        .replaceAll('transactionPrefixInfo.txHash', 'transactionPrefixInfotxHash')
-        const parsed = JSON.parse(json)
-        if (parsed.addedTxs.length === 0) return false
-        return parsed
-        
+        .replaceAll('transactionPrefixInfo.txHash', 'transactionPrefixInfotxHash');
+            const parsed = JSON.parse(json);
+            if (parsed.addedTxs.length === 0) { return false; }
+            return parsed;
+
         } catch (err) {
-            return false
+            return false;
         }
 
     }
@@ -445,7 +486,7 @@ export class Daemon extends EventEmitter {
      * Gets blocks from the daemon. Blocks are returned starting from the last
      * known block hash (if higher than the startHeight/startTimestamp)
      */
-    
+
     public async getWalletSyncData(
         blockHashCheckpoints: string[],
         startHeight: number,
@@ -597,7 +638,7 @@ export class Daemon extends EventEmitter {
      */
     public async getRandomOutputsByAmount(
         amounts: number[],
-        requestedOuts: number): Promise<[number, [number, string][]][]> {
+        requestedOuts: number): Promise<Array<[number, Array<[number, string]>]>> {
 
         let data;
 
@@ -625,10 +666,10 @@ export class Daemon extends EventEmitter {
             return [];
         }
 
-        const outputs: [number, [number, string][]][] = [];
+        const outputs: Array<[number, Array<[number, string]>]> = [];
 
         for (const output of data) {
-            const indexes: [number, string][] = [];
+            const indexes: Array<[number, string]> = [];
 
             for (const outs of output.outs) {
                 indexes.push([outs.global_amount_index, outs.out_key]);
@@ -690,12 +731,14 @@ export class Daemon extends EventEmitter {
                 const keyOutputs: KeyOutput[] = [];
 
                 for (const output of block.minerTransaction.outputs) {
-                    if (output.type === TransactionOutputs.OutputType.KEY) {
+                    /* Untagged (0x02) and tagged (0x03, version 2) outputs */
+                    if (TransactionOutputs.isKeyOutput(output)) {
                         const o = output as TransactionOutputs.KeyOutput;
 
                         keyOutputs.push(new KeyOutput(
                             o.key,
                             o.amount.toJSNumber(),
+                            o.viewTag,
                         ));
                     }
                 }
@@ -721,12 +764,14 @@ export class Daemon extends EventEmitter {
                 const keyInputs: KeyInput[] = [];
 
                 for (const output of rawTX.outputs) {
-                    if (output.type === TransactionOutputs.OutputType.KEY) {
+                    /* Untagged (0x02) and tagged (0x03, version 2) outputs */
+                    if (TransactionOutputs.isKeyOutput(output)) {
                         const o = output as TransactionOutputs.KeyOutput;
 
                         keyOutputs.push(new KeyOutput(
                             o.key,
                             o.amount.toJSNumber(),
+                            o.viewTag,
                         ));
                     }
                 }
@@ -850,7 +895,7 @@ export class Daemon extends EventEmitter {
 
             const response = await axios({
                 ...options,
-                url
+                url,
               });
 
             /* Cool, HTTPS works. Store for later. */
@@ -894,7 +939,7 @@ export class Daemon extends EventEmitter {
 
                 const response = await axios({
                     ...options,
-                    url
+                    url,
                 });
 
                 this.ssl = false;

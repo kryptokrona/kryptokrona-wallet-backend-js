@@ -5,6 +5,7 @@
 import {Crypto} from 'kryptokrona-utils';
 import {CryptoUtils} from './CnUtils';
 import {Config} from './Config';
+import {normalizeViewTag} from './Types';
 
 const TurtleCoinCrypto = new Crypto();
 
@@ -97,4 +98,88 @@ export async function underivePublicKey(
     } catch (err) {
         return nullKey;
     }
+}
+
+/**
+ * The 8 ASCII bytes "view_tag" (no terminator): the domain separator of the
+ * view tag hash.
+ */
+const VIEW_TAG_DOMAIN = '766965775f746167';
+
+/**
+ * Encodes a non negative integer as a CryptoNote (LEB128) varint, in hex.
+ */
+function varintHex(value: number): string {
+    let result = '';
+
+    do {
+        let byte = value % 128;
+
+        value = Math.floor(value / 128);
+
+        if (value > 0) {
+            byte += 128;
+        }
+
+        result += byte.toString(16).padStart(2, '0');
+    } while (value > 0);
+
+    return result;
+}
+
+/**
+ * The view tag of output `outputIndex` (transaction version 2, fork 14):
+ * the first byte of cn_fast_hash("view_tag" || derivation || varint(outputIndex)),
+ * as two lowercase hex characters.
+ *
+ * Uses, in order: the `deriveViewTag` config hook, kryptokrona-crypto's
+ * `deriveViewTag`, and a computation over `cn_fast_hash`.
+ */
+export async function deriveViewTag(
+    derivation: string,
+    outputIndex: number,
+    config: Config): Promise<string> {
+
+    if (config.deriveViewTag) {
+        const tag = normalizeViewTag(await config.deriveViewTag(derivation, outputIndex));
+
+        if (tag !== undefined) {
+            return tag;
+        }
+    }
+
+    const crypto: any = TurtleCoinCrypto;
+
+    if (typeof crypto.deriveViewTag === 'function') {
+        try {
+            const tag = normalizeViewTag(await crypto.deriveViewTag(derivation, outputIndex));
+
+            if (tag !== undefined) {
+                return tag;
+            }
+        } catch (err) {
+            /* Fall through to the cn_fast_hash computation */
+        }
+    }
+
+    return computeViewTag(derivation, outputIndex, config);
+}
+
+/**
+ * The view tag computed over `cn_fast_hash` (the fallback of [[deriveViewTag]]).
+ *
+ * @hidden
+ */
+export async function computeViewTag(
+    derivation: string,
+    outputIndex: number,
+    config: Config): Promise<string> {
+
+    const data: string = VIEW_TAG_DOMAIN + derivation.toLowerCase() + varintHex(outputIndex);
+
+    const hash: string = config.cnFastHash
+        ? await config.cnFastHash(data)
+        : await TurtleCoinCrypto.cn_fast_hash(data);
+
+    return hash.substring(0, 2).toLowerCase();
 }

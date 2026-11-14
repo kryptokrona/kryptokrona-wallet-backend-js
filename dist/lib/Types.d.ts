@@ -90,7 +90,26 @@ export declare class KeyOutput {
     readonly key: string;
     readonly amount: number;
     readonly globalIndex?: number;
-    constructor(key: string, amount: number);
+    readonly viewTag?: string;
+    constructor(key: string, amount: number, viewTag?: string);
+}
+/**
+ * Normalizes a view tag to two lowercase hex characters. Returns undefined
+ * for a missing or malformed tag, so such an output takes the full ownership
+ * check instead of being skipped.
+ *
+ * @hidden
+ */
+export declare function normalizeViewTag(viewTag: any): string | undefined;
+/**
+ * Counts of the output scan, showing what the view tags saved. Mirrors
+ * `ScanStats` of the Rust wallet core.
+ */
+export interface ScanStats {
+    outputs: number;
+    tagged: number;
+    skippedByTag: number;
+    fullChecks: number;
 }
 /**
  * @hidden
@@ -107,8 +126,8 @@ export declare class KeyInput {
  */
 export declare class TransactionData {
     transactionsToAdd: Transaction[];
-    inputsToAdd: [string, TransactionInput][];
-    keyImagesToMarkSpent: [string, string][];
+    inputsToAdd: Array<[string, TransactionInput]>;
+    keyImagesToMarkSpent: Array<[string, string]>;
 }
 /**
  * @hidden

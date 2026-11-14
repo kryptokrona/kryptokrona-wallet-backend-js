@@ -24,6 +24,7 @@ const Config_1 = require("./Config");
 const ValidateParameters_1 = require("./ValidateParameters");
 const Logger_1 = require("./Logger");
 const WalletError_1 = require("./WalletError");
+const TransactionVersion_1 = require("./TransactionVersion");
 const Types_1 = require("./Types");
 /**
  * @noInheritDoc
@@ -88,6 +89,15 @@ class Daemon extends events_1.EventEmitter {
          * The hashrate of the last known local block
          */
         this.lastKnownHashrate = 0;
+        /**
+         * The transaction versions the daemon accepts for the next block, from
+         * `/info` `tx_versions` (see [[getTransactionVersions]])
+         */
+        this.transactionVersions = [1];
+        /**
+         * The major version of the daemon's top block, if it reports one
+         */
+        this.majorVersion = undefined;
         /**
          * The number of blocks to download per /getwalletsyncdata request
          */
@@ -158,6 +168,29 @@ class Daemon extends events_1.EventEmitter {
      */
     getLocalDaemonBlockCount() {
         return this.localDaemonBlockCount;
+    }
+    /**
+     * The transaction versions the daemon accepts for the next block, as
+     * reported by `/info` `tx_versions` (refreshed with the daemon info).
+     * `[1]` before fork 14, `[1, 2]` during the grace period, `[2]` after it.
+     *
+     * Daemons without the field: `[1, 2]` if the top block's major version is
+     * 7 or higher, otherwise `[1]`.
+     *
+     * Example:
+     * ```javascript
+     * const versions = daemon.getTransactionVersions();
+     * ```
+     */
+    getTransactionVersions() {
+        return this.transactionVersions.slice();
+    }
+    /**
+     * The major version of the daemon's top block, or undefined if the daemon
+     * does not report one (or no daemon info has been fetched yet).
+     */
+    getMajorVersion() {
+        return this.majorVersion;
     }
     /**
      * Initialize the daemon and the fee info
@@ -238,6 +271,8 @@ class Daemon extends events_1.EventEmitter {
             this.networkBlockCount = info.network_height;
             this.peerCount = info.incoming_connections_count + info.outgoing_connections_count;
             this.lastKnownHashrate = info.difficulty / this.config.blockTargetTime;
+            this.majorVersion = typeof info.major_version === 'number' ? info.major_version : undefined;
+            this.transactionVersions = (0, TransactionVersion_1.parseTransactionVersions)(info);
         });
     }
     /**
@@ -248,7 +283,7 @@ class Daemon extends events_1.EventEmitter {
     }
     getPoolChanges(knownTxs) {
         return __awaiter(this, void 0, void 0, function* () {
-            const endpoint = "/get_pool_changes_lite";
+            const endpoint = '/get_pool_changes_lite';
             let data;
             try {
                 data = yield this.makePostRequest(endpoint, {
@@ -260,8 +295,9 @@ class Daemon extends events_1.EventEmitter {
                     .replaceAll('transactionPrefixInfo.txPrefix', 'transactionPrefixInfo')
                     .replaceAll('transactionPrefixInfo.txHash', 'transactionPrefixInfotxHash');
                 const parsed = JSON.parse(json);
-                if (parsed.addedTxs.length === 0)
+                if (parsed.addedTxs.length === 0) {
                     return false;
+                }
                 return parsed;
             }
             catch (err) {
@@ -455,9 +491,10 @@ class Daemon extends events_1.EventEmitter {
                 if (this.config.scanCoinbaseTransactions) {
                     const keyOutputs = [];
                     for (const output of block.minerTransaction.outputs) {
-                        if (output.type === kryptokrona_utils_1.TransactionOutputs.OutputType.KEY) {
+                        /* Untagged (0x02) and tagged (0x03, version 2) outputs */
+                        if (kryptokrona_utils_1.TransactionOutputs.isKeyOutput(output)) {
                             const o = output;
-                            keyOutputs.push(new Types_1.KeyOutput(o.key, o.amount.toJSNumber()));
+                            keyOutputs.push(new Types_1.KeyOutput(o.key, o.amount.toJSNumber(), o.viewTag));
                         }
                     }
                     coinbaseTransaction = new Types_1.RawCoinbaseTransaction(keyOutputs, yield block.minerTransaction.hash(), block.minerTransaction.publicKey, block.minerTransaction.unlockTime > Number.MAX_SAFE_INTEGER
@@ -471,9 +508,10 @@ class Daemon extends events_1.EventEmitter {
                     const keyOutputs = [];
                     const keyInputs = [];
                     for (const output of rawTX.outputs) {
-                        if (output.type === kryptokrona_utils_1.TransactionOutputs.OutputType.KEY) {
+                        /* Untagged (0x02) and tagged (0x03, version 2) outputs */
+                        if (kryptokrona_utils_1.TransactionOutputs.isKeyOutput(output)) {
                             const o = output;
-                            keyOutputs.push(new Types_1.KeyOutput(o.key, o.amount.toJSNumber()));
+                            keyOutputs.push(new Types_1.KeyOutput(o.key, o.amount.toJSNumber(), o.viewTag));
                         }
                     }
                     for (const input of rawTX.inputs) {

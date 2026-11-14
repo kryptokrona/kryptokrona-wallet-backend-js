@@ -129,4 +129,9 @@ export interface IDaemon {
      * Returns host:port
      */
     getConnectionString(): string;
+    /**
+     * Returns the transaction versions the daemon accepts for the next block
+     * (`/info` `tx_versions`). Optional: treated as `[1]` when not implemented.
+     */
+    getTransactionVersions?(): number[];
 }
