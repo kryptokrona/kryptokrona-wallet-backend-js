@@ -575,7 +575,7 @@ async function checkBuiltTransaction(
 
         return ok;
 
-    }, 'Replaying the recorded fork 14 sync data (view-tag scan)',
+    }, 'Syncing from the recorded fork 14 sync data (view-tag scan)',
        'Found outputs, key images, spends, balance and scan counts match the vector',
        'The view-tag scan does not match the vector!');
 
@@ -590,7 +590,7 @@ async function checkBuiltTransaction(
             && check(_.isEqual(stats, { outputs: total, tagged: 0, skippedByTag: 0, fullChecks: total }),
                 `scan stats without view tags ${JSON.stringify(stats)}`);
 
-    }, 'Replaying the sync data without view tags',
+    }, 'Syncing from the recorded sync data without view tags',
        'The untagged scan finds the same outputs with one derivation per output',
        'The untagged scan differs from the view-tag scan!');
 
