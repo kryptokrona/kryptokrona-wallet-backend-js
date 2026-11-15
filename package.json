@@ -3,6 +3,9 @@
   "version": "2.7.0",
   "description": "",
   "main": "dist/lib/index.js",
+  "react-native": {
+    "fs": false
+  },
   "types": "dist/lib/index.d.ts",
   "scripts": {
     "build": "./node_modules/.bin/tsc",

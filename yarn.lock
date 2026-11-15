@@ -1300,13 +1300,10 @@ jsprim@^1.2.2:
     verror "1.10.0"
 
 "kryptokrona-crypto@file:../kryptokrona-crypto":
-  version "1.1.0"
+  version "2.0.0"
   resolved "file:../kryptokrona-crypto"
   dependencies:
-    bindings "^1.5.0"
     js-sha3 "^0.8.0"
-    nan "^2.22.2"
-    prebuild-install "^5.3.5"
 
 "kryptokrona-utils@file:../kryptokrona-utils":
   version "1.5.0"
