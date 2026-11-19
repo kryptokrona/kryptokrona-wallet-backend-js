@@ -29,6 +29,7 @@ import {
 import { validateMixin } from '../lib/ValidateParameters';
 import { estimateTransactionSize } from '../lib/Utilities';
 import { KeyOutput } from '../lib/Types';
+import { DaemonRequester } from '../lib/Daemon';
 
 import {
     Crypto, Transaction as UtilsTransaction, TransactionOutputs, TransactionInputs,
@@ -682,6 +683,51 @@ async function checkBuiltTransaction(
     }, 'Checking tx_versions from /info',
        'tx_versions parsing and fallbacks work',
        'tx_versions parsing does not work!');
+
+    await tester.test(async () => {
+        let ok = true;
+
+        /* The same recorded daemon behind a requester instead of HTTP */
+        const state = newMockState(2);
+        const calls: string[] = [];
+        const requester: DaemonRequester = {
+            label: 'hyperswarm',
+            request: async (method, path, body) => {
+                calls.push(`${method} ${path}`);
+                return { status: 200, body: _.cloneDeep(mockAnswer(state, path, body)) };
+            },
+        };
+        const viaRequester = Daemon.withRequester(requester);
+        const viaHttp = mockDaemon(newMockState(2));
+
+        await viaRequester.init();
+        await viaHttp.init();
+
+        ok = check(_.isEqual(viaRequester.getTransactionVersions(), viaHttp.getTransactionVersions()),
+            'tx_versions through the requester') && ok;
+        ok = check(viaRequester.getConnectionInfo().host === 'hyperswarm', 'label as host') && ok;
+        ok = check(calls.includes('get /info'), `requester saw /info (${calls.join(', ')})`) && ok;
+
+        const [a] = await viaRequester.getWalletSyncData([], 0, 0);
+        const [b] = await viaHttp.getWalletSyncData([], 0, 0);
+        ok = check(a.length > 0 && _.isEqual(a, b), `same blocks (${a.length} and ${b.length})`) && ok;
+
+        /* A status other than 2xx is a failed request, with the daemon's events */
+        let dead = false;
+        const failing = Daemon.withRequester({
+            request: async () => ({ status: 500, body: 'down' }),
+        });
+        failing.on('disconnect', () => { dead = true; });
+        /* getWalletSyncData answers a failed request with no blocks, as over HTTP */
+        const [none, top] = await failing.getWalletSyncData([], 0, 0);
+        ok = check(none.length === 0 && top === false && dead,
+            'status 500: no blocks and a disconnect event') && ok;
+
+        return ok;
+
+    }, 'A daemon behind a requester (Daemon.withRequester)',
+       'Requests go through the requester and answer as over HTTP',
+       'Daemon.withRequester does not work!');
 
     await tester.test(async () => {
         const cases: Array<[number[], boolean, number | undefined, number | undefined]> = [

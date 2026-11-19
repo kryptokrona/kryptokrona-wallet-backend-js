@@ -153,6 +153,15 @@ class Daemon extends events_1.EventEmitter {
             this.sslDetermined = true;
         }
     }
+    /**
+     * A daemon whose requests go through `requester` instead of HTTP (for example an xkrd node
+     * over Hyperswarm). Host and port are only shown (`label`, port 0).
+     */
+    static withRequester(requester) {
+        const daemon = new Daemon(requester.label || 'requester', 0, false, false);
+        daemon.requester = requester;
+        return daemon;
+    }
     updateConfig(config) {
         this.config = (0, Config_1.MergeConfig)(config);
         this.blockCount = this.config.blocksPerDaemonRequest;
@@ -572,6 +581,9 @@ class Daemon extends events_1.EventEmitter {
      */
     makeRequest(endpoint, method, body) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.requester) {
+                return this.makeRequesterRequest(this.requester, endpoint, method, body);
+            }
             const options = {
                 method,
                 data: body,
@@ -635,6 +647,34 @@ class Daemon extends events_1.EventEmitter {
                     }
                     throw err;
                 }
+            }
+        });
+    }
+    /**
+     * {@link Daemon.makeRequest} through a {@link DaemonRequester}: the same events
+     * (`connect`, `disconnect`, `deadnode`) and an error for a status other than 2xx.
+     */
+    makeRequesterRequest(requester, endpoint, method, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            Logger_1.logger.log(`Making request to ${requester.label || 'requester'}${endpoint} with params ${body ? JSON.stringify(body) : '{}'}`, Logger_1.LogLevel.TRACE, [Logger_1.LogCategory.DAEMON]);
+            try {
+                const answer = yield requester.request(method === 'post' ? 'post' : 'get', endpoint, body);
+                if (answer.status < 200 || answer.status >= 300) {
+                    throw new Error(`Request failed with status code ${answer.status}`);
+                }
+                if (!this.connected) {
+                    this.emit('connect');
+                    this.connected = true;
+                }
+                return answer.body;
+            }
+            catch (err) {
+                this.emit('deadnode');
+                if (this.connected) {
+                    this.emit('disconnect', err);
+                    this.connected = false;
+                }
+                throw err;
             }
         });
     }

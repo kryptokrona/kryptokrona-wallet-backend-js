@@ -132,6 +132,18 @@ export declare interface Daemon {
 }
 
 /**
+ * Sends the daemon requests of a {@link Daemon} some other way than HTTP, for example over
+ * Hyperswarm (`hugin-network/xkr-daemon`: an xkrd node found on the wallets topic). `request`
+ * resolves with the HTTP status and the parsed JSON body the daemon would have answered.
+ */
+export interface DaemonRequester {
+    /** One request: `method` is `get` or `post`, `path` starts with `/`. */
+    request(method: 'get' | 'post', path: string, body?: any): Promise<{ status: number; body: any }>;
+    /** What to show for this daemon, e.g. `hyperswarm` (default `requester`). */
+    readonly label?: string;
+}
+
+/**
  * @noInheritDoc
  */
 export class Daemon extends EventEmitter {
@@ -144,6 +156,11 @@ export class Daemon extends EventEmitter {
      * Daemon/API port
      */
     private readonly port: number;
+
+    /**
+     * Sends the requests instead of HTTP, when set ({@link Daemon.withRequester})
+     */
+    private requester?: DaemonRequester;
 
     /**
      * Whether we should use https for our requests
@@ -293,6 +310,16 @@ export class Daemon extends EventEmitter {
             this.ssl = ssl;
             this.sslDetermined = true;
         }
+    }
+
+    /**
+     * A daemon whose requests go through `requester` instead of HTTP (for example an xkrd node
+     * over Hyperswarm). Host and port are only shown (`label`, port 0).
+     */
+    public static withRequester(requester: DaemonRequester): Daemon {
+        const daemon = new Daemon(requester.label || 'requester', 0, false, false);
+        daemon.requester = requester;
+        return daemon;
     }
 
     public updateConfig(config: IConfig) {
@@ -867,6 +894,10 @@ export class Daemon extends EventEmitter {
      * Makes a get request to the given endpoint
      */
     private async makeRequest(endpoint: string, method: string, body?: any): Promise<any> {
+        if (this.requester) {
+            return this.makeRequesterRequest(this.requester, endpoint, method, body);
+        }
+
         const options: AxiosRequestConfig = {
             method,
             data: body,
@@ -968,4 +999,39 @@ export class Daemon extends EventEmitter {
         }
     }
 
+
+    /**
+     * {@link Daemon.makeRequest} through a {@link DaemonRequester}: the same events
+     * (`connect`, `disconnect`, `deadnode`) and an error for a status other than 2xx.
+     */
+    private async makeRequesterRequest(
+        requester: DaemonRequester,
+        endpoint: string,
+        method: string,
+        body?: any,
+    ): Promise<any> {
+        logger.log(
+            `Making request to ${requester.label || 'requester'}${endpoint} with params ${body ? JSON.stringify(body) : '{}'}`,
+            LogLevel.TRACE,
+            [LogCategory.DAEMON],
+        );
+        try {
+            const answer = await requester.request(method === 'post' ? 'post' : 'get', endpoint, body);
+            if (answer.status < 200 || answer.status >= 300) {
+                throw new Error(`Request failed with status code ${answer.status}`);
+            }
+            if (!this.connected) {
+                this.emit('connect');
+                this.connected = true;
+            }
+            return answer.body;
+        } catch (err: any) {
+            this.emit('deadnode');
+            if (this.connected) {
+                this.emit('disconnect', err);
+                this.connected = false;
+            }
+            throw err;
+        }
+    }
 }

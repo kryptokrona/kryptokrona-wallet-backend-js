@@ -97,6 +97,20 @@ export declare interface Daemon {
     on(event: 'rawtransaction', callback: (transaction: UtilsTransaction) => void): this;
 }
 /**
+ * Sends the daemon requests of a {@link Daemon} some other way than HTTP, for example over
+ * Hyperswarm (`hugin-network/xkr-daemon`: an xkrd node found on the wallets topic). `request`
+ * resolves with the HTTP status and the parsed JSON body the daemon would have answered.
+ */
+export interface DaemonRequester {
+    /** One request: `method` is `get` or `post`, `path` starts with `/`. */
+    request(method: 'get' | 'post', path: string, body?: any): Promise<{
+        status: number;
+        body: any;
+    }>;
+    /** What to show for this daemon, e.g. `hyperswarm` (default `requester`). */
+    readonly label?: string;
+}
+/**
  * @noInheritDoc
  */
 export declare class Daemon extends EventEmitter {
@@ -108,6 +122,10 @@ export declare class Daemon extends EventEmitter {
      * Daemon/API port
      */
     private readonly port;
+    /**
+     * Sends the requests instead of HTTP, when set ({@link Daemon.withRequester})
+     */
+    private requester?;
     /**
      * Whether we should use https for our requests
      */
@@ -201,6 +219,11 @@ export declare class Daemon extends EventEmitter {
      *                   we will work it out automatically.
      */
     constructor(host: string, port: number, isCacheApi?: boolean, ssl?: boolean);
+    /**
+     * A daemon whose requests go through `requester` instead of HTTP (for example an xkrd node
+     * over Hyperswarm). Host and port are only shown (`label`, port 0).
+     */
+    static withRequester(requester: DaemonRequester): Daemon;
     updateConfig(config: IConfig): void;
     /**
      * Get the amount of blocks the network has
@@ -284,4 +307,9 @@ export declare class Daemon extends EventEmitter {
      * Makes a get request to the given endpoint
      */
     private makeRequest;
+    /**
+     * {@link Daemon.makeRequest} through a {@link DaemonRequester}: the same events
+     * (`connect`, `disconnect`, `deadnode`) and an error for a status other than 2xx.
+     */
+    private makeRequesterRequest;
 }

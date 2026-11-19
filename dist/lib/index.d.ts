@@ -1,6 +1,6 @@
 export { WalletError, WalletErrorCode, SUCCESS } from './WalletError';
 export { WalletBackend } from './WalletBackend';
-export { Daemon } from './Daemon';
+export { Daemon, DaemonRequester } from './Daemon';
 export { FeeType } from './FeeType';
 export { prettyPrintAmount, isHex64, isValidMnemonic, isValidMnemonicWord, createIntegratedAddress, } from './Utilities';
 export { LogLevel, LogCategory } from './Logger';
